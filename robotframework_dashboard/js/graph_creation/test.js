@@ -12,11 +12,8 @@ import { format_duration } from "../common.js";
 import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filteredTests } from "../variables/globals.js";
 import { settings } from "../variables/settings.js";
 
-// function to create test statistics graph in the test section
-function create_test_statistics_graph() {
-    if (testStatisticsGraph) {
-        testStatisticsGraph.destroy();
-    }
+// build config for test statistics graph
+function _build_test_statistics_config() {
     const data = get_test_statistics_data(filteredTests);
     const graphData = data[0]
     const runStarts = data[1]
@@ -49,17 +46,21 @@ function create_test_statistics_graph() {
     };
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     update_height("testStatisticsVertical", config.data.labels.length, "timeline");
-    testStatisticsGraph = new Chart("testStatisticsGraph", config);
+    return config;
+}
+
+// function to create test statistics graph in the test section
+function create_test_statistics_graph() {
+    console.log("creating_test_statistics_graph");
+    if (testStatisticsGraph) { testStatisticsGraph.destroy(); }
+    testStatisticsGraph = new Chart("testStatisticsGraph", _build_test_statistics_config());
     testStatisticsGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testStatisticsGraph, event)
     });
 }
 
-// function to create test duration graph in the test section
-function create_test_duration_graph() {
-    if (testDurationGraph) {
-        testDurationGraph.destroy();
-    }
+// build config for test duration graph
+function _build_test_duration_config() {
     var graphData = get_duration_graph_data("test", settings.graphTypes.testDurationGraphType, "elapsed_s", filteredTests);
     var config;
     if (settings.graphTypes.testDurationGraphType == "bar") {
@@ -69,17 +70,21 @@ function create_test_duration_graph() {
         config = get_graph_config("line", graphData, "", "Date", "Duration");
     }
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
-    testDurationGraph = new Chart("testDurationGraph", config);
+    return config;
+}
+
+// function to create test duration graph in the test section
+function create_test_duration_graph() {
+    console.log("creating_test_duration_graph");
+    if (testDurationGraph) { testDurationGraph.destroy(); }
+    testDurationGraph = new Chart("testDurationGraph", _build_test_duration_config());
     testDurationGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testDurationGraph, event)
     });
 }
 
-// function to create test messages graph in the test section
-function create_test_messages_graph() {
-    if (testMessagesGraph) {
-        testMessagesGraph.destroy();
-    }
+// build config for test messages graph
+function _build_test_messages_config() {
     const data = get_messages_data("test", settings.graphTypes.testMessagesGraphType, filteredTests);
     const graphData = data[0];
     const callbackData = data[1];
@@ -145,31 +150,39 @@ function create_test_messages_graph() {
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("testMessagesVertical", config.data.labels.length, settings.graphTypes.testMessagesGraphType);
-    testMessagesGraph = new Chart("testMessagesGraph", config);
+    return config;
+}
+
+// function to create test messages graph in the test section
+function create_test_messages_graph() {
+    console.log("creating_test_messages_graph");
+    if (testMessagesGraph) { testMessagesGraph.destroy(); }
+    testMessagesGraph = new Chart("testMessagesGraph", _build_test_messages_config());
     testMessagesGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testMessagesGraph, event)
     });
 }
 
-// function to create test duration deviation graph in test section
-function create_test_duration_deviation_graph() {
-    if (testDurationDeviationGraph) {
-        testDurationDeviationGraph.destroy();
-    }
+// build config for test duration deviation graph
+function _build_test_duration_deviation_config() {
     const graphData = get_duration_deviation_data("test", settings.graphTypes.testDurationDeviationGraphType, filteredTests)
     const config = get_graph_config("boxplot", graphData, "", "Test", "Duration");
     delete config.options.onClick
-    testDurationDeviationGraph = new Chart("testDurationDeviationGraph", config);
+    return config;
+}
+
+// function to create test duration deviation graph in test section
+function create_test_duration_deviation_graph() {
+    console.log("creating_test_duration_deviation_graph");
+    if (testDurationDeviationGraph) { testDurationDeviationGraph.destroy(); }
+    testDurationDeviationGraph = new Chart("testDurationDeviationGraph", _build_test_duration_deviation_config());
     testDurationDeviationGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testDurationDeviationGraph, event)
     });
 }
 
-// function to create test most flaky graph in test section
-function create_test_most_flaky_graph() {
-    if (testMostFlakyGraph) {
-        testMostFlakyGraph.destroy();
-    }
+// build config for test most flaky graph
+function _build_test_most_flaky_config() {
     const data = get_most_flaky_data("test", settings.graphTypes.testMostFlakyGraphType, filteredTests, ignoreSkips, false);
     const graphData = data[0]
     const callbackData = data[1];
@@ -210,17 +223,21 @@ function create_test_most_flaky_graph() {
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("testMostFlakyVertical", config.data.labels.length, settings.graphTypes.testMostFlakyGraphType);
-    testMostFlakyGraph = new Chart("testMostFlakyGraph", config);
+    return config;
+}
+
+// function to create test most flaky graph in test section
+function create_test_most_flaky_graph() {
+    console.log("creating_test_most_flaky_graph");
+    if (testMostFlakyGraph) { testMostFlakyGraph.destroy(); }
+    testMostFlakyGraph = new Chart("testMostFlakyGraph", _build_test_most_flaky_config());
     testMostFlakyGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testMostFlakyGraph, event)
     });
 }
 
-// function to create test recent most flaky graph in test section
-function create_test_recent_most_flaky_graph() {
-    if (testRecentMostFlakyGraph) {
-        testRecentMostFlakyGraph.destroy();
-    }
+// build config for test recent most flaky graph
+function _build_test_recent_most_flaky_config() {
     const data = get_most_flaky_data("test", settings.graphTypes.testRecentMostFlakyGraphType, filteredTests, ignoreSkipsRecent, true);
     const graphData = data[0];
     const callbackData = data[1];
@@ -261,17 +278,21 @@ function create_test_recent_most_flaky_graph() {
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("testRecentMostFlakyVertical", config.data.labels.length, settings.graphTypes.testRecentMostFlakyGraphType);
-    testRecentMostFlakyGraph = new Chart("testRecentMostFlakyGraph", config);
+    return config;
+}
+
+// function to create test recent most flaky graph in test section
+function create_test_recent_most_flaky_graph() {
+    console.log("creating_test_recent_most_flaky_graph");
+    if (testRecentMostFlakyGraph) { testRecentMostFlakyGraph.destroy(); }
+    testRecentMostFlakyGraph = new Chart("testRecentMostFlakyGraph", _build_test_recent_most_flaky_config());
     testRecentMostFlakyGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testRecentMostFlakyGraph, event)
     });
 }
 
-// function to create test most failed graph in the test section
-function create_test_most_failed_graph() {
-    if (testMostFailedGraph) {
-        testMostFailedGraph.destroy();
-    }
+// build config for test most failed graph
+function _build_test_most_failed_config() {
     const data = get_most_failed_data("test", settings.graphTypes.testMostFailedGraphType, filteredTests, false);
     const graphData = data[0]
     const callbackData = data[1];
@@ -319,17 +340,21 @@ function create_test_most_failed_graph() {
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("testMostFailedVertical", config.data.labels.length, settings.graphTypes.testMostFailedGraphType);
-    testMostFailedGraph = new Chart("testMostFailedGraph", config);
+    return config;
+}
+
+// function to create test most failed graph in the test section
+function create_test_most_failed_graph() {
+    console.log("creating_test_most_failed_graph");
+    if (testMostFailedGraph) { testMostFailedGraph.destroy(); }
+    testMostFailedGraph = new Chart("testMostFailedGraph", _build_test_most_failed_config());
     testMostFailedGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testMostFailedGraph, event)
     });
 }
 
-// function to create test recent most failed graph in the test section
-function create_test_recent_most_failed_graph() {
-    if (testRecentMostFailedGraph) {
-        testRecentMostFailedGraph.destroy();
-    }
+// build config for test recent most failed graph
+function _build_test_recent_most_failed_config() {
     const data = get_most_failed_data("test", settings.graphTypes.testRecentMostFailedGraphType, filteredTests, true);
     const graphData = data[0]
     const callbackData = data[1];
@@ -377,17 +402,21 @@ function create_test_recent_most_failed_graph() {
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("testRecentMostFailedVertical", config.data.labels.length, settings.graphTypes.testRecentMostFailedGraphType);
-    testRecentMostFailedGraph = new Chart("testRecentMostFailedGraph", config);
+    return config;
+}
+
+// function to create test recent most failed graph in the test section
+function create_test_recent_most_failed_graph() {
+    console.log("creating_test_recent_most_failed_graph");
+    if (testRecentMostFailedGraph) { testRecentMostFailedGraph.destroy(); }
+    testRecentMostFailedGraph = new Chart("testRecentMostFailedGraph", _build_test_recent_most_failed_config());
     testRecentMostFailedGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testRecentMostFailedGraph, event)
     });
 }
 
-// function to create the most time consuming test graph in the test section
-function create_test_most_time_consuming_graph() {
-    if (testMostTimeConsumingGraph) {
-        testMostTimeConsumingGraph.destroy();
-    }
+// build config for test most time consuming graph
+function _build_test_most_time_consuming_config() {
     const onlyLastRun = document.getElementById("onlyLastRunTest").checked;
     const data = get_most_time_consuming_or_most_used_data("test", settings.graphTypes.testMostTimeConsumingGraphType, filteredTests, onlyLastRun);
     const graphData = data[0]
@@ -456,10 +485,107 @@ function create_test_most_time_consuming_graph() {
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("testMostTimeConsumingVertical", config.data.labels.length, settings.graphTypes.testMostTimeConsumingGraphType);
-    testMostTimeConsumingGraph = new Chart("testMostTimeConsumingGraph", config);
+    return config;
+}
+
+// function to create the most time consuming test graph in the test section
+function create_test_most_time_consuming_graph() {
+    console.log("creating_test_most_time_consuming_graph");
+    if (testMostTimeConsumingGraph) { testMostTimeConsumingGraph.destroy(); }
+    testMostTimeConsumingGraph = new Chart("testMostTimeConsumingGraph", _build_test_most_time_consuming_config());
     testMostTimeConsumingGraph.canvas.addEventListener("click", (event) => {
         open_log_from_label(testMostTimeConsumingGraph, event)
     });
+}
+
+// update function for test statistics graph - updates existing chart in-place
+function update_test_statistics_graph() {
+    console.log("updating_test_statistics_graph");
+    if (!testStatisticsGraph) { create_test_statistics_graph(); return; }
+    const config = _build_test_statistics_config();
+    testStatisticsGraph.data = config.data;
+    testStatisticsGraph.options = config.options;
+    testStatisticsGraph.update();
+}
+
+// update function for test duration graph - updates existing chart in-place
+function update_test_duration_graph() {
+    console.log("updating_test_duration_graph");
+    if (!testDurationGraph) { create_test_duration_graph(); return; }
+    const config = _build_test_duration_config();
+    testDurationGraph.data = config.data;
+    testDurationGraph.options = config.options;
+    testDurationGraph.update();
+}
+
+// update function for test messages graph - updates existing chart in-place
+function update_test_messages_graph() {
+    console.log("updating_test_messages_graph");
+    if (!testMessagesGraph) { create_test_messages_graph(); return; }
+    const config = _build_test_messages_config();
+    testMessagesGraph.data = config.data;
+    testMessagesGraph.options = config.options;
+    testMessagesGraph.update();
+}
+
+// update function for test duration deviation graph - updates existing chart in-place
+function update_test_duration_deviation_graph() {
+    console.log("updating_test_duration_deviation_graph");
+    if (!testDurationDeviationGraph) { create_test_duration_deviation_graph(); return; }
+    const config = _build_test_duration_deviation_config();
+    testDurationDeviationGraph.data = config.data;
+    testDurationDeviationGraph.options = config.options;
+    testDurationDeviationGraph.update();
+}
+
+// update function for test most flaky graph - updates existing chart in-place
+function update_test_most_flaky_graph() {
+    console.log("updating_test_most_flaky_graph");
+    if (!testMostFlakyGraph) { create_test_most_flaky_graph(); return; }
+    const config = _build_test_most_flaky_config();
+    testMostFlakyGraph.data = config.data;
+    testMostFlakyGraph.options = config.options;
+    testMostFlakyGraph.update();
+}
+
+// update function for test recent most flaky graph - updates existing chart in-place
+function update_test_recent_most_flaky_graph() {
+    console.log("updating_test_recent_most_flaky_graph");
+    if (!testRecentMostFlakyGraph) { create_test_recent_most_flaky_graph(); return; }
+    const config = _build_test_recent_most_flaky_config();
+    testRecentMostFlakyGraph.data = config.data;
+    testRecentMostFlakyGraph.options = config.options;
+    testRecentMostFlakyGraph.update();
+}
+
+// update function for test most failed graph - updates existing chart in-place
+function update_test_most_failed_graph() {
+    console.log("updating_test_most_failed_graph");
+    if (!testMostFailedGraph) { create_test_most_failed_graph(); return; }
+    const config = _build_test_most_failed_config();
+    testMostFailedGraph.data = config.data;
+    testMostFailedGraph.options = config.options;
+    testMostFailedGraph.update();
+}
+
+// update function for test recent most failed graph - updates existing chart in-place
+function update_test_recent_most_failed_graph() {
+    console.log("updating_test_recent_most_failed_graph");
+    if (!testRecentMostFailedGraph) { create_test_recent_most_failed_graph(); return; }
+    const config = _build_test_recent_most_failed_config();
+    testRecentMostFailedGraph.data = config.data;
+    testRecentMostFailedGraph.options = config.options;
+    testRecentMostFailedGraph.update();
+}
+
+// update function for test most time consuming graph - updates existing chart in-place
+function update_test_most_time_consuming_graph() {
+    console.log("updating_test_most_time_consuming_graph");
+    if (!testMostTimeConsumingGraph) { create_test_most_time_consuming_graph(); return; }
+    const config = _build_test_most_time_consuming_config();
+    testMostTimeConsumingGraph.data = config.data;
+    testMostTimeConsumingGraph.options = config.options;
+    testMostTimeConsumingGraph.update();
 }
 
 export {
@@ -472,4 +598,13 @@ export {
     create_test_most_failed_graph,
     create_test_recent_most_failed_graph,
     create_test_most_time_consuming_graph,
+    update_test_statistics_graph,
+    update_test_duration_graph,
+    update_test_duration_deviation_graph,
+    update_test_messages_graph,
+    update_test_most_flaky_graph,
+    update_test_recent_most_flaky_graph,
+    update_test_most_failed_graph,
+    update_test_recent_most_failed_graph,
+    update_test_most_time_consuming_graph,
 };

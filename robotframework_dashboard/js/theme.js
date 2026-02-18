@@ -1,5 +1,5 @@
 import { set_local_storage_item } from "./localstorage.js";
-import { setup_dashboard_graphs } from "./graph_creation/all.js";
+import { update_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
 import { graphFontSize } from "./variables/chartconfig.js";
 import {
@@ -40,7 +40,7 @@ function toggle_theme() {
         set_local_storage_item("theme", "dark");
     }
     setup_theme()
-    setup_dashboard_graphs()
+    update_dashboard_graphs()
 }
 
 // theme function based on browser/machine color scheme

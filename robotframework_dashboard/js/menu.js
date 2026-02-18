@@ -2,7 +2,7 @@ import { setup_filtered_data_and_filters, update_overview_version_select_list } 
 import { areGroupedProjectsPrepared } from "./variables/globals.js";
 import { space_to_camelcase } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
-import { setup_dashboard_graphs } from "./graph_creation/all.js";
+import { create_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
 import { setup_theme } from "./theme.js";
 import { setup_graph_view_buttons, setup_overview_order_filters } from "./eventlisteners.js";
@@ -419,7 +419,10 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
                 setup_spinner(true);
                 setup_dashboard_section_menu_buttons();
                 setup_overview_section_menu_buttons();
-                setup_dashboard_graphs();
+
+                // Always create graphs from scratch because setup_graph_order()
+                // rebuilds all GridStack grids and canvas DOM elements above
+                create_dashboard_graphs();
 
                 // Ensure overview titles reflect current prefix setting
                 update_overview_prefix_display();
@@ -463,10 +466,34 @@ function setup_spinner(hide) {
     }
 }
 
+// Show a semi-transparent loading overlay for filter/update operations
+// Unlike setup_spinner, this does NOT hide sections - it overlays on top of existing content
+function show_loading_overlay() {
+    let overlay = document.getElementById("filterLoadingOverlay");
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = "filterLoadingOverlay";
+        overlay.className = "filter-loading-overlay";
+        overlay.innerHTML = '<div class="ball-grid-beat"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = "flex";
+}
+
+// Hide the filter loading overlay
+function hide_loading_overlay() {
+    const overlay = document.getElementById("filterLoadingOverlay");
+    if (overlay) {
+        $(overlay).fadeOut(200);
+    }
+}
+
 export {
     setup_menu,
     setup_data_and_graphs,
     setup_spinner,
+    show_loading_overlay,
+    hide_loading_overlay,
     update_menu,
     setup_overview_section_menu_buttons
 };

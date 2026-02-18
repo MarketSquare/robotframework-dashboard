@@ -1,10 +1,7 @@
 import { filteredRuns, filteredSuites, filteredTests, filteredKeywords } from "../variables/globals.js";
 
-// function to create run table in the run section
-function create_run_table() {
-    if (runTable) {
-        runTable.destroy();
-    }
+// build table data for run table
+function _get_run_table_data() {
     const data = [];
     for (const run of filteredRuns) {
         data.push([
@@ -23,6 +20,13 @@ function create_run_table() {
             run.metadata,
         ]);
     }
+    return data;
+}
+
+// function to create run table in the run section
+function create_run_table() {
+    console.log("creating_run_table");
+    if (runTable) { runTable.destroy(); }
     runTable = new DataTable("#runTable", {
         layout: {
             topStart: "info",
@@ -43,15 +47,12 @@ function create_run_table() {
             { title: "alias" },
             { title: "metadata" },
         ],
-        data: data,
+        data: _get_run_table_data(),
     });
 }
 
-// function to create suite table in the suite section
-function create_suite_table() {
-    if (suiteTable) {
-        suiteTable.destroy();
-    }
+// build table data for suite table
+function _get_suite_table_data() {
     const data = [];
     for (const suite of filteredSuites) {
         data.push([
@@ -68,6 +69,13 @@ function create_suite_table() {
             suite.id,
         ]);
     }
+    return data;
+}
+
+// function to create suite table in the suite section
+function create_suite_table() {
+    console.log("creating_suite_table");
+    if (suiteTable) { suiteTable.destroy(); }
     suiteTable = new DataTable("#suiteTable", {
         layout: {
             topStart: "info",
@@ -86,15 +94,12 @@ function create_suite_table() {
             { title: "alias" },
             { title: "id" },
         ],
-        data: data,
+        data: _get_suite_table_data(),
     });
 }
 
-// function to create test table in the test section
-function create_test_table() {
-    if (testTable) {
-        testTable.destroy();
-    }
+// build table data for test table
+function _get_test_table_data() {
     const data = [];
     for (const test of filteredTests) {
         data.push([
@@ -112,6 +117,13 @@ function create_test_table() {
             test.id
         ]);
     }
+    return data;
+}
+
+// function to create test table in the test section
+function create_test_table() {
+    console.log("creating_test_table");
+    if (testTable) { testTable.destroy(); }
     testTable = new DataTable("#testTable", {
         layout: {
             topStart: "info",
@@ -131,15 +143,12 @@ function create_test_table() {
             { title: "alias" },
             { title: "id" },
         ],
-        data: data,
+        data: _get_test_table_data(),
     });
 }
 
-// function to create keyword table in the tables tab
-function create_keyword_table() {
-    if (keywordTable) {
-        keywordTable.destroy();
-    }
+// build table data for keyword table
+function _get_keyword_table_data() {
     const data = [];
     for (const keyword of filteredKeywords) {
         data.push([
@@ -157,6 +166,13 @@ function create_keyword_table() {
             keyword.owner,
         ]);
     }
+    return data;
+}
+
+// function to create keyword table in the tables tab
+function create_keyword_table() {
+    console.log("creating_keyword_table");
+    if (keywordTable) { keywordTable.destroy(); }
     keywordTable = new DataTable("#keywordTable", {
         layout: {
             topStart: "info",
@@ -176,13 +192,53 @@ function create_keyword_table() {
             { title: "alias" },
             { title: "owner" },
         ],
-        data: data,
+        data: _get_keyword_table_data(),
     });
+}
+
+// update function for run table - clears and redraws with new data
+function update_run_table() {
+    console.log("updating_run_table");
+    if (!runTable) { create_run_table(); return; }
+    runTable.clear();
+    runTable.rows.add(_get_run_table_data());
+    runTable.draw();
+}
+
+// update function for suite table - clears and redraws with new data
+function update_suite_table() {
+    console.log("updating_suite_table");
+    if (!suiteTable) { create_suite_table(); return; }
+    suiteTable.clear();
+    suiteTable.rows.add(_get_suite_table_data());
+    suiteTable.draw();
+}
+
+// update function for test table - clears and redraws with new data
+function update_test_table() {
+    console.log("updating_test_table");
+    if (!testTable) { create_test_table(); return; }
+    testTable.clear();
+    testTable.rows.add(_get_test_table_data());
+    testTable.draw();
+}
+
+// update function for keyword table - clears and redraws with new data
+function update_keyword_table() {
+    console.log("updating_keyword_table");
+    if (!keywordTable) { create_keyword_table(); return; }
+    keywordTable.clear();
+    keywordTable.rows.add(_get_keyword_table_data());
+    keywordTable.draw();
 }
 
 export {
     create_run_table,
     create_suite_table,
     create_test_table,
-    create_keyword_table
+    create_keyword_table,
+    update_run_table,
+    update_suite_table,
+    update_test_table,
+    update_keyword_table
 };

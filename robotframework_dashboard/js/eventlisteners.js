@@ -14,10 +14,12 @@ import {
 } from "./variables/globals.js";
 import { arrowDown, arrowRight } from "./variables/svg.js";
 import { fullscreenButtons, graphChangeButtons, compareRunIds } from "./variables/graphs.js";
-import { add_alert } from "./common.js";
+import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading } from "./common.js";
 import { toggle_theme } from "./theme.js";
-import { setup_data_and_graphs, update_menu } from "./menu.js";
+import { setup_data_and_graphs, show_loading_overlay, hide_loading_overlay, update_menu } from "./menu.js";
+import { update_dashboard_graphs } from "./graph_creation/all.js";
 import {
+    setup_filtered_data_and_filters,
     setup_run_amount_filter,
     setup_lowest_highest_dates,
     clear_all_filters,
@@ -42,48 +44,56 @@ import {
     set_filter_show_current_version,
     update_overview_filter_visibility,
 } from "./graph_creation/overview.js";
-import { create_run_donut_total_graph, create_run_heatmap_graph } from "./graph_creation/run.js";
+import { update_run_donut_total_graph, update_run_heatmap_graph } from "./graph_creation/run.js";
 import {
-    create_suite_duration_graph,
-    create_suite_statistics_graph,
-    create_suite_most_failed_graph,
-    create_suite_most_time_consuming_graph,
-    create_suite_folder_donut_graph,
-    create_suite_folder_fail_donut_graph,
+    update_suite_duration_graph,
+    update_suite_statistics_graph,
+    update_suite_most_failed_graph,
+    update_suite_most_time_consuming_graph,
+    update_suite_folder_donut_graph,
+    update_suite_folder_fail_donut_graph,
 } from "./graph_creation/suite.js";
 import {
-    create_test_statistics_graph,
-    create_test_duration_graph,
-    create_test_duration_deviation_graph,
-    create_test_messages_graph,
-    create_test_most_flaky_graph,
-    create_test_recent_most_flaky_graph,
-    create_test_most_failed_graph,
-    create_test_recent_most_failed_graph,
-    create_test_most_time_consuming_graph,
+    update_test_statistics_graph,
+    update_test_duration_graph,
+    update_test_duration_deviation_graph,
+    update_test_messages_graph,
+    update_test_most_flaky_graph,
+    update_test_recent_most_flaky_graph,
+    update_test_most_failed_graph,
+    update_test_recent_most_failed_graph,
+    update_test_most_time_consuming_graph,
 } from "./graph_creation/test.js";
 import {
-    create_keyword_statistics_graph,
-    create_keyword_times_run_graph,
-    create_keyword_total_duration_graph,
-    create_keyword_average_duration_graph,
-    create_keyword_min_duration_graph,
-    create_keyword_max_duration_graph,
-    create_keyword_most_failed_graph,
-    create_keyword_most_time_consuming_graph,
-    create_keyword_most_used_graph,
+    update_keyword_statistics_graph,
+    update_keyword_times_run_graph,
+    update_keyword_total_duration_graph,
+    update_keyword_average_duration_graph,
+    update_keyword_min_duration_graph,
+    update_keyword_max_duration_graph,
+    update_keyword_most_failed_graph,
+    update_keyword_most_time_consuming_graph,
+    update_keyword_most_used_graph,
 } from "./graph_creation/keyword.js";
 import {
-    create_compare_statistics_graph,
-    create_compare_suite_duration_graph,
-    create_compare_tests_graph,
+    update_compare_statistics_graph,
+    update_compare_suite_duration_graph,
+    update_compare_tests_graph,
 } from "./graph_creation/compare.js";
 
 // function to setup filter modal eventlisteners
 function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
+    // Only recompute filtered data and update graphs in-place (no layout rebuild needed)
     $("#filtersModal").on("hidden.bs.modal", function () {
-        setup_data_and_graphs();
+        show_loading_overlay();
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setup_filtered_data_and_filters();
+                update_dashboard_graphs();
+                hide_loading_overlay();
+            });
+        });
     });
     // eventlistener to reset the filters
     document.getElementById("resetFilters").addEventListener("click", function () {
@@ -382,28 +392,36 @@ function setup_sections_filters() {
     document.getElementById("switchRunTags").addEventListener("click", function () {
         settings.switch.runTags = !settings.switch.runTags
         update_switch_local_storage("switch.runTags", settings.switch.runTags);
-        // create latest and total bars and set visibility
-        create_overview_latest_graphs();
-        update_overview_latest_heading();
-        create_overview_total_graphs();
-        update_overview_total_heading();
-        update_overview_sections_visibility();
-        // update all tagged bars
-        update_overview_version_select_list();
-        update_projectbar_visibility();
+        show_loading_overlay();
+        requestAnimationFrame(() => {
+            // create latest and total bars and set visibility
+            create_overview_latest_graphs();
+            update_overview_latest_heading();
+            create_overview_total_graphs();
+            update_overview_total_heading();
+            update_overview_sections_visibility();
+            // update all tagged bars
+            update_overview_version_select_list();
+            update_projectbar_visibility();
+            hide_loading_overlay();
+        });
     });
     document.getElementById("switchRunName").addEventListener("click", function () {
         settings.switch.runName = !settings.switch.runName
         update_switch_local_storage("switch.runName", settings.switch.runName);
-        // create latest and total bars and set visibility
-        create_overview_latest_graphs();
-        update_overview_latest_heading();
-        create_overview_total_graphs();
-        update_overview_total_heading();
-        update_overview_sections_visibility();
-        // update all named project bars
-        update_overview_version_select_list();
-        update_projectbar_visibility();
+        show_loading_overlay();
+        requestAnimationFrame(() => {
+            // create latest and total bars and set visibility
+            create_overview_latest_graphs();
+            update_overview_latest_heading();
+            create_overview_total_graphs();
+            update_overview_total_heading();
+            update_overview_sections_visibility();
+            // update all named project bars
+            update_overview_version_select_list();
+            update_projectbar_visibility();
+            hide_loading_overlay();
+        });
     });
     document.getElementById("switchLatestRuns").addEventListener("click", function () {
         settings.switch.latestRuns = !settings.switch.latestRuns
@@ -431,86 +449,135 @@ function setup_sections_filters() {
         update_overview_filter_visibility();
     });
     document.getElementById("suiteSelectSuites").addEventListener("change", () => {
-        create_suite_duration_graph();
-        create_suite_statistics_graph();
+        update_graphs_with_loading(["suiteStatisticsGraph", "suiteDurationGraph"], () => {
+            update_suite_duration_graph();
+            update_suite_statistics_graph();
+        });
     });
     update_switch_local_storage("switch.suitePathsSuiteSection", settings.switch.suitePathsSuiteSection, true);
     document.getElementById("switchSuitePathsSuiteSection").addEventListener("change", (e) => {
         settings.switch.suitePathsSuiteSection = !settings.switch.suitePathsSuiteSection;
         update_switch_local_storage("switch.suitePathsSuiteSection", settings.switch.suitePathsSuiteSection);
-        setup_suites_in_suite_select();
-        create_suite_statistics_graph();
-        create_suite_duration_graph();
-        create_suite_most_failed_graph();
-        create_suite_most_time_consuming_graph();
+        update_graphs_with_loading(
+            ["suiteStatisticsGraph", "suiteDurationGraph", "suiteMostFailedGraph", "suiteMostTimeConsumingGraph"],
+            () => {
+                setup_suites_in_suite_select();
+                update_suite_statistics_graph();
+                update_suite_duration_graph();
+                update_suite_most_failed_graph();
+                update_suite_most_time_consuming_graph();
+            }
+        );
     });
     document.getElementById("resetSuiteFolder").addEventListener("click", () => {
-        create_suite_folder_donut_graph("");
+        update_graphs_with_loading(["suiteFolderDonutGraph"], () => {
+            update_suite_folder_donut_graph("");
+        });
     });
     document.getElementById("suiteSelectTests").addEventListener("change", () => {
-        setup_testtags_in_select();
-        setup_tests_in_select();
-        create_test_statistics_graph();
-        create_test_duration_graph();
-        create_test_duration_deviation_graph();
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph"],
+            () => {
+                setup_testtags_in_select();
+                setup_tests_in_select();
+                update_test_statistics_graph();
+                update_test_duration_graph();
+                update_test_duration_deviation_graph();
+            }
+        );
     });
     update_switch_local_storage("switch.suitePathsTestSection", settings.switch.suitePathsTestSection, true);
     document.getElementById("switchSuitePathsTestSection").addEventListener("change", () => {
         settings.switch.suitePathsTestSection = !settings.switch.suitePathsTestSection;
         update_switch_local_storage("switch.suitePathsTestSection", settings.switch.suitePathsTestSection);
-        setup_suites_in_test_select();
-        create_test_statistics_graph();
-        create_test_duration_graph();
-        create_test_duration_deviation_graph();
-        create_test_messages_graph();
-        create_test_most_flaky_graph();
-        create_test_recent_most_flaky_graph();
-        create_test_most_failed_graph();
-        create_test_recent_most_failed_graph();
-        create_test_most_time_consuming_graph();
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph", "testMessagesGraph",
+             "testMostFlakyGraph", "testRecentMostFlakyGraph", "testMostFailedGraph",
+             "testRecentMostFailedGraph", "testMostTimeConsumingGraph"],
+            () => {
+                setup_suites_in_test_select();
+                update_test_statistics_graph();
+                update_test_duration_graph();
+                update_test_duration_deviation_graph();
+                update_test_messages_graph();
+                update_test_most_flaky_graph();
+                update_test_recent_most_flaky_graph();
+                update_test_most_failed_graph();
+                update_test_recent_most_failed_graph();
+                update_test_most_time_consuming_graph();
+            }
+        );
     });
     document.getElementById("testTagsSelect").addEventListener("change", () => {
-        setup_tests_in_select();
-        create_test_statistics_graph();
-        create_test_duration_graph();
-        create_test_duration_deviation_graph();
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph"],
+            () => {
+                setup_tests_in_select();
+                update_test_statistics_graph();
+                update_test_duration_graph();
+                update_test_duration_deviation_graph();
+            }
+        );
     });
     document.getElementById("testSelect").addEventListener("change", () => {
-        create_test_statistics_graph();
-        create_test_duration_graph();
-        create_test_duration_deviation_graph();
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph"],
+            () => {
+                update_test_statistics_graph();
+                update_test_duration_graph();
+                update_test_duration_deviation_graph();
+            }
+        );
     });
     document.getElementById("keywordSelect").addEventListener("change", () => {
-        create_keyword_statistics_graph();
-        create_keyword_times_run_graph();
-        create_keyword_total_duration_graph();
-        create_keyword_average_duration_graph();
-        create_keyword_min_duration_graph();
-        create_keyword_max_duration_graph();
+        update_graphs_with_loading(
+            ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
+             "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph"],
+            () => {
+                update_keyword_statistics_graph();
+                update_keyword_times_run_graph();
+                update_keyword_total_duration_graph();
+                update_keyword_average_duration_graph();
+                update_keyword_min_duration_graph();
+                update_keyword_max_duration_graph();
+            }
+        );
     });
     update_switch_local_storage("switch.useLibraryNames", settings.switch.useLibraryNames, true);
     document.getElementById("switchUseLibraryNames").addEventListener("change", () => {
         settings.switch.useLibraryNames = !settings.switch.useLibraryNames;
         update_switch_local_storage("switch.useLibraryNames", settings.switch.useLibraryNames);
-        setup_keywords_in_select();
-        create_keyword_statistics_graph();
-        create_keyword_times_run_graph();
-        create_keyword_total_duration_graph();
-        create_keyword_average_duration_graph();
-        create_keyword_min_duration_graph();
-        create_keyword_max_duration_graph();
-        create_keyword_most_failed_graph();
-        create_keyword_most_time_consuming_graph();
-        create_keyword_most_used_graph();
+        update_graphs_with_loading(
+            ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
+             "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph",
+             "keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"],
+            () => {
+                setup_keywords_in_select();
+                update_keyword_statistics_graph();
+                update_keyword_times_run_graph();
+                update_keyword_total_duration_graph();
+                update_keyword_average_duration_graph();
+                update_keyword_min_duration_graph();
+                update_keyword_max_duration_graph();
+                update_keyword_most_failed_graph();
+                update_keyword_most_time_consuming_graph();
+                update_keyword_most_used_graph();
+            }
+        );
     });
     // compare filters
     compareRunIds.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', () => {
-                create_compare_statistics_graph();
-                create_compare_suite_duration_graph();
-                create_compare_tests_graph();
+                update_graphs_with_loading(
+                    ["compareStatisticsGraph", "compareSuiteDurationGraph", "compareTestsGraph"],
+                    () => {
+                        update_compare_statistics_graph();
+                        update_compare_suite_duration_graph();
+                        update_compare_tests_graph();
+                    }
+                );
             });
         }
     });
@@ -518,9 +585,14 @@ function setup_sections_filters() {
     document.getElementById("switchSuitePathsCompareSection").addEventListener("change", (e) => {
         settings.switch.suitePathsCompareSection = !settings.switch.suitePathsCompareSection;
         update_switch_local_storage("switch.suitePathsCompareSection", settings.switch.suitePathsCompareSection);
-        create_compare_statistics_graph();
-        create_compare_suite_duration_graph();
-        create_compare_tests_graph();
+        update_graphs_with_loading(
+            ["compareStatisticsGraph", "compareSuiteDurationGraph", "compareTestsGraph"],
+            () => {
+                update_compare_statistics_graph();
+                update_compare_suite_duration_graph();
+                update_compare_tests_graph();
+            }
+        );
     });
 }
 
@@ -530,13 +602,15 @@ function setup_graph_view_buttons() {
     for (let fullscreenButton of fullscreenButtons) {
         const fullscreenId = `${fullscreenButton}Fullscreen`;
         const closeId = `${fullscreenButton}Close`;
-        const graphFunctionName = `create_${camelcase_to_underscore(fullscreenButton)}_graph`;
+        const graphFunctionName = `update_${camelcase_to_underscore(fullscreenButton)}_graph`;
 
         const toggleFullscreen = (entering) => {
             const fullscreen = document.getElementById(fullscreenId);
             const close = document.getElementById(closeId);
             const content = fullscreen.closest(".grid-stack-item-content");
+            const canvasId = `${fullscreenButton}Graph`;
 
+            show_graph_loading(canvasId);
             inFullscreen = entering;
             fullscreen.hidden = entering;
             close.hidden = !entering;
@@ -544,36 +618,39 @@ function setup_graph_view_buttons() {
             document.body.classList.toggle("lock-scroll", entering);
             document.documentElement.classList.toggle("html-scroll", !entering)
 
-            if (typeof window[graphFunctionName] === "function") {
-                window[graphFunctionName]();
-            }
-
-            if (fullscreenButton === "runDonut") {
-                create_run_donut_total_graph();
-            } else if (fullscreenButton === "suiteFolderDonut") {
-                create_suite_folder_fail_donut_graph();
-            }
-
-            let section = null;
-            if (fullscreenButton.includes("suite")) {
-                section = "suite";
-            } else if (fullscreenButton.includes("test")) {
-                section = "test";
-            } else if (fullscreenButton.includes("keyword")) {
-                section = "keyword";
-            } else if (fullscreenButton.includes("compare")) {
-                section = "compare";
-            }
-            if (section) {
-                const filters = document.getElementById(`${section}SectionFilters`);
-                const originalContainer = document.getElementById(`${section}SectionFiltersContainer`);
-                if (entering) {
-                    const fullscreenHeader = document.querySelector('.grid-stack-item-content.fullscreen');
-                    fullscreenHeader.insertBefore(filters, fullscreenHeader.firstChild);
-                } else {
-                    originalContainer.insertBefore(filters, originalContainer.firstChild);
+            setTimeout(() => {
+                if (typeof window[graphFunctionName] === "function") {
+                    window[graphFunctionName]();
                 }
-            }
+
+                if (fullscreenButton === "runDonut") {
+                    update_run_donut_total_graph();
+                } else if (fullscreenButton === "suiteFolderDonut") {
+                    update_suite_folder_fail_donut_graph();
+                }
+                hide_graph_loading(canvasId);
+
+                let section = null;
+                if (fullscreenButton.includes("suite")) {
+                    section = "suite";
+                } else if (fullscreenButton.includes("test")) {
+                    section = "test";
+                } else if (fullscreenButton.includes("keyword")) {
+                    section = "keyword";
+                } else if (fullscreenButton.includes("compare")) {
+                    section = "compare";
+                }
+                if (section) {
+                    const filters = document.getElementById(`${section}SectionFilters`);
+                    const originalContainer = document.getElementById(`${section}SectionFiltersContainer`);
+                    if (entering) {
+                        const fullscreenHeader = document.querySelector('.grid-stack-item-content.fullscreen');
+                        fullscreenHeader.insertBefore(filters, fullscreenHeader.firstChild);
+                    } else {
+                        originalContainer.insertBefore(filters, originalContainer.firstChild);
+                    }
+                }
+            }, 0);
         };
 
         document.getElementById(fullscreenId).addEventListener("click", () => {
@@ -599,52 +676,80 @@ function setup_graph_view_buttons() {
         }
         const folder = remove_last_folder(previousFolder)
         if (previousFolder == "" && folder == "") { return }
-        create_suite_folder_donut_graph(folder)
+        update_graphs_with_loading(["suiteFolderDonutGraph"], () => {
+            update_suite_folder_donut_graph(folder)
+        });
     });
     // ignore skip button eventlisteners
     document.getElementById("ignoreSkips").addEventListener("change", () => {
         ignoreSkips = !ignoreSkips;
-        create_test_most_flaky_graph();
+        update_graphs_with_loading(["testMostFlakyGraph"], () => {
+            update_test_most_flaky_graph();
+        });
     });
     document.getElementById("ignoreSkipsRecent").addEventListener("change", () => {
         ignoreSkipsRecent = !ignoreSkipsRecent;
-        create_test_recent_most_flaky_graph();
+        update_graphs_with_loading(["testRecentMostFlakyGraph"], () => {
+            update_test_recent_most_flaky_graph();
+        });
     });
     document.getElementById("onlyFailedFolders").addEventListener("change", () => {
         onlyFailedFolders = !onlyFailedFolders;
-        create_suite_folder_donut_graph("");
+        update_graphs_with_loading(["suiteFolderDonutGraph"], () => {
+            update_suite_folder_donut_graph("");
+        });
     });
     document.getElementById("heatMapTestType").addEventListener("change", () => {
-        create_run_heatmap_graph();
+        update_graphs_with_loading(["runHeatmapGraph"], () => {
+            update_run_heatmap_graph();
+        });
     });
     document.getElementById("heatMapHour").addEventListener("change", () => {
         heatMapHourAll = document.getElementById("heatMapHour").value == "All" ? true : false;
-        create_run_heatmap_graph();
+        update_graphs_with_loading(["runHeatmapGraph"], () => {
+            update_run_heatmap_graph();
+        });
     });
     document.getElementById("testOnlyChanges").addEventListener("change", () => {
-        create_test_statistics_graph();
+        update_graphs_with_loading(["testStatisticsGraph"], () => {
+            update_test_statistics_graph();
+        });
     });
     document.getElementById("testNoChanges").addEventListener("change", () => {
-        create_test_statistics_graph();
+        update_graphs_with_loading(["testStatisticsGraph"], () => {
+            update_test_statistics_graph();
+        });
     });
     document.getElementById("compareOnlyChanges").addEventListener("change", () => {
-        create_compare_tests_graph();
+        update_graphs_with_loading(["compareTestsGraph"], () => {
+            update_compare_tests_graph();
+        });
     });
     document.getElementById("compareNoChanges").addEventListener("change", () => {
-        create_compare_tests_graph();
+        update_graphs_with_loading(["compareTestsGraph"], () => {
+            update_compare_tests_graph();
+        });
     });
     // most time consuming only latest run switch event listeners
     document.getElementById("onlyLastRunSuite").addEventListener("change", () => {
-        create_suite_most_time_consuming_graph();
+        update_graphs_with_loading(["suiteMostTimeConsumingGraph"], () => {
+            update_suite_most_time_consuming_graph();
+        });
     });
     document.getElementById("onlyLastRunTest").addEventListener("change", () => {
-        create_test_most_time_consuming_graph();
+        update_graphs_with_loading(["testMostTimeConsumingGraph"], () => {
+            update_test_most_time_consuming_graph();
+        });
     });
     document.getElementById("onlyLastRunKeyword").addEventListener("change", () => {
-        create_keyword_most_time_consuming_graph();
+        update_graphs_with_loading(["keywordMostTimeConsumingGraph"], () => {
+            update_keyword_most_time_consuming_graph();
+        });
     });
     document.getElementById("onlyLastRunKeywordMostUsed").addEventListener("change", () => {
-        create_keyword_most_used_graph();
+        update_graphs_with_loading(["keywordMostUsedGraph"], () => {
+            update_keyword_most_used_graph();
+        });
     });
     // graph layout changes
     document.querySelectorAll(".shown-graph").forEach(btn => {
@@ -691,11 +796,16 @@ function setup_graph_view_buttons() {
         });
     }
     function handle_graph_change_type_button_click(graphChangeButton, graphType, camelButtonName) {
-        update_graph_type(`${camelButtonName}GraphType`, graphType)
-        window[`create_${graphChangeButton}_graph`]();
-        update_active_graph_type_buttons(graphChangeButton, graphType);
-        if (graphChangeButton == 'run_donut') { create_run_donut_total_graph(); }
-        if (graphChangeButton == 'suite_folder_donut') { create_suite_folder_fail_donut_graph(); }
+        const canvasId = `${camelButtonName}Graph`;
+        show_graph_loading(canvasId);
+        setTimeout(() => {
+            update_graph_type(`${camelButtonName}GraphType`, graphType)
+            window[`create_${graphChangeButton}_graph`]();
+            update_active_graph_type_buttons(graphChangeButton, graphType);
+            if (graphChangeButton == 'run_donut') { update_run_donut_total_graph(); }
+            if (graphChangeButton == 'suite_folder_donut') { update_suite_folder_fail_donut_graph(); }
+            hide_graph_loading(canvasId);
+        }, 0);
     }
     function add_graph_eventlisteners(graphChangeButton, buttonTypes) {
         const camelButtonName = underscore_to_camelcase(graphChangeButton);
@@ -853,7 +963,11 @@ function setup_overview_order_filters() {
         const selectId = select.id;
         if (selectId === "overviewLatestSectionOrder") {
             select.addEventListener('change', (e) => {
-                create_overview_latest_graphs();
+                show_loading_overlay();
+                requestAnimationFrame(() => {
+                    create_overview_latest_graphs();
+                    hide_loading_overlay();
+                });
             });
         } else {
             const projectId = parseProjectId(selectId);
