@@ -51,7 +51,6 @@ function _build_suite_folder_donut_config(folder) {
 
 // function to create suite folder donut
 function create_suite_folder_donut_graph(folder) {
-    console.log("creating_suite_folder_donut_graph");
     const suiteFolder = document.getElementById("suiteFolder")
     suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
     if (folder || folder == "") { // not first load so update the graphs accordingly as well
@@ -195,7 +194,6 @@ function create_suite_folder_fail_donut_graph() { create_chart("suiteFolderFailD
 
 // update function for suite folder donut graph - updates existing chart in-place
 function update_suite_folder_donut_graph(folder) {
-    console.log("updating_suite_folder_donut_graph");
     const suiteFolder = document.getElementById("suiteFolder")
     suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
     if (folder || folder == "") {

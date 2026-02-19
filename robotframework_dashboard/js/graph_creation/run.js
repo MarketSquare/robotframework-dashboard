@@ -76,7 +76,6 @@ function create_run_donut_total_graph() { create_chart("runDonutTotalGraph", _bu
 
 // function to create the run stats section in the run section
 function create_run_stats_graph() {
-    console.log("creating_run_stats_graph");
     const data = get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKeywords);
     document.getElementById('totalRuns').innerText = data.totalRuns
     document.getElementById('totalSuites').innerText = data.totalSuites
@@ -150,7 +149,6 @@ function update_run_donut_total_graph() { update_chart("runDonutTotalGraph", _bu
 
 // update function for run stats - same as create since it only updates DOM text
 function update_run_stats_graph() {
-    console.log("updating_run_stats_graph");
     create_run_stats_graph();
 }
 

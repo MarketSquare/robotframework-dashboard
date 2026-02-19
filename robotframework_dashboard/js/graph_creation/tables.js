@@ -2,7 +2,6 @@ import { filteredRuns, filteredSuites, filteredTests, filteredKeywords } from ".
 
 // Generic table factory functions
 function create_data_table(tableId, columns, getDataFn) {
-    console.log(`creating_${tableId}`);
     if (window[tableId]) window[tableId].destroy();
     window[tableId] = new DataTable(`#${tableId}`, {
         layout: { topStart: "info", bottomStart: null },
@@ -12,7 +11,6 @@ function create_data_table(tableId, columns, getDataFn) {
 }
 
 function update_data_table(tableId, columns, getDataFn) {
-    console.log(`updating_${tableId}`);
     if (!window[tableId]) { create_data_table(tableId, columns, getDataFn); return; }
     window[tableId].clear();
     window[tableId].rows.add(getDataFn());
