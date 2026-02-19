@@ -213,81 +213,23 @@ function setup_settings_modal() {
         };
     }
 
-    const toggle_unified = create_toggle_handler({
-        key: "show.unified",
-        elementId: "toggleUnified"
+    // Data-driven toggle handlers: create handler, load initial value, attach event listener
+    [
+        { key: "show.unified", elementId: "toggleUnified" },
+        { key: "show.dateLabels", elementId: "toggleLabels" },
+        { key: "show.legends", elementId: "toggleLegends" },
+        { key: "show.aliases", elementId: "toggleAliases" },
+        { key: "show.milliseconds", elementId: "toggleMilliseconds" },
+        { key: "show.axisTitles", elementId: "toggleAxisTitles" },
+        { key: "show.animation", elementId: "toggleAnimations" },
+        { key: "show.duration", elementId: "toggleAnimationDuration", isNumber: true, event: "change" },
+        { key: "show.rounding", elementId: "toggleBarRounding", isNumber: true, event: "change" },
+        { key: "show.prefixes", elementId: "togglePrefixes" },
+    ].forEach(def => {
+        const handler = create_toggle_handler(def);
+        handler(true);
+        document.getElementById(def.elementId).addEventListener(def.event || "click", () => handler());
     });
-
-    const toggle_labels = create_toggle_handler({
-        key: "show.dateLabels",
-        elementId: "toggleLabels"
-    });
-
-    const toggle_legends = create_toggle_handler({
-        key: "show.legends",
-        elementId: "toggleLegends"
-    });
-
-    const toggle_aliases = create_toggle_handler({
-        key: "show.aliases",
-        elementId: "toggleAliases"
-    });
-
-    const toggle_milliseconds = create_toggle_handler({
-        key: "show.milliseconds",
-        elementId: "toggleMilliseconds"
-    });
-
-    const toggle_axis_titles = create_toggle_handler({
-        key: "show.axisTitles",
-        elementId: "toggleAxisTitles"
-    });
-
-    const toggle_animations = create_toggle_handler({
-        key: "show.animation",
-        elementId: "toggleAnimations"
-    });
-
-    const toggle_animation_duration = create_toggle_handler({
-        key: "show.duration",
-        elementId: "toggleAnimationDuration",
-        isNumber: true
-    });
-
-    const toggle_bar_rounding = create_toggle_handler({
-        key: "show.rounding",
-        elementId: "toggleBarRounding",
-        isNumber: true
-    });
-
-    const toggle_prefixes = create_toggle_handler({
-        key: "show.prefixes",
-        elementId: "togglePrefixes"
-    });
-
-    // Initial load
-    toggle_unified(true);
-    toggle_labels(true);
-    toggle_legends(true);
-    toggle_aliases(true);
-    toggle_milliseconds(true);
-    toggle_axis_titles(true);
-    toggle_animations(true);
-    toggle_animation_duration(true);
-    toggle_bar_rounding(true);
-    toggle_prefixes(true);
-
-    // Add event listeners
-    document.getElementById("toggleUnified").addEventListener("click", () => toggle_unified());
-    document.getElementById("toggleLabels").addEventListener("click", () => toggle_labels());
-    document.getElementById("toggleLegends").addEventListener("click", () => toggle_legends());
-    document.getElementById("toggleAliases").addEventListener("click", () => toggle_aliases());
-    document.getElementById("toggleMilliseconds").addEventListener("click", () => toggle_milliseconds());
-    document.getElementById("toggleAxisTitles").addEventListener("click", () => toggle_axis_titles());
-    document.getElementById("toggleAnimations").addEventListener("click", () => toggle_animations());
-    document.getElementById("toggleAnimationDuration").addEventListener("change", () => toggle_animation_duration());
-    document.getElementById("toggleBarRounding").addEventListener("change", () => toggle_bar_rounding());
-    document.getElementById("togglePrefixes").addEventListener("click", () => toggle_prefixes());
     document.getElementById("themeLight").addEventListener("click", () => toggle_theme());
     document.getElementById("themeDark").addEventListener("click", () => toggle_theme());
 
@@ -699,56 +641,26 @@ function setup_graph_view_buttons() {
             update_suite_folder_donut_graph("");
         });
     });
-    document.getElementById("heatMapTestType").addEventListener("change", () => {
-        update_graphs_with_loading(["runHeatmapGraph"], () => {
-            update_run_heatmap_graph();
+    // Simple graph update listeners: element change triggers single graph update
+    [
+        ["heatMapTestType", "runHeatmapGraph", update_run_heatmap_graph],
+        ["testOnlyChanges", "testStatisticsGraph", update_test_statistics_graph],
+        ["testNoChanges", "testStatisticsGraph", update_test_statistics_graph],
+        ["compareOnlyChanges", "compareTestsGraph", update_compare_tests_graph],
+        ["compareNoChanges", "compareTestsGraph", update_compare_tests_graph],
+        ["onlyLastRunSuite", "suiteMostTimeConsumingGraph", update_suite_most_time_consuming_graph],
+        ["onlyLastRunTest", "testMostTimeConsumingGraph", update_test_most_time_consuming_graph],
+        ["onlyLastRunKeyword", "keywordMostTimeConsumingGraph", update_keyword_most_time_consuming_graph],
+        ["onlyLastRunKeywordMostUsed", "keywordMostUsedGraph", update_keyword_most_used_graph],
+    ].forEach(([elementId, graphId, updateFn]) => {
+        document.getElementById(elementId).addEventListener("change", () => {
+            update_graphs_with_loading([graphId], updateFn);
         });
     });
     document.getElementById("heatMapHour").addEventListener("change", () => {
         heatMapHourAll = document.getElementById("heatMapHour").value == "All" ? true : false;
         update_graphs_with_loading(["runHeatmapGraph"], () => {
             update_run_heatmap_graph();
-        });
-    });
-    document.getElementById("testOnlyChanges").addEventListener("change", () => {
-        update_graphs_with_loading(["testStatisticsGraph"], () => {
-            update_test_statistics_graph();
-        });
-    });
-    document.getElementById("testNoChanges").addEventListener("change", () => {
-        update_graphs_with_loading(["testStatisticsGraph"], () => {
-            update_test_statistics_graph();
-        });
-    });
-    document.getElementById("compareOnlyChanges").addEventListener("change", () => {
-        update_graphs_with_loading(["compareTestsGraph"], () => {
-            update_compare_tests_graph();
-        });
-    });
-    document.getElementById("compareNoChanges").addEventListener("change", () => {
-        update_graphs_with_loading(["compareTestsGraph"], () => {
-            update_compare_tests_graph();
-        });
-    });
-    // most time consuming only latest run switch event listeners
-    document.getElementById("onlyLastRunSuite").addEventListener("change", () => {
-        update_graphs_with_loading(["suiteMostTimeConsumingGraph"], () => {
-            update_suite_most_time_consuming_graph();
-        });
-    });
-    document.getElementById("onlyLastRunTest").addEventListener("change", () => {
-        update_graphs_with_loading(["testMostTimeConsumingGraph"], () => {
-            update_test_most_time_consuming_graph();
-        });
-    });
-    document.getElementById("onlyLastRunKeyword").addEventListener("change", () => {
-        update_graphs_with_loading(["keywordMostTimeConsumingGraph"], () => {
-            update_keyword_most_time_consuming_graph();
-        });
-    });
-    document.getElementById("onlyLastRunKeywordMostUsed").addEventListener("change", () => {
-        update_graphs_with_loading(["keywordMostUsedGraph"], () => {
-            update_keyword_most_used_graph();
         });
     });
     // graph layout changes
@@ -832,52 +744,22 @@ function setup_graph_view_buttons() {
         update_active_graph_type_buttons(graphChangeButton, activeGraphType);
     });
 
-    // Handle modal show event - move filters to modal
+    // Handle modal show event - move section filters into modal card bodies
     $("#sectionFiltersModal").on("show.bs.modal", function () {
-        // Move suite filters
-        const suiteFilters = document.getElementById('suiteSectionFilters');
-        const suiteCardBody = document.getElementById('suiteSectionFiltersCardBody');
-        if (suiteFilters && suiteCardBody) {
-            suiteCardBody.appendChild(suiteFilters);
-        }
-        
-        // Move test filters
-        const testFilters = document.getElementById('testSectionFilters');
-        const testCardBody = document.getElementById('testSectionFiltersCardBody');
-        if (testFilters && testCardBody) {
-            testCardBody.appendChild(testFilters);
-        }
-        
-        // Move keyword filters
-        const keywordFilters = document.getElementById('keywordSectionFilters');
-        const keywordCardBody = document.getElementById('keywordSectionFiltersCardBody');
-        if (keywordFilters && keywordCardBody) {
-            keywordCardBody.appendChild(keywordFilters);
-        }
+        ["suite", "test", "keyword"].forEach(section => {
+            const filters = document.getElementById(`${section}SectionFilters`);
+            const cardBody = document.getElementById(`${section}SectionFiltersCardBody`);
+            if (filters && cardBody) cardBody.appendChild(filters);
+        });
     });
 
-    // Handle modal hide event - return filters to original positions
+    // Handle modal hide event - return section filters to original containers
     $("#sectionFiltersModal").on("hide.bs.modal", function () {
-        // Return suite filters
-        const suiteFilters = document.getElementById('suiteSectionFilters');
-        const suiteOriginalContainer = document.getElementById('suiteSectionFiltersContainer');
-        if (suiteFilters && suiteOriginalContainer) {
-            suiteOriginalContainer.insertBefore(suiteFilters, suiteOriginalContainer.firstChild);
-        }
-        
-        // Return test filters
-        const testFilters = document.getElementById('testSectionFilters');
-        const testOriginalContainer = document.getElementById('testSectionFiltersContainer');
-        if (testFilters && testOriginalContainer) {
-            testOriginalContainer.insertBefore(testFilters, testOriginalContainer.firstChild);
-        }
-        
-        // Return keyword filters
-        const keywordFilters = document.getElementById('keywordSectionFilters');
-        const keywordOriginalContainer = document.getElementById('keywordSectionFiltersContainer');
-        if (keywordFilters && keywordOriginalContainer) {
-            keywordOriginalContainer.insertBefore(keywordFilters, keywordOriginalContainer.firstChild);
-        }
+        ["suite", "test", "keyword"].forEach(section => {
+            const filters = document.getElementById(`${section}SectionFilters`);
+            const container = document.getElementById(`${section}SectionFiltersContainer`);
+            if (filters && container) container.insertBefore(filters, container.firstChild);
+        });
     });
 }
 
