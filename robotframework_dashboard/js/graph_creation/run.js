@@ -5,7 +5,7 @@ import { get_duration_graph_data } from '../graph_data/duration.js';
 import { get_heatmap_graph_data } from '../graph_data/heatmap.js';
 import { get_stats_data } from '../graph_data/stats.js';
 import { format_duration } from '../common.js';
-import { open_log_file, open_log_from_label } from '../log.js';
+import { open_log_file } from '../log.js';
 import { settings } from '../variables/settings.js';
 import {
     inFullscreen,
@@ -16,6 +16,7 @@ import {
     filteredSuites,
     filteredTests
 } from '../variables/globals.js';
+import { create_chart, update_chart } from './chart_factory.js';
 
 // build config for run statistics graph
 function _build_run_statistics_config() {
@@ -34,14 +35,7 @@ function _build_run_statistics_config() {
 }
 
 // function to create run statistics graph in the run section
-function create_run_statistics_graph() {
-    console.log("creating_run_statistics_graph");
-    if (runStatisticsGraph) { runStatisticsGraph.destroy(); }
-    runStatisticsGraph = new Chart("runStatisticsGraph", _build_run_statistics_config());
-    runStatisticsGraph.canvas.addEventListener("click", (event) => {
-        open_log_from_label(runStatisticsGraph, event)
-    });
-}
+function create_run_statistics_graph() { create_chart("runStatisticsGraph", _build_run_statistics_config); }
 
 // build config for run donut graph
 function _build_run_donut_config() {
@@ -66,11 +60,7 @@ function _build_run_donut_config() {
 }
 
 // function to create run donut graph in the run section
-function create_run_donut_graph() {
-    console.log("creating_run_donut_graph");
-    if (runDonutGraph) { runDonutGraph.destroy(); }
-    runDonutGraph = new Chart("runDonutGraph", _build_run_donut_config());
-}
+function create_run_donut_graph() { create_chart("runDonutGraph", _build_run_donut_config, false); }
 
 // build config for run donut total graph
 function _build_run_donut_total_config() {
@@ -82,11 +72,7 @@ function _build_run_donut_total_config() {
 }
 
 // function to create run donut total graph in the run section
-function create_run_donut_total_graph() {
-    console.log("creating_run_donut_total_graph");
-    if (runDonutTotalGraph) { runDonutTotalGraph.destroy(); }
-    runDonutTotalGraph = new Chart("runDonutTotalGraph", _build_run_donut_total_config());
-}
+function create_run_donut_total_graph() { create_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
 
 // function to create the run stats section in the run section
 function create_run_stats_graph() {
@@ -121,14 +107,7 @@ function _build_run_duration_config() {
 }
 
 // function to create run duration graph in the run section
-function create_run_duration_graph() {
-    console.log("creating_run_duration_graph");
-    if (runDurationGraph) { runDurationGraph.destroy(); }
-    runDurationGraph = new Chart("runDurationGraph", _build_run_duration_config());
-    runDurationGraph.canvas.addEventListener("click", (event) => {
-        open_log_from_label(runDurationGraph, event)
-    });
-}
+function create_run_duration_graph() { create_chart("runDurationGraph", _build_run_duration_config); }
 
 // build config for run heatmap graph
 function _build_run_heatmap_config() {
@@ -158,41 +137,16 @@ function _build_run_heatmap_config() {
 }
 
 // function to create the run heatmap
-function create_run_heatmap_graph() {
-    console.log("creating_run_heatmap_graph");
-    if (runHeatmapGraph) { runHeatmapGraph.destroy(); }
-    runHeatmapGraph = new Chart("runHeatmapGraph", _build_run_heatmap_config());
-}
+function create_run_heatmap_graph() { create_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
 // update function for run statistics graph - updates existing chart in-place
-function update_run_statistics_graph() {
-    console.log("updating_run_statistics_graph");
-    if (!runStatisticsGraph) { create_run_statistics_graph(); return; }
-    const config = _build_run_statistics_config();
-    runStatisticsGraph.data = config.data;
-    runStatisticsGraph.options = config.options;
-    runStatisticsGraph.update();
-}
+function update_run_statistics_graph() { update_chart("runStatisticsGraph", _build_run_statistics_config); }
 
 // update function for run donut graph - updates existing chart in-place
-function update_run_donut_graph() {
-    console.log("updating_run_donut_graph");
-    if (!runDonutGraph) { create_run_donut_graph(); return; }
-    const config = _build_run_donut_config();
-    runDonutGraph.data = config.data;
-    runDonutGraph.options = config.options;
-    runDonutGraph.update();
-}
+function update_run_donut_graph() { update_chart("runDonutGraph", _build_run_donut_config, false); }
 
 // update function for run donut total graph - updates existing chart in-place
-function update_run_donut_total_graph() {
-    console.log("updating_run_donut_total_graph");
-    if (!runDonutTotalGraph) { create_run_donut_total_graph(); return; }
-    const config = _build_run_donut_total_config();
-    runDonutTotalGraph.data = config.data;
-    runDonutTotalGraph.options = config.options;
-    runDonutTotalGraph.update();
-}
+function update_run_donut_total_graph() { update_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
 
 // update function for run stats - same as create since it only updates DOM text
 function update_run_stats_graph() {
@@ -201,24 +155,10 @@ function update_run_stats_graph() {
 }
 
 // update function for run duration graph - updates existing chart in-place
-function update_run_duration_graph() {
-    console.log("updating_run_duration_graph");
-    if (!runDurationGraph) { create_run_duration_graph(); return; }
-    const config = _build_run_duration_config();
-    runDurationGraph.data = config.data;
-    runDurationGraph.options = config.options;
-    runDurationGraph.update();
-}
+function update_run_duration_graph() { update_chart("runDurationGraph", _build_run_duration_config); }
 
 // update function for run heatmap graph - updates existing chart in-place
-function update_run_heatmap_graph() {
-    console.log("updating_run_heatmap_graph");
-    if (!runHeatmapGraph) { create_run_heatmap_graph(); return; }
-    const config = _build_run_heatmap_config();
-    runHeatmapGraph.data = config.data;
-    runHeatmapGraph.options = config.options;
-    runHeatmapGraph.update();
-}
+function update_run_heatmap_graph() { update_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
 export {
     create_run_statistics_graph,
