@@ -1,5 +1,4 @@
 import { settings } from "../variables/settings.js";
-
 import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
 
