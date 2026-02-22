@@ -1,12 +1,15 @@
 import { settings } from "../variables/settings.js";
-import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
+
 import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
 
 // function to prepare the data in the correct format for (recent) most flaky test graph
-function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) {
+function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, limit) {
     var data = {};
     for (const value of filteredData) {
+        if (ignore && value.skipped == 1) {
+            continue;
+        }
         const key = settings.switch.suitePathsTestSection ? value.full_name : value.name;
         if (data[key]) {
             data[key]["run_starts"].push(value.run_start);
@@ -61,12 +64,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) 
             return new Date(b[1].failed_run_starts[b[1].failed_run_starts.length - 1]).getTime() - new Date(a[1].failed_run_starts[a[1].failed_run_starts.length - 1]).getTime()
         })
     }
-    var limit
-    if (recent) {
-        limit = inFullscreen && inFullscreenGraph.includes("testRecentMostFlaky") ? 50 : 10;
-    } else {
-        limit = inFullscreen && inFullscreenGraph.includes("testMostFlaky") ? 50 : 10;
-    }
+
     if (graphType == "bar") {
         var [datasets, labels, count] = [[], [], 0];
         for (const key in sortedData) {

@@ -70,10 +70,10 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
 // Build config for "most flaky" graphs (test regular and recent)
 function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVal, isRecent) {
     const graphType = settings.graphTypes[`${graphKey}GraphType`];
-    const data = get_most_flaky_data(dataType, graphType, filteredData, ignoreSkipsVal, isRecent);
+    const limit = inFullscreen && inFullscreenGraph === `${graphKey}Fullscreen` ? 50 : 10;
+    const data = get_most_flaky_data(dataType, graphType, filteredData, ignoreSkipsVal, isRecent, limit);
     const graphData = data[0];
     const callbackData = data[1];
-    const limit = inFullscreen && inFullscreenGraph.includes(graphKey) ? 50 : 10;
     var config;
     if (graphType == "bar") {
         config = get_graph_config("bar", graphData, `Top ${limit}`, "Test", "Status Flips");
