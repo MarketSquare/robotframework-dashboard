@@ -24,7 +24,7 @@
   --color-section-card-bg: #ffffff;
   --color-section-card-text: var(--color-text);
   --color-section-card-border: transparent;
-  --color-fullscreen-bg: var(--color-bg);
+  --color-fullscreen-bg: #ffffff;
 }
 
 .dark-mode {

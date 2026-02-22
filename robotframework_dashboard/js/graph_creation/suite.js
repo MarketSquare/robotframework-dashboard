@@ -8,6 +8,7 @@ import { settings } from '../variables/settings.js';
 import { inFullscreen, inFullscreenGraph, filteredSuites } from '../variables/globals.js';
 import { create_chart, update_chart } from './chart_factory.js';
 import { build_most_failed_config, build_most_time_consuming_config } from './config_helpers.js';
+import { update_graphs_with_loading } from '../common.js';
 
 // build config for suite folder donut graph
 function _build_suite_folder_donut_config(folder) {
@@ -34,7 +35,10 @@ function _build_suite_folder_donut_config(folder) {
     config.options.onClick = (event) => {
         if (event.chart.tooltip.title) {
             setTimeout(() => {
-                update_suite_folder_donut_graph(event.chart.tooltip.title.join(''));
+                update_graphs_with_loading(
+                    ["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"],
+                    () => { update_suite_folder_donut_graph(event.chart.tooltip.title.join('')); }
+                );
             }, 0);
         }
     };
@@ -104,7 +108,10 @@ function _build_suite_folder_fail_donut_config() {
     config.options.onClick = (event) => {
         if (event.chart.tooltip.title) {
             setTimeout(() => {
-                update_suite_folder_donut_graph(event.chart.tooltip.title.join(''));
+                update_graphs_with_loading(
+                    ["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"],
+                    () => { update_suite_folder_donut_graph(event.chart.tooltip.title.join('')); }
+                );
             }, 0);
         }
     };

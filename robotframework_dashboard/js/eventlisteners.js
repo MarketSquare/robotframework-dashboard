@@ -432,16 +432,18 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.runTags", settings.switch.runTags);
         show_loading_overlay();
         requestAnimationFrame(() => {
-            // create latest and total bars and set visibility
-            create_overview_latest_graphs();
-            update_overview_latest_heading();
-            create_overview_total_graphs();
-            update_overview_total_heading();
-            update_overview_sections_visibility();
-            // update all tagged bars
-            update_overview_version_select_list();
-            update_projectbar_visibility();
-            hide_loading_overlay();
+            requestAnimationFrame(() => {
+                // create latest and total bars and set visibility
+                create_overview_latest_graphs();
+                update_overview_latest_heading();
+                create_overview_total_graphs();
+                update_overview_total_heading();
+                update_overview_sections_visibility();
+                // update all tagged bars
+                update_overview_version_select_list();
+                update_projectbar_visibility();
+                hide_loading_overlay();
+            });
         });
     });
     document.getElementById("switchRunName").addEventListener("click", function () {
@@ -449,16 +451,18 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.runName", settings.switch.runName);
         show_loading_overlay();
         requestAnimationFrame(() => {
-            // create latest and total bars and set visibility
-            create_overview_latest_graphs();
-            update_overview_latest_heading();
-            create_overview_total_graphs();
-            update_overview_total_heading();
-            update_overview_sections_visibility();
-            // update all named project bars
-            update_overview_version_select_list();
-            update_projectbar_visibility();
-            hide_loading_overlay();
+            requestAnimationFrame(() => {
+                // create latest and total bars and set visibility
+                create_overview_latest_graphs();
+                update_overview_latest_heading();
+                create_overview_total_graphs();
+                update_overview_total_heading();
+                update_overview_sections_visibility();
+                // update all named project bars
+                update_overview_version_select_list();
+                update_projectbar_visibility();
+                hide_loading_overlay();
+            });
         });
     });
     document.getElementById("switchLatestRuns").addEventListener("click", function () {
@@ -508,7 +512,7 @@ function setup_sections_filters() {
         );
     });
     document.getElementById("resetSuiteFolder").addEventListener("click", () => {
-        update_graphs_with_loading(["suiteFolderDonutGraph"], () => {
+        update_graphs_with_loading(["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"], () => {
             update_suite_folder_donut_graph("");
         });
     });
@@ -654,20 +658,10 @@ function setup_graph_view_buttons() {
             close.hidden = !entering;
             content.classList.toggle("fullscreen", entering);
             document.body.classList.toggle("lock-scroll", entering);
-            document.documentElement.classList.toggle("html-scroll", !entering)
+            document.documentElement.classList.toggle("html-scroll", !entering);
 
             setTimeout(() => {
-                if (typeof window[graphFunctionName] === "function") {
-                    window[graphFunctionName]();
-                }
-
-                if (fullscreenButton === "runDonut") {
-                    update_run_donut_total_graph();
-                } else if (fullscreenButton === "suiteFolderDonut") {
-                    update_suite_folder_fail_donut_graph();
-                }
-                hide_graph_loading(canvasId);
-
+                const graphBody = content.querySelector('.graph-body');
                 let section = null;
                 if (fullscreenButton.includes("suite")) {
                     section = "suite";
@@ -688,6 +682,24 @@ function setup_graph_view_buttons() {
                         originalContainer.insertBefore(filters, originalContainer.firstChild);
                     }
                 }
+
+                // Lock graph-body height to prevent Chart.js resize feedback loop
+                if (entering && graphBody) {
+                    graphBody.style.height = graphBody.clientHeight + 'px';
+                } else if (graphBody) {
+                    graphBody.style.height = '';
+                }
+
+                if (typeof window[graphFunctionName] === "function") {
+                    window[graphFunctionName]();
+                }
+
+                if (fullscreenButton === "runDonut") {
+                    update_run_donut_total_graph();
+                } else if (fullscreenButton === "suiteFolderDonut") {
+                    update_suite_folder_fail_donut_graph();
+                }
+                hide_graph_loading(canvasId);
             }, 0);
         };
 
@@ -705,6 +717,13 @@ function setup_graph_view_buttons() {
             window.scrollTo({ top: lastScrollY, behavior: "auto" });
         });
     }
+    // close fullscreen on Escape key
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && inFullscreen) {
+            const closeBtn = document.querySelector(`[id$="Close"]:not([hidden])`);
+            if (closeBtn) closeBtn.click();
+        }
+    });
     // has to be added after the creation of the sections and graphs
     document.getElementById("suiteFolderDonutGoUp").addEventListener("click", function () {
         function remove_last_folder(path) {
@@ -714,7 +733,7 @@ function setup_graph_view_buttons() {
         }
         const folder = remove_last_folder(previousFolder)
         if (previousFolder == "" && folder == "") { return }
-        update_graphs_with_loading(["suiteFolderDonutGraph"], () => {
+        update_graphs_with_loading(["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"], () => {
             update_suite_folder_donut_graph(folder)
         });
     });
@@ -733,7 +752,7 @@ function setup_graph_view_buttons() {
     });
     document.getElementById("onlyFailedFolders").addEventListener("change", () => {
         onlyFailedFolders = !onlyFailedFolders;
-        update_graphs_with_loading(["suiteFolderDonutGraph"], () => {
+        update_graphs_with_loading(["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"], () => {
             update_suite_folder_donut_graph("");
         });
     });
@@ -943,8 +962,10 @@ function setup_overview_order_filters() {
             select.addEventListener('change', (e) => {
                 show_loading_overlay();
                 requestAnimationFrame(() => {
-                    create_overview_latest_graphs();
-                    hide_loading_overlay();
+                    requestAnimationFrame(() => {
+                        create_overview_latest_graphs();
+                        hide_loading_overlay();
+                    });
                 });
             });
         } else {

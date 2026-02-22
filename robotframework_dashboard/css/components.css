@@ -61,7 +61,17 @@
   z-index: 10 !important;
   padding: 20px 20px 20px 20px !important;
   border-radius: 0px !important;
-  background-color: var(--color-fullscreen-bg);
+  background-color: var(--color-fullscreen-bg) !important;
+}
+
+.fullscreen .section-filters {
+  flex: 0 0 auto;
+}
+
+.fullscreen .graph-body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .dropdown-menu {
@@ -319,13 +329,9 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(238, 238, 238, 0.6);
+    background: var(--color-fullscreen-bg);
     border-radius: 8px;
     z-index: 10;
-}
-
-.dark-mode .graph-loading-overlay {
-    background: rgba(30, 41, 59, 0.6);
 }
 
 /* Smaller ball-grid-beat for individual graph overlays */

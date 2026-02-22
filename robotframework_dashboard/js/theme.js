@@ -175,7 +175,9 @@ function apply_theme_colors() {
     
     // Set CSS custom properties - background color
     root.style.setProperty('--color-bg', finalColors.background);
-    root.style.setProperty('--color-fullscreen-bg', finalColors.background);
+    // Use an opaque version of the card color for fullscreen background
+    const opaqueCard = finalColors.card.replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/, 'rgba($1,$2,$3, 1)');
+    root.style.setProperty('--color-fullscreen-bg', opaqueCard);
     root.style.setProperty('--color-modal-bg', finalColors.background);
     
     // Set CSS custom properties - card color (propagate to all card-like surfaces)
