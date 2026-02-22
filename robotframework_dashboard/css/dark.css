@@ -1,9 +1,9 @@
-.dark-mode .modal-dialog {
+.modal-dialog {
   background: var(--color-modal-bg);
   color: var(--color-text);
 }
 
-.dark-mode .modal-content {
+.modal-content {
   background: var(--color-modal-bg);
 }
 

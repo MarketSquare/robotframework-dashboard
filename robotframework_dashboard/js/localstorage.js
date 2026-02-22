@@ -19,9 +19,7 @@ function setup_local_storage() {
         } else if (storedSettings) {
             // 2) Prefer existing localStorage when not forcing a config
             const parsedSettings = JSON.parse(storedSettings);
-            console.log(settings, parsedSettings)
             resolvedSettings = mergeWithDefaults(parsedSettings);
-            console.log(parsedSettings)
         } else if (!force_json_config && hasJsonConfig) {
             // 3) Use provided json_config when not forcing and no localStorage present
             resolvedSettings = mergeWithDefaults(json_config);
@@ -79,6 +77,9 @@ function merge_deep(local, defaults) {
         }
         else if (key === "layouts") {
             result[key] = merge_layout(localVal, defaults);
+        }
+        else if (key === "theme_colors") {
+            result[key] = merge_theme_colors(localVal, defaultVal);
         }
         else if (isObject(localVal) && isObject(defaultVal)) {
             result[key] = merge_objects_base(localVal, defaultVal);
@@ -168,6 +169,17 @@ function merge_view_section_or_graph(local, defaults, page = null) {
     // 3. Keep original placement of values already present
     result.show = [...localShow];
     result.hide = [...localHide];
+    return result;
+}
+
+// function to merge theme_colors from localstorage with defaults, preserving custom colors
+function merge_theme_colors(local, defaults) {
+    const result = merge_objects_base(local, defaults);
+    // Preserve the custom key from local since its sub-keys (user-chosen colors)
+    // won't exist in the empty defaults and would be stripped by merge_objects_base
+    if (local.custom) {
+        result.custom = structuredClone(local.custom);
+    }
     return result;
 }
 

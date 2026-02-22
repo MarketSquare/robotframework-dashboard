@@ -41,7 +41,6 @@ var settings = {
         light: {
             background: '#eee',
             card: '#ffffff',
-            menuText: '#000000',
             highlight: '#3451b2',
             text: '#000000',
         },
@@ -49,7 +48,6 @@ var settings = {
             background: '#0f172a',
             card: 'rgba(30, 41, 59, 0.9)',
             highlight: '#a8b1ff',
-            menuText: '#ffffff',
             text: '#eee',
         },
         custom: {

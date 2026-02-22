@@ -228,17 +228,30 @@ function apply_theme_colors() {
     const finalColors = {
         background: customColors.background || defaultColors.background,
         card: customColors.card || defaultColors.card,
-        menuText: customColors.menuText || defaultColors.menuText,
         highlight: customColors.highlight || defaultColors.highlight,
         text: customColors.text || defaultColors.text,
     };
     
-    // Set CSS custom properties
-    root.style.setProperty('--theme-bg-color', finalColors.background);
-    root.style.setProperty('--theme-card-color', finalColors.card);
-    root.style.setProperty('--theme-menu-text-color', finalColors.menuText);
-    root.style.setProperty('--theme-highlight-color', finalColors.highlight);
-    root.style.setProperty('--theme-text-color', finalColors.text);
+    // Set CSS custom properties - background color
+    root.style.setProperty('--color-bg', finalColors.background);
+    root.style.setProperty('--color-fullscreen-bg', finalColors.background);
+    root.style.setProperty('--color-modal-bg', finalColors.background);
+    
+    // Set CSS custom properties - card color (propagate to all card-like surfaces)
+    root.style.setProperty('--color-card', finalColors.card);
+    // In light mode, section cards match background; in dark mode they use card color
+    root.style.setProperty('--color-section-card-bg', finalColors.card);
+    root.style.setProperty('--color-tooltip-bg', finalColors.card);
+    
+    // Set CSS custom properties - highlight color
+    root.style.setProperty('--color-highlight', finalColors.highlight);
+    
+    // Set CSS custom properties - text color (propagate to all text)
+    root.style.setProperty('--color-text', finalColors.text);
+    root.style.setProperty('--color-menu-text', finalColors.text);
+    root.style.setProperty('--color-table-text', finalColors.text);
+    root.style.setProperty('--color-tooltip-text', finalColors.text);
+    root.style.setProperty('--color-section-card-text', finalColors.text);
 }
 
 export {

@@ -281,6 +281,20 @@ function setup_settings_modal() {
     document.getElementById("themeLight").addEventListener("click", () => toggle_theme());
     document.getElementById("themeDark").addEventListener("click", () => toggle_theme());
 
+    // Convert any CSS color string to #rrggbb hex for <input type="color">
+    function to_hex_color(color) {
+        // Handle rgba/rgb strings by parsing components directly
+        const rgbaMatch = color.match(/^rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);
+        if (rgbaMatch) {
+            const [, r, g, b] = rgbaMatch.map(Number);
+            return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+        }
+        // For hex shorthand (#eee) and other CSS colors, use canvas normalization
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.fillStyle = color;
+        return ctx.fillStyle;
+    }
+
     function create_theme_color_handler(colorKey, elementId) {
         function load_color() {
             const element = document.getElementById(elementId);
@@ -292,11 +306,11 @@ function setup_settings_modal() {
             const storedColor = customColors?.[colorKey];
             
             if (storedColor) {
-                element.value = storedColor;
+                element.value = to_hex_color(storedColor);
             } else {
                 // Use default from settings for current theme mode
                 const defaults = settings.theme_colors[themeMode];
-                element.value = defaults[colorKey];
+                element.value = to_hex_color(defaults[colorKey]);
             }
         }
 
@@ -325,7 +339,7 @@ function setup_settings_modal() {
             
             // Reset to default from settings
             const defaults = settings.theme_colors[themeMode];
-            element.value = defaults[colorKey];
+            element.value = to_hex_color(defaults[colorKey]);
             
             if (settings.theme_colors?.custom?.[themeMode]) {
                 delete settings.theme_colors.custom[themeMode][colorKey];
@@ -340,7 +354,6 @@ function setup_settings_modal() {
 
     const backgroundColorHandler = create_theme_color_handler('background', 'themeBackgroundColor');
     const cardColorHandler = create_theme_color_handler('card', 'themeCardColor');
-    const menuTextColorHandler = create_theme_color_handler('menuText', 'themeMenuTextColor');
     const highlightColorHandler = create_theme_color_handler('highlight', 'themeHighlightColor');
     const textColorHandler = create_theme_color_handler('text', 'themeTextColor');
 
@@ -348,7 +361,6 @@ function setup_settings_modal() {
     $("#settingsModal").on("shown.bs.modal", function () {
         backgroundColorHandler.load_color();
         cardColorHandler.load_color();
-        menuTextColorHandler.load_color();
         highlightColorHandler.load_color();
         textColorHandler.load_color();
     });
@@ -356,14 +368,12 @@ function setup_settings_modal() {
     // Add event listeners for color inputs
     document.getElementById('themeBackgroundColor').addEventListener('change', () => backgroundColorHandler.update_color());
     document.getElementById('themeCardColor').addEventListener('change', () => cardColorHandler.update_color());
-    document.getElementById('themeMenuTextColor').addEventListener('change', () => menuTextColorHandler.update_color());
     document.getElementById('themeHighlightColor').addEventListener('change', () => highlightColorHandler.update_color());
     document.getElementById('themeTextColor').addEventListener('change', () => textColorHandler.update_color());
 
     // Add event listeners for reset buttons
     document.getElementById('resetBackgroundColor').addEventListener('click', () => backgroundColorHandler.reset_color());
     document.getElementById('resetCardColor').addEventListener('click', () => cardColorHandler.reset_color());
-    document.getElementById('resetMenuTextColor').addEventListener('click', () => menuTextColorHandler.reset_color());
     document.getElementById('resetHighlightColor').addEventListener('click', () => highlightColorHandler.reset_color());
     document.getElementById('resetTextColor').addEventListener('click', () => textColorHandler.reset_color());
 

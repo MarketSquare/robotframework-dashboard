@@ -16,8 +16,12 @@
 .card {
   margin-bottom: 1rem;
   box-shadow: 0 4px 20px var(--color-shadow-strong);
-  background: var(--color-bg);
   color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.overview-card > .card {
+  background: var(--color-card) !important;
 }
 
 .stats {
@@ -395,4 +399,8 @@ canvas {
 
 .list-group-item[hidden] {
   display: none !important;
+}
+
+.list-group-item {
+  background-color: var(--color-card);
 }

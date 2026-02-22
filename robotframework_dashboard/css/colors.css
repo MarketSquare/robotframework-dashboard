@@ -1,7 +1,7 @@
 :root {
   --color-bg: #eee;
   --color-card: #ffffff;
-  --color-menu-text: #000000;
+  --color-menu-text: var(--color-text);
   --color-highlight: #3451b2;
   --color-text: #000000;
   --color-text-muted: darkgrey;
@@ -20,7 +20,7 @@
   --color-passed: rgba(151, 189, 97, 0.9);
   --color-failed: rgba(206, 62, 1, 0.9);
   --color-skipped: rgba(254, 216, 79, 0.9);
-  --color-modal-bg: #ffffff;
+  --color-modal-bg: var(--color-bg);
   --color-section-card-bg: #ffffff;
   --color-section-card-text: var(--color-text);
   --color-section-card-border: transparent;
@@ -31,7 +31,7 @@
   color-scheme: dark;
   --color-bg: #0f172a;
   --color-card: rgba(30, 41, 59, 0.9);
-  --color-menu-text: #ffffff;
+  --color-menu-text: var(--color-text);
   --color-highlight: #a8b1ff;
   --color-text: #eee;
   --color-text-muted: #9ca3af;
@@ -50,7 +50,7 @@
   --color-passed: rgba(151, 189, 97, 0.9);
   --color-failed: rgba(206, 62, 1, 0.9);
   --color-skipped: rgba(254, 216, 79, 0.9);
-  --color-modal-bg: #0f172a;
+  --color-modal-bg: var(--color-bg);
   --color-section-card-bg: rgba(30, 41, 59, 0.9);
   --color-section-card-text: var(--color-text);
   --color-section-card-border: rgba(255, 255, 255, 0.1);
