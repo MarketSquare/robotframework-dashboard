@@ -309,6 +309,54 @@ canvas {
   background: transparent;
 }
 
+/* Individual graph loading overlay */
+.graph-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(238, 238, 238, 0.6);
+    border-radius: 8px;
+    z-index: 10;
+}
+
+.dark-mode .graph-loading-overlay {
+    background: rgba(30, 41, 59, 0.6);
+}
+
+/* Smaller ball-grid-beat for individual graph overlays */
+.ball-grid-beat-sm {
+    width: 60px;
+    grid-gap: 6px;
+}
+
+.ball-grid-beat-sm div {
+    width: 16px;
+    height: 16px;
+}
+
+/* Full-page loading overlay for filter updates */
+.filter-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(238, 238, 238, 0.7);
+    z-index: 1040;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dark-mode .filter-loading-overlay {
+    background: rgba(30, 41, 59, 0.7);
+}
+
 .ball-grid-beat {
   width: 120px;
   display: grid;
