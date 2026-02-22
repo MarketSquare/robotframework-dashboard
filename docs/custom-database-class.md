@@ -15,9 +15,9 @@ The project includes several reference implementations. These demonstrate how to
 
 **Available examples:**
 
-- [abstractdb.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
-- [sqlite3.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
-- [mysql.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation
+- [abstractdb.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
+- [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
+- [mysql.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation
 
 These files define the required structure and show how each method should behave. If you create your own custom database implementation, you are encouraged to submit it via pull request or github issue so it can be added to the example folder to help others.
 
@@ -207,6 +207,6 @@ If you do not use server-side log storage, you can safely omit this method.
 - Your Python file name can be anything.
 
 - Look at the examples before implementing your own:
-  - [abstractdb.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
-  - [sqlite3.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
-  - [mysql.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation
+  - [abstractdb.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
+  - [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
+  - [mysql.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation

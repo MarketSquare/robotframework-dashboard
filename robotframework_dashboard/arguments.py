@@ -66,7 +66,7 @@ class ArgumentParser:
         parser = argparse.ArgumentParser(
             add_help=False,
             formatter_class=argparse.RawTextHelpFormatter,
-            epilog="For full documentation, visit: https://timdegroot1996.github.io/robotframework-dashboard/",
+            epilog="For full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/",
         )
         parser.add_argument(
             "-v",

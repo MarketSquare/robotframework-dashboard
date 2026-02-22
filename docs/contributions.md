@@ -13,7 +13,7 @@ Special thanks to the following companies for sponsoring in one form or another!
 
 ## People
 And many thanks to the following people for contributing to the project with feedback, features or just general guidance!
-- [Mark Moberts](https://github.com/MobyNL) maintainer of the [robotframework-mitmlibrary](https://github.com/MobyNL/robotframework-mitmlibrary) and [Awesome Robot Framework](https://github.com/MarketSquare/awesome-robotframework)
+- [Mark Moberts](https://github.com/MobyNL) maintainer of the [robotframework-mitmlibrary](https://github.com/MobyNL/robotframework-mitmlibrary) and [Awesome Robot Framework](https://github.com/marketsquare/awesome-robotframework)
 - [Jurgen Alebregtse](https://github.com/alebr001) maintainer of [robotframework-realtimeresults](https://github.com/alebr001/robotframework-realtimeresults)
 - [Elias Haberl](https://github.com/HuntTheSun)
 - [Pekka Klarck](https://github.com/pekkaklarck) maintainer of [Robot Framework](https://github.com/robotframework/robotframework)

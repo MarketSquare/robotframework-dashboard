@@ -13,7 +13,7 @@ There are also 2 special sections on the Overview page: The "Latest Runs" and "T
 The Overview Statistics section shows the latest run for each project, the sections below it show all runs for each project.  
 You can toggle if you want to show or hide runs for projects or custom project tags.  
 See [Advanced CLI & Examples](advanced-cli-examples.md#project-tagging) for more information on Tags!  
-For a more in depth explanation, hover over the "i" icons in the Overview Statistics and the sections below it in the [Example Dashboard](https://timdegroot1996.github.io/robotframework-dashboard/example/robot_dashboard.html)
+For a more in depth explanation, hover over the "i" icons in the Overview Statistics and the sections below it in the [Example Dashboard](https://marketsquare.github.io/robotframework-dashboard/example/robot_dashboard.html)
 
 ## Dashboard Page
 The Dashboard page offers rich, interactive visualizations for a detailed analysis of test results. Graphs are available at four levels—runs, suites, tests, and keywords—allowing teams to track performance, detect flaky tests, and monitor trends over time. The layout is fully customizable (see [Customization](customization.md)). You can drag and drop graphs and sections to create your preferred view. Most graphs support multiple display modes, including timeline, percentage, bar, donut, and advanced types like boxplots and heatmaps. Each graph also provides detailed popups to explain what the view represents and how the data is calculated (see [Graphs & Tables](graphs-tables.md)).

@@ -14,7 +14,7 @@ RobotFramework Dashboard includes a built-in server that lets you host the dashb
 - Enable remote clients to push or delete runs in your database  
 - Provide a web-based admin interface for manual management  
 - Secure access via optional basic authentication (username/password)  
-- The server automatically uses offline CDN (js/css) because `FastAPI-offline` is used, making it compatible with [`--offlinedependencies`](https://timdegroot1996.github.io/robotframework-dashboard/advanced-cli-examples) for full offline usage!
+- The server automatically uses offline CDN (js/css) because `FastAPI-offline` is used, making it compatible with [`--offlinedependencies`](https://marketsquare.github.io/robotframework-dashboard/advanced-cli-examples) for full offline usage!
 > **Tip:** To implement your server into your test runs look at the example [listener](/listener-integration.md) integration!
 
 
@@ -91,9 +91,9 @@ The dashboard itself (the HTML) does **not** require authentication. API calls a
 
 You can interact with the server programmatically using HTTP, Python, or Robot Framework. There are example scripts in the `example/server` folder:
 
-- [interact.http](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/server/interact.http) 
-- [interact.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/server/interact.py) 
-- [interact.robot](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/server/interact.robot) 
+- [interact.http](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/server/interact.http) 
+- [interact.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/server/interact.py) 
+- [interact.robot](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/server/interact.robot) 
 
 These scripts demonstrate how to:
 

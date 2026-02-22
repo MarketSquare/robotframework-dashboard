@@ -162,4 +162,4 @@ options:
                           • '--server 0.0.0.0:8080' -> custom host/port
                           • '--server 0.0.0.0:8080:admin:secret' -> custom host/port and admin username/password
 
-For full documentation, visit: https://timdegroot1996.github.io/robotframework-dashboard/
+For full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/

@@ -16,7 +16,7 @@ export default defineConfig({
     ["title", {}, "RobotFramework Dashboard | Visualize and Analyze Test Results"],
     ["meta", { name: "description", content: "Interactive dashboard to visualize, analyze, and customize Robot Framework test results with charts, and tables" }],
     ["meta", { name: "keywords", content: "dashboard, analysis, robot-framework, html-report, robotframework, robotframework-dashboard" }],
-    ["link", { rel: "canonical", href: "https://timdegroot1996.github.io/robotframework-dashboard/" }],
+    ["link", { rel: "canonical", href: "https://marketsquare.github.io/robotframework-dashboard/" }],
 
     // Open Graph
     ["meta", { property: "og:type", content: "website" }],
@@ -24,7 +24,7 @@ export default defineConfig({
     ["meta", { property: "og:title", content: "RobotFramework Dashboard | Visualize Robot Framework Results" }],
     ["meta", { property: "og:site_name", content: "RobotFramework Dashboard" }],
     ["meta", { property: "og:image", content: "/robotframework-dashboard/robotframework.svg" }],
-    ["meta", { property: "og:url", content: "https://timdegroot1996.github.io/robotframework-dashboard/" }],
+    ["meta", { property: "og:url", content: "https://marketsquare.github.io/robotframework-dashboard/" }],
 
     // Twitter Card
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
@@ -38,7 +38,7 @@ export default defineConfig({
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "RobotFramework Dashboard",
-        "url": "https://timdegroot1996.github.io/robotframework-dashboard/",
+        "url": "https://marketsquare.github.io/robotframework-dashboard/",
         "description": "Interactive dashboard to visualize and analyze Robot Framework test results.",
         "applicationCategory": "DeveloperTool",
         "operatingSystem": "Web"
@@ -91,7 +91,7 @@ export default defineConfig({
         { text: '🤝 Contributions', link: '/contributions.md' }
     ],
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/timdegroot1996/robotframework-dashboard', ariaLabel: 'GitHub Repository' },
+      { icon: 'github', link: 'https://github.com/marketsquare/robotframework-dashboard', ariaLabel: 'GitHub Repository' },
       { icon: { svg: python_svg }, link: 'https://pypi.org/project/robotframework-dashboard/', ariaLabel: 'Python Package on PyPI' },
       { icon: { svg: slack_svg }, link: 'https://robotframework.slack.com/', ariaLabel: 'Robot Framework Slack' },
     ]

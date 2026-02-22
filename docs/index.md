@@ -18,7 +18,7 @@ hero:
       link: https://pypi.org/project/robotframework-dashboard/
     - theme: alt
       text: ⭐ Star on GitHub
-      link: https://github.com/timdegroot1996/robotframework-dashboard
+      link: https://github.com/marketsquare/robotframework-dashboard
     - theme: alt
       text: Contributions
       link: /contributions.md

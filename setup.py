@@ -12,11 +12,11 @@ extras["all"] = sorted({pkg for group in extras.values() for pkg in group})
 
 setup(
     name="robotframework-dashboard",
-    version="1.6.0",
+    version="1.6.2",
     description="Output processor and dashboard generator for Robot Framework output files",
     long_description="""# 📊 Robot Framework Dashboard
 
-Before reading anything else here is a [Fully Functioning Dashboard](https://timdegroot1996.github.io/robotframework-dashboard/example/robot_dashboard.html) you can checkout right away!
+Before reading anything else here is a [Fully Functioning Dashboard](https://marketsquare.github.io/robotframework-dashboard/example/robot_dashboard.html) you can checkout right away!
 
 ## 🎯 Overview
 
@@ -57,25 +57,25 @@ pip install robotframework-dashboard[all]
 …and many more advanced features to help you visualize, analyze, and manage your Robot Framework test results with ease!
 
 ## 📖 Read the Docs
-For detailed usage instructions, advanced examples, and full documentation, visit the [official robotdashboard docs](https://timdegroot1996.github.io/robotframework-dashboard/)!
+For detailed usage instructions, advanced examples, and full documentation, visit the [official robotdashboard docs](https://marketsquare.github.io/robotframework-dashboard/)!
 
 ### Quick Links
-- 🚀 [**Getting Started**](https://timdegroot1996.github.io/robotframework-dashboard/getting-started.html) - Quick setup instructions to install Robot Framework and RobotFramework Dashboard, and verify it is working.
-- 📦 [**Installation & Version Info**](https://timdegroot1996.github.io/robotframework-dashboard/installation-version-info.html) - Install the dashboard via pip, check Python and Robot Framework requirements, and view version information.
-- 💻 [**Basic Command Line Interface (CLI)**](https://timdegroot1996.github.io/robotframework-dashboard/basic-command-line-interface-cli.html) - Manage your test results database, add output XML files, remove runs, and generate dashboards directly from the command line.
-- ⚡ [**Advanced CLI & Examples**](https://timdegroot1996.github.io/robotframework-dashboard/advanced-cli-examples.html) - Advanced usage examples including combined commands, tagging strategies, aliases, batch imports, message configuration, and performance tips.
-- 🗂️ [**Tabs / Pages**](https://timdegroot1996.github.io/robotframework-dashboard/tabs-pages.html) - Explore the dashboard's interactive pages including Overview, Dashboard, Compare, and detailed suite/test/keyword views.
-- 📊 [**Graphs & Tables**](https://timdegroot1996.github.io/robotframework-dashboard/graphs-tables.html) - View and filter detailed statistics for runs, suites, tests, and keywords using charts, tables, and summary visualizations.
-- 🔍 [**Filtering**](https://timdegroot1996.github.io/robotframework-dashboard/filtering.html) - Apply filters to analyze trends in your test data and highlight specific tags, amounts or datetime ranges.
-- 🎨 [**Customization**](https://timdegroot1996.github.io/robotframework-dashboard/customization.html) - Customize dashboard sections, graph layouts, and visualizations to suit your workflow.
-- ⚙️ [**Settings**](https://timdegroot1996.github.io/robotframework-dashboard/settings.html) - Configure dashboard preferences including themes, default views, graph options, and save your settings for consistent team-wide use.
-- 🖥️ [**Dashboard Server**](https://timdegroot1996.github.io/robotframework-dashboard/dashboard-server.html) - Host the dashboard for multi-user access, programmatic updates, and remote server integration.
-- 🗄️ [**Custom Database Class**](https://timdegroot1996.github.io/robotframework-dashboard/custom-database-class.html) - Extend or replace the default database backend to suit your storage needs, including SQLite, MySQL, or custom implementations.
-- 🔔 [**Listener Integration**](https://timdegroot1996.github.io/robotframework-dashboard/listener-integration.html) - Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
+- 🚀 [**Getting Started**](https://marketsquare.github.io/robotframework-dashboard/getting-started.html) - Quick setup instructions to install Robot Framework and RobotFramework Dashboard, and verify it is working.
+- 📦 [**Installation & Version Info**](https://marketsquare.github.io/robotframework-dashboard/installation-version-info.html) - Install the dashboard via pip, check Python and Robot Framework requirements, and view version information.
+- 💻 [**Basic Command Line Interface (CLI)**](https://marketsquare.github.io/robotframework-dashboard/basic-command-line-interface-cli.html) - Manage your test results database, add output XML files, remove runs, and generate dashboards directly from the command line.
+- ⚡ [**Advanced CLI & Examples**](https://marketsquare.github.io/robotframework-dashboard/advanced-cli-examples.html) - Advanced usage examples including combined commands, tagging strategies, aliases, batch imports, message configuration, and performance tips.
+- 🗂️ [**Tabs / Pages**](https://marketsquare.github.io/robotframework-dashboard/tabs-pages.html) - Explore the dashboard's interactive pages including Overview, Dashboard, Compare, and detailed suite/test/keyword views.
+- 📊 [**Graphs & Tables**](https://marketsquare.github.io/robotframework-dashboard/graphs-tables.html) - View and filter detailed statistics for runs, suites, tests, and keywords using charts, tables, and summary visualizations.
+- 🔍 [**Filtering**](https://marketsquare.github.io/robotframework-dashboard/filtering.html) - Apply filters to analyze trends in your test data and highlight specific tags, amounts or datetime ranges.
+- 🎨 [**Customization**](https://marketsquare.github.io/robotframework-dashboard/customization.html) - Customize dashboard sections, graph layouts, and visualizations to suit your workflow.
+- ⚙️ [**Settings**](https://marketsquare.github.io/robotframework-dashboard/settings.html) - Configure dashboard preferences including themes, default views, graph options, and save your settings for consistent team-wide use.
+- 🖥️ [**Dashboard Server**](https://marketsquare.github.io/robotframework-dashboard/dashboard-server.html) - Host the dashboard for multi-user access, programmatic updates, and remote server integration.
+- 🗄️ [**Custom Database Class**](https://marketsquare.github.io/robotframework-dashboard/custom-database-class.html) - Extend or replace the default database backend to suit your storage needs, including SQLite, MySQL, or custom implementations.
+- 🔔 [**Listener Integration**](https://marketsquare.github.io/robotframework-dashboard/listener-integration.html) - Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
 
 ## 🛠️ Contributions
 
-Contributions are welcome! If you encounter any issues, have suggestions for improvements, or would like to add new features, feel free to open an issue or submit a pull request. Additional information can be found here in [Contributing](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/CONTRIBUTING.md)
+Contributions are welcome! If you encounter any issues, have suggestions for improvements, or would like to add new features, feel free to open an issue or submit a pull request. Additional information can be found here in [Contributing](https://github.com/marketsquare/robotframework-dashboard/blob/main/CONTRIBUTING.md)
 
 ## 📋 License
 This project is licensed under the MIT License.
@@ -91,7 +91,7 @@ This project is licensed under the MIT License.
     keywords="robotframework dashboard reporting database",
     author="Tim de Groot",
     author_email="tim-degroot@live.nl",
-    url="https://github.com/timdegroot1996/robotframework-dashboard",
+    url="https://github.com/marketsquare/robotframework-dashboard",
     license="MIT",
     packages=find_packages(),
     include_package_data=True,

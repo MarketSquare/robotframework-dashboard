@@ -20,7 +20,7 @@ Its responsibilities include:
 - The script is pabot compatible  
 - Enforcing an optional database run limit (e.g., keep only latest 100 runs)  
 
-The listener script can be found here: [robotdashboardlistener.py](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/listener/robotdashboardlistener.py)
+The listener script can be found here: [robotdashboardlistener.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/listener/robotdashboardlistener.py)
 
 > Important: the name of the file and the class should match. In the example it is both **robotdashboardlistener**, but changing it is fine if both are equal. 
 
@@ -109,7 +109,7 @@ The listener will wait for the final merged output and then send it to the Dashb
 
 ## Using the Listener with RobotCode (robot.toml)
 
-RobotDashboard also supports a listener in the `robot.toml` of **RobotCode**. The example can be found here: [robot.toml](https://github.com/timdegroot1996/robotframework-dashboard/blob/main/example/listener/robot.toml)
+RobotDashboard also supports a listener in the `robot.toml` of **RobotCode**. The example can be found here: [robot.toml](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/listener/robot.toml)
 Place both `robot.toml` and `robotdashboardlistener.py` in your project root (or adjust paths accordingly).
 
 ### Basic usage steps
