@@ -178,10 +178,34 @@ function hide_graph_loading(elementId) {
 // Show loading overlays on multiple graphs, run updateFn, then hide overlays
 function update_graphs_with_loading(elementIds, updateFn) {
     elementIds.forEach(id => show_graph_loading(id));
-    setTimeout(() => {
-        updateFn();
-        elementIds.forEach(id => hide_graph_loading(id));
-    }, 0);
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            updateFn();
+            elementIds.forEach(id => hide_graph_loading(id));
+        });
+    });
+}
+
+// Show a semi-transparent loading overlay for filter/update operations
+// Unlike setup_spinner, this does NOT hide sections - it overlays on top of existing content
+function show_loading_overlay() {
+    let overlay = document.getElementById("filterLoadingOverlay");
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = "filterLoadingOverlay";
+        overlay.className = "filter-loading-overlay";
+        overlay.innerHTML = '<div class="ball-grid-beat"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = "flex";
+}
+
+// Hide the filter loading overlay
+function hide_loading_overlay() {
+    const overlay = document.getElementById("filterLoadingOverlay");
+    if (overlay) {
+        $(overlay).fadeOut(200);
+    }
 }
 
 export {
@@ -199,5 +223,7 @@ export {
     debounce,
     show_graph_loading,
     hide_graph_loading,
-    update_graphs_with_loading
+    update_graphs_with_loading,
+    show_loading_overlay,
+    hide_loading_overlay
 };

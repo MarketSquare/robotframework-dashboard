@@ -15,8 +15,8 @@ import {
 import { arrowDown, arrowRight } from "./variables/svg.js";
 import { fullscreenButtons, graphChangeButtons, compareRunIds } from "./variables/graphs.js";
 import { toggle_theme, apply_theme_colors } from "./theme.js";
-import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading } from "./common.js";
-import { setup_data_and_graphs, show_loading_overlay, hide_loading_overlay, update_menu } from "./menu.js";
+import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading, show_loading_overlay, hide_loading_overlay } from "./common.js";
+import { setup_data_and_graphs, update_menu } from "./menu.js";
 import { update_dashboard_graphs } from "./graph_creation/all.js";
 import {
     setup_filtered_data_and_filters,

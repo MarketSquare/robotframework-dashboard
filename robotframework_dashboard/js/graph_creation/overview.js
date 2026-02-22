@@ -4,6 +4,8 @@ import {
     transform_file_path,
     format_duration,
     debounce,
+    show_loading_overlay,
+    hide_loading_overlay,
 } from '../common.js';
 import { update_menu } from '../menu.js';
 import {
@@ -180,14 +182,13 @@ function create_overview_latest_runs_section() {
     const percentageSelector = document.getElementById("overviewLatestDurationPercentage");
     if (percentageSelector) {
         percentageSelector.addEventListener('change', () => {
-            create_overview_latest_graphs();
-        });
-    }
-
-    const sortSelector = document.getElementById("overviewLatestSectionOrder");
-    if (sortSelector) {
-        sortSelector.addEventListener('change', () => {
-            create_overview_latest_graphs();
+            show_loading_overlay();
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    create_overview_latest_graphs();
+                    hide_loading_overlay();
+                });
+            });
         });
     }
 

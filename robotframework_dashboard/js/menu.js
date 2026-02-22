@@ -466,34 +466,10 @@ function setup_spinner(hide) {
     }
 }
 
-// Show a semi-transparent loading overlay for filter/update operations
-// Unlike setup_spinner, this does NOT hide sections - it overlays on top of existing content
-function show_loading_overlay() {
-    let overlay = document.getElementById("filterLoadingOverlay");
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = "filterLoadingOverlay";
-        overlay.className = "filter-loading-overlay";
-        overlay.innerHTML = '<div class="ball-grid-beat"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
-        document.body.appendChild(overlay);
-    }
-    overlay.style.display = "flex";
-}
-
-// Hide the filter loading overlay
-function hide_loading_overlay() {
-    const overlay = document.getElementById("filterLoadingOverlay");
-    if (overlay) {
-        $(overlay).fadeOut(200);
-    }
-}
-
 export {
     setup_menu,
     setup_data_and_graphs,
     setup_spinner,
-    show_loading_overlay,
-    hide_loading_overlay,
     update_menu,
     setup_overview_section_menu_buttons
 };
