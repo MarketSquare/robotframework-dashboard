@@ -810,28 +810,24 @@ function set_filter_show_current_project(projectName) {
     }
 }
 
-function update_overview_latest_heading() {
-    const overviewCardsContainer = document.getElementById("overviewLatestRunCardsContainer");
+function _update_overview_heading(containerId, titleId, titleText) {
+    const overviewCardsContainer = document.getElementById(containerId);
     if (!overviewCardsContainer) return;
     const amountOfProjectsShown = overviewCardsContainer.querySelectorAll(".overview-card").length;
     const pluralPostFix = amountOfProjectsShown !== 1 ? 's' : '';
     const headerContent = `<h6>showing ${amountOfProjectsShown} project${pluralPostFix}</h6>`;
-    document.getElementById("overviewLatestTitle").innerHTML = `
-            Latest Runs
+    document.getElementById(titleId).innerHTML = `
+            ${titleText}
             ${headerContent}
         `;
 }
 
+function update_overview_latest_heading() {
+    _update_overview_heading("overviewLatestRunCardsContainer", "overviewLatestTitle", "Latest Runs");
+}
+
 function update_overview_total_heading() {
-    const overviewCardsContainer = document.getElementById("overviewTotalRunCardsContainer");
-    if (!overviewCardsContainer) return;
-    const amountOfProjectsShown = overviewCardsContainer.querySelectorAll(".overview-card").length;
-    const pluralPostFix = amountOfProjectsShown !== 1 ? 's' : '';
-    const headerContent = `<h6>showing ${amountOfProjectsShown} project${pluralPostFix}</h6>`;
-    document.getElementById("overviewTotalTitle").innerHTML = `
-            Total Statistics
-            ${headerContent}
-        `;
+    _update_overview_heading("overviewTotalRunCardsContainer", "overviewTotalTitle", "Total Statistics");
 }
 
 function update_overview_sections_visibility() {

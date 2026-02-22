@@ -1,5 +1,5 @@
 import { set_local_storage_item } from "./localstorage.js";
-import { setup_dashboard_graphs } from "./graph_creation/all.js";
+import { update_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
 import { graphFontSize } from "./variables/chartconfig.js";
 import {
@@ -40,7 +40,7 @@ function toggle_theme() {
         set_local_storage_item("theme", "dark");
     }
     setup_theme()
-    setup_dashboard_graphs()
+    update_dashboard_graphs()
 }
 
 // theme function based on browser/machine color scheme
@@ -60,121 +60,62 @@ function setup_theme() {
         });
     }
 
-    function set_light_mode() {
+    function apply_theme(isDark) {
+        const color = isDark ? "white" : "black";
         // menu theme
-        document.getElementById("navigation").classList.remove("navbar-dark")
-        document.getElementById("navigation").classList.add("navbar-light")
-        document.getElementById("themeLight").hidden = false;
-        document.getElementById("themeDark").hidden = true;
+        document.getElementById("navigation").classList.remove(isDark ? "navbar-light" : "navbar-dark");
+        document.getElementById("navigation").classList.add(isDark ? "navbar-dark" : "navbar-light");
+        document.getElementById("themeLight").hidden = isDark;
+        document.getElementById("themeDark").hidden = !isDark;
         // bootstrap related settings
-        document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", "light");
-        html.style.setProperty("--bs-body-bg", "#fff");
-        swap_button_classes(".btn-outline-light", "btn-outline-dark", ".btn-light", "btn-dark");
+        document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", isDark ? "dark" : "light");
+        html.style.setProperty("--bs-body-bg", isDark ? "rgba(30, 41, 59, 0.9)" : "#fff");
+        if (isDark) {
+            swap_button_classes(".btn-outline-dark", "btn-outline-light", ".btn-dark", "btn-light");
+        } else {
+            swap_button_classes(".btn-outline-light", "btn-outline-dark", ".btn-light", "btn-dark");
+        }
         // chartjs default graph settings
-        Chart.defaults.color = "#666";
-        Chart.defaults.borderColor = "rgba(0,0,0,0.1)";
-        Chart.defaults.backgroundColor = "rgba(0,0,0,0.1)";
-        Chart.defaults.elements.line.borderColor = "rgba(0,0,0,0.1)";
+        Chart.defaults.color = isDark ? "#eee" : "#666";
+        Chart.defaults.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+        Chart.defaults.backgroundColor = isDark ? "rgba(255,255,0,0.1)" : "rgba(0,0,0,0.1)";
+        Chart.defaults.elements.line.borderColor = isDark ? "rgba(255,255,0,0.4)" : "rgba(0,0,0,0.1)";
         // svgs
         const svgMap = {
             ids: {
-                "github": githubSVG("black"),
-                "docs": docsSVG("black"),
-                "settings": settingsSVG("black"),
-                "database": databaseSVG("black"),
-                "filters": filterSVG("black"),
-                "rflogo": getRflogoLightSVG(),
-                "themeLight": moonSVG,
-                "bug": bugSVG("black"),
-                "customizeLayout": customizeViewSVG("black"),
-                "saveLayout": saveSVG("black"),
+                "github": githubSVG(color),
+                "docs": docsSVG(color),
+                "settings": settingsSVG(color),
+                "database": databaseSVG(color),
+                "filters": filterSVG(color),
+                "rflogo": isDark ? getRflogoDarkSVG() : getRflogoLightSVG(),
+                [isDark ? "themeDark" : "themeLight"]: isDark ? sunSVG : moonSVG,
+                "bug": bugSVG(color),
+                "customizeLayout": customizeViewSVG(color),
+                "saveLayout": saveSVG(color),
             },
             classes: {
-                ".percentage-graph": percentageSVG("black"),
-                ".bar-graph": barSVG("black"),
-                ".line-graph": lineSVG("black"),
-                ".pie-graph": pieSVG("black"),
-                ".boxplot-graph": boxplotSVG("black"),
-                ".heatmap-graph": heatmapSVG("black"),
-                ".stats-graph": statsSVG("black"),
-                ".timeline-graph": timelineSVG("black"),
-                ".radar-graph": radarSVG("black"),
-                ".fullscreen-graph": fullscreenSVG("black"),
-                ".close-graph": closeSVG("black"),
-                ".information-icon": informationSVG("black"),
-                ".shown-graph": eyeSVG("black"),
-                ".hidden-graph": eyeOffSVG("black"),
-                ".shown-section": eyeSVG("black"),
-                ".hidden-section": eyeOffSVG("black"),
-                ".move-up-table": moveUpSVG("black"),
-                ".move-down-table": moveDownSVG("black"),
-                ".move-up-section": moveUpSVG("black"),
-                ".move-down-section": moveDownSVG("black"),
-                ".clock-icon": clockSVG("black"),
-            }
-        };
-        for (const [id, svg] of Object.entries(svgMap.ids)) {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = svg;
-        }
-        for (const [selector, svg] of Object.entries(svgMap.classes)) {
-            document.querySelectorAll(selector).forEach(el => {
-                el.innerHTML = svg;
-            });
-        }
-    }
-
-    function set_dark_mode() {
-        // menu theme
-        document.getElementById("themeLight").hidden = true;
-        document.getElementById("themeDark").hidden = false;
-        document.getElementById("navigation").classList.remove("navbar-light")
-        document.getElementById("navigation").classList.add("navbar-dark")
-        // bootstrap related settings
-        document.getElementsByTagName("html")[0].setAttribute("data-bs-theme", "dark");
-        html.style.setProperty("--bs-body-bg", "rgba(30, 41, 59, 0.9)");
-        swap_button_classes(".btn-outline-dark", "btn-outline-light", ".btn-dark", "btn-light");
-        // chartjs default graph settings
-        Chart.defaults.color = "#eee";
-        Chart.defaults.borderColor = "rgba(255,255,255,0.1)";
-        Chart.defaults.backgroundColor = "rgba(255,255,0,0.1)";
-        Chart.defaults.elements.line.borderColor = "rgba(255,255,0,0.4)";
-        // svgs
-        const svgMap = {
-            ids: {
-                "github": githubSVG("white"),
-                "docs": docsSVG("white"),
-                "settings": settingsSVG("white"),
-                "database": databaseSVG("white"),
-                "filters": filterSVG("white"),
-                "rflogo": getRflogoDarkSVG(),
-                "themeDark": sunSVG,
-                "bug": bugSVG("white"),
-                "customizeLayout": customizeViewSVG("white"),
-                "saveLayout": saveSVG("white"),
-            },
-            classes: {
-                ".percentage-graph": percentageSVG("white"),
-                ".bar-graph": barSVG("white"),
-                ".line-graph": lineSVG("white"),
-                ".pie-graph": pieSVG("white"),
-                ".boxplot-graph": boxplotSVG("white"),
-                ".heatmap-graph": heatmapSVG("white"),
-                ".stats-graph": statsSVG("white"),
-                ".timeline-graph": timelineSVG("white"),
-                ".radar-graph": radarSVG("white"),
-                ".fullscreen-graph": fullscreenSVG("white"),
-                ".close-graph": closeSVG("white"),
-                ".information-icon": informationSVG("white"),
-                ".shown-graph": eyeSVG("white"),
-                ".hidden-graph": eyeOffSVG("white"),
-                ".shown-section": eyeSVG("white"),
-                ".hidden-section": eyeOffSVG("white"),
-                ".move-up-table": moveUpSVG("white"),
-                ".move-down-table": moveDownSVG("white"),
-                ".move-up-section": moveUpSVG("white"),
-                ".move-down-section": moveDownSVG("white"),
-                ".clock-icon": clockSVG("white"),
+                ".percentage-graph": percentageSVG(color),
+                ".bar-graph": barSVG(color),
+                ".line-graph": lineSVG(color),
+                ".pie-graph": pieSVG(color),
+                ".boxplot-graph": boxplotSVG(color),
+                ".heatmap-graph": heatmapSVG(color),
+                ".stats-graph": statsSVG(color),
+                ".timeline-graph": timelineSVG(color),
+                ".radar-graph": radarSVG(color),
+                ".fullscreen-graph": fullscreenSVG(color),
+                ".close-graph": closeSVG(color),
+                ".information-icon": informationSVG(color),
+                ".shown-graph": eyeSVG(color),
+                ".hidden-graph": eyeOffSVG(color),
+                ".shown-section": eyeSVG(color),
+                ".hidden-section": eyeOffSVG(color),
+                ".move-up-table": moveUpSVG(color),
+                ".move-down-table": moveDownSVG(color),
+                ".move-up-section": moveUpSVG(color),
+                ".move-down-section": moveDownSVG(color),
+                ".clock-icon": clockSVG(color),
             }
         };
         for (const [id, svg] of Object.entries(svgMap.ids)) {
@@ -189,22 +130,22 @@ function setup_theme() {
     }
 
     // detect theme preference
-    const isDark = html.classList.contains("dark-mode");
+    const currentlyDark = html.classList.contains("dark-mode");
 
     if (settings.theme === "light") {
-        if (isDark) html.classList.remove("dark-mode");
-        set_light_mode();
+        if (currentlyDark) html.classList.remove("dark-mode");
+        apply_theme(false);
     } else if (settings.theme === "dark") {
-        if (!isDark) html.classList.add("dark-mode");
-        set_dark_mode();
+        if (!currentlyDark) html.classList.add("dark-mode");
+        apply_theme(true);
     } else {
         // No theme in localStorage, fall back to system preference
         if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
             html.classList.add("dark-mode");
-            set_dark_mode();
+            apply_theme(true);
         } else {
             html.classList.remove("dark-mode");
-            set_light_mode();
+            apply_theme(false);
         }
     }
     

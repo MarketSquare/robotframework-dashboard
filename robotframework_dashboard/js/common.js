@@ -153,6 +153,37 @@ function debounce(func, delay) {
     };
 }
 
+// Show a loading overlay on an individual graph's container
+function show_graph_loading(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const container = el.closest('.grid-stack-item-content') || el.closest('.table-section');
+    if (!container || container.querySelector('.graph-loading-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'graph-loading-overlay';
+    overlay.innerHTML = '<div class="ball-grid-beat ball-grid-beat-sm"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+    container.appendChild(overlay);
+}
+
+// Hide the loading overlay from an individual graph's container
+function hide_graph_loading(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const container = el.closest('.grid-stack-item-content') || el.closest('.table-section');
+    if (!container) return;
+    const overlay = container.querySelector('.graph-loading-overlay');
+    if (overlay) overlay.remove();
+}
+
+// Show loading overlays on multiple graphs, run updateFn, then hide overlays
+function update_graphs_with_loading(elementIds, updateFn) {
+    elementIds.forEach(id => show_graph_loading(id));
+    setTimeout(() => {
+        updateFn();
+        elementIds.forEach(id => hide_graph_loading(id));
+    }, 0);
+}
+
 export {
     camelcase_to_underscore,
     get_next_folder_level,
@@ -165,5 +196,8 @@ export {
     combine_paths,
     add_alert,
     close_alert,
-    debounce
+    debounce,
+    show_graph_loading,
+    hide_graph_loading,
+    update_graphs_with_loading
 };
