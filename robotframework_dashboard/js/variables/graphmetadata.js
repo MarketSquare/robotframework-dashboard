@@ -343,7 +343,7 @@ const graphMetadata = [
         key: "testStatistics",
         label: "Test Statistics",
         defaultType: "timeline",
-        viewOptions: ["Timeline"],
+        viewOptions: ["Timeline", "Line"],
         hasFullscreenButton: true,
         html: `<div class="graph-header">
                     <h6 id="testStatisticsTitle">Statistics</h6>
@@ -366,6 +366,7 @@ const graphMetadata = [
                             <input class="form-check-input" type="checkbox" role="switch" id="testOnlyChanges">
                         </div>
                         <a class="timeline-graph information" id="testStatisticsGraphTimeline"></a>
+                        <a class="line-graph information" id="testStatisticsGraphLine"></a>
                         <a class="fullscreen-graph information" id="testStatisticsFullscreen"></a>
                         <a class="close-graph information" id="testStatisticsClose" hidden></a>
                         <a class="shown-graph information" id="testStatisticsShown" showGraphHidden></a>

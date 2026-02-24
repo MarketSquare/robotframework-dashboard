@@ -3,6 +3,7 @@ import { get_compare_suite_duration_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { update_height } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
+import { format_duration } from "../common.js";
 import { filteredRuns, filteredSuites, filteredTests } from "../variables/globals.js";
 import { settings } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
@@ -32,11 +33,25 @@ function _build_compare_tests_config() {
     const data = get_test_statistics_data(filteredTests);
     const graphData = data[0]
     const runStarts = data[1]
+    const testMetaMap = data[2]
     var config = get_graph_config("timeline", graphData, "", "Run", "Test");
     config.options.plugins.tooltip = {
         callbacks: {
             label: function (context) {
-                return runStarts[context.raw.x[0]];
+                const runLabel = runStarts[context.raw.x[0]];
+                const testLabel = context.raw.y;
+                const key = `${testLabel}::${context.raw.x[0]}`;
+                const meta = testMetaMap[key];
+                const lines = [`Run: ${runLabel}`];
+                if (meta) {
+                    lines.push(`Status: ${meta.status}`);
+                    lines.push(`Duration: ${format_duration(parseFloat(meta.elapsed_s))}`);
+                    if (meta.message) {
+                        const truncated = meta.message.length > 120 ? meta.message.substring(0, 120) + "..." : meta.message;
+                        lines.push(`Message: ${truncated}`);
+                    }
+                }
+                return lines;
             },
         },
     };

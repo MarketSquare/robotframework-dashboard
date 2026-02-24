@@ -81,6 +81,7 @@ function get_messages_data(dataType, graphType, filteredData) {
         const runStarts = Array.from(runStartsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
         var datasets = [];
         let runAxis = 0;
+        const pointMeta = {};
         function check_label(message, label) {
             return !message_config.includes("placeholder_message_config")
                 ? matches_message_config(message, label)
@@ -91,6 +92,11 @@ function get_messages_data(dataType, graphType, filteredData) {
                 const foundValues = filteredData.filter(value => check_label(value.message, label) && value.run_start === runStart);
                 if (foundValues.length > 0) {
                     const value = foundValues[0];
+                    pointMeta[`${label}::${runAxis}`] = {
+                        status: value.passed == 1 ? "PASS" : value.failed == 1 ? "FAIL" : "SKIP",
+                        elapsed_s: value.elapsed_s || 0,
+                        message: value.message || '',
+                    };
                     datasets.push({
                         label: label,
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
@@ -107,7 +113,7 @@ function get_messages_data(dataType, graphType, filteredData) {
             labels,
             datasets,
         };
-        return [graphData, runStartsArray];
+        return [graphData, runStartsArray, pointMeta];
     }
 }
 

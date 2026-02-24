@@ -9,12 +9,29 @@ import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 
 // Shared timeline scale/tooltip config used by most failed, flaky, and time consuming graphs
-function _apply_timeline_defaults(config, callbackData, callbackLookup = null) {
+function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataType = null, callbackLookup = null) {
     const lookupFn = callbackLookup || ((val) => callbackData[val]);
     config.options.plugins.tooltip = {
         callbacks: {
             label: function (context) {
-                return lookupFn(context.raw.x[0]);
+                const runLabel = lookupFn(context.raw.x[0]);
+                if (!pointMeta) return runLabel;
+                const testLabel = context.raw.y || context.dataset.label;
+                const key = `${testLabel}::${context.raw.x[0]}`;
+                const meta = pointMeta[key];
+                if (!meta) return `Run: ${runLabel}`;
+                const lines = [`Run: ${runLabel}`];
+                if (dataType === "test") {
+                    lines.push(`Status: ${meta.status}`);
+                } else if (dataType === "suite") {
+                    lines.push(`Passed: ${meta.passed}, Failed: ${meta.failed}, Skipped: ${meta.skipped}`);
+                }
+                lines.push(`Duration: ${format_duration(parseFloat(meta.elapsed_s))}`);
+                if (dataType === "test" && meta.message) {
+                    const truncated = meta.message.length > 120 ? meta.message.substring(0, 120) + "..." : meta.message;
+                    lines.push(`Message: ${truncated}`);
+                }
+                return lines;
             },
         },
     };
@@ -46,6 +63,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
     const data = get_most_failed_data(dataType, graphType, filteredData, isRecent);
     const graphData = data[0];
     const callbackData = data[1];
+    const pointMeta = data[2] || null;
     const limit = inFullscreen && inFullscreenGraph.includes(graphKey) ? 50 : 10;
     var config;
     if (graphType == "bar") {
@@ -61,7 +79,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
         delete config.options.onClick;
     } else if (graphType == "timeline") {
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", dataLabel);
-        _apply_timeline_defaults(config, callbackData);
+        _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -74,6 +92,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
     const data = get_most_flaky_data(dataType, graphType, filteredData, ignoreSkipsVal, isRecent, limit);
     const graphData = data[0];
     const callbackData = data[1];
+    const pointMeta = data[2] || null;
     var config;
     if (graphType == "bar") {
         config = get_graph_config("bar", graphData, `Top ${limit}`, "Test", "Status Flips");
@@ -81,7 +100,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
         delete config.options.onClick;
     } else if (graphType == "timeline") {
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", "Test");
-        _apply_timeline_defaults(config, callbackData);
+        _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -130,7 +149,14 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
                         ? callbackData.aliases[runIndex]
                         : runStart;
                     if (!info) return `${displayName}: (no data)`;
-                    return detailFormatter(info, displayName);
+                    const lines = [
+                        `Run: ${displayName}`,
+                        `Duration: ${format_duration(info.duration)}`,
+                    ];
+                    if (info.passed !== undefined) {
+                        lines.push(`Passed: ${info.passed}, Failed: ${info.failed}, Skipped: ${info.skipped}`);
+                    }
+                    return lines;
                 }
             },
         };

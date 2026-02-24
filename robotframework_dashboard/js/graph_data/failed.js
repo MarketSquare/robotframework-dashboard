@@ -84,6 +84,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
         const runStarts = Array.from(runStartsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
         let datasets = [];
         let runAxis = 0;
+        const pointMeta = {};
         for (const runStart of runStarts) {
             for (const label of labels) {
                 const foundValues = filteredData.filter(value =>
@@ -93,6 +94,14 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                 );
                 if (foundValues.length > 0) {
                     const value = foundValues[0];
+                    pointMeta[`${label}::${runAxis}`] = {
+                        status: "FAIL",
+                        elapsed_s: value.elapsed_s || 0,
+                        message: value.message || '',
+                        passed: value.passed || 0,
+                        failed: value.failed || 0,
+                        skipped: value.skipped || 0,
+                    };
                     datasets.push({
                         label: label,
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
@@ -109,7 +118,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
             labels,
             datasets,
         };
-        return [graphData, runStartsArray];
+        return [graphData, runStartsArray, pointMeta];
     }
 }
 

@@ -80,6 +80,12 @@ const informationMap = {
 Status: Displays only tests don't have any status changes and have the selected status
 Only Changes: Displays only tests that have changed statuses at some point in time
 Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph`,
+    "testStatisticsGraphLine": `Scatter: Displays test results as dots on a time axis, with each row representing a different test
+- Green dots indicate passed, red dots indicate failed, and yellow dots indicate skipped tests
+- The horizontal spacing between dots is proportional to the actual time between executions
+- Hover over a dot to see the test name, status, run, duration and failure message
+- Useful for spotting environmental issues where multiple tests fail at the same timestamp
+- Status and Only Changes filters apply to this view as well`,
     "testDurationGraphBar": "Bar: Displays test durations represented as vertical bars",
     "testDurationGraphLine": "Line: Displays the same data but over a time axis for clearer trend analysis",
     "testDurationDeviationGraphBar": `This boxplot chart displays how much test durations deviate from the average, represented as vertical bars.

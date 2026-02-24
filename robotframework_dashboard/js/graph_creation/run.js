@@ -4,6 +4,7 @@ import { get_donut_graph_data, get_donut_total_graph_data } from '../graph_data/
 import { get_duration_graph_data } from '../graph_data/duration.js';
 import { get_heatmap_graph_data } from '../graph_data/heatmap.js';
 import { get_stats_data } from '../graph_data/stats.js';
+import { build_tooltip_meta, lookup_tooltip_meta, format_status } from '../graph_data/tooltip_helpers.js';
 import { format_duration } from '../common.js';
 import { open_log_file } from '../log.js';
 import { settings } from '../variables/settings.js';
@@ -22,6 +23,7 @@ import { create_chart, update_chart } from './chart_factory.js';
 function _build_run_statistics_config() {
     const data = get_statistics_graph_data("run", settings.graphTypes.runStatisticsGraphType, filteredRuns);
     const graphData = data[0]
+    const tooltipMeta = build_tooltip_meta(filteredRuns);
     var config;
     if (settings.graphTypes.runStatisticsGraphType == "line") {
         config = get_graph_config("line", graphData, "", "Date", "Amount", false);
@@ -30,6 +32,13 @@ function _build_run_statistics_config() {
     } else if (settings.graphTypes.runStatisticsGraphType == "percentages") {
         config = get_graph_config("bar", graphData, "", "Run", "Percentage");
     }
+    config.options.plugins.tooltip = config.options.plugins.tooltip || {};
+    config.options.plugins.tooltip.callbacks = config.options.plugins.tooltip.callbacks || {};
+    config.options.plugins.tooltip.callbacks.footer = function(tooltipItems) {
+        const meta = lookup_tooltip_meta(tooltipMeta, tooltipItems);
+        if (meta) return `Duration: ${format_duration(meta.elapsed_s)}`;
+        return '';
+    };
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     return config;
 }
@@ -94,6 +103,7 @@ function create_run_stats_graph() {
 // build config for run duration graph
 function _build_run_duration_config() {
     var graphData = get_duration_graph_data("run", settings.graphTypes.runDurationGraphType, "elapsed_s", filteredRuns);
+    const tooltipMeta = build_tooltip_meta(filteredRuns);
     var config;
     if (settings.graphTypes.runDurationGraphType == "bar") {
         const limit = inFullscreen && inFullscreenGraph.includes("runDuration") ? 100 : 30;
@@ -101,6 +111,11 @@ function _build_run_duration_config() {
     } else if (settings.graphTypes.runDurationGraphType == "line") {
         config = get_graph_config("line", graphData, "", "Date", "Duration");
     }
+    config.options.plugins.tooltip.callbacks.footer = function(tooltipItems) {
+        const meta = lookup_tooltip_meta(tooltipMeta, tooltipItems);
+        if (meta) return format_status(meta);
+        return '';
+    };
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     return config;
 }

@@ -60,7 +60,10 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
                     metric,
                     alias: value.run_alias,
                     runStart: run,
-                    timesRun: Number(value.times_run)
+                    timesRun: Number(value.times_run),
+                    passed: value.passed || 0,
+                    failed: value.failed || 0,
+                    skipped: value.skipped || 0,
                 });
             } else {
                 const existing = perRunMap.get(run);
@@ -70,7 +73,10 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
                         metric,
                         alias: value.run_alias,
                         runStart: run,
-                        timesRun: Number(value.times_run)
+                        timesRun: Number(value.times_run),
+                        passed: value.passed || 0,
+                        failed: value.failed || 0,
+                        skipped: value.skipped || 0,
                     });
                 }
             }
@@ -80,7 +86,10 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
                 metric,
                 alias: value.run_alias,
                 runStart: run,
-                timesRun: Number(value.times_run)
+                timesRun: Number(value.times_run),
+                passed: value.passed || 0,
+                failed: value.failed || 0,
+                skipped: value.skipped || 0,
             });
         }
     }
@@ -96,7 +105,10 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
 
         details.get(entry.key)[entry.runStart] = {
             duration: entry.metric,
-            timesRun: entry.timesRun || entry.metricRunCount || 0
+            timesRun: entry.timesRun || entry.metricRunCount || 0,
+            passed: entry.passed || 0,
+            failed: entry.failed || 0,
+            skipped: entry.skipped || 0,
         };
     }
 

@@ -2,7 +2,10 @@ import { get_donut_folder_graph_data, get_donut_folder_fail_graph_data } from '.
 import { get_statistics_graph_data } from '../graph_data/statistics.js';
 import { get_duration_graph_data } from '../graph_data/duration.js';
 import { get_graph_config } from '../graph_data/graph_config.js';
+import { build_tooltip_meta, lookup_tooltip_meta, format_status } from '../graph_data/tooltip_helpers.js';
+import { exclude_from_suite_data } from '../graph_data/helpers.js';
 import { setup_suites_in_suite_select } from '../filter.js';
+import { format_duration } from '../common.js';
 import { dataLabelConfig } from '../variables/chartconfig.js';
 import { settings } from '../variables/settings.js';
 import { inFullscreen, inFullscreenGraph, filteredSuites } from '../variables/globals.js';
@@ -131,6 +134,10 @@ function _build_suite_statistics_config() {
     const data = get_statistics_graph_data("suite", settings.graphTypes.suiteStatisticsGraphType, filteredSuites);
     const graphData = data[0]
     const callbackData = data[1]
+    const suiteSelectSuites = document.getElementById("suiteSelectSuites").value;
+    const isCombined = suiteSelectSuites === "All Suites Combined";
+    const relevantSuites = filteredSuites.filter(s => !exclude_from_suite_data("suite", s));
+    const tooltipMeta = build_tooltip_meta(relevantSuites, 'elapsed_s', isCombined);
     var config;
     if (settings.graphTypes.suiteStatisticsGraphType == "line") {
         config = get_graph_config("line", graphData, "", "Date", "amount", false);
@@ -138,6 +145,11 @@ function _build_suite_statistics_config() {
             callbacks: {
                 title: function (tooltipItem) {
                     return `${tooltipItem[0].label}: ${callbackData[tooltipItem[0].dataIndex]}`
+                },
+                footer: function(tooltipItems) {
+                    const meta = lookup_tooltip_meta(tooltipMeta, tooltipItems);
+                    if (meta) return `Duration: ${format_duration(meta.elapsed_s)}`;
+                    return '';
                 }
             }
         }
@@ -149,6 +161,11 @@ function _build_suite_statistics_config() {
             callbacks: {
                 title: function (tooltipItem) {
                     return `${tooltipItem[0].label}: ${callbackData[tooltipItem[0].dataIndex]}`
+                },
+                footer: function(tooltipItems) {
+                    const meta = lookup_tooltip_meta(tooltipMeta, tooltipItems);
+                    if (meta) return `Duration: ${format_duration(meta.elapsed_s)}`;
+                    return '';
                 }
             }
         }
@@ -160,6 +177,11 @@ function _build_suite_statistics_config() {
             callbacks: {
                 title: function (tooltipItem) {
                     return `${tooltipItem[0].label}: ${callbackData[tooltipItem[0].dataIndex]}`
+                },
+                footer: function(tooltipItems) {
+                    const meta = lookup_tooltip_meta(tooltipMeta, tooltipItems);
+                    if (meta) return `Duration: ${format_duration(meta.elapsed_s)}`;
+                    return '';
                 }
             }
         }
@@ -171,6 +193,11 @@ function _build_suite_statistics_config() {
 // build config for suite duration graph
 function _build_suite_duration_config() {
     const graphData = get_duration_graph_data("suite", settings.graphTypes.suiteDurationGraphType, "elapsed_s", filteredSuites);
+    const suiteSelectSuites = document.getElementById("suiteSelectSuites").value;
+    const isCombined = suiteSelectSuites === "All Suites Combined";
+    // Filter suites the same way get_duration_graph_data does, so tooltip meta matches
+    const relevantSuites = filteredSuites.filter(s => !exclude_from_suite_data("suite", s));
+    const tooltipMeta = build_tooltip_meta(relevantSuites, 'elapsed_s', isCombined);
     var config;
     if (settings.graphTypes.suiteDurationGraphType == "bar") {
         const limit = inFullscreen && inFullscreenGraph.includes("suiteDuration") ? 100 : 30;
@@ -178,6 +205,11 @@ function _build_suite_duration_config() {
     } else if (settings.graphTypes.suiteDurationGraphType == "line") {
         config = get_graph_config("line", graphData, "", "Date", "Duration");
     }
+    config.options.plugins.tooltip.callbacks.footer = function(tooltipItems) {
+        const meta = lookup_tooltip_meta(tooltipMeta, tooltipItems);
+        if (meta) return format_status(meta);
+        return '';
+    };
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     return config;
 }

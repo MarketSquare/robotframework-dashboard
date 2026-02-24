@@ -98,6 +98,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
         }
         var datasets = [];
         var runAxis = 0;
+        const pointMeta = {};
         runStarts = runStarts.sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
         for (const runStart of runStarts) {
             for (const label of labels) {
@@ -112,6 +113,12 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
                 }
                 if (foundValues.length > 0) {
                     var value = foundValues[0];
+                    const statusName = value.passed == 1 ? "PASS" : value.failed == 1 ? "FAIL" : "SKIP";
+                    pointMeta[`${label}::${runAxis}`] = {
+                        status: statusName,
+                        elapsed_s: value.elapsed_s || 0,
+                        message: value.message || '',
+                    };
                     if (value.passed == 1) {
                         datasets.push({
                             label: label,
@@ -143,7 +150,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
             labels: labels,
             datasets: datasets,
         };
-        return [graphData, runStarts];
+        return [graphData, runStarts, pointMeta];
     }
 }
 
