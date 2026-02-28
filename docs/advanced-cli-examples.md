@@ -56,6 +56,13 @@ robotdashboard -o output.xml:project_custom_name
 robotdashboard -f ./results:project_1
 ```
 
+When using `project_` tags:
+- Each unique `project_` tag creates a **separate project section** on the Overview page
+- The Overview will group and display runs under the tag name instead of the run name
+- You can toggle between project-by-name and project-by-tag views in [Settings - Overview Tab](/settings#overview-settings-overview-tab)
+- The `project_` prefix text can be shown or hidden using the **Prefixes** toggle in Settings
+- Multiple `project_` tags on different outputs allow comparing different projects side by side on the Overview page
+
 ## Aliases for Clean Dashboard Identification
 
 Aliases help replace long timestamps with clean, readable names. They also significantly improve clarity in comparison views and general dashboard readability.
@@ -94,45 +101,15 @@ robotdashboard -o output_my_alias2.xml
 robotdashboard -f ./nightly_runs    
 ```
 
-## Advanced UseLogs Information
+## Log Linking
 
-Enable interactive log navigation directly from dashboard graphs.
-
-By default, graphs are not clickable, so opening log files must be done manually.
-When UseLogs is enabled, you can open log files directly from run, suite, test, and keyword graphs.
-
-### How it works
-
-- Graph items become clickable when they point to exactly one run, suite, test, or keyword.
-- If a graph point refers to multiple runs or multiple suites/tests across different runs, no log file will open.
-- For logs to open correctly, the corresponding log.html file must exist in the same directory as the output.xml.
-- The expected log filename is automatically derived by:
-    - Replacing `output` with `log`
-    - Replacing `.xml` with `.html`
-- When clicking a suite or test node that maps to exactly one suite or test, the log file will open automatically at the correct suite or test location.
-- For server behavior and storing logs on the server, see [Dashboard Server](/dashboard-server.md).
-
-### Turning on clickable logs
+The `--uselogs` (`-u`) flag enables interactive log navigation directly from dashboard graphs. When enabled, clicking on a graph element opens the corresponding `log.html` file.
 
 ```bash
 robotdashboard -u true
 ```
-Expected filename behavior is applied when clicking graphs
-```bash
-robotdashboard -u true -o path/to/output12345.xml
-```
-Log file that should exist: path/to/log12345.html
-```bash
-robotdashboard -u true -o some_test_output_file.xml
-```
-Log file that should exist: some_test_log_file.html
 
-#### Reports
-Robotframework report .htmls can be accessed through the log html:  
-- Name the report html the same as the log html, following the logic explained above
-    - Ensure the log and report are in the same directory
-    - Make sure the filenames match, except `log` being `report`
-- Then, the link to the report inside the log html at the top right corner should work
+For the full guide covering file naming conventions, local vs. server usage, and remote log uploads, see the dedicated [Log Linking](/log-linking.md) page.
 
 ## Message Config Details
 

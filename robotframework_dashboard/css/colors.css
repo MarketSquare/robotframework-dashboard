@@ -1,0 +1,58 @@
+:root {
+  --color-bg: #eee;
+  --color-card: #ffffff;
+  --color-menu-text: var(--color-text);
+  --color-highlight: #3451b2;
+  --color-text: #000000;
+  --color-text-muted: darkgrey;
+  --color-border: rgba(0, 0, 0, 0.175);
+  --color-shadow-strong: rgba(0, 0, 0, 0.5);
+  --color-shadow-soft: rgba(0, 0, 0, 0.3);
+  --color-tooltip-bg: #ffffff;
+  --color-tooltip-text: #000000;
+  --color-switch-border: #000000;
+  --switch-thumb-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='black'/></svg>");
+  --color-table-text: #000000;
+  --color-disabled-text: rgba(173, 181, 189, 0.75);
+  --color-version-dot: #ec5800;
+  --color-run-card-hover: #ec5800;
+  --color-info: dodgerblue;
+  --color-passed: rgba(151, 189, 97, 0.9);
+  --color-failed: rgba(206, 62, 1, 0.9);
+  --color-skipped: rgba(254, 216, 79, 0.9);
+  --color-modal-bg: var(--color-bg);
+  --color-section-card-bg: #ffffff;
+  --color-section-card-text: var(--color-text);
+  --color-section-card-border: transparent;
+  --color-fullscreen-bg: #ffffff;
+}
+
+.dark-mode {
+  color-scheme: dark;
+  --color-bg: #0f172a;
+  --color-card: rgba(30, 41, 59, 0.9);
+  --color-menu-text: var(--color-text);
+  --color-highlight: #a8b1ff;
+  --color-text: #eee;
+  --color-text-muted: #9ca3af;
+  --color-border: rgba(255, 255, 255, 0.15);
+  --color-shadow-strong: rgba(0, 0, 0, 0.5);
+  --color-shadow-soft: rgba(0, 0, 0, 0.3);
+  --color-tooltip-bg: #0f172a;
+  --color-tooltip-text: #eee;
+  --color-switch-border: #eee;
+  --switch-thumb-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='white'/></svg>");
+  --color-table-text: #eee;
+  --color-disabled-text: rgba(173, 181, 189, 0.75);
+  --color-version-dot: #ec5800;
+  --color-run-card-hover: #ec5800;
+  --color-info: dodgerblue;
+  --color-passed: rgba(151, 189, 97, 0.9);
+  --color-failed: rgba(206, 62, 1, 0.9);
+  --color-skipped: rgba(254, 216, 79, 0.9);
+  --color-modal-bg: var(--color-bg);
+  --color-section-card-bg: rgba(30, 41, 59, 0.9);
+  --color-section-card-text: var(--color-text);
+  --color-section-card-border: rgba(255, 255, 255, 0.1);
+  --color-fullscreen-bg: rgba(30, 41, 59, 1);
+}

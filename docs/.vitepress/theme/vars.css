@@ -114,6 +114,12 @@ html.dark table {
   background-color: var(--vp-c-content-bg);
 }
 
+/* Ensure tables always fill the available width */
+.vp-doc table {
+  width: 100%;
+  display: table;
+}
+
 /* Table header row */
 html.dark table th {
   background-color: #0d1b3f; /* slightly darker than table rows */

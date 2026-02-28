@@ -37,6 +37,24 @@ var settings = {
         rounding: 6,
         prefixes: true,
     },
+    theme_colors: {
+        light: {
+            background: '#eee',
+            card: '#ffffff',
+            highlight: '#3451b2',
+            text: '#000000',
+        },
+        dark: {
+            background: '#0f172a',
+            card: 'rgba(30, 41, 59, 0.9)',
+            highlight: '#a8b1ff',
+            text: '#eee',
+        },
+        custom: {
+            light: {},
+            dark: {},
+        }
+    },
     menu: {
         overview: false,
         dashboard: true,

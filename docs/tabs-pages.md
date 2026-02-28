@@ -18,6 +18,15 @@ For a more in depth explanation, hover over the "i" icons in the Overview Statis
 ## Dashboard Page
 The Dashboard page offers rich, interactive visualizations for a detailed analysis of test results. Graphs are available at four levels—runs, suites, tests, and keywords—allowing teams to track performance, detect flaky tests, and monitor trends over time. The layout is fully customizable (see [Customization](customization.md)). You can drag and drop graphs and sections to create your preferred view. Most graphs support multiple display modes, including timeline, percentage, bar, donut, and advanced types like boxplots and heatmaps. Each graph also provides detailed popups to explain what the view represents and how the data is calculated (see [Graphs & Tables](graphs-tables.md)).
 
+### Unified Mode
+The Dashboard supports a **Unified Mode** that combines all four sections (run, suite, test, keyword) into a single scrollable view instead of separate tabbed sections. This can be enabled via [Settings - Graphs Tab](/settings#general-settings-graphs-tab) using the **Unified Dashboard Sections** toggle.
+
+In Unified Mode:
+- All graphs from all sections are shown on one page
+- A **Section Filters** button opens a modal for cross-section filtering (suite, test, and keyword filters)
+- The page title defaults to "Dashboard Statistics" or uses the custom `--dashboardtitle` value if provided
+- Layout customization and persistence works independently from the standard view
+
 ## Compare Page
 The Compare page enables side-by-side comparison of up to four test runs. It presents comprehensive statistics, charts, and summaries for each run, making it simple to identify differences, trends, regressions, or improvements between builds or environments.
 

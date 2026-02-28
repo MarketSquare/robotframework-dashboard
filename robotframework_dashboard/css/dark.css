@@ -1,0 +1,28 @@
+.modal-dialog {
+  background: var(--color-modal-bg);
+  color: var(--color-text);
+}
+
+.modal-content {
+  background: var(--color-modal-bg);
+}
+
+.dark-mode .list-group-item:not(.disabled),
+.dark-mode .form-label,
+.dark-mode .form-control,
+.dark-mode .form-select {
+  color: var(--color-text);
+}
+
+.dark-mode .list-group-item .disabled {
+  color: var(--color-disabled-text);
+}
+
+.dark-mode .collapse-icon {
+  color: var(--color-text);
+}
+
+.dark-mode .stat-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

@@ -1,6 +1,7 @@
 import { settings } from './variables/settings.js';
 import { compareRunIds } from './variables/graphs.js';
 import { runs, suites, tests, keywords, unified_dashboard_title } from './variables/data.js';
+import { show_loading_overlay, hide_loading_overlay } from './common.js';
 import {
     filteredAmount,
     filteredRuns,
@@ -497,19 +498,25 @@ function unselect_checkboxes(checkBoxesToUnselect) {
 }
 
 function handle_overview_latest_version_selection(overviewVersionSelectorList, latestRunByProject) {
-    const selectedOptions = Array.from(
-        overviewVersionSelectorList.querySelectorAll("input:checked")
-    ).map(inputElement => inputElement.value);
-    if (selectedOptions.includes("All")) {
-        create_overview_latest_graphs(latestRunByProject);
-    } else {
-        const filteredLatestRunByProject = Object.fromEntries(
-            Object.entries(latestRunByProject)
-                .filter(([projectName, run]) => selectedOptions.includes(run.project_version ?? "None"))
-        );
-        create_overview_latest_graphs(filteredLatestRunByProject);
-    }
-    update_overview_latest_heading();
+    show_loading_overlay();
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            const selectedOptions = Array.from(
+                overviewVersionSelectorList.querySelectorAll("input:checked")
+            ).map(inputElement => inputElement.value);
+            if (selectedOptions.includes("All")) {
+                create_overview_latest_graphs(latestRunByProject);
+            } else {
+                const filteredLatestRunByProject = Object.fromEntries(
+                    Object.entries(latestRunByProject)
+                        .filter(([projectName, run]) => selectedOptions.includes(run.project_version ?? "None"))
+                );
+                create_overview_latest_graphs(filteredLatestRunByProject);
+            }
+            update_overview_latest_heading();
+            hide_loading_overlay();
+        });
+    });
 }
 
 // this function updates the version select list in the latest runs bar

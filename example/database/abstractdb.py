@@ -35,7 +35,7 @@ class AbstractDatabaseProcessor(ABC):
     
     @abstractmethod
     def insert_output_data(
-        self, output_data: dict, tags: list, run_alias: str, path: Path
+        self, output_data: dict, tags: list, run_alias: str, path: Path, project_version: str
     ) -> None:
         """Mandatory: This function inserts the data of an output file into the database"""
         pass

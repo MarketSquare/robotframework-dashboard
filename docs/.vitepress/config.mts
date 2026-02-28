@@ -5,6 +5,11 @@ import { resolve } from 'node:path';
 const python_svg = readFileSync("docs/public/python.svg", "utf-8");
 const slack_svg = readFileSync("docs/public/slack.svg", "utf-8");
 
+// Read version from version.py
+const versionFile = readFileSync("robotframework_dashboard/version.py", "utf-8");
+const versionMatch = versionFile.match(/Robotdashboard\s+([\d.]+)/);
+const version = versionMatch ? versionMatch[1] : "unknown";
+
 export default defineConfig({
   title: "RobotDashboard",
   description: "Robot Framework Dashboard and Result Database command line tool",
@@ -53,7 +58,13 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/getting-started.md' },
-      { text: 'Example Dashboard', link: '/example/robot_dashboard.html', target: '_self' }
+      { text: 'Example Dashboard', link: '/example/robot_dashboard.html', target: '_self' },
+      {
+        text: `v${version}`,
+        items: [
+          { text: 'Changelog', link: 'https://github.com/marketsquare/robotframework-dashboard/releases' },
+        ]
+      }
     ],
     sidebar: [
       {
@@ -86,6 +97,7 @@ export default defineConfig({
           { text: '🖥️ Dashboard Server', link: '/dashboard-server.md' },
           { text: '🗄️ Custom Database Class', link: '/custom-database-class.md' },
           { text: '🔔 Listener Integration', link: '/listener-integration.md' },
+          { text: '📂 Log Linking', link: '/log-linking.md' },
         ]
       },
         { text: '🤝 Contributions', link: '/contributions.md' }

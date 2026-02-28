@@ -84,5 +84,5 @@ export {
     skippedConfig,
     blueConfig,
     lineConfig,
-    dataLabelConfig
+    dataLabelConfig,
 };

@@ -45,41 +45,21 @@ const informationMap = {
     "runStatisticsGraphPercentages": "Percentages: Displays the distribution of passed, failed, skipped tests per run, where 100% equals all tests combined",
     "runStatisticsGraphAmount": "Amount: Displays the actual number of passed, failed, skipped tests per run",
     "runStatisticsGraphLine": "Line: Displays the same data but over a time axis, useful for spotting failure patterns on specific dates or times",
-    "runStatisticsFullscreen": "Fullscreen",
-    "runStatisticsClose": "Close",
-    "runStatisticsShown": "Hide Graph",
-    "runStatisticsHidden": "Show Graph",
     "runDonutGraphDonut": `This graph contains two donut charts:
 - The first donut displays the percentage of passed, failed, and skipped tests for the most recent run..
 - The second donut displays the total percentage of passed, failed, and skipped tests across all runs`,
-    "runDonutFullscreen": "Fullscreen",
-    "runDonutClose": "Close",
-    "runDonutShown": "Hide Graph",
-    "runDonutHidden": "Show Graph",
     "runStatsGraphStats": `This section provides key statistics:
 - Executed: Total counts of Runs, Suites, Tests, and Keywords that have been executed.
 - Unique Tests: Displays the number of distinct test cases across all runs.
 - Outcomes: Total Passed, Failed, and Skipped tests, including their percentages relative to the full test set.
 - Duration: Displays the cumulative runtime of all runs, the average runtime per run, and the average duration of individual tests.
 - Pass Rate: Displays the average run-level pass rate, helping evaluate overall reliability over time.`,
-    "runStatsFullscreen": "Fullscreen",
-    "runStatsClose": "Close",
-    "runStatsShown": "Hide Graph",
-    "runStatsHidden": "Show Graph",
     "runDurationGraphBar": "Bar: Displays total run durations represented as vertical bars",
     "runDurationGraphLine": "Displays the same data but over a time axis for clearer trend analysis",
-    "runDurationFullscreen": "Fullscreen",
-    "runDurationClose": "Close",
-    "runDurationShown": "Hide Graph",
-    "runDurationHidden": "Show Graph",
     "runHeatmapGraphHeatmap": `This graph visualizes a heatmap of when tests are executed the most:
 - All: Displays how many tests ran during the hours or minutes of the week days.
 - Status: Displays only tests of the selected status.
 - Hour: Displays only that hour so you get insights per minute.`,
-    "runHeatmapFullscreen": "Fullscreen",
-    "runHeatmapClose": "Close",
-    "runHeatmapShown": "Hide Graph",
-    "runHeatmapHidden": "Show Graph",
     "suiteFolderDonutGraphDonut": `This graph contains two donut charts:
 - The first donut displays the top-level folders of the suites and the amount of tests each folder contains.
 - The second donut displays the same folder structure but only for the most recent run and only includes failed tests.
@@ -87,208 +67,109 @@ const informationMap = {
 - Navigating folders also updates Suite Statistics and Suite Duration.
 - Go Up: navigates to the parent folder level.
 - Only Failed: filters to show only folders with failing tests.`,
-    "suiteFolderDonutFullscreen": "Fullscreen",
-    "suiteFolderDonutClose": "Close",
-    "suiteFolderDonutShown": "Hide Graph",
-    "suiteFolderDonutHidden": "Show Graph",
     "suiteStatisticsGraphPercentages": "Percentages: Displays the passed, failed, skipped rate of test suites per run",
     "suiteStatisticsGraphAmount": "Amount: Displays the actual number of passed, failed, skipped suites per run",
     "suiteStatisticsGraphLine": "Line: Displays the same data but over a time axis, useful for spotting failure patterns on specific dates or times",
-    "suiteStatisticsFullscreen": "Fullscreen",
-    "suiteStatisticsClose": "Close",
-    "suiteStatisticsShown": "Hide Graph",
-    "suiteStatisticsHidden": "Show Graph",
     "suiteDurationGraphBar": "Bar: Displays total suite durations represented as vertical bars",
     "suiteDurationGraphLine": "Line: Displays the same data but over a time axis for clearer trend analysis",
-    "suiteDurationFullscreen": "Fullscreen",
-    "suiteDurationClose": "Close",
-    "suiteDurationShown": "Hide Graph",
-    "suiteDurationHidden": "Show Graph",
     "suiteMostFailedGraphBar": "Bar: Displays suites ranked by number of failures represented as vertical bars. The default view shows the Top 10 most failed suites; fullscreen expands this to the Top 50.",
     "suiteMostFailedGraphTimeline": "Timeline: Displays when failures occurred to identify clustering over time. The default view shows the Top 10 most failed suites; fullscreen expands this to the Top 50",
-    "suiteMostFailedFullscreen": "Fullscreen",
-    "suiteMostFailedClose": "Close",
-    "suiteMostFailedShown": "Hide Graph",
-    "suiteMostFailedHidden": "Show Graph",
     "suiteMostTimeConsumingGraphBar": "Bar: Displays suites ranked by how often they were the slowest (most time-consuming) suite in a run. Each bar represents how many times a suite was the single slowest one across all runs. The regular view shows the Top 10; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most time-consuming suites *within the latest run only*, ranked by duration.",
     "suiteMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest suite for each run on a timeline. For every run, only the single most time-consuming suite is shown. The regular view shows the Top 10 most frequently slowest suites; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming suites by duration.",
-    "suiteMostTimeConsumingFullscreen": "Fullscreen",
-    "suiteMostTimeConsumingClose": "Close",
-    "suiteMostTimeConsumingShown": "Hide Graph",
-    "suiteMostTimeConsumingHidden": "Show Graph",
     "testStatisticsGraphTimeline": `This graph displays the statistics of the tests in a timeline format
 Status: Displays only tests don't have any status changes and have the selected status
 Only Changes: Displays only tests that have changed statuses at some point in time
 Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph`,
-    "testStatisticsFullscreen": "Fullscreen",
-    "testStatisticsClose": "Close",
-    "testStatisticsShown": "Hide Graph",
-    "testStatisticsHidden": "Show Graph",
+    "testStatisticsGraphLine": `Scatter: Displays test results as dots on a time axis, with each row representing a different test
+- Green dots indicate passed, red dots indicate failed, and yellow dots indicate skipped tests
+- The horizontal spacing between dots is proportional to the actual time between executions
+- Hover over a dot to see the test name, status, run, duration and failure message
+- Useful for spotting environmental issues where multiple tests fail at the same timestamp
+- Status and Only Changes filters apply to this view as well`,
     "testDurationGraphBar": "Bar: Displays test durations represented as vertical bars",
     "testDurationGraphLine": "Line: Displays the same data but over a time axis for clearer trend analysis",
-    "testDurationFullscreen": "Fullscreen",
-    "testDurationClose": "Close",
-    "testDurationShown": "Hide Graph",
-    "testDurationHidden": "Show Graph",
     "testDurationDeviationGraphBar": `This boxplot chart displays how much test durations deviate from the average, represented as vertical bars.
 It helps identify tests with inconsistent execution times, which might be flaky or worth investigating`,
-    "testDurationDeviationFullscreen": "Fullscreen",
-    "testDurationDeviationClose": "Close",
-    "testDurationDeviationShown": "Hide Graph",
-    "testDurationDeviationHidden": "Show Graph",
     "testMessagesGraphBar": `Bar: Displays messages ranked by number of occurrences represented as vertical bars
 - The regular view shows the Top 10 most frequent messages; fullscreen mode expands this to the Top 50.
 - To generalize messages (e.g., group similar messages), use the -m/--messageconfig option in the CLI (--help or README).`,
     "testMessagesGraphTimeline": `Timeline: Displays when those messages occurred to reveal problem spikes
 - The regular view shows the Top 10 most frequent messages; fullscreen mode expands this to the Top 50.
 - To generalize messages (e.g., group similar messages), use the -m/--messageconfig option in the CLI (--help or README).`,
-    "testMessagesFullscreen": "Fullscreen",
-    "testMessagesClose": "Close",
-    "testMessagesShown": "Hide Graph",
-    "testMessagesHidden": "Show Graph",
     "testMostFlakyGraphBar": `Bar: Displays tests ranked by frequency of status changes represented as vertical bars
 - The regular view shows the Top 10 flaky tests; fullscreen mode expands the list to the Top 50.
 - Ignore Skips: filters to only count passed/failed as status flips and not skips.`,
     "testMostFlakyGraphTimeline": `Timeline: Displays when the status changes occurred across runs
 - The regular view shows the Top 10 flaky tests; fullscreen mode expands the list to the Top 50.
 - Ignore Skips: filters to only count passed/failed as status flips and not skips.`,
-    "testMostFlakyFullscreen": "Fullscreen",
-    "testMostFlakyClose": "Close",
-    "testMostFlakyShown": "Hide Graph",
-    "testMostFlakyHidden": "Show Graph",
     "testRecentMostFlakyGraphBar": `Bar: Displays tests ranked by frequency of recent status changes represented as vertical bars
 - The regular view shows the Top 10 flaky tests; fullscreen mode expands the list to the Top 50.
 - Ignore Skips: filters to only count passed/failed as status flips and not skips.`,
     "testRecentMostFlakyGraphTimeline": `Timeline: Displays when the status changes occurred across runs
 - The regular view shows the Top 10 flaky tests; fullscreen mode expands the list to the Top 50.
 - Ignore Skips: filters to only count passed/failed as status flips and not skips.`,
-    "testRecentMostFlakyFullscreen": "Fullscreen",
-    "testRecentMostFlakyClose": "Close",
-    "testRecentMostFlakyShown": "Hide Graph",
-    "testRecentMostFlakyHidden": "Show Graph",
     "testMostFailedGraphBar": `Bar: Displays tests ranked by total number of failures represented as vertical bars. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
     "testMostFailedGraphTimeline": `Displays when failures occurred across runs. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
-    "testMostFailedFullscreen": "Fullscreen",
-    "testMostFailedClose": "Close",
-    "testMostFailedShown": "Hide Graph",
-    "testMostFailedHidden": "Show Graph",
     "testRecentMostFailedGraphBar": `Bar: Displays recent tests ranked by total number of failures represented as vertical bars. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
     "testRecentMostFailedGraphTimeline": `Displays when most recent failures occurred across runs. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
-    "testRecentMostFailedFullscreen": "Fullscreen",
-    "testRecentMostFailedClose": "Close",
-    "testRecentMostFailedShown": "Hide Graph",
-    "testRecentMostFailedHidden": "Show Graph",
     "testMostTimeConsumingGraphBar": "Bar: Displays tests ranked by how often they were the slowest (most time-consuming) test in a run. Each bar represents how many times a test was the single slowest one across all runs. The regular view shows the Top 10; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most time-consuming tests *within the latest run only*, ranked by duration.",
     "testMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest test for each run on a timeline. For every run, only the single most time-consuming test is shown. The regular view shows the Top 10 most frequently slowest tests; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming tests by duration.",
-    "testMostTimeConsumingFullscreen": "Fullscreen",
-    "testMostTimeConsumingClose": "Close",
-    "testMostTimeConsumingShown": "Hide Graph",
-    "testMostTimeConsumingHidden": "Show Graph",
     "keywordStatisticsGraphPercentages": "Percentages: Displays the distribution of passed, failed, skipped statuses for each keyword per run",
     "keywordStatisticsGraphAmount": "Amount: Displays raw counts of each status per run",
     "keywordStatisticsGraphLine": "Line: Displays the same data but over a time axis",
-    "keywordStatisticsFullscreen": "Fullscreen",
-    "keywordStatisticsClose": "Close",
-    "keywordStatisticsShown": "Hide Graph",
-    "keywordStatisticsHidden": "Show Graph",
     "keywordTimesRunGraphBar": "Bar: Displays times run per keyword represented as vertical bars",
     "keywordTimesRunGraphLine": "Line: Displays the same data but over a time axis",
-    "keywordTimesRunFullscreen": "Fullscreen",
-    "keywordTimesRunClose": "Close",
-    "keywordTimesRunShown": "Hide Graph",
-    "keywordTimesRunHidden": "Show Graph",
     "keywordTotalDurationGraphBar": "Bar: Displays the cumulative time each keyword ran during each run represented as vertical bars",
     "keywordTotalDurationGraphLine": "Line: Displays the same data but over a time axis",
-    "keywordTotalDurationFullscreen": "Fullscreen",
-    "keywordTotalDurationClose": "Close",
-    "keywordTotalDurationShown": "Hide Graph",
-    "keywordTotalDurationHidden": "Show Graph",
     "keywordAverageDurationGraphBar": "Bar: Displays the average duration for each keyword represented as vertical bars",
     "keywordAverageDurationGraphLine": "Line: Displays the same data but over a time axis",
-    "keywordAverageDurationFullscreen": "Fullscreen",
-    "keywordAverageDurationClose": "Close",
-    "keywordAverageDurationShown": "Hide Graph",
-    "keywordAverageDurationHidden": "Show Graph",
     "keywordMinDurationGraphBar": "Bar: Displays minimum durations represented as vertical bars",
     "keywordMinDurationGraphLine": "Line: Displays the same data but over a time axis",
-    "keywordMinDurationFullscreen": "Fullscreen",
-    "keywordMinDurationClose": "Close",
-    "keywordMinDurationShown": "Hide Graph",
-    "keywordMinDurationHidden": "Show Graph",
     "keywordMaxDurationGraphBar": "Bar: Displays maximum durations represented as vertical bars",
     "keywordMaxDurationGraphLine": "Line: Displays the same data but over a time axis",
-    "keywordMaxDurationFullscreen": "Fullscreen",
-    "keywordMaxDurationClose": "Close",
-    "keywordMaxDurationShown": "Hide Graph",
-    "keywordMaxDurationHidden": "Show Graph",
     "keywordMostFailedGraphBar": "Bar: Displays keywords ranked by total number of failures represented as vertical bars. The regular view shows the Top 10 most failed keywords; fullscreen mode expands the list to the Top 50.",
     "keywordMostFailedGraphTimeline": "Timeline: Displays when failures occurred across runs. The regular view shows the Top 10 most failed keywords; fullscreen mode expands the list to the Top 50.",
-    "keywordMostFailedFullscreen": "Fullscreen",
-    "keywordMostFailedClose": "Close",
-    "keywordMostFailedShown": "Hide Graph",
-    "keywordMostFailedHidden": "Show Graph",
     "keywordMostTimeConsumingGraphBar": "Bar: Displays keywords ranked by how often they were the slowest (most time-consuming) keyword in a run. Each bar represents how many times a keyword was the single slowest one across all runs. The regular view shows the Top 10; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most time-consuming keywords *within the latest run only*, ranked by duration.",
     "keywordMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest keyword for each run on a timeline. For every run, only the single most time-consuming keyword is shown. The regular view shows the Top 10 most frequently slowest keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming keywords by duration.",
-    "keywordMostTimeConsumingFullscreen": "Fullscreen",
-    "keywordMostTimeConsumingClose": "Close",
-    "keywordMostTimeConsumingShown": "Hide Graph",
-    "keywordMostTimeConsumingHidden": "Show Graph",
     "keywordMostUsedGraphBar": "Bar: Displays keywords ranked by how frequently they were used across all runs. Each bar represents how many times a keyword appeared in total. The regular view shows the Top 10 most used keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most used keywords *within the latest run only*, ranked by occurrence count.",
     "keywordMostUsedGraphTimeline": "Timeline: Displays keyword usage trends over time. For each run, the most frequently used keyword (or keywords) is shown, illustrating how keyword usage changes across runs. The regular view highlights the Top 10 most frequently used keywords overall; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most used keywords by frequency.",
-    "keywordMostUsedFullscreen": "Fullscreen",
-    "keywordMostUsedClose": "Close",
-    "keywordMostUsedShown": "Hide Graph",
-    "keywordMostUsedHidden": "Show Graph",
     "compareStatisticsGraphBar": "This graph displays the overall statistics of the selected runs",
-    "compareStatisticsFullscreen": "Fullscreen",
-    "compareStatisticsClose": "Close",
-    "compareStatisticsShown": "Hide Graph",
-    "compareStatisticsHidden": "Show Graph",
     "compareSuiteDurationGraphRadar": "This graph displays the duration per suite in a radar format",
-    "compareSuiteDurationFullscreen": "Fullscreen",
-    "compareSuiteDurationClose": "Close",
-    "compareSuiteDurationShown": "Hide Graph",
-    "compareSuiteDurationHidden": "Show Graph",
     "compareTestsGraphTimeline": `This graph displays the statistics of the tests in a timeline format
 Status: Displays only tests don't have any status changes and have the selected status
 Only Changes: Displays only tests that have changed statuses at some point in time
 Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph`,
-    "compareTestsFullscreen": "Fullscreen",
-    "compareTestsClose": "Close",
-    "compareTestsShown": "Hide Graph",
-    "compareTestsHidden": "Show Graph",
-    "runTableMoveUp": "Move Up",
-    "runTableMoveDown": "Move Down",
-    "runTableShown": "Hide Table",
-    "runTableHidden": "Show Table",
-    "suiteTableMoveUp": "Move Up",
-    "suiteTableMoveDown": "Move Down",
-    "suiteTableShown": "Hide Table",
-    "suiteTableHidden": "Show Table",
-    "testTableMoveUp": "Move Up",
-    "testTableMoveDown": "Move Down",
-    "testTableShown": "Hide Table",
-    "testTableHidden": "Show Table",
-    "keywordTableMoveUp": "Move Up",
-    "keywordTableMoveDown": "Move Down",
-    "keywordTableShown": "Hide Table",
-    "keywordTableHidden": "Show Table",
-    "runSectionMoveUp": "Move Up",
-    "runSectionMoveDown": "Move Down",
-    "runSectionShown": "Hide Section",
-    "runSectionHidden": "Show Section",
-    "suiteSectionMoveUp": "Move Up",
-    "suiteSectionMoveDown": "Move Down",
-    "suiteSectionShown": "Hide Section",
-    "suiteSectionHidden": "Show Section",
-    "testSectionMoveUp": "Move Up",
-    "testSectionMoveDown": "Move Down",
-    "testSectionShown": "Hide Section",
-    "testSectionHidden": "Show Section",
-    "keywordSectionMoveUp": "Move Up",
-    "keywordSectionMoveDown": "Move Down",
-    "keywordSectionShown": "Hide Section",
-    "keywordSectionHidden": "Show Section",
-}
+};
+
+// Generate standard control entries for all graphs
+const graphKeys = [
+    "runStatistics", "runDonut", "runStats", "runDuration", "runHeatmap",
+    "suiteFolderDonut", "suiteStatistics", "suiteDuration", "suiteMostFailed", "suiteMostTimeConsuming",
+    "testStatistics", "testDuration", "testDurationDeviation", "testMessages",
+    "testMostFlaky", "testRecentMostFlaky", "testMostFailed", "testRecentMostFailed", "testMostTimeConsuming",
+    "keywordStatistics", "keywordTimesRun", "keywordTotalDuration", "keywordAverageDuration",
+    "keywordMinDuration", "keywordMaxDuration", "keywordMostFailed", "keywordMostTimeConsuming", "keywordMostUsed",
+    "compareStatistics", "compareSuiteDuration", "compareTests",
+];
+graphKeys.forEach(key => {
+    informationMap[`${key}Fullscreen`] = "Fullscreen";
+    informationMap[`${key}Close`] = "Close";
+    informationMap[`${key}Shown`] = "Hide Graph";
+    informationMap[`${key}Hidden`] = "Show Graph";
+});
+
+["runTable", "suiteTable", "testTable", "keywordTable"].forEach(key => {
+    informationMap[`${key}MoveUp`] = "Move Up";
+    informationMap[`${key}MoveDown`] = "Move Down";
+    informationMap[`${key}Shown`] = "Hide Table";
+    informationMap[`${key}Hidden`] = "Show Table";
+});
+
+["runSection", "suiteSection", "testSection", "keywordSection"].forEach(key => {
+    informationMap[`${key}MoveUp`] = "Move Up";
+    informationMap[`${key}MoveDown`] = "Move Down";
+    informationMap[`${key}Shown`] = "Hide Section";
+    informationMap[`${key}Hidden`] = "Show Section";
+});
 
 export { informationMap };

@@ -1,12 +1,14 @@
 import { settings } from "../variables/settings.js";
-import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
 
 // function to prepare the data in the correct format for (recent) most flaky test graph
-function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) {
+function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, limit) {
     var data = {};
     for (const value of filteredData) {
+        if (ignore && value.skipped == 1) {
+            continue;
+        }
         const key = settings.switch.suitePathsTestSection ? value.full_name : value.name;
         if (data[key]) {
             data[key]["run_starts"].push(value.run_start);
@@ -61,12 +63,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) 
             return new Date(b[1].failed_run_starts[b[1].failed_run_starts.length - 1]).getTime() - new Date(a[1].failed_run_starts[a[1].failed_run_starts.length - 1]).getTime()
         })
     }
-    var limit
-    if (recent) {
-        limit = inFullscreen && inFullscreenGraph.includes("testRecentMostFlaky") ? 50 : 10;
-    } else {
-        limit = inFullscreen && inFullscreenGraph.includes("testMostFlaky") ? 50 : 10;
-    }
+
     if (graphType == "bar") {
         var [datasets, labels, count] = [[], [], 0];
         for (const key in sortedData) {
@@ -101,6 +98,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) 
         }
         var datasets = [];
         var runAxis = 0;
+        const pointMeta = {};
         runStarts = runStarts.sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
         for (const runStart of runStarts) {
             for (const label of labels) {
@@ -115,6 +113,12 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) 
                 }
                 if (foundValues.length > 0) {
                     var value = foundValues[0];
+                    const statusName = value.passed == 1 ? "PASS" : value.failed == 1 ? "FAIL" : "SKIP";
+                    pointMeta[`${label}::${runAxis}`] = {
+                        status: statusName,
+                        elapsed_s: value.elapsed_s || 0,
+                        message: value.message || '',
+                    };
                     if (value.passed == 1) {
                         datasets.push({
                             label: label,
@@ -146,7 +150,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent) 
             labels: labels,
             datasets: datasets,
         };
-        return [graphData, runStarts];
+        return [graphData, runStarts, pointMeta];
     }
 }
 

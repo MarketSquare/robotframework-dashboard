@@ -108,49 +108,61 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
     return [statisticsData, names];
 }
 
-function get_test_statistics_data(filteredTests) {
-    const suiteSelectTests = document.getElementById("suiteSelectTests").value;
-    const testSelect = document.getElementById("testSelect").value;
-    const testTagsSelect = document.getElementById("testTagsSelect").value;
-    const testOnlyChanges = document.getElementById("testOnlyChanges").checked;
-    const testNoChanges = document.getElementById("testNoChanges").value;
-    const compareOnlyChanges = document.getElementById("compareOnlyChanges").checked;
-    const compareNoChanges = document.getElementById("compareNoChanges").value;
-    const selectedRuns = [...new Set(
-        compareRunIds
-            .map(id => document.getElementById(id).value)
-            .filter(val => val !== "None")
-    )];
-    const [runStarts, datasets] = [[], []];
-    var labels = [];
-    function getTestLabel(test) {
-        if (settings.menu.dashboard) {
-            return settings.switch.suitePathsTestSection ? test.full_name : test.name;
-        } else if (settings.menu.compare) {
-            return settings.switch.suitePathsCompareSection ? test.full_name : test.name;
-        }
-        return test.name;
-    }
-    for (const test of filteredTests) {
-        if (settings.menu.dashboard) {
-            const testBaseName = test.name;
-            if (suiteSelectTests !== "All") {
-                const expectedFull = `${suiteSelectTests}.${testBaseName}`;
-                const isMatch = settings.switch.suitePathsTestSection
-                    ? test.full_name === expectedFull
-                    : test.full_name.includes(`.${suiteSelectTests}.${testBaseName}`) || test.full_name === expectedFull;
-                if (!isMatch) continue;
-            }
-            if (testSelect !== "All" && testBaseName !== testSelect) continue;
+function _get_test_filters() {
+    return {
+        suiteSelectTests: document.getElementById("suiteSelectTests").value,
+        testSelect: document.getElementById("testSelect").value,
+        testTagsSelect: document.getElementById("testTagsSelect").value,
+        testOnlyChanges: document.getElementById("testOnlyChanges").checked,
+        testNoChanges: document.getElementById("testNoChanges").value,
+        compareOnlyChanges: document.getElementById("compareOnlyChanges").checked,
+        compareNoChanges: document.getElementById("compareNoChanges").value,
+        selectedRuns: [...new Set(
+            compareRunIds
+                .map(id => document.getElementById(id).value)
+                .filter(val => val !== "None")
+        )],
+    };
+}
 
-            if (testTagsSelect !== "All") {
-                const tagList = test.tags.replace(/\[|\]/g, "").split(",");
-                if (!tagList.includes(testTagsSelect)) continue;
-            }
-        } else if (settings.menu.compare) {
-            if (!(selectedRuns.includes(test.run_start) || selectedRuns.includes(test.run_alias))) continue;
+function _get_test_label(test) {
+    if (settings.menu.dashboard) {
+        return settings.switch.suitePathsTestSection ? test.full_name : test.name;
+    } else if (settings.menu.compare) {
+        return settings.switch.suitePathsCompareSection ? test.full_name : test.name;
+    }
+    return test.name;
+}
+
+function _should_skip_test(test, filters) {
+    if (settings.menu.dashboard) {
+        const testBaseName = test.name;
+        if (filters.suiteSelectTests !== "All") {
+            const expectedFull = `${filters.suiteSelectTests}.${testBaseName}`;
+            const isMatch = settings.switch.suitePathsTestSection
+                ? test.full_name === expectedFull
+                : test.full_name.includes(`.${filters.suiteSelectTests}.${testBaseName}`) || test.full_name === expectedFull;
+            if (!isMatch) return true;
         }
-        const testLabel = getTestLabel(test);
+        if (filters.testSelect !== "All" && testBaseName !== filters.testSelect) return true;
+        if (filters.testTagsSelect !== "All") {
+            const tagList = test.tags.replace(/\[|\]/g, "").split(",");
+            if (!tagList.includes(filters.testTagsSelect)) return true;
+        }
+    } else if (settings.menu.compare) {
+        if (!(filters.selectedRuns.includes(test.run_start) || filters.selectedRuns.includes(test.run_alias))) return true;
+    }
+    return false;
+}
+
+function get_test_statistics_data(filteredTests) {
+    const filters = _get_test_filters();
+    const [runStarts, datasets] = [[], []];
+    const testMetaMap = {};
+    var labels = [];
+    for (const test of filteredTests) {
+        if (_should_skip_test(test, filters)) continue;
+        const testLabel = _get_test_label(test);
         if (!labels.includes(testLabel)) {
             labels.push(testLabel);
         }
@@ -160,6 +172,7 @@ function get_test_statistics_data(filteredTests) {
             runStarts.push(runId);
         }
         const runAxis = runStarts.indexOf(runId);
+        const statusName = test.passed == 1 ? "PASS" : test.failed == 1 ? "FAIL" : "SKIP";
         const config =
             test.passed == 1 ? passedConfig :
                 test.failed == 1 ? failedConfig :
@@ -171,22 +184,27 @@ function get_test_statistics_data(filteredTests) {
                 ...config,
             });
         }
+        testMetaMap[`${testLabel}::${runAxis}`] = {
+            message: test.message || '',
+            elapsed_s: test.elapsed_s || 0,
+            status: statusName,
+        };
     }
     let finalDatasets = convert_timeline_data(datasets);
-    if ((testOnlyChanges && testNoChanges !== "All") || (compareOnlyChanges && compareNoChanges !== "All")) {
+    if ((filters.testOnlyChanges && filters.testNoChanges !== "All") || (filters.compareOnlyChanges && filters.compareNoChanges !== "All")) {
         // If both filters are set, return empty data, as nothing can match this
-        return [{ labels: [], datasets: [] }, []];
+        return [{ labels: [], datasets: [] }, [], {}];
     }
-    if (testOnlyChanges || compareOnlyChanges || testNoChanges !== "All" || compareNoChanges !== "All") {
+    if (filters.testOnlyChanges || filters.compareOnlyChanges || filters.testNoChanges !== "All" || filters.compareNoChanges !== "All") {
         const countMap = {};
         for (const ds of finalDatasets) {
             countMap[ds.label] = (countMap[ds.label] || 0) + 1;
         }
         let labelsToKeep = new Set();
-        if (testOnlyChanges || compareOnlyChanges) {
+        if (filters.testOnlyChanges || filters.compareOnlyChanges) {
             // Only keep the tests that have more than 1 status change
             labelsToKeep = new Set(Object.keys(countMap).filter(label => countMap[label] > 1));
-        } else if (testNoChanges !== "All" || compareNoChanges !== "All") {
+        } else if (filters.testNoChanges !== "All" || filters.compareNoChanges !== "All") {
             const countMap = {};
             for (const ds of finalDatasets) {
                 countMap[ds.label] = (countMap[ds.label] || 0) + 1;
@@ -198,17 +216,16 @@ function get_test_statistics_data(filteredTests) {
                 const dataset = finalDatasets.find(ds => ds.label === label);
                 if (!dataset) return false;
                 // Check if the dataset's status matches testNoChanges
-                // Assuming the dataset has a property or can be determined from config
                 const isPassedTest = dataset.backgroundColor === passedBackgroundColor;
                 const isFailedTest = dataset.backgroundColor === failedBackgroundColor;
                 const isSkippedTest = dataset.backgroundColor === skippedBackgroundColor;
                 return (
-                    (testNoChanges === "Passed" && isPassedTest) ||
-                    (testNoChanges === "Failed" && isFailedTest) ||
-                    (testNoChanges === "Skipped" && isSkippedTest) ||
-                    (compareNoChanges === "Passed" && isPassedTest) ||
-                    (compareNoChanges === "Failed" && isFailedTest) ||
-                    (compareNoChanges === "Skipped" && isSkippedTest)
+                    (filters.testNoChanges === "Passed" && isPassedTest) ||
+                    (filters.testNoChanges === "Failed" && isFailedTest) ||
+                    (filters.testNoChanges === "Skipped" && isSkippedTest) ||
+                    (filters.compareNoChanges === "Passed" && isPassedTest) ||
+                    (filters.compareNoChanges === "Failed" && isFailedTest) ||
+                    (filters.compareNoChanges === "Skipped" && isSkippedTest)
                 );
             }));
         }
@@ -219,7 +236,93 @@ function get_test_statistics_data(filteredTests) {
         labels,
         datasets: finalDatasets,
     };
-    return [graphData, runStarts];
+    return [graphData, runStarts, testMetaMap];
+}
+
+// function to prepare the data for scatter view of test statistics (timestamp-based x-axis, one row per test)
+function get_test_statistics_line_data(filteredTests) {
+    const filters = _get_test_filters();
+    const testDataMap = new Map();
+
+    for (const test of filteredTests) {
+        if (_should_skip_test(test, filters)) continue;
+        const testLabel = _get_test_label(test);
+        const statusName = test.passed == 1 ? "Passed" : test.failed == 1 ? "Failed" : "Skipped";
+
+        if (!testDataMap.has(testLabel)) {
+            testDataMap.set(testLabel, []);
+        }
+        testDataMap.get(testLabel).push({
+            x: new Date(test.start_time),
+            message: test.message || "",
+            status: statusName,
+            runStart: test.run_start,
+            runAlias: test.run_alias,
+            elapsed: test.elapsed_s,
+            testLabel: testLabel,
+        });
+    }
+
+    // Apply "Only Changes" and "Status" filters
+    if ((filters.testOnlyChanges && filters.testNoChanges !== "All") ||
+        (filters.compareOnlyChanges && filters.compareNoChanges !== "All")) {
+        return { datasets: [], labels: [] };
+    }
+    if (filters.testOnlyChanges || filters.compareOnlyChanges) {
+        for (const [label, points] of testDataMap) {
+            const statuses = new Set(points.map(p => p.status));
+            if (statuses.size <= 1) testDataMap.delete(label);
+        }
+    } else if (filters.testNoChanges !== "All" || filters.compareNoChanges !== "All") {
+        const noChanges = filters.testNoChanges !== "All" ? filters.testNoChanges : filters.compareNoChanges;
+        for (const [label, points] of testDataMap) {
+            const statuses = new Set(points.map(p => p.status));
+            if (statuses.size !== 1 || !statuses.has(noChanges)) testDataMap.delete(label);
+        }
+    }
+
+    // Assign each test a Y-axis row index
+    const testLabels = [...testDataMap.keys()];
+    const testIndexMap = {};
+    testLabels.forEach((label, i) => { testIndexMap[label] = i; });
+
+    // Build a single scatter dataset with all points, colored by status
+    const allPoints = [];
+    const allColors = [];
+    const allBorderColors = [];
+    const allMeta = [];
+
+    for (const [testLabel, points] of testDataMap) {
+        points.sort((a, b) => a.x.getTime() - b.x.getTime());
+        const yIndex = testIndexMap[testLabel];
+        for (const p of points) {
+            allPoints.push({ x: p.x, y: yIndex });
+            allColors.push(
+                p.status === "Passed" ? passedBackgroundColor :
+                p.status === "Failed" ? failedBackgroundColor :
+                skippedBackgroundColor
+            );
+            allBorderColors.push(
+                p.status === "Passed" ? passedBackgroundBorderColor :
+                p.status === "Failed" ? failedBackgroundBorderColor :
+                skippedBackgroundBorderColor
+            );
+            allMeta.push(p);
+        }
+    }
+
+    const datasets = [{
+        label: "Test Results",
+        data: allPoints,
+        pointBackgroundColor: allColors,
+        pointBorderColor: allBorderColors,
+        pointRadius: 6,
+        pointHoverRadius: 9,
+        showLine: false,
+        _pointMeta: allMeta,
+    }];
+
+    return { datasets, labels: testLabels };
 }
 
 // function to get the compare statistics data
@@ -248,5 +351,6 @@ function get_compare_statistics_graph_data(filteredData) {
 export {
     get_statistics_graph_data,
     get_test_statistics_data,
+    get_test_statistics_line_data,
     get_compare_statistics_graph_data
 };

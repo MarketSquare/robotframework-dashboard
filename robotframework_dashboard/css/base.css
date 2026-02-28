@@ -1,0 +1,217 @@
+:root {
+  font-family: Helvetica, sans-serif;
+}
+
+#overview,
+#dashboard,
+#unified,
+#compare,
+#tables {
+  margin-bottom: 35vh;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.border-bottom {
+  border-color: var(--color-border) !important;
+}
+
+.fullscreen,
+.sticky-top,
+body {
+  background-color: var(--color-bg);
+}
+
+.grid-stack {
+  max-height: 10000px;
+}
+
+.grid-stack-item-content {
+  background-color: var(--color-card);
+}
+
+.form-switch .form-check-input:not(:checked) {
+  background-image: var(--switch-thumb-image);
+  border-color: var(--color-switch-border);
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+.white-text {
+  color: var(--color-text);
+}
+
+.navbar .nav-item {
+  color: var(--color-menu-text);
+}
+
+.navbar .nav-item.active,
+.navbar .nav-item:hover,
+.active.information-icon,
+.active.bar-graph,
+.active.line-graph,
+.active.fullscreen-graph,
+.active.close-graph,
+.active.timeline-graph,
+.active.radar-graph,
+.active.heatmap-graph,
+.active.pie-graph,
+.active.percentage-graph,
+.active.stats-graph,
+.active.boxplot-graph,
+.active.shown-graph,
+.information-icon:hover,
+.bar-graph:hover,
+.line-graph:hover,
+.fullscreen-graph:hover,
+.close-graph:hover,
+.timeline-graph:hover,
+.radar-graph:hover,
+.heatmap-graph:hover,
+.pie-graph:hover,
+.percentage-graph:hover,
+.stats-graph:hover,
+.boxplot-graph:hover,
+.shown-graph:hover,
+.collapse-icon:hover,
+#rflogo:hover,
+#filters:hover,
+#customizeLayout:hover,
+#saveLayout:hover,
+#settings:hover,
+#themeDark:hover,
+#themeLight:hover,
+#database:hover,
+#versionInformation:hover,
+#bug:hover,
+#github:hover,
+#docs:hover {
+  color: var(--color-highlight);
+}
+
+.active.information-icon svg,
+.active.bar-graph svg,
+.active.line-graph svg,
+.active.fullscreen-graph svg,
+.active.close-graph svg,
+.active.timeline-graph svg,
+.active.radar-graph svg,
+.active.heatmap-graph svg,
+.active.pie-graph svg,
+.active.percentage-graph svg,
+.active.stats-graph svg,
+.active.boxplot-graph svg,
+.active.shown-graph svg,
+.information-icon:hover svg,
+.bar-graph:hover svg,
+.line-graph:hover svg,
+.fullscreen-graph:hover svg,
+.close-graph:hover svg,
+.timeline-graph:hover svg,
+.radar-graph:hover svg,
+.heatmap-graph:hover svg,
+.pie-graph:hover svg,
+.percentage-graph:hover svg,
+.stats-graph:hover svg,
+.boxplot-graph:hover svg,
+.shown-graph:hover svg,
+.hidden-graph:hover svg,
+.shown-section:hover svg,
+.hidden-section:hover svg,
+.collapse-icon:hover svg,
+.move-up-table:hover svg,
+.move-down-table:hover svg,
+.move-up-section:hover svg,
+.move-down-section:hover svg,
+#filters:hover svg,
+#customizeLayout:hover svg,
+#saveLayout:hover svg,
+#settings:hover svg,
+#themeDark:hover svg,
+#themeLight:hover svg,
+#database:hover svg,
+#versionInformation:hover svg,
+#bug:hover svg,
+#github:hover svg,
+#docs:hover svg {
+  stroke: var(--color-highlight) !important;
+  fill: none !important;
+}
+
+#rflogo:hover svg path,
+#github:hover svg path {
+  fill: var(--color-highlight) !important;
+}
+
+.html-scroll {
+  overflow-y: scroll;
+}
+
+.modal-open {
+  padding-right: 0px !important;
+}
+
+h4,
+h5,
+h6 {
+  margin-bottom: 0rem;
+}
+
+body.lock-scroll {
+  overflow: hidden;
+}
+
+#settings,
+#database,
+.nav-item,
+.information-icon,
+.bar-graph,
+.line-graph,
+.fullscreen-graph,
+.close-graph,
+.timeline-graph,
+.radar-graph,
+.heatmap-graph,
+.pie-graph,
+.percentage-graph,
+.stats-graph,
+.boxplot-graph,
+.shown-graph,
+.hidden-graph,
+.shown-section,
+.hidden-section,
+.move-up-table,
+.move-down-table,
+.move-up-section,
+.move-down-section {
+  cursor: pointer;
+}
+
+.navbar-disabled {
+  opacity: 0.5;
+  user-select: none;
+}
+
+.navbar-disabled a {
+  pointer-events: none;
+}
+
+.navbar-disabled a:hover {
+  pointer-events: auto;
+}
+
+.navbar {
+  margin-bottom: 1rem;
+}
+
+#navigation .nav-link svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}

@@ -69,7 +69,7 @@ Your custom database class must implement the following methods:
 
 ---
 
-### `insert_output_data(self, output_data: dict, tags: list, run_alias: str, path: Path)`
+### `insert_output_data(self, output_data: dict, tags: list, run_alias: str, path: Path, project_version: str)`
 This method handles the actual insertion of all run-related data.
 
 You must process:
@@ -78,6 +78,7 @@ You must process:
 - `tags` — list of tags associated with the run  
 - `run_alias` — a human-friendly alias chosen by the user or system  
 - `path` — path to `output.xml`  
+- `project_version` — version string associated with this run (from `--projectversion` or `version_` tags), may be `None`  
 
 You can inspect the example implementations for the exact structure of `output_data` and how each record is inserted.
 
@@ -102,7 +103,8 @@ Must return **all data** in this dictionary format:
       "tags": "",
       "run_alias": "output-20241013-223319",
       "path": "results/output-20241013-223319.xml",
-      "metadata": "[]"
+      "metadata": "[]",
+      "project_version": "1.2.1"
     },
     {...etc}
   ],
@@ -177,12 +179,21 @@ Each type must be a list of dictionaries matching what RobotDashboard expects.
 ### `remove_runs(self, remove_runs: list)`
 `remove_runs` may contain any of the following:
 
-- `index=<n>`  
-- `run_start=<timestamp>`  
-- `alias=<alias>`  
-- `tag=<tag>`  
+- `index=<n>` — remove by index (supports ranges with `:` and lists with `;`)  
+- `run_start=<timestamp>` — remove by exact run_start timestamp  
+- `alias=<alias>` — remove by run alias  
+- `tag=<tag>` — remove all runs matching the given tag  
+- `limit=<n>` — keep only the N most recent runs, removing all older ones  
 
 You must correctly interpret and remove runs accordingly. If you only want to support removing based on run_start or index you could only implement those usages.
+
+---
+
+### *(Optional)* `vacuum_database(self)`
+Called after run removal when the `--novacuum` flag is **not** set.  
+In the default SQLite implementation, this runs `VACUUM` to reclaim disk space after deletions.
+
+If your database backend does not need compaction, you can safely omit this method or implement it as a no-op. Make sure you then provide the --novacuum flag when running the dashboard to avoid errors.
 
 ---
 

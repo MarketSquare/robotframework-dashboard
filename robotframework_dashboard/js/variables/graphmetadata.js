@@ -1,3 +1,57 @@
+// View option to CSS class mapping
+const viewOptionClassMap = {
+    "Percentages": "percentage-graph",
+    "Amount": "bar-graph",
+    "Bar": "bar-graph",
+    "Line": "line-graph",
+    "Timeline": "timeline-graph",
+    "Donut": "pie-graph",
+    "Heatmap": "heatmap-graph",
+    "Stats": "stats-graph",
+    "Radar": "radar-graph",
+};
+
+// Generate standard graph HTML template
+function _graphHtml(key, title, viewOptions, { hasVertical = false, titleId = true, viewClassOverrides = {} } = {}) {
+    const controls = viewOptions.map(opt => {
+        const cls = viewClassOverrides[opt] || viewOptionClassMap[opt];
+        return `<a class="${cls} information" id="${key}Graph${opt}"></a>`;
+    }).join('\n                        ');
+    const titleTag = titleId ? `<h6 id="${key}Title">${title}</h6>` : `<h6>${title}</h6>`;
+    const canvas = hasVertical
+        ? `<div id="${key}Vertical" class="w-100 vertical"><canvas id="${key}Graph"></canvas></div>`
+        : `<canvas id="${key}Graph"></canvas>`;
+    return `<div class="graph-header">
+                    ${titleTag}
+                    <div class="graph-controls">
+                        ${controls}
+                        <a class="fullscreen-graph information" id="${key}Fullscreen"></a>
+                        <a class="close-graph information" id="${key}Close" hidden></a>
+                        <a class="shown-graph information" id="${key}Shown" showGraphHidden></a>
+                        <a class="hidden-graph information" id="${key}Hidden" hideGraphHidden></a>
+                    </div>
+                </div>
+                <div class="graph-body">
+                    ${canvas}
+                </div>`;
+}
+
+// Generate standard table HTML template
+function _tableHtml(key, displayName) {
+    return `<div class="col table-section" id="${key}Canvas">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">${displayName} Table</h6>
+                        <div>
+                            <a class="move-up-table information" id="${key}MoveUp" moveUpHidden></a>
+                            <a class="move-down-table information" id="${key}MoveDown" moveDownHidden></a>
+                            <a class="shown-graph information" id="${key}Shown" showGraphHidden></a>
+                            <a class="hidden-graph information" id="${key}Hidden" hideGraphHidden></a>
+                        </div>
+                    </div>
+                    <table class="table table-striped" id="${key}"></table>
+                </div>`;
+}
+
 const graphMetadata = [
     {
         key: "runStatistics",
@@ -5,21 +59,7 @@ const graphMetadata = [
         defaultType: "percentages",
         viewOptions: ["Percentages", "Line", "Amount"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="runStatisticsTitle">Statistics</h6>
-                    <div class="graph-controls">
-                        <a class="percentage-graph information" id="runStatisticsGraphPercentages"></a>
-                        <a class="bar-graph information" id="runStatisticsGraphAmount"></a>
-                        <a class="line-graph information" id="runStatisticsGraphLine"></a>
-                        <a class="fullscreen-graph information" id="runStatisticsFullscreen"></a>
-                        <a class="close-graph information" id="runStatisticsClose" hidden></a>
-                        <a class="shown-graph information" id="runStatisticsShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="runStatisticsHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="runStatisticsGraph"></canvas>
-                </div>`,
+        html: _graphHtml("runStatistics", "Statistics", ["Percentages", "Line", "Amount"]),
     },
     {
         key: "runDonut",
@@ -139,20 +179,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: ` <div class="graph-header">
-                    <h6 id="runDurationTitle">Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="runDurationGraphBar"></a>
-                        <a class="line-graph information" id="runDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="runDurationFullscreen"></a>
-                        <a class="close-graph information" id="runDurationClose" hidden></a>
-                        <a class="shown-graph information" id="runDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="runDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="runDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("runDuration", "Duration", ["Bar", "Line"]),
     },
     {
         key: "runHeatmap",
@@ -265,21 +292,7 @@ const graphMetadata = [
         defaultType: "percentages",
         viewOptions: ["Percentages", "Line", "Amount"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="suiteStatisticsTitle">Statistics</h6>
-                    <div class="graph-controls">
-                        <a class="percentage-graph information" id="suiteStatisticsGraphPercentages"></a>
-                        <a class="bar-graph information" id="suiteStatisticsGraphAmount"></a>
-                        <a class="line-graph information" id="suiteStatisticsGraphLine"></a>
-                        <a class="fullscreen-graph information" id="suiteStatisticsFullscreen"></a>
-                        <a class="close-graph information" id="suiteStatisticsClose" hidden></a>
-                        <a class="shown-graph information" id="suiteStatisticsShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="suiteStatisticsHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="suiteStatisticsGraph"></canvas>
-                </div>`,
+        html: _graphHtml("suiteStatistics", "Statistics", ["Percentages", "Line", "Amount"]),
     },
     {
         key: "suiteDuration",
@@ -287,20 +300,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="suiteDurationTitle">Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="suiteDurationGraphBar"></a>
-                        <a class="line-graph information" id="suiteDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="suiteDurationFullscreen"></a>
-                        <a class="close-graph information" id="suiteDurationClose" hidden></a>
-                        <a class="shown-graph information" id="suiteDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="suiteDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="suiteDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("suiteDuration", "Duration", ["Bar", "Line"]),
     },
     {
         key: "suiteMostFailed",
@@ -308,22 +308,7 @@ const graphMetadata = [
         defaultType: "bar",
         viewOptions: ["Bar", "Timeline"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="suiteMostFailedTitle">Most Failed</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="suiteMostFailedGraphBar"></a>
-                        <a class="timeline-graph information" id="suiteMostFailedGraphTimeline"></a>
-                        <a class="fullscreen-graph information" id="suiteMostFailedFullscreen"></a>
-                        <a class="close-graph information" id="suiteMostFailedClose" hidden></a>
-                        <a class="shown-graph information" id="suiteMostFailedShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="suiteMostFailedHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <div id="suiteMostFailedVertical" class="w-100 vertical">
-                        <canvas id="suiteMostFailedGraph"></canvas>
-                    </div>
-                </div>`,
+        html: _graphHtml("suiteMostFailed", "Most Failed", ["Bar", "Timeline"], { hasVertical: true }),
     },
     {
         key: "suiteMostTimeConsuming",
@@ -358,7 +343,7 @@ const graphMetadata = [
         key: "testStatistics",
         label: "Test Statistics",
         defaultType: "timeline",
-        viewOptions: ["Timeline"],
+        viewOptions: ["Timeline", "Line"],
         hasFullscreenButton: true,
         html: `<div class="graph-header">
                     <h6 id="testStatisticsTitle">Statistics</h6>
@@ -381,6 +366,7 @@ const graphMetadata = [
                             <input class="form-check-input" type="checkbox" role="switch" id="testOnlyChanges">
                         </div>
                         <a class="timeline-graph information" id="testStatisticsGraphTimeline"></a>
+                        <a class="line-graph information" id="testStatisticsGraphLine"></a>
                         <a class="fullscreen-graph information" id="testStatisticsFullscreen"></a>
                         <a class="close-graph information" id="testStatisticsClose" hidden></a>
                         <a class="shown-graph information" id="testStatisticsShown" showGraphHidden></a>
@@ -399,20 +385,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="testDurationTitle">Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="testDurationGraphBar"></a>
-                        <a class="line-graph information" id="testDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="testDurationFullscreen"></a>
-                        <a class="close-graph information" id="testDurationClose" hidden></a>
-                        <a class="shown-graph information" id="testDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="testDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="testDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("testDuration", "Duration", ["Bar", "Line"]),
     },
     {
         key: "testDurationDeviation",
@@ -420,19 +393,7 @@ const graphMetadata = [
         defaultType: "bar",
         viewOptions: ["Bar"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="testDurationDeviationTitle">Duration Deviation</h6>
-                    <div class="graph-controls">
-                        <a class="boxplot-graph information" id="testDurationDeviationGraphBar"></a>
-                        <a class="fullscreen-graph information" id="testDurationDeviationFullscreen"></a>
-                        <a class="close-graph information" id="testDurationDeviationClose" hidden></a>
-                        <a class="shown-graph information" id="testDurationDeviationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="testDurationDeviationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="testDurationDeviationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("testDurationDeviation", "Duration Deviation", ["Bar"], { viewClassOverrides: { "Bar": "boxplot-graph" } }),
     },
     {
         key: "testMessages",
@@ -440,22 +401,7 @@ const graphMetadata = [
         defaultType: "timeline",
         viewOptions: ["Bar", "Timeline"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="testMessagesTitle">Messages</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="testMessagesGraphBar"></a>
-                        <a class="timeline-graph information" id="testMessagesGraphTimeline"></a>
-                        <a class="fullscreen-graph information" id="testMessagesFullscreen"></a>
-                        <a class="close-graph information" id="testMessagesClose" hidden></a>
-                        <a class="shown-graph information" id="testMessagesShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="testMessagesHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <div id="testMessagesVertical" class="w-100 vertical">
-                        <canvas id="testMessagesGraph"></canvas>
-                    </div>
-                </div>`,
+        html: _graphHtml("testMessages", "Messages", ["Bar", "Timeline"], { hasVertical: true }),
     },
     {
         key: "testMostFlaky",
@@ -521,22 +467,7 @@ const graphMetadata = [
         defaultType: "timeline",
         viewOptions: ["Bar", "Timeline"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="testMostFailedTitle">Most Failed</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="testMostFailedGraphBar"></a>
-                        <a class="timeline-graph information" id="testMostFailedGraphTimeline"></a>
-                        <a class="fullscreen-graph information" id="testMostFailedFullscreen"></a>
-                        <a class="close-graph information" id="testMostFailedClose" hidden></a>
-                        <a class="shown-graph information" id="testMostFailedShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="testMostFailedHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <div id="testMostFailedVertical" class="w-100 vertical">
-                        <canvas id="testMostFailedGraph"></canvas>
-                    </div>
-                </div>`,
+        html: _graphHtml("testMostFailed", "Most Failed", ["Bar", "Timeline"], { hasVertical: true }),
     },
     {
         key: "testRecentMostFailed",
@@ -544,22 +475,7 @@ const graphMetadata = [
         defaultType: "timeline",
         viewOptions: ["Bar", "Timeline"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="testRecentMostFailedTitle">Recent Most Failed</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="testRecentMostFailedGraphBar"></a>
-                        <a class="timeline-graph information" id="testRecentMostFailedGraphTimeline"></a>
-                        <a class="fullscreen-graph information" id="testRecentMostFailedFullscreen"></a>
-                        <a class="close-graph information" id="testRecentMostFailedClose" hidden></a>
-                        <a class="shown-graph information" id="testRecentMostFailedShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="testRecentMostFailedHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <div id="testRecentMostFailedVertical" class="w-100 vertical">
-                        <canvas id="testRecentMostFailedGraph"></canvas>
-                    </div>
-                </div>`,
+        html: _graphHtml("testRecentMostFailed", "Recent Most Failed", ["Bar", "Timeline"], { hasVertical: true }),
     },
     {
         key: "testMostTimeConsuming",
@@ -596,21 +512,7 @@ const graphMetadata = [
         defaultType: "percentages",
         viewOptions: ["Percentages", "Line", "Amount"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordStatisticsTitle">Statistics</h6>
-                    <div class="graph-controls">
-                        <a class="percentage-graph information" id="keywordStatisticsGraphPercentages"></a>
-                        <a class="bar-graph information" id="keywordStatisticsGraphAmount"></a>
-                        <a class="line-graph information" id="keywordStatisticsGraphLine"></a>
-                        <a class="fullscreen-graph information" id="keywordStatisticsFullscreen"></a>
-                        <a class="close-graph information" id="keywordStatisticsClose" hidden></a>
-                        <a class="shown-graph information" id="keywordStatisticsShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordStatisticsHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="keywordStatisticsGraph"></canvas>
-                </div>`,
+        html: _graphHtml("keywordStatistics", "Statistics", ["Percentages", "Line", "Amount"]),
     },
     {
         key: "keywordTimesRun",
@@ -618,20 +520,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordTimesRunTitle">Times Run</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="keywordTimesRunGraphBar"></a>
-                        <a class="line-graph information" id="keywordTimesRunGraphLine"></a>
-                        <a class="fullscreen-graph information" id="keywordTimesRunFullscreen"></a>
-                        <a class="close-graph information" id="keywordTimesRunClose" hidden></a>
-                        <a class="shown-graph information" id="keywordTimesRunShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordTimesRunHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="keywordTimesRunGraph"></canvas>
-                </div>`,
+        html: _graphHtml("keywordTimesRun", "Times Run", ["Bar", "Line"]),
     },
     {
         key: "keywordTotalDuration",
@@ -639,20 +528,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordTotalDurationTitle">Total Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="keywordTotalDurationGraphBar"></a>
-                        <a class="line-graph information" id="keywordTotalDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="keywordTotalDurationFullscreen"></a>
-                        <a class="close-graph information" id="keywordTotalDurationClose" hidden></a>
-                        <a class="shown-graph information" id="keywordTotalDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordTotalDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="keywordTotalDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("keywordTotalDuration", "Total Duration", ["Bar", "Line"]),
     },
     {
         key: "keywordAverageDuration",
@@ -660,20 +536,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordAverageDurationTitle">Average Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="keywordAverageDurationGraphBar"></a>
-                        <a class="line-graph information" id="keywordAverageDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="keywordAverageDurationFullscreen"></a>
-                        <a class="close-graph information" id="keywordAverageDurationClose" hidden></a>
-                        <a class="shown-graph information" id="keywordAverageDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordAverageDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="keywordAverageDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("keywordAverageDuration", "Average Duration", ["Bar", "Line"]),
     },
     {
         key: "keywordMinDuration",
@@ -681,20 +544,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordMinDurationTitle">Min Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="keywordMinDurationGraphBar"></a>
-                        <a class="line-graph information" id="keywordMinDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="keywordMinDurationFullscreen"></a>
-                        <a class="close-graph information" id="keywordMinDurationClose" hidden></a>
-                        <a class="shown-graph information" id="keywordMinDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordMinDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="keywordMinDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("keywordMinDuration", "Min Duration", ["Bar", "Line"]),
     },
     {
         key: "keywordMaxDuration",
@@ -702,20 +552,7 @@ const graphMetadata = [
         defaultType: "line",
         viewOptions: ["Bar", "Line"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordMaxDurationTitle">Max Duration</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="keywordMaxDurationGraphBar"></a>
-                        <a class="line-graph information" id="keywordMaxDurationGraphLine"></a>
-                        <a class="fullscreen-graph information" id="keywordMaxDurationFullscreen"></a>
-                        <a class="close-graph information" id="keywordMaxDurationClose" hidden></a>
-                        <a class="shown-graph information" id="keywordMaxDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordMaxDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="keywordMaxDurationGraph"></canvas>
-                </div>>`,
+        html: _graphHtml("keywordMaxDuration", "Max Duration", ["Bar", "Line"]),
     },
     {
         key: "keywordMostFailed",
@@ -723,22 +560,7 @@ const graphMetadata = [
         defaultType: "timeline",
         viewOptions: ["Bar", "Timeline"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6 id="keywordMostFailedTitle">Most Failed</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="keywordMostFailedGraphBar"></a>
-                        <a class="timeline-graph information" id="keywordMostFailedGraphTimeline"></a>
-                        <a class="fullscreen-graph information" id="keywordMostFailedFullscreen"></a>
-                        <a class="close-graph information" id="keywordMostFailedClose" hidden></a>
-                        <a class="shown-graph information" id="keywordMostFailedShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="keywordMostFailedHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <div id="keywordMostFailedVertical" class="w-100 vertical">
-                        <canvas id="keywordMostFailedGraph"></canvas>
-                    </div
-                </div>`,
+        html: _graphHtml("keywordMostFailed", "Most Failed", ["Bar", "Timeline"], { hasVertical: true }),
     },
     {
         key: "keywordMostTimeConsuming",
@@ -804,19 +626,7 @@ const graphMetadata = [
         defaultType: "bar",
         viewOptions: ["Bar"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6>Statistics</h6>
-                    <div class="graph-controls">
-                        <a class="bar-graph information" id="compareStatisticsGraphBar"></a>
-                        <a class="fullscreen-graph information" id="compareStatisticsFullscreen"></a>
-                        <a class="close-graph information" id="compareStatisticsClose" hidden></a>
-                        <a class="shown-graph information" id="compareStatisticsShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="compareStatisticsHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="compareStatisticsGraph"></canvas>
-                </div>`,
+        html: _graphHtml("compareStatistics", "Statistics", ["Bar"], { titleId: false }),
     },
     {
         key: "compareSuiteDuration",
@@ -824,19 +634,7 @@ const graphMetadata = [
         defaultType: "radar",
         viewOptions: ["Radar"],
         hasFullscreenButton: true,
-        html: `<div class="graph-header">
-                    <h6>Suite Duration</h6>
-                    <div class="graph-controls">
-                        <a class="radar-graph information" id="compareSuiteDurationGraphRadar"></a>
-                        <a class="fullscreen-graph information" id="compareSuiteDurationFullscreen"></a>
-                        <a class="close-graph information" id="compareSuiteDurationClose" hidden></a>
-                        <a class="shown-graph information" id="compareSuiteDurationShown" showGraphHidden></a>
-                        <a class="hidden-graph information" id="compareSuiteDurationHidden" hideGraphHidden></a>
-                    </div>
-                </div>
-                <div class="graph-body">
-                    <canvas id="compareSuiteDurationGraph"></canvas>
-                </div>`,
+        html: _graphHtml("compareSuiteDuration", "Suite Duration", ["Radar"], { titleId: false }),
     },
     {
         key: "compareTests",
@@ -884,18 +682,7 @@ const graphMetadata = [
         viewOptions: ["Table"],
         hasFullscreenButton: false,
         information: null,
-        html: `<div class="col table-section" id="runTableCanvas">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Run Table</h6>
-                        <div>
-                            <a class="move-up-table information" id="runTableMoveUp" moveUpHidden></a>
-                            <a class="move-down-table information" id="runTableMoveDown" moveDownHidden></a>
-                            <a class="shown-graph information" id="runTableShown" showGraphHidden></a>
-                            <a class="hidden-graph information" id="runTableHidden" hideGraphHidden></a>
-                        </div>
-                    </div>
-                    <table class="table table-striped" id="runTable"></table>
-                </div>`,
+        html: _tableHtml("runTable", "Run"),
     },
     {
         key: "suiteTable",
@@ -904,18 +691,7 @@ const graphMetadata = [
         viewOptions: ["Table"],
         hasFullscreenButton: false,
         information: null,
-        html: `<div class="col table-section" id="suiteTableCanvas">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Suite Table</h6>
-                        <div>
-                            <a class="move-up-table information" id="suiteTableMoveUp" moveUpHidden></a>
-                            <a class="move-down-table information" id="suiteTableMoveDown" moveDownHidden></a>
-                            <a class="shown-graph information" id="suiteTableShown" showGraphHidden></a>
-                            <a class="hidden-graph information" id="suiteTableHidden" hideGraphHidden></a>
-                        </div>
-                    </div>
-                    <table class="table table-striped" id="suiteTable"></table>
-                </div>`,
+        html: _tableHtml("suiteTable", "Suite"),
     },
     {
         key: "testTable",
@@ -924,18 +700,7 @@ const graphMetadata = [
         viewOptions: ["Table"],
         hasFullscreenButton: false,
         information: null,
-        html: `<div class="col table-section" id="testTableCanvas">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Test Table</h6>
-                        <div>
-                            <a class="move-up-table information" id="testTableMoveUp" moveUpHidden></a>
-                            <a class="move-down-table information" id="testTableMoveDown" moveDownHidden></a>
-                            <a class="shown-graph information" id="testTableShown" showGraphHidden></a>
-                            <a class="hidden-graph information" id="testTableHidden" hideGraphHidden></a>
-                        </div>
-                    </div>
-                    <table class="table table-striped" id="testTable"></table>
-                </div>`,
+        html: _tableHtml("testTable", "Test"),
     },
     {
         key: "keywordTable",
@@ -944,18 +709,7 @@ const graphMetadata = [
         viewOptions: ["Table"],
         hasFullscreenButton: false,
         information: null,
-        html: `<div class="col table-section" id="keywordTableCanvas">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Keyword Table</h6>
-                        <div>
-                            <a class="move-up-table information" id="keywordTableMoveUp" moveUpHidden></a>
-                            <a class="move-down-table information" id="keywordTableMoveDown" moveDownHidden></a>
-                            <a class="shown-graph information" id="keywordTableShown" showGraphHidden></a>
-                            <a class="hidden-graph information" id="keywordTableHidden" hideGraphHidden></a>
-                        </div>
-                    </div>
-                    <table class="table table-striped" id="keywordTable"></table>
-                </div>`,
+        html: _tableHtml("keywordTable", "Keyword"),
     },
 ];
 

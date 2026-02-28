@@ -49,7 +49,15 @@ Global filters are applied to the entire dashboard, affecting all sections and g
 
 5. **Metadata**  
    - Filter runs by **run-level or suite-level metadata**.
-   - Metadata filters are applied across the entire run.
+   - Metadata is automatically collected from the `[Metadata]` setting in your Robot Framework test suites.
+   - Displayed as `key:value` pairs in a dropdown (e.g., `Browser:Chrome`, `Environment:Staging`).
+   - Selecting a metadata filter shows only runs whose suites contain that metadata entry.
+   - To define metadata in your `.robot` files, use the `Metadata` setting in the `*** Settings ***` section:
+     ```robot
+     *** Settings ***
+     Metadata    Browser    Chrome
+     Metadata    Environment    Staging
+     ```
 
 ### Section Filters on Dashboard
 

@@ -80,7 +80,12 @@ If you want to supply versions for each output, use:
 robotdashboard -o output.xml:version_1.2.1 -o output2.xml:version_2.3.4
 robotdashboard -f ./results:version_1.1 ./results2:version_2.3.4
 ```
---projectversion and version_ are mutually exclusive
+
+::: warning Version Constraints
+- `--projectversion` and `version_` tags are **mutually exclusive** — using both will produce an error.
+- Each output file can have at most **one** `version_` tag. Multiple `version_` tags on the same output will produce an error.
+:::
+
 > Added in RobotDashboard v1.3.0  
 > version_ tag support added in v1.4.0
 
@@ -137,14 +142,14 @@ robotdashboard --quantity 50
 
 ## Advanced Options
 
-### Enable clickable log files in the dashboard
+### Enable Log Linking in the dashboard
 ```bash
 robotdashboard -u true  
 robotdashboard --uselogs True  
 ```
 - Optional: `-u` or `--uselogs` enables clickable graphs in the dashboard that open corresponding log.html files.  
 - Requirements: log files must be in the same folder as their respective output.xml files, with `output` replaced by `log` and `.xml` replaced by `.html`.
-- See [Advanced CLI & Examples](/advanced-cli-examples#advanced-uselogs-information) for more details regarding the log linking!
+- See [Log Linking](/log-linking.md) for the full guide on file naming, local vs. server usage, and remote log uploads.
 
 ### Add messages config for bundling test messages
 ```bash
