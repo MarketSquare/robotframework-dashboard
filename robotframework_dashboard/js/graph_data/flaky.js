@@ -60,7 +60,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
     });
     if (recent) { // do extra filtering to get most recent flaky tests at the top
         sortedData.sort(function (a, b) {
-            return new Date(b[1].failed_run_starts[b[1].failed_run_starts.length - 1]).getTime() - new Date(a[1].failed_run_starts[a[1].failed_run_starts.length - 1]).getTime()
+            return new Date(b[1].failed_run_starts[b[1].failed_run_starts.length - 1].replace(" ", "T")).getTime() - new Date(a[1].failed_run_starts[a[1].failed_run_starts.length - 1].replace(" ", "T")).getTime()
         })
     }
 

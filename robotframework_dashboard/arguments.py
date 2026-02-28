@@ -131,6 +131,22 @@ class ArgumentParser:
             default=None,
         )
         parser.add_argument(
+            "-z",
+            "--timezone",
+            help=(
+                "`string` Specifies the timezone offset of the output.xml timestamps.\n"
+                "Usage behavior:\n"
+                "  • Default value: auto-detected from the machine's local timezone\n"
+                "  • Provide a UTC offset string like '+02:00' or '-05:00'\n"
+                "  • Used to store timezone info with run_start for timezone conversion in the dashboard\n"
+                "Examples:\n"
+                "  • '-z +02:00' -> timestamps are from UTC+2\n"
+                "  • '--timezone=-05:00' -> timestamps are from UTC-5 (use --timezone= for negative offsets)\n"
+                "  • '-z +00:00' -> timestamps are UTC\n"
+            ),
+            default=None,
+        )
+        parser.add_argument(
             "-r",
             "--removeruns",
             help=(
@@ -485,6 +501,18 @@ class ArgumentParser:
         else:
             int(quantity)
 
+        # handles the timezone argument
+        timezone = arguments.timezone
+        if timezone is None:
+            # Auto-detect from the machine's local timezone
+            from datetime import timezone as tz
+            local_offset = generation_datetime.astimezone().utcoffset()
+            total_seconds = int(local_offset.total_seconds())
+            sign = "+" if total_seconds >= 0 else "-"
+            hours, remainder = divmod(abs(total_seconds), 3600)
+            minutes = remainder // 60
+            timezone = f"{sign}{hours:02d}:{minutes:02d}"
+
         # return all provided arguments
         provided_args = {
             "outputs": outputs,
@@ -510,5 +538,6 @@ class ArgumentParser:
             "force_json_config": force_json_config,
             "project_version": arguments.project_version,
             "no_vacuum": no_vacuum,
+            "timezone": timezone,
         }
         return dotdict(provided_args)

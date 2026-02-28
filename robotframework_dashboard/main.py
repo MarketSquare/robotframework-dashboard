@@ -36,6 +36,7 @@ def main():
         arguments.force_json_config,
         arguments.project_version,
         arguments.no_vacuum,
+        arguments.timezone,
     )
     # If arguments.start_server is provided override some required args
     if arguments.start_server:

@@ -30,6 +30,7 @@ class RobotDashboard:
         force_json_config: bool,
         project_version: str,
         no_vacuum: bool,
+        timezone: str = "",
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -49,6 +50,7 @@ class RobotDashboard:
         self.database = None
         self.project_version = project_version
         self.no_vacuum = no_vacuum
+        self.timezone = timezone
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
@@ -154,7 +156,7 @@ class RobotDashboard:
             )
         if not self.database.run_start_exists(run_start):
             output_data = outputProcessor.get_output_data()
-            self.database.insert_output_data(output_data, tags, run_alias, output_path, project_version)
+            self.database.insert_output_data(output_data, tags, run_alias, output_path, project_version, self.timezone)
 
             end = time()
             console += self._print_console(
