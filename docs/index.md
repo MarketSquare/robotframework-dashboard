@@ -60,6 +60,9 @@ features:
   - title: 🔔 Listener Integration
     details: Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
     link: /listener-integration.md
+  - title: 📂 Log Linking
+    details: Enable clickable log navigation from dashboard graphs. Covers file naming conventions, local and server usage, and remote log uploads.
+    link: /log-linking.md
 
 ---
 

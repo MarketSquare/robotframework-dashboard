@@ -62,6 +62,7 @@ For detailed usage instructions, advanced examples, and full documentation, visi
 - 🖥️ [**Dashboard Server**](https://marketsquare.github.io/robotframework-dashboard/dashboard-server.html) - Host the dashboard for multi-user access, programmatic updates, and remote server integration.
 - 🗄️ [**Custom Database Class**](https://marketsquare.github.io/robotframework-dashboard/custom-database-class.html) - Extend or replace the default database backend to suit your storage needs, including SQLite, MySQL, or custom implementations.
 - 🔔 [**Listener Integration**](https://marketsquare.github.io/robotframework-dashboard/listener-integration.html) - Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
+- 📂 [**Log Linking**](https://marketsquare.github.io/robotframework-dashboard/log-linking.html) - Enable clickable log navigation from dashboard graphs, covering file naming conventions, local and server usage, and remote log uploads.
 
 
 ## 🛠️ Contributions

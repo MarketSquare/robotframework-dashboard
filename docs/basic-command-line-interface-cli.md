@@ -137,14 +137,14 @@ robotdashboard --quantity 50
 
 ## Advanced Options
 
-### Enable clickable log files in the dashboard
+### Enable Log Linking in the dashboard
 ```bash
 robotdashboard -u true  
 robotdashboard --uselogs True  
 ```
 - Optional: `-u` or `--uselogs` enables clickable graphs in the dashboard that open corresponding log.html files.  
 - Requirements: log files must be in the same folder as their respective output.xml files, with `output` replaced by `log` and `.xml` replaced by `.html`.
-- See [Advanced CLI & Examples](/advanced-cli-examples#advanced-uselogs-information) for more details regarding the log linking!
+- See [Log Linking](/log-linking.md) for the full guide on file naming, local vs. server usage, and remote log uploads.
 
 ### Add messages config for bundling test messages
 ```bash

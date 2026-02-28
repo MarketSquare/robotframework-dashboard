@@ -38,7 +38,7 @@ Discover the graphs and tables included in the Dashboard. This page explains how
 
 | Graph Name               | Views                    | Views Description                                                                                                                  | Notes                                                                         |
 | ------------------------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Test Statistics          | Timeline | Timeline: Displays statistics of tests in timeline format.  | Status: Displays only tests don't have any status changes and have the selected status<br>Only Changes: Displays only tests that changed status at some point.<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph                                        |
+| Test Statistics          | Timeline<br>Line | Timeline: Displays statistics of tests in timeline format.<br>Line: Displays test results as a scatter plot with a timestamp-based x-axis and one row per test, colored by status (pass/fail/skip). Useful for spotting patterns across many runs.  | Status: Displays only tests that don't have any status changes and have the selected status.<br>Only Changes: Displays only tests that changed status at some point.<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph.                                        |
 | Test Duration            | Bar<br>Line              | Bar: Displays test durations represented as vertical bars.<br>Line: Displays test durations over a time axis.                      | -                                                                             |
 | Test Duration Deviation  | Boxplot                  | Shows deviations of test durations from average, highlighting flaky tests.                                                         | -                                                                             |
 | Test Messages            | Bar<br>Timeline          | Bar: Displays messages ranked by frequency.<br>Timeline: Displays when messages occurred to reveal spikes.                         | Top 10 default, Top 50 fullscreen                                             |
@@ -68,8 +68,21 @@ Discover the graphs and tables included in the Dashboard. This page explains how
 | ---------------------- | ------------------------ | ----------------------------------------------------------------------| -------------------------------------- |
 | Compare Statistics     | Bar                      | Displays overall statistics of the selected runs.                     | -                                      |
 | Compare Suite Duration | Radar                    | Shows suite durations in radar format for multiple runs.              | -                                      |
-| Compare Tests          | Timeline                 | Timeline: Displays test statistics over time.                         | Status: Displays only tests don't have any status changes and have the selected status<br>Only Changes: Displays only tests that changed status at some point.<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph |
+| Compare Tests          | Timeline                 | Timeline: Displays test statistics over time.                         | Status: Displays only tests that don't have any status changes and have the selected status.<br>Only Changes: Displays only tests that changed status at some point.<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph. |
 
+
+## Tooltips
+
+Many graphs include enhanced tooltips that display additional information when hovering over data points:
+
+- **Run Statistics & Run Duration**: Tooltips show total run duration and pass/fail/skip status.
+- **Suite Statistics & Suite Duration**: Tooltips show suite duration and pass/fail/skip status.
+- **Test Statistics (Timeline)**: Tooltips show the run label, test status, duration, and failure messages (if any).
+- **Test Statistics (Line)**: Tooltips show the test name, status, run start, duration, and failure messages.
+- **Test Duration**: Tooltips show the test status and failure messages.
+- **Compare Tests**: Tooltips show the run label, test status, duration, and failure messages.
+
+These enhanced tooltips make it easier to understand test results without needing to navigate to individual log files.
 
 ## Tables Tab
 | Table Name | Columns                                                                                                                     | Description                                                                   | Notes |
