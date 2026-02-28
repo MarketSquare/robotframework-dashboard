@@ -12,7 +12,7 @@ import { settings } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_flaky_config, build_most_time_consuming_config } from "./config_helpers.js";
 
-// build config for test statistics graph
+// build functions
 function _build_test_statistics_config() {
     const graphType = settings.graphTypes.testStatisticsGraphType || "timeline";
 
@@ -22,7 +22,6 @@ function _build_test_statistics_config() {
     return _build_test_statistics_timeline_config();
 }
 
-// build config for test statistics timeline view (existing behavior + rich tooltip)
 function _build_test_statistics_timeline_config() {
     const data = get_test_statistics_data(filteredTests);
     const graphData = data[0]
@@ -73,7 +72,6 @@ function _build_test_statistics_timeline_config() {
     return config;
 }
 
-// build config for test statistics scatter view (timestamp-based x-axis, one row per test)
 function _build_test_statistics_line_config() {
     const result = get_test_statistics_line_data(filteredTests);
     const testLabels = result.labels;
@@ -179,10 +177,6 @@ function _build_test_statistics_line_config() {
     return config;
 }
 
-// function to create test statistics graph in the test section
-function create_test_statistics_graph() { create_chart("testStatisticsGraph", _build_test_statistics_config); }
-
-// build config for test duration graph
 function _build_test_duration_config() {
     var graphData = get_duration_graph_data("test", settings.graphTypes.testDurationGraphType, "elapsed_s", filteredTests);
     const tooltipMeta = build_tooltip_meta(filteredTests);
@@ -207,10 +201,6 @@ function _build_test_duration_config() {
     return config;
 }
 
-// function to create test duration graph in the test section
-function create_test_duration_graph() { create_chart("testDurationGraph", _build_test_duration_config); }
-
-// build config for test messages graph
 function _build_test_messages_config() {
     const data = get_messages_data("test", settings.graphTypes.testMessagesGraphType, filteredTests);
     const graphData = data[0];
@@ -295,10 +285,6 @@ function _build_test_messages_config() {
     return config;
 }
 
-// function to create test messages graph in the test section
-function create_test_messages_graph() { create_chart("testMessagesGraph", _build_test_messages_config); }
-
-// build config for test duration deviation graph
 function _build_test_duration_deviation_config() {
     const graphData = get_duration_deviation_data("test", settings.graphTypes.testDurationDeviationGraphType, filteredTests)
     const config = get_graph_config("boxplot", graphData, "", "Test", "Duration");
@@ -306,74 +292,42 @@ function _build_test_duration_deviation_config() {
     return config;
 }
 
-// function to create test duration deviation graph in test section
-function create_test_duration_deviation_graph() { create_chart("testDurationDeviationGraph", _build_test_duration_deviation_config); }
-
-// build config for test most flaky graph
 function _build_test_most_flaky_config() {
     return build_most_flaky_config("testMostFlaky", "test", filteredTests, ignoreSkips, false);
 }
-
-// function to create test most flaky graph in test section
-function create_test_most_flaky_graph() { create_chart("testMostFlakyGraph", _build_test_most_flaky_config); }
-
-// build config for test recent most flaky graph
 function _build_test_recent_most_flaky_config() {
     return build_most_flaky_config("testRecentMostFlaky", "test", filteredTests, ignoreSkipsRecent, true);
 }
-
-// function to create test recent most flaky graph in test section
-function create_test_recent_most_flaky_graph() { create_chart("testRecentMostFlakyGraph", _build_test_recent_most_flaky_config); }
-
-// build config for test most failed graph
 function _build_test_most_failed_config() {
     return build_most_failed_config("testMostFailed", "test", "Test", filteredTests, false);
 }
-
-// function to create test most failed graph in the test section
-function create_test_most_failed_graph() { create_chart("testMostFailedGraph", _build_test_most_failed_config); }
-
-// build config for test recent most failed graph
 function _build_test_recent_most_failed_config() {
     return build_most_failed_config("testRecentMostFailed", "test", "Test", filteredTests, true);
 }
-
-// function to create test recent most failed graph in the test section
-function create_test_recent_most_failed_graph() { create_chart("testRecentMostFailedGraph", _build_test_recent_most_failed_config); }
-
-// build config for test most time consuming graph
 function _build_test_most_time_consuming_config() {
     return build_most_time_consuming_config("testMostTimeConsuming", "test", "Test", filteredTests, "onlyLastRunTest");
 }
 
-// function to create the most time consuming test graph in the test section
+// create functions
+function create_test_statistics_graph() { create_chart("testStatisticsGraph", _build_test_statistics_config); }
+function create_test_duration_graph() { create_chart("testDurationGraph", _build_test_duration_config); }
+function create_test_messages_graph() { create_chart("testMessagesGraph", _build_test_messages_config); }
+function create_test_duration_deviation_graph() { create_chart("testDurationDeviationGraph", _build_test_duration_deviation_config); }
+function create_test_most_flaky_graph() { create_chart("testMostFlakyGraph", _build_test_most_flaky_config); }
+function create_test_recent_most_flaky_graph() { create_chart("testRecentMostFlakyGraph", _build_test_recent_most_flaky_config); }
+function create_test_most_failed_graph() { create_chart("testMostFailedGraph", _build_test_most_failed_config); }
+function create_test_recent_most_failed_graph() { create_chart("testRecentMostFailedGraph", _build_test_recent_most_failed_config); }
 function create_test_most_time_consuming_graph() { create_chart("testMostTimeConsumingGraph", _build_test_most_time_consuming_config); }
 
-// update function for test statistics graph - updates existing chart in-place
+// update functions
 function update_test_statistics_graph() { update_chart("testStatisticsGraph", _build_test_statistics_config); }
-
-// update function for test duration graph - updates existing chart in-place
 function update_test_duration_graph() { update_chart("testDurationGraph", _build_test_duration_config); }
-
-// update function for test messages graph - updates existing chart in-place
 function update_test_messages_graph() { update_chart("testMessagesGraph", _build_test_messages_config); }
-
-// update function for test duration deviation graph - updates existing chart in-place
 function update_test_duration_deviation_graph() { update_chart("testDurationDeviationGraph", _build_test_duration_deviation_config); }
-
-// update function for test most flaky graph - updates existing chart in-place
 function update_test_most_flaky_graph() { update_chart("testMostFlakyGraph", _build_test_most_flaky_config); }
-
-// update function for test recent most flaky graph - updates existing chart in-place
 function update_test_recent_most_flaky_graph() { update_chart("testRecentMostFlakyGraph", _build_test_recent_most_flaky_config); }
-
-// update function for test most failed graph - updates existing chart in-place
 function update_test_most_failed_graph() { update_chart("testMostFailedGraph", _build_test_most_failed_config); }
-
-// update function for test recent most failed graph - updates existing chart in-place
 function update_test_recent_most_failed_graph() { update_chart("testRecentMostFailedGraph", _build_test_recent_most_failed_config); }
-
-// update function for test most time consuming graph - updates existing chart in-place
 function update_test_most_time_consuming_graph() { update_chart("testMostTimeConsumingGraph", _build_test_most_time_consuming_config); }
 
 export {

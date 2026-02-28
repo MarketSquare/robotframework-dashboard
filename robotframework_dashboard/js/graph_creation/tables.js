@@ -1,22 +1,5 @@
 import { filteredRuns, filteredSuites, filteredTests, filteredKeywords } from "../variables/globals.js";
 
-// Generic table factory functions
-function create_data_table(tableId, columns, getDataFn) {
-    if (window[tableId]) window[tableId].destroy();
-    window[tableId] = new DataTable(`#${tableId}`, {
-        layout: { topStart: "info", bottomStart: null },
-        columns,
-        data: getDataFn(),
-    });
-}
-
-function update_data_table(tableId, columns, getDataFn) {
-    if (!window[tableId]) { create_data_table(tableId, columns, getDataFn); return; }
-    window[tableId].clear();
-    window[tableId].rows.add(getDataFn());
-    window[tableId].draw();
-}
-
 // data builder functions
 function _get_run_table_data() {
     return filteredRuns.map(run => [
@@ -70,12 +53,27 @@ const keywordColumns = [
     { title: "max_execution_time" }, { title: "alias" }, { title: "owner" },
 ];
 
-// create/update functions
+// create functions
+function create_data_table(tableId, columns, getDataFn) {
+    if (window[tableId]) window[tableId].destroy();
+    window[tableId] = new DataTable(`#${tableId}`, {
+        layout: { topStart: "info", bottomStart: null },
+        columns,
+        data: getDataFn(),
+    });
+}
 function create_run_table() { create_data_table("runTable", runColumns, _get_run_table_data); }
 function create_suite_table() { create_data_table("suiteTable", suiteColumns, _get_suite_table_data); }
 function create_test_table() { create_data_table("testTable", testColumns, _get_test_table_data); }
 function create_keyword_table() { create_data_table("keywordTable", keywordColumns, _get_keyword_table_data); }
 
+// update functions
+function update_data_table(tableId, columns, getDataFn) {
+    if (!window[tableId]) { create_data_table(tableId, columns, getDataFn); return; }
+    window[tableId].clear();
+    window[tableId].rows.add(getDataFn());
+    window[tableId].draw();
+}
 function update_run_table() { update_data_table("runTable", runColumns, _get_run_table_data); }
 function update_suite_table() { update_data_table("suiteTable", suiteColumns, _get_suite_table_data); }
 function update_test_table() { update_data_table("testTable", testColumns, _get_test_table_data); }

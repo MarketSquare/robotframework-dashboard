@@ -13,7 +13,7 @@ import { create_chart, update_chart } from './chart_factory.js';
 import { build_most_failed_config, build_most_time_consuming_config } from './config_helpers.js';
 import { update_graphs_with_loading } from '../common.js';
 
-// build config for suite folder donut graph
+// build functions
 function _build_suite_folder_donut_config(folder) {
     const data = get_donut_folder_graph_data("suite", filteredSuites, folder);
     const graphData = data[0]
@@ -56,21 +56,6 @@ function _build_suite_folder_donut_config(folder) {
     return config;
 }
 
-// function to create suite folder donut
-function create_suite_folder_donut_graph(folder) {
-    const suiteFolder = document.getElementById("suiteFolder")
-    suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
-    if (folder || folder == "") { // not first load so update the graphs accordingly as well
-        setup_suites_in_suite_select();
-        update_suite_folder_fail_donut_graph();
-        update_suite_statistics_graph();
-        update_suite_duration_graph();
-    }
-    if (suiteFolderDonutGraph) { suiteFolderDonutGraph.destroy(); }
-    suiteFolderDonutGraph = new Chart("suiteFolderDonutGraph", _build_suite_folder_donut_config(folder));
-}
-
-// build config for suite folder fail donut graph
 function _build_suite_folder_fail_donut_config() {
     const data = get_donut_folder_fail_graph_data("suite", filteredSuites);
     const graphData = data[0]
@@ -129,7 +114,6 @@ function _build_suite_folder_fail_donut_config() {
     return config;
 }
 
-// build config for suite statistics graph
 function _build_suite_statistics_config() {
     const data = get_statistics_graph_data("suite", settings.graphTypes.suiteStatisticsGraphType, filteredSuites);
     const graphData = data[0]
@@ -190,7 +174,6 @@ function _build_suite_statistics_config() {
     return config;
 }
 
-// build config for suite duration graph
 function _build_suite_duration_config() {
     const graphData = get_duration_graph_data("suite", settings.graphTypes.suiteDurationGraphType, "elapsed_s", filteredSuites);
     const suiteSelectSuites = document.getElementById("suiteSelectSuites").value;
@@ -214,24 +197,33 @@ function _build_suite_duration_config() {
     return config;
 }
 
-// build config for suite most failed graph
 function _build_suite_most_failed_config() {
     return build_most_failed_config("suiteMostFailed", "suite", "Suite", filteredSuites, false);
 }
-
-// build config for suite most time consuming graph
 function _build_suite_most_time_consuming_config() {
     return build_most_time_consuming_config("suiteMostTimeConsuming", "suite", "Suite", filteredSuites, "onlyLastRunSuite");
 }
 
 // create functions
+function create_suite_folder_donut_graph(folder) {
+    const suiteFolder = document.getElementById("suiteFolder")
+    suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
+    if (folder || folder == "") { // not first load so update the graphs accordingly as well
+        setup_suites_in_suite_select();
+        update_suite_folder_fail_donut_graph();
+        update_suite_statistics_graph();
+        update_suite_duration_graph();
+    }
+    if (suiteFolderDonutGraph) { suiteFolderDonutGraph.destroy(); }
+    suiteFolderDonutGraph = new Chart("suiteFolderDonutGraph", _build_suite_folder_donut_config(folder));
+}
+function create_suite_folder_fail_donut_graph() { create_chart("suiteFolderFailDonutGraph", _build_suite_folder_fail_donut_config, false); }
 function create_suite_statistics_graph() { create_chart("suiteStatisticsGraph", _build_suite_statistics_config); }
 function create_suite_duration_graph() { create_chart("suiteDurationGraph", _build_suite_duration_config); }
 function create_suite_most_failed_graph() { create_chart("suiteMostFailedGraph", _build_suite_most_failed_config); }
 function create_suite_most_time_consuming_graph() { create_chart("suiteMostTimeConsumingGraph", _build_suite_most_time_consuming_config); }
-function create_suite_folder_fail_donut_graph() { create_chart("suiteFolderFailDonutGraph", _build_suite_folder_fail_donut_config, false); }
 
-// update function for suite folder donut graph - updates existing chart in-place
+// update functions
 function update_suite_folder_donut_graph(folder) {
     const suiteFolder = document.getElementById("suiteFolder")
     suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
@@ -247,8 +239,6 @@ function update_suite_folder_donut_graph(folder) {
     suiteFolderDonutGraph.options = config.options;
     suiteFolderDonutGraph.update();
 }
-
-// update functions
 function update_suite_folder_fail_donut_graph() { update_chart("suiteFolderFailDonutGraph", _build_suite_folder_fail_donut_config, false); }
 function update_suite_statistics_graph() { update_chart("suiteStatisticsGraph", _build_suite_statistics_config); }
 function update_suite_duration_graph() { update_chart("suiteDurationGraph", _build_suite_duration_config); }

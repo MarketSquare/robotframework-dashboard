@@ -8,7 +8,7 @@ import { filteredRuns, filteredSuites, filteredTests } from "../variables/global
 import { settings } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 
-// build config for compare statistics graph
+// build functions
 function _build_compare_statistics_config() {
     const graphData = get_compare_statistics_graph_data(filteredRuns);
     const config = get_graph_config("bar", graphData, "", "Run", "Amount");
@@ -16,19 +16,11 @@ function _build_compare_statistics_config() {
     return config;
 }
 
-// function to create the compare statistics in the compare section
-function create_compare_statistics_graph() { create_chart("compareStatisticsGraph", _build_compare_statistics_config, false); }
-
-// build config for compare suite duration graph
 function _build_compare_suite_duration_config() {
     const graphData = get_compare_suite_duration_data(filteredSuites);
     return get_graph_config("radar", graphData, "");
 }
 
-// function to create the compare statistics in the compare section
-function create_compare_suite_duration_graph() { create_chart("compareSuiteDurationGraph", _build_compare_suite_duration_config, false); }
-
-// build config for compare tests graph
 function _build_compare_tests_config() {
     const data = get_test_statistics_data(filteredTests);
     const graphData = data[0]
@@ -79,16 +71,14 @@ function _build_compare_tests_config() {
     return config;
 }
 
-// function to create the compare statistics in the compare section
+// create functions
+function create_compare_statistics_graph() { create_chart("compareStatisticsGraph", _build_compare_statistics_config, false); }
+function create_compare_suite_duration_graph() { create_chart("compareSuiteDurationGraph", _build_compare_suite_duration_config, false); }
 function create_compare_tests_graph() { create_chart("compareTestsGraph", _build_compare_tests_config); }
 
-// update function for compare statistics graph - updates existing chart in-place
+// update functions
 function update_compare_statistics_graph() { update_chart("compareStatisticsGraph", _build_compare_statistics_config, false); }
-
-// update function for compare suite duration graph - updates existing chart in-place
 function update_compare_suite_duration_graph() { update_chart("compareSuiteDurationGraph", _build_compare_suite_duration_config, false); }
-
-// update function for compare tests graph - updates existing chart in-place
 function update_compare_tests_graph() { update_chart("compareTestsGraph", _build_compare_tests_config); }
 
 export {

@@ -6,7 +6,7 @@ import { get_graph_config } from "../graph_data/graph_config.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
 
-// build config for keyword statistics graph
+// build functions
 function _build_keyword_statistics_config() {
     const data = get_statistics_graph_data("keyword", settings.graphTypes.keywordStatisticsGraphType, filteredKeywords);
     const graphData = data[0]
@@ -22,7 +22,6 @@ function _build_keyword_statistics_config() {
     return config;
 }
 
-// build config for keyword duration graphs (times run, total, average, min, max)
 function _build_keyword_duration_config(graphKey, field, yLabel) {
     const graphData = get_duration_graph_data("keyword", settings.graphTypes[`${graphKey}GraphType`], field, filteredKeywords);
     var config;

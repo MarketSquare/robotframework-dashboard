@@ -118,6 +118,175 @@ function generate_overview_section_html(sectionId, prefix, filtersHtml = '') {
     `;
 }
 
+function generate_overview_card_html(
+    projectName,
+    stats,
+    rounded_duration,
+    status,
+    runNumber,
+    compares,
+    passed_runs,
+    log_path,
+    log_name,
+    svg,
+    idPostfix,
+    projectVersion = null,
+    isForOverview = false,
+    isTotalStats = false,
+    sectionPrefix = 'overview',
+) {
+    const normalizedProjectVersion = projectVersion ?? "None";
+    // ensure overview stats and project bar card ids unique
+    const projectNameForElementId = isForOverview ? `${sectionPrefix}${projectName}` : projectName;
+    const showRunNumber = !(isForOverview && isTotalStats);
+    const runNumberHtml = showRunNumber ? `<div class="col-auto"><h5>#${runNumber}</h5></div>` : '';
+    let smallVersionHtml = `
+        <div id="${projectName}RunCardVersion${idPostfix}"
+        class="run-card-small-version"
+        title="Click to filter for project and version"
+        data-projectVersion="${normalizedProjectVersion}"
+        data-js-target="apply-version-filter">
+            <div class="text-muted">Version:</div>
+            <div>${normalizedProjectVersion}</div>
+        </div>`;
+    if (isTotalStats) {
+        smallVersionHtml = '';
+        compares = '';
+    }
+    // for project bars
+    const versionsForProject = Object.keys(versionsByProject[projectName]);
+    const projectHasVersions = !(versionsForProject.length === 1 && versionsForProject[0] === "None");
+    // for overview statistics
+    // Preserve the original project name (used for logic like tag-detection),
+    // but compute a display name that omits the 'project_' prefix when prefixes are hidden.
+    const originalProjectName = projectName;
+    const displayProjectName = settings.show.prefixes ? projectName : projectName.replace(/^project_/, '');
+    projectName = displayProjectName;
+    let cardTitle = `
+            <h5 class="card-title mb-0 fw-semibold">${displayProjectName}</h5>
+        `;
+    if (!isForOverview) {
+        // Project bar cards: customize based on project type
+        if (originalProjectName.startsWith('project_')) {
+            // Tagged projects: display name with inline version
+            cardTitle = `
+                <h5 class="card-title mb-0 fw-semibold">${stats[5]}, <span class="text-muted">Version:</span> ${normalizedProjectVersion}</h5>
+            `;
+        } else if (projectHasVersions) {
+            // Non-tagged projects with versions: interactive version title
+            cardTitle = `
+                <div class="mx-auto run-card-version-title"
+                title="Click to filter for project and version"
+                data-js-target="apply-version-filter">
+                    <h5 class="card-title mb-0 d-inline text-muted">Version:</h5>
+                    <h5 class="card-title mb-0 d-inline fw-semibold">
+                        ${normalizedProjectVersion}
+                    </h5>
+                </div>
+            `;
+        } else {
+            // Non-tagged projects without versions: empty title placeholder
+            cardTitle = `
+                <h5 class="card-title mb-0 fw-semibold"></h5>
+            `;
+        }
+        smallVersionHtml = '';
+    }
+    const totalStatsHeader = isTotalStats ? `<div>Run Stats</div>` : '';
+    const totalStatsAverage = isTotalStats ? `<div>Average Run Duration</div>` : '';
+    const logLinkHtml = log_name ? `<a href="#" onclick="event.stopPropagation(); open_log_from_path('${log_path}'); return false;" target="_blank">${log_name}</a>` : '';
+    return `
+    <div class="col-4 overview-card" id="${projectNameForElementId}Card${idPostfix}" data-project-version="${normalizedProjectVersion}">
+        <div class="card border-3 border-${status}">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col text-center">
+                        ${cardTitle}
+                    </div>
+                    ${runNumberHtml}
+                </div>
+                <div class="row">
+                    <div class="col-4 overview-canvas">
+                        <canvas id="${projectNameForElementId}Graph${idPostfix}"></canvas>
+                    </div>
+                    <div class="col-3 d-flex align-items-center">
+                        <div>
+                            ${totalStatsHeader}
+                            <div class="green-text">Passed: ${stats[0]}</div>
+                            <div class="red-text">Failed: ${stats[1]}</div>
+                            <div class="yellow-text">Skipped: ${stats[2]}</div>
+                        </div>
+                    </div>
+                    <div class="col-5 d-flex align-items-center" style="overflow:auto;">
+                        <div>
+                            ${totalStatsAverage}
+                            <div class="${compares}" id="${projectNameForElementId}RunCardCompares${idPostfix}" title="${isTotalStats ? 'Average duration across runs' : 'Run duration'}">
+                                <span class="clock-icon">
+                                    ${svg}
+                                </span>
+                                <i id="${projectNameForElementId}RunCardComparesValue${idPostfix}" value="${rounded_duration}">
+                                    ${rounded_duration}
+                                </i>
+                            </div>
+                            <div>Passed Runs: ${passed_runs}%</div>
+                            ${smallVersionHtml}
+                            ${logLinkHtml}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function apply_overview_latest_version_text_filter() {
+    const versionFilterInput = document.getElementById("overviewLatestVersionFilterSearch");
+    const cardsContainer = document.getElementById("overviewLatestRunCardsContainer");
+    if (!versionFilterInput || !cardsContainer) return;
+    const filterValue = versionFilterInput.value.toLowerCase();
+    const runCards = Array.from(cardsContainer.querySelectorAll("div.overview-card"));
+    runCards.forEach(card => {
+        const version = (card.dataset.projectVersion ?? "").toLowerCase();
+        card.style.display = version.includes(filterValue) ? "" : "none";
+    });
+}
+
+function clear_project_filter() {
+    document.getElementById("runs").value = "All";
+    document.getElementById("runTagCheckBoxesFilter").value = "";
+    const tagElements = document.getElementById("runTag").getElementsByTagName("input");
+    for (const input of tagElements) {
+        input.checked = false;
+        input.parentElement.classList.remove("d-none"); //show filtered rows
+        if (input.id == "All") input.checked = true;
+    }
+    update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
+}
+
+function set_filter_show_current_project(projectName) {
+    if (projectName.startsWith("project_")) {
+        selectedTagSetting = projectName;
+        setTimeout(() => { // hack to prevent update_menu calls from hinderance
+            update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
+        }, 500);
+
+    } else {
+        selectedRunSetting = projectName;
+    }
+}
+
+function _update_overview_heading(containerId, titleId, titleText) {
+    const overviewCardsContainer = document.getElementById(containerId);
+    if (!overviewCardsContainer) return;
+    const amountOfProjectsShown = overviewCardsContainer.querySelectorAll(".overview-card").length;
+    const pluralPostFix = amountOfProjectsShown !== 1 ? 's' : '';
+    const headerContent = `<h6>showing ${amountOfProjectsShown} project${pluralPostFix}</h6>`;
+    document.getElementById(titleId).innerHTML = `
+            ${titleText}
+            ${headerContent}
+        `;
+}
+
 // create overview latest runs section dynamically
 function create_overview_latest_runs_section() {
     const percentageSelectHtml = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(val =>
@@ -621,126 +790,6 @@ function create_overview_run_donut(run, chartElementPostfix, projectName) {
     el.chartInstance = new Chart(el, config);
 }
 
-function generate_overview_card_html(
-    projectName,
-    stats,
-    rounded_duration,
-    status,
-    runNumber,
-    compares,
-    passed_runs,
-    log_path,
-    log_name,
-    svg,
-    idPostfix,
-    projectVersion = null,
-    isForOverview = false,
-    isTotalStats = false,
-    sectionPrefix = 'overview',
-) {
-    const normalizedProjectVersion = projectVersion ?? "None";
-    // ensure overview stats and project bar card ids unique
-    const projectNameForElementId = isForOverview ? `${sectionPrefix}${projectName}` : projectName;
-    const showRunNumber = !(isForOverview && isTotalStats);
-    const runNumberHtml = showRunNumber ? `<div class="col-auto"><h5>#${runNumber}</h5></div>` : '';
-    let smallVersionHtml = `
-        <div id="${projectName}RunCardVersion${idPostfix}"
-        class="run-card-small-version"
-        title="Click to filter for project and version"
-        data-projectVersion="${normalizedProjectVersion}"
-        data-js-target="apply-version-filter">
-            <div class="text-muted">Version:</div>
-            <div>${normalizedProjectVersion}</div>
-        </div>`;
-    if (isTotalStats) {
-        smallVersionHtml = '';
-        compares = '';
-    }
-    // for project bars
-    const versionsForProject = Object.keys(versionsByProject[projectName]);
-    const projectHasVersions = !(versionsForProject.length === 1 && versionsForProject[0] === "None");
-    // for overview statistics
-    // Preserve the original project name (used for logic like tag-detection),
-    // but compute a display name that omits the 'project_' prefix when prefixes are hidden.
-    const originalProjectName = projectName;
-    const displayProjectName = settings.show.prefixes ? projectName : projectName.replace(/^project_/, '');
-    projectName = displayProjectName;
-    let cardTitle = `
-            <h5 class="card-title mb-0 fw-semibold">${displayProjectName}</h5>
-        `;
-    if (!isForOverview) {
-        // Project bar cards: customize based on project type
-        if (originalProjectName.startsWith('project_')) {
-            // Tagged projects: display name with inline version
-            cardTitle = `
-                <h5 class="card-title mb-0 fw-semibold">${stats[5]}, <span class="text-muted">Version:</span> ${normalizedProjectVersion}</h5>
-            `;
-        } else if (projectHasVersions) {
-            // Non-tagged projects with versions: interactive version title
-            cardTitle = `
-                <div class="mx-auto run-card-version-title"
-                title="Click to filter for project and version"
-                data-js-target="apply-version-filter">
-                    <h5 class="card-title mb-0 d-inline text-muted">Version:</h5>
-                    <h5 class="card-title mb-0 d-inline fw-semibold">
-                        ${normalizedProjectVersion}
-                    </h5>
-                </div>
-            `;
-        } else {
-            // Non-tagged projects without versions: empty title placeholder
-            cardTitle = `
-                <h5 class="card-title mb-0 fw-semibold"></h5>
-            `;
-        }
-        smallVersionHtml = '';
-    }
-    const totalStatsHeader = isTotalStats ? `<div>Run Stats</div>` : '';
-    const totalStatsAverage = isTotalStats ? `<div>Average Run Duration</div>` : '';
-    const logLinkHtml = log_name ? `<a href="#" onclick="event.stopPropagation(); open_log_from_path('${log_path}'); return false;" target="_blank">${log_name}</a>` : '';
-    return `
-    <div class="col-4 overview-card" id="${projectNameForElementId}Card${idPostfix}" data-project-version="${normalizedProjectVersion}">
-        <div class="card border-3 border-${status}">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col text-center">
-                        ${cardTitle}
-                    </div>
-                    ${runNumberHtml}
-                </div>
-                <div class="row">
-                    <div class="col-4 overview-canvas">
-                        <canvas id="${projectNameForElementId}Graph${idPostfix}"></canvas>
-                    </div>
-                    <div class="col-3 d-flex align-items-center">
-                        <div>
-                            ${totalStatsHeader}
-                            <div class="green-text">Passed: ${stats[0]}</div>
-                            <div class="red-text">Failed: ${stats[1]}</div>
-                            <div class="yellow-text">Skipped: ${stats[2]}</div>
-                        </div>
-                    </div>
-                    <div class="col-5 d-flex align-items-center" style="overflow:auto;">
-                        <div>
-                            ${totalStatsAverage}
-                            <div class="${compares}" id="${projectNameForElementId}RunCardCompares${idPostfix}" title="${isTotalStats ? 'Average duration across runs' : 'Run duration'}">
-                                <span class="clock-icon">
-                                    ${svg}
-                                </span>
-                                <i id="${projectNameForElementId}RunCardComparesValue${idPostfix}" value="${rounded_duration}">
-                                    ${rounded_duration}
-                                </i>
-                            </div>
-                            <div>Passed Runs: ${passed_runs}%</div>
-                            ${smallVersionHtml}
-                            ${logLinkHtml}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-}
 
 // apply version select checkbox and version textinput filter
 function update_project_version_filter_run_card_visibility({ cardsContainerId, versionDropDownFilterId, versionStringFilterId }) {
@@ -774,55 +823,6 @@ function update_project_version_filter_run_card_visibility({ cardsContainerId, v
     const scrollOffsetAfter = cardsContainerElement.getBoundingClientRect().top;
     window.scrollBy(0, scrollOffsetAfter - scrollOffsetBefore);
 }
-
-function apply_overview_latest_version_text_filter() {
-    const versionFilterInput = document.getElementById("overviewLatestVersionFilterSearch");
-    const cardsContainer = document.getElementById("overviewLatestRunCardsContainer");
-    if (!versionFilterInput || !cardsContainer) return;
-    const filterValue = versionFilterInput.value.toLowerCase();
-    const runCards = Array.from(cardsContainer.querySelectorAll("div.overview-card"));
-    runCards.forEach(card => {
-        const version = (card.dataset.projectVersion ?? "").toLowerCase();
-        card.style.display = version.includes(filterValue) ? "" : "none";
-    });
-}
-
-function clear_project_filter() {
-    document.getElementById("runs").value = "All";
-    document.getElementById("runTagCheckBoxesFilter").value = "";
-    const tagElements = document.getElementById("runTag").getElementsByTagName("input");
-    for (const input of tagElements) {
-        input.checked = false;
-        input.parentElement.classList.remove("d-none"); //show filtered rows
-        if (input.id == "All") input.checked = true;
-    }
-    update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
-}
-
-function set_filter_show_current_project(projectName) {
-    if (projectName.startsWith("project_")) {
-        selectedTagSetting = projectName;
-        setTimeout(() => { // hack to prevent update_menu calls from hinderance
-            update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
-        }, 500);
-
-    } else {
-        selectedRunSetting = projectName;
-    }
-}
-
-function _update_overview_heading(containerId, titleId, titleText) {
-    const overviewCardsContainer = document.getElementById(containerId);
-    if (!overviewCardsContainer) return;
-    const amountOfProjectsShown = overviewCardsContainer.querySelectorAll(".overview-card").length;
-    const pluralPostFix = amountOfProjectsShown !== 1 ? 's' : '';
-    const headerContent = `<h6>showing ${amountOfProjectsShown} project${pluralPostFix}</h6>`;
-    document.getElementById(titleId).innerHTML = `
-            ${titleText}
-            ${headerContent}
-        `;
-}
-
 function update_overview_latest_heading() {
     _update_overview_heading("overviewLatestRunCardsContainer", "overviewLatestTitle", "Latest Runs");
 }
