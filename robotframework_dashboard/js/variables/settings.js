@@ -31,11 +31,13 @@ var settings = {
         legends: true,
         aliases: false,
         milliseconds: false,
+        timezones: true,
         axisTitles: true,
         animation: true,
         duration: 1500,
         rounding: 6,
         prefixes: true,
+        convertTimezone: false,
     },
     theme_colors: {
         light: {

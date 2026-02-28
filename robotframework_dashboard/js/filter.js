@@ -18,6 +18,16 @@ function setup_filtered_data_and_filters() {
     filteredSuites = remove_milliseconds(suites)
     filteredTests = remove_milliseconds(tests)
     filteredKeywords = remove_milliseconds(keywords)
+    // remove timezone display if disabled
+    filteredRuns = remove_timezones(filteredRuns);
+    filteredSuites = remove_timezones(filteredSuites);
+    filteredTests = remove_timezones(filteredTests);
+    filteredKeywords = remove_timezones(filteredKeywords);
+    // convert timezones if enabled
+    filteredRuns = convert_timezone(filteredRuns);
+    filteredSuites = convert_timezone(filteredSuites);
+    filteredTests = convert_timezone(filteredTests);
+    filteredKeywords = convert_timezone(filteredKeywords);
     // filter run data
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
@@ -55,10 +65,69 @@ function setup_filtered_data_and_filters() {
 function remove_milliseconds(data) {
     if (settings.show.milliseconds) { return data; }
 
-    return data.map(obj => ({
-        ...obj,
-        run_start: obj.run_start.slice(0, 19)
-    }));
+    return data.map(obj => {
+        const rs = obj.run_start;
+        const datetime = rs.slice(0, 19); // "YYYY-MM-DD HH:MM:SS"
+        // Check if the last 6 chars are a timezone offset (+HH:MM or -HH:MM)
+        const suffix = rs.slice(-6);
+        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+        return {
+            ...obj,
+            run_start: hasTz ? datetime + suffix : datetime
+        };
+    });
+}
+
+// function to remove timezone offset from run_start labels if disabled
+function remove_timezones(data) {
+    if (settings.show.timezones) { return data; }
+
+    return data.map(obj => {
+        const rs = obj.run_start;
+        // Check if the last 6 chars are a timezone offset (+HH:MM or -HH:MM)
+        const suffix = rs.slice(-6);
+        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+        if (!hasTz) { return obj; }
+        return {
+            ...obj,
+            run_start: rs.slice(0, -6)
+        };
+    });
+}
+
+// function to convert run_start timestamps from their stored timezone to the viewer's local timezone
+function convert_timezone(data) {
+    if (!settings.show.convertTimezone) { return data; }
+
+    return data.map(obj => {
+        const rs = obj.run_start;
+        // Check if run_start has a timezone offset (+HH:MM or -HH:MM) at the end
+        const suffix = rs.slice(-6);
+        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+        if (!hasTz) { return obj; }
+
+        // Parse the run_start with its timezone offset
+        const isoStr = rs.replace(" ", "T");
+        const date = new Date(isoStr);
+        if (isNaN(date.getTime())) { return obj; }
+
+        // Format to viewer's local timezone: YYYY-MM-DD HH:MM:SS+HH:MM
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+        // Compute the viewer's local timezone offset
+        const tzOffset = -date.getTimezoneOffset();
+        const tzSign = tzOffset >= 0 ? "+" : "-";
+        const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
+        const tzMins = String(Math.abs(tzOffset) % 60).padStart(2, "0");
+        const localTz = `${tzSign}${tzHours}:${tzMins}`;
+        const localStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${localTz}`;
+
+        return { ...obj, run_start: localStr };
+    });
 }
 
 // function to filter run data based on the runs (aka run name) filter
@@ -145,7 +214,7 @@ function filter_dates(runs) {
         return runs;  // Return all runs if invalid range
     }
     return runs.filter(run => {
-        const runStart = new Date(run.run_start);
+        const runStart = new Date(run.run_start.replace(" ", "T"));
         return runStart >= fromDateTime && runStart <= toDateTime;
     });
 }
@@ -347,7 +416,7 @@ function setup_run_amount_filter() {
 function setup_lowest_highest_dates() {
     var dates = [];
     for (run of runs) {
-        dates.push(new Date(run.run_start));
+        dates.push(new Date(run.run_start.replace(" ", "T")));
     }
     if (dates.length == 0) {
         document.getElementById("fromDate").value = "1900-01-01";

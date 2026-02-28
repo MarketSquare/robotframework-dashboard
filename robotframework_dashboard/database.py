@@ -3,6 +3,7 @@ from pathlib import Path
 from .queries import *
 from .abstractdb import AbstractDatabaseProcessor
 from time import time
+from datetime import datetime, timezone
 
 
 class DatabaseProcessor(AbstractDatabaseProcessor):
@@ -32,7 +33,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         for row in run_rows:
             rows.append(self._dict_from_row(row))
         run_starts = [item["run_start"] for item in rows]
-        return f"{run_start}" in run_starts
+        # Use startswith to handle TZ-aware run_starts in DB (e.g. "2025-03-13 00:21:34.123456+02:00")
+        # when the incoming run_start has no timezone suffix (e.g. "2025-03-13 00:21:34.123456")
+        run_start_str = str(run_start)
+        return any(rs == run_start_str or rs.startswith(run_start_str) for rs in run_starts)
 
     def _create_tables(self):
         """Helper function to create the tables (they use IF NOT EXISTS to not override)"""
@@ -129,27 +133,31 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         run_alias: str,
         path: Path,
         project_version: str,
+        timezone: str = "",
     ):
         """This function inserts the data of an output file into the database"""
         try:
             self._insert_runs(
-                output_data["runs"], tags, run_alias, path, project_version
+                output_data["runs"], tags, run_alias, path, project_version, timezone
             )
-            self._insert_suites(output_data["suites"], run_alias)
-            self._insert_tests(output_data["tests"], run_alias)
-            self._insert_keywords(output_data["keywords"], run_alias)
+            self._insert_suites(output_data["suites"], run_alias, timezone)
+            self._insert_tests(output_data["tests"], run_alias, timezone)
+            self._insert_keywords(output_data["keywords"], run_alias, timezone)
         except Exception as error:
             print(f"   ERROR: something went wrong with the database: {error}")
 
     def _insert_runs(
-        self, runs: list, tags: list, run_alias: str, path: Path, project_version
+        self, runs: list, tags: list, run_alias: str, path: Path, project_version, timezone: str = ""
     ):
         """Helper function to insert the run data with the run tags"""
         full_runs = []
         for run in runs:
             *rest, metadata = run
+            # Append timezone offset to run_start (first element)
+            run_start_with_tz = f"{rest[0]}{timezone}" if timezone else str(rest[0])
             new_run = (
-                *rest,
+                run_start_with_tz,
+                *rest[1:],
                 ",".join(tags),
                 run_alias,
                 str(path),
@@ -160,42 +168,73 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         self.connection.executemany(INSERT_INTO_RUNS, full_runs)
         self.connection.commit()
 
-    def _insert_suites(self, suites: list, run_alias: str):
+    def _insert_suites(self, suites: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the suite data"""
         full_suites = []
         for suite in suites:
             suite = list(suite)
+            # Append timezone offset to run_start (first element)
+            if timezone:
+                suite[0] = f"{suite[0]}{timezone}"
             suite.insert(9, run_alias)
             suite = tuple(suite)
             full_suites.append(suite)
         self.connection.executemany(INSERT_INTO_SUITES, full_suites)
         self.connection.commit()
 
-    def _insert_tests(self, tests: list, run_alias: str):
+    def _insert_tests(self, tests: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the test data"""
         full_tests = []
         for test in tests:
             test = list(test)
+            # Append timezone offset to run_start (first element)
+            if timezone:
+                test[0] = f"{test[0]}{timezone}"
             test.insert(10, run_alias)
             test = tuple(test)
             full_tests.append(test)
         self.connection.executemany(INSERT_INTO_TESTS, full_tests)
         self.connection.commit()
 
-    def _insert_keywords(self, keywords: list, run_alias: str):
+    def _insert_keywords(self, keywords: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the keyword data"""
         full_keywords = []
         for keyword in keywords:
             keyword = list(keyword)
+            # Append timezone offset to run_start (first element)
+            if timezone:
+                keyword[0] = f"{keyword[0]}{timezone}"
             keyword.insert(10, run_alias)
             keyword = tuple(keyword)
             full_keywords.append(keyword)
         self.connection.executemany(INSERT_INTO_KEYWORDS, full_keywords)
         self.connection.commit()
 
+    @staticmethod
+    def _get_local_timezone_offset():
+        """Helper function to get the local machine's timezone offset as a string like +01:00"""
+        now = datetime.now(timezone.utc).astimezone()
+        offset = now.utcoffset()
+        total_seconds = int(offset.total_seconds())
+        sign = "+" if total_seconds >= 0 else "-"
+        hours, remainder = divmod(abs(total_seconds), 3600)
+        minutes = remainder // 60
+        return f"{sign}{hours:02d}:{minutes:02d}"
+
+    @staticmethod
+    def _has_timezone_offset(run_start: str):
+        """Helper function to check if the run_start string already contains a timezone offset like +02:00 or -05:00"""
+        if len(run_start) < 6:
+            return False
+        # Check for +HH:MM or -HH:MM at the end of the string
+        suffix = run_start[-6:]
+        return (suffix[0] in ('+', '-') and suffix[3] == ':' and
+                suffix[1:3].isdigit() and suffix[4:6].isdigit())
+
     def get_data(self):
         """This function gets all the data in the database"""
         data, runs, suites, tests, keywords, aliases = {}, [], [], [], [], {}
+        local_tz = self._get_local_timezone_offset()
         counter = 1
         # Get runs from run table
         run_rows = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
@@ -218,33 +257,57 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             # exception made from versions before 0.8.1 without path
             if row["path"] == None:
                 row["path"] = ""
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
             runs.append(row)
         data["runs"] = runs
+        # Build a lookup for run_start -> alias that works for both old and new data
+        # Old data: aliases dict keys are "run_start+tz" (timezone added during runs loop)
+        # New data: aliases dict keys are "run_start+tz" (timezone already in DB)
+        # Suites/tests/keywords will also get timezone appended, so direct match works
+        # For edge cases, also build a prefix lookup (first 19 chars)
+        alias_prefix_lookup = {}
+        for key, alias in aliases.items():
+            prefix = key[:19]
+            alias_prefix_lookup[prefix] = alias
         # Get suites from run table
         suite_rows = self.connection.cursor().execute(SELECT_FROM_SUITES).fetchall()
         for suite_row in suite_rows:
             row = self._dict_from_row(suite_row)
-            row["run_alias"] = aliases[row["run_start"]]
             if row["id"] == None:
                 row["id"] == ""
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["run_alias"] = aliases.get(row["run_start"],
+                alias_prefix_lookup.get(row["run_start"][:19], ""))
             suites.append(row)
         data["suites"] = suites
         # Get tests from run table
         test_rows = self.connection.cursor().execute(SELECT_FROM_TESTS).fetchall()
         for test_row in test_rows:
             row = self._dict_from_row(test_row)
-            row["run_alias"] = aliases[row["run_start"]]
             if row["tags"] == None:
                 row["tags"] = ""
             if row["id"] == None:
                 row["id"] == ""
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["run_alias"] = aliases.get(row["run_start"],
+                alias_prefix_lookup.get(row["run_start"][:19], ""))
             tests.append(row)
         data["tests"] = tests
         # Get keywords from run table
         keyword_rows = self.connection.cursor().execute(SELECT_FROM_KEYWORDS).fetchall()
         for keyword_row in keyword_rows:
             row = self._dict_from_row(keyword_row)
-            row["run_alias"] = aliases[row["run_start"]]
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["run_alias"] = aliases.get(row["run_start"],
+                alias_prefix_lookup.get(row["run_start"][:19], ""))
             keywords.append(row)
         data["keywords"] = keywords
         return data

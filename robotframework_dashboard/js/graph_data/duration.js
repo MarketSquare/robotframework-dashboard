@@ -122,7 +122,7 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
         for (const value of filteredData) {
             if (!should_include(value)) continue;
             const name = suiteSelectSuitesCombined && dataType === "suite" ? "All Suites Combined" : value.name;
-            const run_start = new Date(value.run_start);
+            const run_start = new Date(value.run_start.replace(" ", "T"));
             const val = Math.round(value[objectDataAttribute] * 100) / 100;
             if (!sets.has(name)) sets.set(name, [{ x: run_start, y: val }]);
             else sets.get(name).push({ x: run_start, y: val });
