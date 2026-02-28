@@ -166,6 +166,15 @@ function _build_test_statistics_line_config() {
             },
         },
     };
+    config.options.onClick = (event, chartElement) => {
+        if (chartElement.length) {
+            const idx = chartElement[0].index;
+            const meta = pointMeta[idx];
+            if (meta) {
+                open_log_file(event, chartElement, undefined, meta.runStart, meta.testLabel);
+            }
+        }
+    };
     update_height("testStatisticsVertical", testLabels.length, "timeline");
     return config;
 }

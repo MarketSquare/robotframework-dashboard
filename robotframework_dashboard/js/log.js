@@ -4,12 +4,14 @@ import { settings } from './variables/settings.js';
 import { filteredRuns } from './variables/globals.js';
 
 // function to open the log files through the graphs
-function open_log_file(event, chartElement, callbackData = undefined) {
+function open_log_file(event, chartElement, callbackData = undefined, directRunStart = undefined, directTestName = undefined) {
     if (!use_logs) { return }
     const graphType = event.chart.config._config.type
     const graphId = event.chart.canvas.id
     var runStart = ""
-    if (graphType == "doughnut") {
+    if (directRunStart) {
+        runStart = directRunStart
+    } else if (graphType == "doughnut") {
         runStart = callbackData
     } else if (callbackData) {
         const index = chartElement[0].element.$context.raw.x[0]
@@ -29,7 +31,7 @@ function open_log_file(event, chartElement, callbackData = undefined) {
         alert("Log file error: this output didn't have a path in the database so the log file cannot be found!");
         return
     }
-    path = update_log_path_with_id(path, graphId, chartElement, event)
+    path = update_log_path_with_id(path, graphId, chartElement, event, directTestName)
     open_log_from_path(path)
 }
 
@@ -77,7 +79,7 @@ function open_log_from_label(chart, click) {
 }
 
 // function to add the suite or test id to the log path url
-function update_log_path_with_id(path, graphId, chartElement, event) {
+function update_log_path_with_id(path, graphId, chartElement, event, directTestName = undefined) {
     if (graphId.includes("run") || graphId.includes("keyword")) {
         return transform_file_path(path)
     } // can"t select a run or keyword in the suite/log log.html
@@ -95,7 +97,9 @@ function update_log_path_with_id(path, graphId, chartElement, event) {
         }
         id = suites.find(suite => suite.name === name && suite.run_start === runStart)
     } else { // it contains a test
-        if (graphId == "testStatisticsGraph" || graphId == "testMostFlakyGraph" || graphId == "testRecentMostFlakyGraph" || graphId == "testMostFailedGraph" || graphId == "testRecentMostFailedGraph" || graphId == "testMostTimeConsumingGraph" || graphId == "compareTestsGraph") {
+        if (directTestName) {
+            name = directTestName
+        } else if (graphId == "testStatisticsGraph" || graphId == "testMostFlakyGraph" || graphId == "testRecentMostFlakyGraph" || graphId == "testMostFailedGraph" || graphId == "testRecentMostFailedGraph" || graphId == "testMostTimeConsumingGraph" || graphId == "compareTestsGraph") {
             name = chartElement[0].element.$context.raw.y
         } else if (graphId == "testDurationGraph") {
             if (graphType == "bar") {

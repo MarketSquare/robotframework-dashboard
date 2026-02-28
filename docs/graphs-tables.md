@@ -8,9 +8,33 @@ Discover the graphs and tables included in the Dashboard. This page explains how
 
 ## Overview Tab
 
+The Overview tab provides a high-level summary of all test runs across projects. It consists of special sections and a statistics graph. The visibility of each element can be controlled via [Settings - Overview Tab](/settings#overview-settings-overview-tab).
+
+### Sections
+
+| Section | Description |
+|---------|-------------|
+| **Latest Runs** | Displays the most recent run for each project as a card. Each card shows pass/fail/skip counts and duration, color-coded to indicate performance relative to previous runs. Clicking a project card filters the Overview to that project. |
+| **Total Stats** | Shows aggregate statistics across all runs grouped by project: total passed, failed, skipped runs, average duration, and average pass rate. |
+
+### Graphs
+
 | Graph Name          | Views       | Views Description                                                                                                | Notes |
 | ------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- | ----- |
 | Run Donut           | Percentages | Displays the distribution of passed, failed, skipped tests per run.                                              | -     |
+
+### Display Toggles
+
+The Overview page supports several display toggles (configured in [Settings - Overview Tab](/settings#overview-settings-overview-tab)):
+
+| Toggle | Description |
+|--------|-------------|
+| **Projects by Name** | Groups runs by their project name. |
+| **Projects by Tag** | Groups runs by `project_` tags instead of name. See [Project Tagging](/advanced-cli-examples#project-tagging). |
+| **Prefixes** | Shows or hides the `project_` prefix text on tag-based names. |
+| **Percentage Filters** | Enables the duration percentage threshold control for color-coding. |
+| **Version Filters** | Enables per-project version filtering with checkbox selectors. |
+| **Sort Filters** | Enables sort controls on the Overview page. |
 
 ## Dashboard Tab
 

@@ -35,6 +35,8 @@ pip install robotframework-dashboard[server]
 pip install robotframework-dashboard[all]
 ```
 
+> **Note:** `[server]` and `[all]` currently install the same extras (fastapi-offline, uvicorn, python-multipart). Use either one.
+
 ### Dependencies
 This will automatically install the required dependencies:
 - robotframework>=6.0 – the core testing framework
@@ -61,3 +63,27 @@ robot --version
 robotdashboard --help
 ```
 This ensures both Robot Framework and the dashboard are installed correctly and are in your PATH.
+
+## Upgrading & Database Migration
+
+When upgrading RobotDashboard to a newer version, your existing SQLite database is **automatically migrated**. The tool detects older schemas by checking table column counts and adds any missing columns.
+
+The following schema changes are applied automatically:
+
+| Version | Change |
+|---------|--------|
+| v0.4.3 | Added `tags` column to tests table |
+| v0.6.0 | Added `run_alias` column to all tables |
+| v0.8.1 | Added `path` column to runs table |
+| v0.8.4 | Added `id` column to suites and tests tables |
+| v1.0.0 | Added `metadata` column to runs table |
+| v1.2.0 | Added `owner` column to keywords table |
+| v1.3.0 | Added `project_version` column to runs table |
+
+No manual intervention is required — simply run `robotdashboard` with your existing database and it will be upgraded in place. Existing data is preserved.
+
+::: warning Upgrade Considerations
+- **Backup first** — once migrated to a newer schema, the database may not be compatible with older versions of RobotDashboard.
+- **New columns are empty for existing records** — when new columns are added during migration, they will have empty values for runs that were already in the database. Features that depend on these columns (e.g., metadata filtering, project versioning, keyword library names) will not work for those older runs until they are re-processed.
+- **Re-adding runs populates new columns** — to enable new features for older runs, remove them from the database and re-add their `output.xml` files. This will populate all columns with the correct data.
+:::

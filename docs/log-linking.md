@@ -78,6 +78,20 @@ Make sure to start the server with the `--uselogs` flag so that graph elements b
 
 For more details about the server and its API, see [Dashboard Server](/dashboard-server.md).
 
+## Deep Linking
+
+When clicking a data point on a **suite** or **test** graph, the dashboard doesn't just open `log.html` — it navigates directly to the corresponding suite or test within the log file by appending the element's ID as a URL fragment (e.g., `log.html#s1-s1-t2`).
+
+This means you land exactly on the relevant suite or test in the log, without needing to manually search for it.
+
+### Label Clicks
+
+Clicking on **X-axis or Y-axis run labels** (run_start or alias) on any graph also opens the corresponding log file for that run.
+
+### Missing Log Behavior
+
+If no log path is stored in the database for a run, clicking a graph element will show a **ERR_FILE_NOT_FOUND** error.
+
 ## Accessing Reports
 
 Robot Framework `report.html` files can also be accessed through the log file:

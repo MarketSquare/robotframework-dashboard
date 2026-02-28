@@ -56,6 +56,13 @@ robotdashboard -o output.xml:project_custom_name
 robotdashboard -f ./results:project_1
 ```
 
+When using `project_` tags:
+- Each unique `project_` tag creates a **separate project section** on the Overview page
+- The Overview will group and display runs under the tag name instead of the run name
+- You can toggle between project-by-name and project-by-tag views in [Settings - Overview Tab](/settings#overview-settings-overview-tab)
+- The `project_` prefix text can be shown or hidden using the **Prefixes** toggle in Settings
+- Multiple `project_` tags on different outputs allow comparing different projects side by side on the Overview page
+
 ## Aliases for Clean Dashboard Identification
 
 Aliases help replace long timestamps with clean, readable names. They also significantly improve clarity in comparison views and general dashboard readability.
