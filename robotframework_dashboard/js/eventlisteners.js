@@ -232,6 +232,9 @@ function setup_settings_modal() {
         handler(true);
         document.getElementById(def.elementId).addEventListener(def.event || "click", () => handler());
     });
+    // Re-populate the date filter pickers when the timezone conversion toggle changes,
+    // since the displayed timestamps change and the defaults need to match.
+    document.getElementById("toggleTimezone").addEventListener("click", () => setup_lowest_highest_dates());
     document.getElementById("themeLight").addEventListener("click", () => toggle_theme());
     document.getElementById("themeDark").addEventListener("click", () => toggle_theme());
 

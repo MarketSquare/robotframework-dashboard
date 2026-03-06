@@ -419,28 +419,58 @@ function setup_run_amount_filter() {
 
 // function that initializes the from date/time and to date/time selection boxes in the filters
 function setup_lowest_highest_dates() {
-    var dates = [];
-    for (run of runs) {
-        dates.push(new Date(run.run_start.replace(" ", "T")));
-    }
-    if (dates.length == 0) {
+    if (runs.length == 0) {
         document.getElementById("fromDate").value = "1900-01-01";
         document.getElementById("fromTime").value = "00:00";
         document.getElementById("toDate").value = "9999-12-31";
         document.getElementById("toTime").value = "23:59";
-        return
+        return;
     }
-    var lowest = new Date(Math.min.apply(null, dates));
-    var highest = new Date(Math.max.apply(null, dates));
-    var tzoffset = new Date().getTimezoneOffset() * 60000;
-    lowest = new Date(new Date(lowest - tzoffset).getTime() + -1 * 60000); // this is to account for seconds in the initial filter value
-    highest = new Date(new Date(highest - tzoffset).getTime() + 1 * 60000); // this is to account for seconds in the initial filter value
-    lowest.setTime(lowest.getTime() - 1 * 60 * 60 * 1000) // minus 1 hour to account for possible daylight saving time switches of 1 hour!
-    highest.setTime(highest.getTime() + 1 * 60 * 60 * 1000) // plus 1 hour to account for possible daylight saving time switches of 1 hour!
-    document.getElementById("fromDate").value = lowest.toISOString().split("T")[0];
-    document.getElementById("fromTime").value = lowest.toISOString().split("T")[1].substring(0, 5);
-    document.getElementById("toDate").value = highest.toISOString().split("T")[0];
-    document.getElementById("toTime").value = highest.toISOString().split("T")[1].substring(0, 5);
+
+    if (settings.show.convertTimezone) {
+        // Convert to viewer's local timezone: parse the stored offset-aware timestamps as UTC
+        // instants, then display the local wall-clock equivalent in the pickers.
+        var dates = runs.map(run => new Date(run.run_start.replace(" ", "T")));
+        var lowest = new Date(Math.min.apply(null, dates));
+        var highest = new Date(Math.max.apply(null, dates));
+        var tzoffset = new Date().getTimezoneOffset() * 60000;
+        lowest = new Date(new Date(lowest - tzoffset).getTime() - 1 * 60000); // account for seconds
+        highest = new Date(new Date(highest - tzoffset).getTime() + 1 * 60000); // account for seconds
+        lowest.setTime(lowest.getTime() - 1 * 60 * 60 * 1000); // minus 1 hour for DST
+        highest.setTime(highest.getTime() + 1 * 60 * 60 * 1000); // plus 1 hour for DST
+        document.getElementById("fromDate").value = lowest.toISOString().split("T")[0];
+        document.getElementById("fromTime").value = lowest.toISOString().split("T")[1].substring(0, 5);
+        document.getElementById("toDate").value = highest.toISOString().split("T")[0];
+        document.getElementById("toTime").value = highest.toISOString().split("T")[1].substring(0, 5);
+    } else {
+        // No conversion: strip the timezone suffix and treat the stored wall-clock datetime
+        // as-is, so picker defaults match exactly what the user sees in the dashboard.
+        const wallClocks = runs.map(run => {
+            const rs = run.run_start;
+            const suffix = rs.slice(-6);
+            const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+            // Take only YYYY-MM-DD HH:MM:SS (first 19 chars)
+            return hasTz ? rs.slice(0, 19) : rs.slice(0, 19);
+        });
+        wallClocks.sort();
+        const lowestStr = wallClocks[0];
+        const highestStr = wallClocks[wallClocks.length - 1];
+        // Adjust by 1 minute and 1 hour (for seconds and DST) using plain date arithmetic
+        const adjust = (dateStr, deltaMs) => {
+            const d = new Date(dateStr.replace(" ", "T"));
+            d.setTime(d.getTime() + deltaMs);
+            const pad = n => String(n).padStart(2, "0");
+            const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            return { date, time };
+        };
+        const low = adjust(lowestStr, -(1 * 60 + 60 * 60) * 1000); // -1min -1hr
+        const high = adjust(highestStr, (1 * 60 + 60 * 60) * 1000);  // +1min +1hr
+        document.getElementById("fromDate").value = low.date;
+        document.getElementById("fromTime").value = low.time;
+        document.getElementById("toDate").value = high.date;
+        document.getElementById("toTime").value = high.time;
+    }
 }
 
 // function to setup metadata filter if there is metadata in the data
