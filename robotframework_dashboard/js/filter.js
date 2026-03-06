@@ -124,7 +124,12 @@ function convert_timezone(data) {
         const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
         const tzMins = String(Math.abs(tzOffset) % 60).padStart(2, "0");
         const localTz = `${tzSign}${tzHours}:${tzMins}`;
-        const localStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${localTz}`;
+        // Preserve the full sub-second fractional part from the original string (e.g. ".123456").
+        // Timezone offsets are always whole minutes, so the fractional seconds are unchanged by conversion.
+        // Using the original string avoids JavaScript Date's 3-digit millisecond precision limit.
+        const mainPart = rs.slice(0, -6); // strip the "+HH:MM" suffix
+        const subSecond = mainPart.length > 19 ? mainPart.slice(19) : ""; // ".ffffff" or ""
+        const localStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${subSecond}${localTz}`;
 
         return { ...obj, run_start: localStr };
     });

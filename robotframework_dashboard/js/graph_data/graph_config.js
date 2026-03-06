@@ -84,11 +84,19 @@ function get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle, data
                     tooltip: {
                         callbacks: {
                             title: function (tooltipItems) {
-                                const raw = tooltipItems[0]?.raw;
+                                const item = tooltipItems[0];
+                                if (!item) return '';
+                                // Duration line charts: _run_start stored on each data point
+                                const raw = item.raw;
                                 if (raw && typeof raw === 'object' && raw._run_start) {
                                     return raw._run_start;
                                 }
-                                return tooltipItems[0]?.label;
+                                // Statistics line charts: original run_start string in chart.data.labels
+                                const chartLabels = item.chart?.data?.labels;
+                                if (chartLabels && chartLabels[item.dataIndex] != null) {
+                                    return chartLabels[item.dataIndex];
+                                }
+                                return item.label;
                             },
                         },
                     },

@@ -26,6 +26,7 @@ pip install robotframework-dashboard
 Install Robot Framework Dashboard with Server:
 ```bash
 pip install robotframework-dashboard[server]
+# or use
 pip install robotframework-dashboard[all]
 ```
 
