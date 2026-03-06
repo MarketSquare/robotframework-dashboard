@@ -79,6 +79,20 @@ function get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle, data
                         },
                     },
                 },
+                plugins: {
+                    ...baseConfig.plugins,
+                    tooltip: {
+                        callbacks: {
+                            title: function (tooltipItems) {
+                                const raw = tooltipItems[0]?.raw;
+                                if (raw && typeof raw === 'object' && raw._run_start) {
+                                    return raw._run_start;
+                                }
+                                return tooltipItems[0]?.label;
+                            },
+                        },
+                    },
+                },
             },
         }),
         bar: () => ({

@@ -18,16 +18,16 @@ function setup_filtered_data_and_filters() {
     filteredSuites = remove_milliseconds(suites)
     filteredTests = remove_milliseconds(tests)
     filteredKeywords = remove_milliseconds(keywords)
+    // convert timezones if enabled (must run before remove_timezones so the offset is still present)
+    filteredRuns = convert_timezone(filteredRuns);
+    filteredSuites = convert_timezone(filteredSuites);
+    filteredTests = convert_timezone(filteredTests);
+    filteredKeywords = convert_timezone(filteredKeywords);
     // remove timezone display if disabled
     filteredRuns = remove_timezones(filteredRuns);
     filteredSuites = remove_timezones(filteredSuites);
     filteredTests = remove_timezones(filteredTests);
     filteredKeywords = remove_timezones(filteredKeywords);
-    // convert timezones if enabled
-    filteredRuns = convert_timezone(filteredRuns);
-    filteredSuites = convert_timezone(filteredSuites);
-    filteredTests = convert_timezone(filteredTests);
-    filteredKeywords = convert_timezone(filteredKeywords);
     // filter run data
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
