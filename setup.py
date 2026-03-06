@@ -23,6 +23,8 @@ Before reading anything else here is a [Fully Functioning Dashboard](https://mar
 Robot Framework Dashboard is a tool for [Robot Framework](https://robotframework.org/) that provides insight of your test results across multiple runs. The tool makes use of the built in Robot Framework [Result Visitor API](https://robot-framework.readthedocs.io/en/stable/_modules/robot/result/visitor.html) to analyse output.xml files, stores these in a simple sqlite3 database and finally creates a HTML dashboard that makes use of [Chart.js](https://www.chartjs.org/docs/latest/) and [Datatables](https://datatables.net/) for the graphs and tables and makes use of [Bootstrap](https://getbootstrap.com/) for styling. Additionally [GridStack](https://gridstackjs.com/) is used for the interactive layout grids.
 
 ## 🚀 Getting Started
+
+### Installation
 Install Robot Framework 6.0 or higher (if not already installed):
 ```bash
 pip install robotframework
@@ -36,6 +38,22 @@ Install Robot Framework Dashboard with Server:
 pip install robotframework-dashboard[server]
 pip install robotframework-dashboard[all]
 ```
+
+### Basic Usage
+
+**Example 1 — Add a single output file and generate a dashboard:**
+```bash
+robotdashboard -o output.xml
+```
+This adds `output.xml` to the default database (`robot_results.db`) and generates a self-contained HTML dashboard file you can open directly in any browser.
+
+**Example 2 — Add multiple output files with a custom database and dashboard name:**
+```bash
+robotdashboard -o output1.xml -o output2.xml -d my_results.db -n my_dashboard.html
+```
+This processes two output XML files, stores results in `my_results.db`, and writes the dashboard to `my_dashboard.html`.
+
+For all available CLI options see the [Basic CLI docs](https://marketsquare.github.io/robotframework-dashboard/basic-command-line-interface-cli.html) and [Advanced CLI & Examples](https://marketsquare.github.io/robotframework-dashboard/advanced-cli-examples.html).
 
 ## 🔍 Key Features
 
