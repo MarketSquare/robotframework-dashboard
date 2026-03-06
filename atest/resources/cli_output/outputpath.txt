@@ -14,7 +14,7 @@
   Processed output XML 'output-20250313-002222.xml' in * seconds
 ======================================================================================
  3. Listing all available runs in the database
-  Run 0   | 2025-03-13 00:22:22.304104 | Testsuites
+  Run 0   | 2025-03-13 00:22:22.304104+00:00 | Testsuites
 ======================================================================================
  4. Removing runs from the database
   skipping step
