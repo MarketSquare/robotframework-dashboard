@@ -660,6 +660,9 @@ function set_filter_show_current_version(version) {
 
 // ============ Filter Profiles ============
 
+// Track the currently active profile name (null if none applied)
+let activeProfileName = null;
+
 // Read the current state of all filter controls into a plain object
 function capture_current_filters() {
     const profile = {};
@@ -712,8 +715,85 @@ function build_profile_from_checks() {
     return profile;
 }
 
+// Compare two profile objects for equality (only keys present in the saved profile)
+function profiles_match(saved, current) {
+    for (const key of Object.keys(saved)) {
+        const s = saved[key];
+        const c = current[key];
+        if (Array.isArray(s)) {
+            if (!Array.isArray(c) || s.length !== c.length) return false;
+            for (let i = 0; i < s.length; i++) {
+                if (JSON.stringify(s[i]) !== JSON.stringify(c[i])) return false;
+            }
+        } else {
+            if (String(s) !== String(c)) return false;
+        }
+    }
+    return true;
+}
+
+// Find the name of a saved profile that exactly matches the current filters
+function find_matching_profile() {
+    const profiles = load_filter_profiles();
+    const current = capture_current_filters();
+    for (const [name, saved] of Object.entries(profiles)) {
+        if (profiles_match(saved, current)) return name;
+    }
+    return null;
+}
+
+// Update the profile select display to reflect current state
+function update_profile_select_display() {
+    const selectEl = document.getElementById("selectFilterProfile");
+    const selectInner = selectEl.querySelector("select");
+    const dot = document.getElementById("profileModifiedDot");
+    const updateBtn = document.getElementById("updateFilterProfile");
+
+    const matchingName = find_matching_profile();
+
+    if (matchingName) {
+        // Current filters exactly match a saved profile
+        activeProfileName = matchingName;
+        selectInner.options[0].textContent = matchingName;
+        dot.style.display = "none";
+        updateBtn.style.display = "none";
+    } else if (activeProfileName) {
+        // A profile was applied but filters have since changed
+        selectInner.options[0].textContent = activeProfileName;
+        dot.style.display = "";
+        updateBtn.style.display = "";
+    } else {
+        // No profile active
+        selectInner.options[0].textContent = "Apply Filter Profile";
+        dot.style.display = "none";
+        updateBtn.style.display = "none";
+    }
+}
+
+// Clear the active profile tracking
+function clear_active_profile() {
+    activeProfileName = null;
+}
+
+// Update the active profile with current filter values
+function update_active_profile() {
+    if (!activeProfileName) return;
+    const profileData = capture_current_filters();
+    // Only save the keys that were in the original profile
+    const profiles = load_filter_profiles();
+    const original = profiles[activeProfileName];
+    if (!original) return;
+    const updated = {};
+    for (const key of Object.keys(original)) {
+        updated[key] = profileData[key];
+    }
+    save_filter_profile_to_storage(activeProfileName, updated);
+    update_profile_select_display();
+}
+
 // Apply a saved profile's filter values to the filter controls
-function apply_filter_profile(profile) {
+function apply_filter_profile(profile, name) {
+    if (name) activeProfileName = name;
     if (profile.runs !== undefined) {
         document.getElementById("runs").value = profile.runs;
     }
@@ -757,7 +837,6 @@ function apply_filter_profile(profile) {
     if (profile.amount !== undefined) {
         document.getElementById("amount").value = profile.amount;
     }
-
 }
 
 // Load filter profiles from settings (cumulative — never deletes existing ones)
@@ -862,5 +941,8 @@ export {
     delete_filter_profile,
     populate_filter_profile_select,
     enter_profile_edit_mode,
-    exit_profile_edit_mode
+    exit_profile_edit_mode,
+    update_profile_select_display,
+    update_active_profile,
+    clear_active_profile,
 };

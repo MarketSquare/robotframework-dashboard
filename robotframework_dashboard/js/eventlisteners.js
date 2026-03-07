@@ -32,7 +32,10 @@ import {
     delete_filter_profile,
     populate_filter_profile_select,
     enter_profile_edit_mode,
-    exit_profile_edit_mode
+    exit_profile_edit_mode,
+    update_profile_select_display,
+    update_active_profile,
+    clear_active_profile,
 } from "./filter.js"
 import { camelcase_to_underscore, underscore_to_camelcase } from "./common.js";
 import {
@@ -105,7 +108,9 @@ function setup_filter_modal() {
     // eventlistener to reset the filters
     document.getElementById("resetFilters").addEventListener("click", function () {
         clear_all_filters();
+        clear_active_profile();
         add_alert("Filters have been set to default values!", "success")
+        update_profile_select_display();
     });
     // eventlistener for all runs button
     document.getElementById("allRuns").addEventListener("click", function () {
@@ -183,6 +188,7 @@ function setup_filter_modal() {
         save_filter_profile_to_storage(name, profileData);
         populate_filter_profile_select();
         exit_profile_edit_mode();
+        update_profile_select_display();
         add_alert(`Filter profile "${name}" saved!`, "success");
     });
     document.getElementById("filterProfileList").addEventListener("click", async function (event) {
@@ -195,7 +201,9 @@ function setup_filter_modal() {
             const confirmed = await confirm_action(`Are you sure you want to delete filter profile "${name}"?`);
             if (confirmed) {
                 delete_filter_profile(name);
+                clear_active_profile();
                 populate_filter_profile_select();
+                update_profile_select_display();
                 add_alert(`Filter profile "${name}" deleted!`, "success");
             }
             return;
@@ -206,9 +214,26 @@ function setup_filter_modal() {
             const profiles = settings.filterProfiles || {};
             const profile = profiles[name];
             if (profile) {
-                apply_filter_profile(profile);
+                apply_filter_profile(profile, name);
+                add_alert(`Filter profile "${name}" applied`, "success");
+                update_profile_select_display();
+                populate_filter_profile_select();
             }
         }
+    });
+    // Update Profile button
+    document.getElementById("updateFilterProfile").addEventListener("click", function () {
+        update_active_profile();
+        populate_filter_profile_select();
+        add_alert(`Filter profile updated!`, "success");
+    });
+    // Listen for filter changes to update the profile display
+    const filterModal = document.getElementById("filtersModal");
+    filterModal.addEventListener("change", function () {
+        update_profile_select_display();
+    });
+    filterModal.addEventListener("input", function () {
+        update_profile_select_display();
     });
 }
 

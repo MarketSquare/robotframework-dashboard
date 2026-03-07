@@ -396,15 +396,19 @@
                             <input class="form-control form-control-sm me-2" type="text" id="filterProfileName" placeholder="Profile Name..." style="width: 180px;" />
                             <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="saveFilterProfile">Save Profile</button>
                         </div>
-                        <div style="width: 200px; margin-left: auto; margin-right: 17px">
-                            <div class="selectBox" id="selectFilterProfile">
-                                <select class="form-select form-select-sm">
-                                    <option>Apply Filter Profile</option>
-                                </select>
-                                <div class="overSelect"></div>
-                            </div>
-                            <div id="filterProfileCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; width: 200px;">
-                                <ul class="list-group" id="filterProfileList"></ul>
+                        <div class="d-flex align-items-center" style="margin-left: auto; margin-right: 17px; gap: 8px;">
+                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="updateFilterProfile" style="display: none;">Update Profile</button>
+                            <div style="width: 200px; position: relative;">
+                                <div class="selectBox" id="selectFilterProfile">
+                                    <select class="form-select form-select-sm">
+                                        <option>Apply Filter Profile</option>
+                                    </select>
+                                    <div class="overSelect"></div>
+                                </div>
+                                <span id="profileModifiedDot" class="version-selected-dot" style="display: none; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);"></span>
+                                <div id="filterProfileCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; width: 200px;">
+                                    <ul class="list-group" id="filterProfileList"></ul>
+                                </div>
                             </div>
                         </div>
                     </div>
