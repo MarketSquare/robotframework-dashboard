@@ -570,7 +570,18 @@ class ApiServer:
                             remove_runs.append(f"tag={run}")
                     if remove_output.limit != None:
                         remove_runs.append(f"limit={remove_output.limit}")
+                paths_before = self.robotdashboard.get_run_paths()
                 console = self.robotdashboard.remove_outputs(remove_runs)
+                paths_after = self.robotdashboard.get_run_paths()
+                removed_paths = [v for k, v in paths_before.items() if k not in paths_after and v]
+                for path in removed_paths:
+                    log_filename = Path(path).name.replace("output", "log").replace(".xml", ".html")
+                    log_path = join(self.log_dir, log_filename)
+                    if exists(log_path):
+                        remove(log_path)
+                        console += f"  Removed log file: {log_filename}\n"
+                    else:
+                        console += f"  No log file found for removed output (expected: {log_path}), skipping\n"
                 console += self.robotdashboard.create_dashboard()
                 response = {
                     "success": "1",

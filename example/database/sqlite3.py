@@ -303,6 +303,15 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             tags.append(entry["tags"])
         return runs, names, aliases, tags
 
+    def _get_run_paths(self) -> dict:
+        """Returns a dict mapping run_start -> path for all runs"""
+        data = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
+        run_paths = {}
+        for entry in data:
+            entry = self._dict_from_row(entry)
+            run_paths[entry["run_start"]] = entry.get("path") or ""
+        return run_paths
+
     def list_runs(self):
         """This function gets all available runs and prints them to the console"""
         run_starts, run_names, run_aliases, run_tags = self._get_runs()

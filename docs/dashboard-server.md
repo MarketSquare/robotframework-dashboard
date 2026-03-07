@@ -70,7 +70,7 @@ The built-in server exposes several HTTP endpoints to manage and serve dashboard
 | `/get-outputs` | Returns a JSON list of stored runs (`run_start`, `alias`, `tags`), callable |
 | `/add-outputs` | Accepts new output data via JSON (file path, raw XML or folder), callable |
 | `/add-output-file` | Accepts new output data via file input, callable |
-| `/remove-outputs` | Deletes runs by index, alias, `run_start`, tags, limit or 'all=true' for all outputs, callable |
+| `/remove-outputs` | Deletes runs by index, alias, `run_start`, tags, limit or 'all=true' for all outputs. Automatically deletes the associated log file from `robot_logs/` if one exists, callable |
 | `/get-logs` | Returns a JSON list of stored logs on the server (`log_name`), callable |
 | `/add-log` | Upload HTML a log file and associate them with runs (for [Log Linking](/log-linking.md)), callable |
 | `/add-log-file` | Upload a HTML log file (for [Log Linking](/log-linking.md)), callable |
@@ -128,6 +128,8 @@ The admin page supports four methods for adding test results:
 | **By Tag** | Comma-separated tags — removes all runs matching any of the specified tags. |
 | **By Limit** | Keep only the N most recent runs; all older runs are deleted. |
 | **Remove All** | Irreversibly deletes all runs from the database. |
+
+> **Note:** When a run is removed, the server automatically checks whether a corresponding log file exists in the `robot_logs/` folder (derived by replacing `output` → `log` and `.xml` → `.html` in the stored path). If found, it is deleted alongside the run. The console response will confirm whether a log was removed or note that none was found.
 
 ### Managing Logs
 
