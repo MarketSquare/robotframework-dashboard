@@ -75,6 +75,7 @@ The built-in server exposes several HTTP endpoints to manage and serve dashboard
 | `/add-log` | Upload HTML a log file and associate them with runs (for [Log Linking](/log-linking.md)), callable |
 | `/add-log-file` | Upload a HTML log file (for [Log Linking](/log-linking.md)), callable |
 | `/remove-log` | Remove previously uploaded log files or provide 'all=true' for all logs, callable |
+| `/refresh-dashboard` | Manually trigger regeneration of the dashboard HTML. Only needed when `--noautoupdate` is active, callable |
 
 All API endpoints are documented and described in the server’s own OpenAPI schema, accessible via the admin interface under “Swagger API Docs” or "Redoc API Docs", after starting the server.
 
@@ -167,3 +168,27 @@ Beyond the main API endpoints listed above, the server exposes two additional ro
 ## Gzip Upload Support
 
 Both `/add-output-file` and `/add-log-file` endpoints support gzip-compressed uploads. If the uploaded filename ends with `.gz` or `.gzip`, the server automatically decompresses the file before processing. This is used by the [listener integration](/listener-integration.md) to reduce upload bandwidth.
+
+## Manual Refresh Mode (`--noautoupdate`)
+
+By default, every upload and delete operation via the server API automatically regenerates the dashboard HTML. This involves querying all data from the database, which can be slow when using large datasets or custom database implementations.
+
+The `--noautoupdate` flag disables this automatic regeneration:
+
+```bash
+robotdashboard --server --noautoupdate
+```
+
+When active:
+- API calls (`/add-outputs`, `/add-output-file`, `/remove-outputs`, `/add-log`, `/add-log-file`, `/remove-log`) return immediately after processing the data, without regenerating the dashboard.
+- Two **Refresh** buttons appear in the admin page navbar:
+  - **Refresh Dashboard** — triggers dashboard HTML regeneration on demand by calling `POST /refresh-dashboard`.
+  - **Refresh Admin Page Tables** — reloads the runs and logs tables from the database without a full page reload.
+- The `/refresh-dashboard` endpoint is also callable programmatically:
+
+::: tip When to use this
+Use `--noautoupdate` when:
+- Your database queries are slow (e.g., large datasets or remote databases).
+- You are uploading many outputs in quick succession and want uploads to return fast.
+- You prefer to control exactly when the dashboard is updated.
+:::
