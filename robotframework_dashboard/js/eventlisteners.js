@@ -638,6 +638,34 @@ function setup_sections_filters() {
     });
 }
 
+// helper functions to save and restore section filter values across fullscreen transitions
+function save_section_filter_values() {
+    const saved = {};
+    // Suite section
+    const suiteFolder = document.getElementById("suiteFolder");
+    if (suiteFolder) saved.suiteFolder = suiteFolder.innerText;
+    ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
+     "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) saved[id] = el.value;
+    });
+    return saved;
+}
+
+function restore_section_filter_values(saved) {
+    const suiteFolder = document.getElementById("suiteFolder");
+    if (suiteFolder && saved.suiteFolder !== undefined) suiteFolder.innerText = saved.suiteFolder;
+    ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
+     "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && saved[id] !== undefined) {
+            // Only restore if the saved value still exists as an option
+            const optionExists = Array.from(el.options).some(opt => opt.value === saved[id]);
+            if (optionExists) el.value = saved[id];
+        }
+    });
+}
+
 // function to setup eventlisteners for changing the graph view buttons
 function setup_graph_view_buttons() {
     // eventlisteners for fullscreen buttons
@@ -651,6 +679,9 @@ function setup_graph_view_buttons() {
             const close = document.getElementById(closeId);
             const content = fullscreen.closest(".grid-stack-item-content");
             const canvasId = `${fullscreenButton}Graph`;
+
+            // Save filter values before fullscreen transition to restore after graph updates
+            const savedFilterValues = save_section_filter_values();
 
             show_graph_loading(canvasId);
             inFullscreen = entering;
@@ -691,14 +722,22 @@ function setup_graph_view_buttons() {
                 }
 
                 if (typeof window[graphFunctionName] === "function") {
-                    window[graphFunctionName]();
+                    if (fullscreenButton === "suiteFolderDonut") {
+                        // Pass the saved folder so the donut and related graphs rebuild correctly
+                        const currentFolder = savedFilterValues.suiteFolder;
+                        window[graphFunctionName](currentFolder === "All" ? "" : currentFolder);
+                    } else {
+                        window[graphFunctionName]();
+                    }
                 }
 
                 if (fullscreenButton === "runDonut") {
                     update_run_donut_total_graph();
-                } else if (fullscreenButton === "suiteFolderDonut") {
-                    update_suite_folder_fail_donut_graph();
                 }
+
+                // Restore filter values after graph updates
+                restore_section_filter_values(savedFilterValues);
+
                 hide_graph_loading(canvasId);
             }, 0);
         };
