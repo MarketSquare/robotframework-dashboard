@@ -115,6 +115,29 @@
   display: block;
 }
 
+.filter-profile-bar {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.filter-profile-editor {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.filter-profile-check {
+  flex-shrink: 0;
+}
+
+.filter-profile-delete {
+  opacity: 0.5;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.3rem;
+}
+
+.filter-profile-delete:hover {
+  opacity: 1;
+}
+
 .border {
   min-height: 42px;
 }

@@ -382,14 +382,36 @@
                         <h1 class="modal-title" id="filtersModalLabel">Filters</h1>
                         <div>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
+                                id="addFilterProfile">Add Profile</button>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
+                                id="cancelFilterProfile" style="display: none;">Stop Adding</button>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 id="resetFilters">Reset Filters</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 data-bs-dismiss="modal" id="closeFilters">Close</button>
                         </div>
                     </div>
+                    <div class="filter-profile-bar d-flex align-items-center justify-content-between px-3 py-2">
+                        <div id="filterProfileEditorInline" class="d-flex align-items-center" style="display: none !important;">
+                            <input class="form-control form-control-sm me-2" type="text" id="filterProfileName" placeholder="Profile Name..." style="width: 180px;" />
+                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="saveFilterProfile">Save Profile</button>
+                        </div>
+                        <div style="width: 200px; margin-left: auto; margin-right: 17px">
+                            <div class="selectBox" id="selectFilterProfile">
+                                <select class="form-select form-select-sm">
+                                    <option>Apply Filter Profile</option>
+                                </select>
+                                <div class="overSelect"></div>
+                            </div>
+                            <div id="filterProfileCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; width: 200px;">
+                                <ul class="list-group" id="filterProfileList"></ul>
+                            </div>
+                        </div>
+                    </div>
                     <div class="modal-body">
                         <div class="list-group">
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckRuns" checked style="display: none;" />
                                 <span>Runs</span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="runs" style="width: 200px;"></select>
@@ -397,6 +419,7 @@
                             </div>
                             <div class="list-group-item" id="runTagFilter">
                                 <div class="d-flex justify-content-between align-items-start">
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox" id="profileCheckRunTags" checked style="display: none;" />
                                     <span class="d-flex align-items-center">
                                         Run Tags
                                         <span id="filterRunTagSelectedIndicator" class="version-selected-dot ms-2 mt-1"
@@ -420,6 +443,7 @@
                             </div>
                             <div class="list-group-item" id="projectVersionFilter">
                                 <div class="d-flex justify-content-between align-items-start">
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox" id="profileCheckVersions" checked style="display: none;" />
                                     <span class="d-flex align-items-center">
                                         Versions
                                         <span id="filterVersionSelectedIndicator" class="version-selected-dot ms-2 mt-1"
@@ -444,6 +468,7 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckFromDate" style="display: none;" />
                                 <span>From Date</span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromDate" type="date"
@@ -451,6 +476,7 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckFromTime" style="display: none;" />
                                 <span>From Time</span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromTime" type="time"
@@ -458,6 +484,7 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckToDate" style="display: none;" />
                                 <span>To Date</span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toDate" type="date"
@@ -465,6 +492,7 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckToTime" style="display: none;" />
                                 <span>To Time</span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toTime" type="time"
@@ -473,6 +501,7 @@
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center"
                                 id="metadataFilter" hidden>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckMetadata" checked style="display: none;" />
                                 <span>Metadata</span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="metadata"
@@ -480,6 +509,7 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckAmount" checked style="display: none;" />
                                 <span>Amount</span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm information" type="number" min="0"

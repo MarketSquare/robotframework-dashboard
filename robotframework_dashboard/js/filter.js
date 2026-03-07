@@ -2,6 +2,7 @@ import { settings } from './variables/settings.js';
 import { compareRunIds } from './variables/graphs.js';
 import { runs, suites, tests, keywords, unified_dashboard_title } from './variables/data.js';
 import { show_loading_overlay, hide_loading_overlay } from './common.js';
+import { set_local_storage_item } from './localstorage.js';
 import {
     filteredAmount,
     filteredRuns,
@@ -657,6 +658,186 @@ function set_filter_show_current_version(version) {
     update_filter_active_indicator("projectVersionInputItemAll", "filterVersionSelectedIndicator");
 }
 
+// ============ Filter Profiles ============
+
+// Read the current state of all filter controls into a plain object
+function capture_current_filters() {
+    const profile = {};
+    // Runs select
+    profile.runs = document.getElementById("runs").value;
+    // Run tags checkboxes
+    const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
+    profile.runTags = Array.from(tagInputs).map(el => ({ id: el.id, checked: el.checked }));
+    profile.useOrTags = document.getElementById("useOrTags")?.checked ?? false;
+    // Project version checkboxes
+    const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
+    profile.projectVersions = Array.from(versionInputs).map(el => ({ value: el.value, checked: el.checked }));
+    // Date/time
+    profile.fromDate = document.getElementById("fromDate").value;
+    profile.fromTime = document.getElementById("fromTime").value;
+    profile.toDate = document.getElementById("toDate").value;
+    profile.toTime = document.getElementById("toTime").value;
+    // Metadata
+    profile.metadata = document.getElementById("metadata").value;
+    // Amount
+    profile.amount = document.getElementById("amount").value;
+    return profile;
+}
+
+// Build a profile object from current filters, filtered by which checkboxes are checked
+function build_profile_from_checks() {
+    const full = capture_current_filters();
+    const profile = {};
+    const checkMap = {
+        profileCheckRuns: 'runs',
+        profileCheckRunTags: ['runTags', 'useOrTags'],
+        profileCheckVersions: 'projectVersions',
+        profileCheckFromDate: 'fromDate',
+        profileCheckFromTime: 'fromTime',
+        profileCheckToDate: 'toDate',
+        profileCheckToTime: 'toTime',
+        profileCheckMetadata: 'metadata',
+        profileCheckAmount: 'amount',
+    };
+    for (const [checkId, keys] of Object.entries(checkMap)) {
+        const el = document.getElementById(checkId);
+        if (el && el.checked) {
+            if (Array.isArray(keys)) {
+                keys.forEach(k => profile[k] = full[k]);
+            } else {
+                profile[keys] = full[keys];
+            }
+        }
+    }
+    return profile;
+}
+
+// Apply a saved profile's filter values to the filter controls
+function apply_filter_profile(profile) {
+    if (profile.runs !== undefined) {
+        document.getElementById("runs").value = profile.runs;
+    }
+    if (profile.runTags !== undefined) {
+        const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
+        const tagMap = {};
+        profile.runTags.forEach(t => tagMap[t.id] = t.checked);
+        tagInputs.forEach(el => {
+            if (tagMap[el.id] !== undefined) el.checked = tagMap[el.id];
+        });
+        update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
+    }
+    if (profile.useOrTags !== undefined) {
+        const orEl = document.getElementById("useOrTags");
+        if (orEl) orEl.checked = profile.useOrTags;
+    }
+    if (profile.projectVersions !== undefined) {
+        const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
+        const versionMap = {};
+        profile.projectVersions.forEach(v => versionMap[v.value] = v.checked);
+        versionInputs.forEach(el => {
+            if (versionMap[el.value] !== undefined) el.checked = versionMap[el.value];
+        });
+        update_filter_active_indicator("projectVersionInputItemAll", "filterVersionSelectedIndicator");
+    }
+    if (profile.fromDate !== undefined) {
+        document.getElementById("fromDate").value = profile.fromDate;
+    }
+    if (profile.fromTime !== undefined) {
+        document.getElementById("fromTime").value = profile.fromTime;
+    }
+    if (profile.toDate !== undefined) {
+        document.getElementById("toDate").value = profile.toDate;
+    }
+    if (profile.toTime !== undefined) {
+        document.getElementById("toTime").value = profile.toTime;
+    }
+    if (profile.metadata !== undefined) {
+        document.getElementById("metadata").value = profile.metadata;
+    }
+    if (profile.amount !== undefined) {
+        document.getElementById("amount").value = profile.amount;
+    }
+
+}
+
+// Load filter profiles from settings (cumulative — never deletes existing ones)
+function load_filter_profiles() {
+    return settings.filterProfiles || {};
+}
+
+// Save a filter profile to settings/localStorage (cumulative merge)
+function save_filter_profile_to_storage(name, profileData) {
+    const profiles = load_filter_profiles();
+    profiles[name] = profileData;
+    set_local_storage_item("filterProfiles", profiles);
+}
+
+// Delete a filter profile from settings/localStorage
+function delete_filter_profile(name) {
+    const profiles = load_filter_profiles();
+    delete profiles[name];
+    set_local_storage_item("filterProfiles", profiles);
+}
+
+// Populate the profile dropdown list from settings
+function populate_filter_profile_select() {
+    const list = document.getElementById("filterProfileList");
+    const profiles = load_filter_profiles();
+    list.innerHTML = '';
+    const names = Object.keys(profiles).sort();
+    if (names.length === 0) {
+        list.innerHTML = '<li class="list-group-item small text-muted">No profiles saved</li>';
+        return;
+    }
+    for (const name of names) {
+        const li = document.createElement("li");
+        li.className = "list-group-item list-group-item-action d-flex align-items-center small";
+        li.innerHTML = `<span class="filter-profile-apply flex-grow-1" data-profile="${name}" style="cursor: pointer;">${name}</span>`
+            + `<span class="filter-profile-delete ms-2" data-profile="${name}" title="Delete profile" style="cursor: pointer;">&times;</span>`;
+        list.appendChild(li);
+    }
+}
+
+// Show the profile editor checkboxes and name input
+function enter_profile_edit_mode() {
+    document.getElementById("addFilterProfile").style.display = "none";
+    document.getElementById("cancelFilterProfile").style.display = "";
+    document.getElementById("filterProfileEditorInline").style.display = "";
+    document.getElementById("filterProfileEditorInline").classList.add("d-flex");
+    document.getElementById("filterProfileName").value = "";
+    // Show all profile checkboxes
+    document.querySelectorAll(".filter-profile-check").forEach(el => {
+        el.style.display = "";
+    });
+    // Default: all checked except date/time
+    const defaults = {
+        profileCheckRuns: true,
+        profileCheckRunTags: true,
+        profileCheckVersions: true,
+        profileCheckFromDate: false,
+        profileCheckFromTime: false,
+        profileCheckToDate: false,
+        profileCheckToTime: false,
+        profileCheckMetadata: true,
+        profileCheckAmount: true,
+    };
+    for (const [id, checked] of Object.entries(defaults)) {
+        const el = document.getElementById(id);
+        if (el) el.checked = checked;
+    }
+}
+
+// Hide the profile editor checkboxes and name input
+function exit_profile_edit_mode() {
+    document.getElementById("cancelFilterProfile").style.display = "none";
+    document.getElementById("addFilterProfile").style.display = "";
+    document.getElementById("filterProfileEditorInline").style.display = "none";
+    document.getElementById("filterProfileEditorInline").classList.remove("d-flex");
+    document.querySelectorAll(".filter-profile-check").forEach(el => {
+        el.style.display = "none";
+    });
+}
+
 export {
     setup_filtered_data_and_filters,
     setup_run_amount_filter,
@@ -674,5 +855,12 @@ export {
     update_overview_version_select_list,
     clear_all_filters,
     set_filter_show_current_version,
-    generate_version_filter_list_item_html
+    generate_version_filter_list_item_html,
+    build_profile_from_checks,
+    apply_filter_profile,
+    save_filter_profile_to_storage,
+    delete_filter_profile,
+    populate_filter_profile_select,
+    enter_profile_edit_mode,
+    exit_profile_edit_mode
 };
