@@ -23,6 +23,16 @@
             <a class="nav-item nav-link" id="openDocs" href="/docs">Swagger API Docs</a>
             <a class="nav-item nav-link" id="openDocs" href="/redoc">Redoc API Docs</a>
             <a class="nav-item nav-link" id="openDashboard" href="/">Dashboard</a>
+            <button class="btn btn-primary btn-sm ms-3 my-auto" id="refreshDashboard" <!-- placeholder_refresh_card_visibility -->>
+                &#x21bb;&nbsp; Refresh Dashboard&nbsp;
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                    id="refreshDashboardSpinner" hidden></span>
+            </button>
+            <button class="btn btn-primary btn-sm ms-2 my-auto" id="refreshAdminTables" <!-- placeholder_refresh_card_visibility -->>
+                &#x21bb;&nbsp; Refresh Admin Page Tables&nbsp;
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                    id="refreshAdminTablesSpinner" hidden></span>
+            </button>
         </div>
         <ul class="navbar-nav flex-row flex-wrap ms-md-auto me-4">
             <li class="nav-item">

@@ -9,6 +9,8 @@ import {
     add_log_file,
     remove_log,
     remove_all_logs,
+    refresh_dashboard,
+    refresh_admin_tables,
 } from './admin_api.js';
 import { toggle_theme } from './admin_theme.js';
 
@@ -25,6 +27,8 @@ function setup_output_button_eventlisteners() {
     document.getElementById("addLogFile").addEventListener("click", add_log_file);
     document.getElementById("removeLogData").addEventListener("click", remove_log);
     document.getElementById("removeAllLogs").addEventListener("click", remove_all_logs);
+    document.getElementById("refreshDashboard").addEventListener("click", refresh_dashboard);
+    document.getElementById("refreshAdminTables").addEventListener("click", refresh_admin_tables);
     document.getElementById("themeLight").addEventListener("click", () => toggle_theme());
     document.getElementById("themeDark").addEventListener("click", () => toggle_theme());
 }

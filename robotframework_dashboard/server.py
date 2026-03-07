@@ -280,6 +280,7 @@ class ApiServer:
         server_user: str,
         server_pass: str,
         offline_dependencies: bool,
+        no_autoupdate: bool = False,
     ):
         """Init function that starts up the fastapi app and initializes all the vars and endpoints"""
         self.app = FastAPIOffline(
@@ -292,6 +293,7 @@ class ApiServer:
         self.server_user = server_user
         self.server_pass = server_pass
         self.offline = offline_dependencies
+        self.no_autoupdate = no_autoupdate
         self.log_dir = "robot_logs"
         self.latest_log_dir = None
 
@@ -302,6 +304,10 @@ class ApiServer:
         admin_file = join(dirname(abspath(__file__)), "./templates", "admin.html")
         admin_html = open(admin_file, "r").read()
         admin_html = admin_html.replace('"placeholder_version"', __version__)
+        admin_html = admin_html.replace(
+            "<!-- placeholder_refresh_card_visibility -->",
+            "" if self.no_autoupdate else "hidden",
+        )
 
         dependency_processor = DependencyProcessor(admin_page=True)
         admin_html = admin_html.replace(
@@ -358,6 +364,22 @@ class ApiServer:
             """Serve robotdashboard HTML endpoint function"""
             robot_dashboard_html = open("robot_dashboard.html", "r").read()
             return robot_dashboard_html
+
+        @self.app.post("/refresh-dashboard")
+        async def refresh_dashboard() -> ResponseMessage:
+            """Manually trigger regeneration of the dashboard HTML"""
+            console = "no console output"
+            try:
+                console = self.robotdashboard.create_dashboard()
+                response = {
+                    "success": "1",
+                    "message": "SUCCESS: Dashboard refreshed successfully!",
+                    "console": console,
+                }
+            except Exception as error:
+                message = f"Something went wrong while refreshing the dashboard, ERROR: {error}"
+                response = {"success": "0", "message": message, "console": console}
+            return response
 
         @self.app.get("/log", response_class=HTMLResponse, include_in_schema=False)
         async def log_page(path: str):
@@ -471,7 +493,8 @@ class ApiServer:
                         output_file_info_list=outputs
                     )
                     remove(input)
-                console += self.robotdashboard.create_dashboard()
+                if not self.no_autoupdate:
+                    console += self.robotdashboard.create_dashboard()
                 response = {
                     "success": "1",
                     "message": f"SUCCESS: processed {input}, see the browser console for more details!",
@@ -523,7 +546,8 @@ class ApiServer:
                 )
                 remove(output_path)
 
-                console += self.robotdashboard.create_dashboard()
+                if not self.no_autoupdate:
+                    console += self.robotdashboard.create_dashboard()
                 response = {
                     "success": "1",
                     "message": f"SUCCESS: processed {file.filename}, see the browser console for more details!",
@@ -582,7 +606,8 @@ class ApiServer:
                         console += f"  Removed log file: {log_filename}\n"
                     else:
                         console += f"  No log file found for removed output (expected: {log_path}), skipping\n"
-                console += self.robotdashboard.create_dashboard()
+                if not self.no_autoupdate:
+                    console += self.robotdashboard.create_dashboard()
                 response = {
                     "success": "1",
                     "message": f"SUCCESS: processed {remove_output}, see the browser console for more details!",
@@ -632,7 +657,8 @@ class ApiServer:
                 log_file.close()
                 console += f"Added {add_log.log_name} to the folder {self.log_dir}\n"
                 console += "======================================================================================\n"
-                console += self.robotdashboard.create_dashboard()
+                if not self.no_autoupdate:
+                    console += self.robotdashboard.create_dashboard()
                 if "ERROR" in console:
                     raise Exception(
                         "A problem occurred while adding the log file, check the console message!"
@@ -684,7 +710,8 @@ class ApiServer:
                 console += "======================================================================================\n"
                 console += f"Added {file.filename} to the folder {self.log_dir}\n"
                 console += "======================================================================================\n"
-                console += self.robotdashboard.create_dashboard()
+                if not self.no_autoupdate:
+                    console += self.robotdashboard.create_dashboard()
                 if "ERROR" in console:
                     raise Exception(
                         "A problem occurred while adding the log file, check the console message!"
@@ -730,7 +757,8 @@ class ApiServer:
                     remove(log_path)
                     console += f"Removed {remove_log.log_name} from the folder {self.log_dir}\n"
                 console += "======================================================================================\n"
-                console += self.robotdashboard.create_dashboard()
+                if not self.no_autoupdate:
+                    console += self.robotdashboard.create_dashboard()
             except Exception as error:
                 response = {
                     "success": "0",
