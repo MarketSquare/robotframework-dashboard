@@ -58,3 +58,9 @@ class AbstractDatabaseProcessor(ABC):
     def update_output_path(self, log_path: str) -> None:
         """Optional: Function to update the output_path using the log path that the server has used"""
         raise NotImplementedError("update_output_path is not implemented in the custom databaseclass, but is only required when using the server!")
+
+    def _get_run_paths(self) -> dict:
+        """Optional: Returns a dict mapping run_start -> path for all runs.
+        Required by the server when automatically deleting log files after removing outputs.
+        If not implemented, log files will not be automatically deleted on output removal."""
+        return {}

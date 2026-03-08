@@ -193,6 +193,13 @@ class RobotDashboard:
         self.database.close_database()
         return runs, names, aliases, tags
 
+    def get_run_paths(self):
+        """Function that gets a mapping of run_start to path for all runs"""
+        self.database.open_database()
+        run_paths = self.database._get_run_paths()
+        self.database.close_database()
+        return run_paths
+
     def remove_outputs(self, remove_runs=None):
         """Function that removes the remove_runs that were set when instantiating the RobotDashboard class"""
         console = ""

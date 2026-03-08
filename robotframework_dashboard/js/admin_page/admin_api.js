@@ -303,6 +303,39 @@ async function remove_all_logs() {
     }
 }
 
+// function to manually trigger dashboard HTML regeneration
+function refresh_dashboard() {
+    document.getElementById("refreshDashboardSpinner").hidden = false
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/refresh-dashboard");
+    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+    xhr.onload = () => {
+        document.getElementById("refreshDashboardSpinner").hidden = true
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success == "1") {
+                console.log(response.console)
+                add_alert(response.message, "success")
+            } else {
+                add_alert(response.message, "danger")
+                console.log(response.console)
+            }
+        } else {
+            add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+        }
+    };
+    xhr.send(JSON.stringify({}));
+}
+
+// function to manually refresh the admin page tables (outputs and logs)
+function refresh_admin_tables() {
+    document.getElementById("refreshAdminTablesSpinner").hidden = false
+    get_outputs()
+    get_logs()
+    document.getElementById("refreshAdminTablesSpinner").hidden = true
+    add_alert("Admin page tables refreshed!", "success")
+}
+
 export {
     add_output_path,
     add_output_file,
@@ -316,4 +349,6 @@ export {
     add_log_file,
     remove_log,
     remove_all_logs,
+    refresh_dashboard,
+    refresh_admin_tables,
 };

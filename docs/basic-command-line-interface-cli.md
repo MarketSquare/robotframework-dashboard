@@ -176,6 +176,18 @@ robotdashboard --novacuum True
 - Optional: `--novacuum` disables automatic database vacuuming.
 - Default: False. Using `--novacuum` with no value sets it to True.
 
+### Disable automatic dashboard regeneration on upload/delete
+```bash
+robotdashboard --server --noautoupdate
+robotdashboard --server --noautoupdate True
+```
+- Optional: `--noautoupdate` disables automatic dashboard HTML regeneration after every upload or delete via the server API.
+- Default: False (dashboard is regenerated automatically on every change).
+- When enabled, two **Refresh** buttons appear in the admin page navbar: **Refresh Dashboard** and **Refresh Admin Page Tables**.
+- This is useful when working with large datasets or slow database queries, where automatic regeneration would cause long API response times.
+- Only relevant when used together with `--server`.
+- See [Dashboard Server](/dashboard-server.md#manual-refresh-mode-noautoupdate) for more details.
+
 ### Use a custom database class
 ```bash
 robotdashboard -c ./path/to/custom_class.py  

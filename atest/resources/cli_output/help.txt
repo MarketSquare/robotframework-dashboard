@@ -14,7 +14,8 @@ usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]OUTPUTPATH ...[]][]]
                       [[]-t DASHBOARDTITLE[]] [[]-m MESSAGECONFIG[]] [[]-q QUANTITY[]]
                       [[]-u [[]USELOGS[]][]] [[]-g [[]GENERATEDASHBOARD[]][]] [[]-l [[]LISTRUNS[]][]]
                       [[]--offlinedependencies [[]OFFLINEDEPENDENCIES[]][]]
-                      [[]--novacuum [[]NOVACUUM[]][]] [[]-c DATABASECLASS[]] [[]-s [[]SERVER[]][]]
+                      [[]--novacuum [[]NOVACUUM[]][]] [[]-c DATABASECLASS[]]
+                      [[]--noautoupdate [[]NOAUTOUPDATE[]][]] [[]-s [[]SERVER[]][]]
 
 options:
   -v, --version         Display application version information.
@@ -149,6 +150,14 @@ options:
                           • Detailed instructions can be found in the docs (url at the bottom of the help)
                         Examples:
                           • '-c customdb.py'
+  --noautoupdate [[]NOAUTOUPDATE[]]
+                        `boolean` Disables automatic dashboard regeneration on every upload/delete.
+                        Usage behavior:
+                          • Default value: False (dashboard is regenerated automatically)
+                          • Using '--noautoupdate' with no value -> True (manual refresh only)
+                          • Using '--noautoupdate true'  -> True
+                          • Using '--noautoupdate false' -> False
+                          • When enabled, use the 'Refresh Dashboard' button on the admin page
   -s [[]SERVER[]], --server [[]SERVER[]]
                         Starts the dashboard webserver.
                         Usage behavior:
