@@ -82,7 +82,8 @@ def main():
             arguments.server_port,
             arguments.server_user,
             arguments.server_pass,
-            arguments.offline_dependencies
+            arguments.offline_dependencies,
+            arguments.no_autoupdate,
         )
         server.set_robotdashboard(robotdashboard)
         server.run()

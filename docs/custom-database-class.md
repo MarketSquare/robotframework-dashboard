@@ -207,6 +207,22 @@ In this approach, you store `log.html` and related files on the server, and this
 
 If you do not use server-side log storage, you can safely omit this method.
 
+---
+
+### *(Optional)* `_get_run_paths(self) -> dict`
+Returns a dict mapping `run_start` to `path` for all runs currently in the database, e.g.:
+
+```python
+{
+  "2024-10-13 22:33:19.673821": "robot_logs/log-20241013-223319.html",
+  ...
+}
+```
+
+This is used by the server's `/remove-outputs` endpoint to automatically delete the corresponding `log.html` file from the `robot_logs` folder whenever an output is removed.  
+
+If not implemented, the default returns `{}` and no log files will be automatically cleaned up on output removal. Only relevant when using the Dashboard Server with `uselogs=True`.
+
 
 ## Important Notes
 

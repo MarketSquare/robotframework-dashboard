@@ -381,24 +381,56 @@
                     <div class="modal-header">
                         <h1 class="modal-title" id="filtersModalLabel">Filters</h1>
                         <div>
+                            <a type="button" class="information information-icon ms-1 me-1 align-middle" id="filterProfileInformation"></a>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
+                                id="addFilterProfile">Add Profile</button>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
+                                id="cancelFilterProfile" style="display: none;">Stop Adding</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 id="resetFilters">Reset Filters</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 data-bs-dismiss="modal" id="closeFilters">Close</button>
                         </div>
                     </div>
+                    <div class="filter-profile-bar d-flex align-items-center justify-content-between px-3 py-2">
+                        <div id="filterProfileEditorInline" class="d-flex align-items-center" style="display: none !important;">
+                            <input class="form-control form-control-sm me-2" type="text" id="filterProfileName" placeholder="Profile Name..." style="width: 180px;" />
+                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="saveFilterProfile">Save Profile</button>
+                        </div>
+                        <div class="d-flex align-items-center" style="margin-left: auto; margin-right: 17px; gap: 8px;">
+                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="updateFilterProfile" style="display: none;">Update Profile</button>
+                            <div style="width: 200px; position: relative;">
+                                <div class="selectBox" id="selectFilterProfile">
+                                    <select class="form-select form-select-sm">
+                                        <option>Apply Filter Profile</option>
+                                    </select>
+                                    <div class="overSelect"></div>
+                                </div>
+                                <span id="profileModifiedDot" class="version-selected-dot" style="display: none; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);"></span>
+                                <div id="filterProfileCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; width: 200px;">
+                                    <ul class="list-group" id="filterProfileList"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="modal-body">
                         <div class="list-group">
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Runs</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckRuns" checked style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    Runs
+                                    <a type="button" class="information information-icon ms-2" id="filterRunsInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="runs" style="width: 200px;"></select>
                                 </div>
                             </div>
                             <div class="list-group-item" id="runTagFilter">
                                 <div class="d-flex justify-content-between align-items-start">
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox" id="profileCheckRunTags" checked style="display: none;" />
                                     <span class="d-flex align-items-center">
                                         Run Tags
+                                        <a type="button" class="information information-icon ms-2" id="filterRunTagsInformation"></a>
                                         <span id="filterRunTagSelectedIndicator" class="version-selected-dot ms-2 mt-1"
                                             style="display: none;"></span>
                                     </span>
@@ -420,8 +452,10 @@
                             </div>
                             <div class="list-group-item" id="projectVersionFilter">
                                 <div class="d-flex justify-content-between align-items-start">
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox" id="profileCheckVersions" checked style="display: none;" />
                                     <span class="d-flex align-items-center">
                                         Versions
+                                        <a type="button" class="information information-icon ms-2" id="filterVersionsInformation"></a>
                                         <span id="filterVersionSelectedIndicator" class="version-selected-dot ms-2 mt-1"
                                             style="display: none;"></span>
                                     </span>
@@ -444,28 +478,44 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>From Date</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckFromDate" style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    From Date
+                                    <a type="button" class="information information-icon ms-2" id="filterFromDateInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromDate" type="date"
                                         style="width: 200px;" />
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>From Time</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckFromTime" style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    From Time
+                                    <a type="button" class="information information-icon ms-2" id="filterFromTimeInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromTime" type="time"
                                         style="width: 200px;" />
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>To Date</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckToDate" style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    To Date
+                                    <a type="button" class="information information-icon ms-2" id="filterToDateInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toDate" type="date"
                                         style="width: 200px;" />
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>To Time</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckToTime" style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    To Time
+                                    <a type="button" class="information information-icon ms-2" id="filterToTimeInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toTime" type="time"
                                         style="width: 200px;" />
@@ -473,14 +523,22 @@
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center"
                                 id="metadataFilter" hidden>
-                                <span>Metadata</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckMetadata" checked style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    Metadata
+                                    <a type="button" class="information information-icon ms-2" id="filterMetadataInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="metadata"
                                         style="width: 200px;"></select>
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Amount</span>
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckAmount" checked style="display: none;" />
+                                <span class="d-flex align-items-center">
+                                    Amount
+                                    <a type="button" class="information information-icon ms-2" id="filterAmountInformation"></a>
+                                </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm information" type="number" min="0"
                                         id="amount" value="10" style="width: 120px;">

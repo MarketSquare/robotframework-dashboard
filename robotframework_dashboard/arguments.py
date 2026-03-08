@@ -347,6 +347,21 @@ class ArgumentParser:
             default=None,
         )
         parser.add_argument(
+            "--noautoupdate",
+            help=(
+                "`boolean` Disables automatic dashboard regeneration on every upload/delete.\n"
+                "Usage behavior:\n"
+                "  • Default value: False (dashboard is regenerated automatically)\n"
+                "  • Using '--noautoupdate' with no value -> True (manual refresh only)\n"
+                "  • Using '--noautoupdate true'  -> True\n"
+                "  • Using '--noautoupdate false' -> False\n"
+                "  • When enabled, use the 'Refresh Dashboard' button on the admin page\n"
+            ),
+            nargs="?",
+            const=True,
+            default=False,
+        )
+        parser.add_argument(
             "-s",
             "--server",
             nargs="?",  # Makes the argument optional
@@ -425,6 +440,7 @@ class ArgumentParser:
             arguments.forcejsonconfig, "forcejsonconfig"
         )
         no_vacuum = self._normalize_bool(arguments.novacuum, "novacuum")
+        no_autoupdate = self._normalize_bool(arguments.noautoupdate, "noautoupdate")
 
         # generates the datetime used in the file dashboard name and the html title
         generation_datetime = datetime.now()
@@ -539,5 +555,6 @@ class ArgumentParser:
             "project_version": arguments.project_version,
             "no_vacuum": no_vacuum,
             "timezone": timezone,
+            "no_autoupdate": no_autoupdate,
         }
         return dotdict(provided_args)

@@ -62,8 +62,8 @@ function merge_deep(local, defaults) {
     for (const key of new Set([...Object.keys(defaults), ...Object.keys(local)])) {
         const defaultVal = defaults[key];
         const localVal = local[key];
-        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries and theme (only in localstorage)
-        if (key !== "layouts" && key !== "libraries" && key !== "theme" && defaultVal === undefined && localVal !== undefined) {
+        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, and filterProfiles (only in localstorage)
+        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && defaultVal === undefined && localVal !== undefined) {
             continue;
         }
         // Added key: exists in defaults but not local: add defaults

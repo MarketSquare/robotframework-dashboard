@@ -338,6 +338,15 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         if len(run_starts) == 0:
             print(f"  WARNING: There are no runs so the dashboard will be empty!")
 
+    def _get_run_paths(self):
+        """Helper function to get a mapping of run_start to path for all runs"""
+        data = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
+        run_paths = {}
+        for entry in data:
+            entry = self._dict_from_row(entry)
+            run_paths[entry["run_start"]] = entry.get("path") or ""
+        return run_paths
+
     def remove_runs(self, remove_runs: list):
         """This function removes all provided runs and all their corresponding data"""
         run_starts, run_names, run_aliases, run_tags = self._get_runs()
