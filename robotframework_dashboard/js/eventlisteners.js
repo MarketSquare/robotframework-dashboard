@@ -313,16 +313,21 @@ function setup_settings_modal() {
         { key: "show.legends", elementId: "toggleLegends" },
         { key: "show.aliases", elementId: "toggleAliases" },
         { key: "show.milliseconds", elementId: "toggleMilliseconds" },
+        { key: "show.timezones", elementId: "toggleTimezones" },
         { key: "show.axisTitles", elementId: "toggleAxisTitles" },
         { key: "show.animation", elementId: "toggleAnimations" },
         { key: "show.duration", elementId: "toggleAnimationDuration", isNumber: true, event: "change" },
         { key: "show.rounding", elementId: "toggleBarRounding", isNumber: true, event: "change" },
         { key: "show.prefixes", elementId: "togglePrefixes" },
+        { key: "show.convertTimezone", elementId: "toggleTimezone" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
         handler(true);
         document.getElementById(def.elementId).addEventListener(def.event || "click", () => handler());
     });
+    // Re-populate the date filter pickers when the timezone conversion toggle changes,
+    // since the displayed timestamps change and the defaults need to match.
+    document.getElementById("toggleTimezone").addEventListener("click", () => setup_lowest_highest_dates());
     document.getElementById("themeLight").addEventListener("click", () => toggle_theme());
     document.getElementById("themeDark").addEventListener("click", () => toggle_theme());
 

@@ -89,6 +89,29 @@ robotdashboard -f ./results:version_1.1 ./results2:version_2.3.4
 > Added in RobotDashboard v1.3.0  
 > version_ tag support added in v1.4.0
 
+### Timezone
+The dashboard stores a timezone offset alongside `run_start` timestamps so the dashboard can display times correctly for your local timezone.  
+By default the offset is **auto-detected** from the machine running `robotdashboard`. Override it when your `output.xml` files were produced in a different timezone:
+```bash
+robotdashboard -o output.xml -z +02:00
+robotdashboard -f ./results --timezone=+02:00
+robotdashboard -o output.xml --timezone=-05:00
+robotdashboard -o output.xml -z +00:00
+```
+- Optional: `-z` or `--timezone` specifies the UTC offset of the timestamps inside the output XML files.
+- Default: auto-detected from the local machine timezone.
+- Format: `+HH:MM` or `-HH:MM` (e.g. `+02:00`, `-05:00`, `+00:00`).
+- Use the `--timezone=` form (with `=`) for negative offsets to avoid the leading `-` being parsed as a flag.
+- The offset is appended to the `run_start` value stored in the database (e.g. `2025-03-13 00:21:34.123456+02:00`).
+
+::: info Timezone and existing runs
+Runs processed **before** this feature was introduced have no timezone offset stored in their `run_start`. **This does not break anything** — those runs display exactly as they did before and are unaffected by both timezone settings in the dashboard.
+
+You only need to re-add those `output.xml` files (with the correct `-z`/`--timezone` flag) if you want the **Convert Timestamps to Local Timezone** feature to work for them. If you never intend to use timezone conversion, no action is required. See [Upgrading & Database Migration](/installation-version-info#upgrading-database-migration) and [Settings – Display Timezone Offsets & Conversion](/settings#general-settings-graphs-tab) for details.
+:::
+
+> Added in RobotDashboard v1.8.0
+
 ## Removing Runs from the Database
 
 ### Remove runs by index, run start, alias, tag, or limit

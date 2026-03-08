@@ -11,7 +11,7 @@ function build_tooltip_meta(filteredData, durationField = 'elapsed_s', aggregate
         const s = item.skipped || 0;
         const msg = item.message || '';
         const keys = [item.run_start, item.run_alias];
-        const timeKey = new Date(item.run_start).getTime();
+        const timeKey = new Date(item.run_start.replace(" ", "T")).getTime();
         const meta = { elapsed_s: elapsed, passed: p, failed: f, skipped: s, message: msg };
         for (const key of keys) {
             if (aggregate && byLabel[key]) {

@@ -40,6 +40,8 @@ The **Graphs** tab contains the core configuration options for all charts in the
 | **Display Drawing Animations** | Enables animated graph rendering. |
 | **Animation Duration (Milliseconds)** | Length of animation, e.g. `1500` ms. |
 | **Bar Graph Edge Rounding (Pixels)** | Controls rounding of bar edges (e.g., `0` = square, `8` = softer). |
+| **Display Timezone Offsets** | Show or hide the timezone offset suffix (e.g. `+02:00`) appended to `run_start` timestamps in graphs and tables. Only has a visible effect on runs that have a stored timezone offset. Runs without an offset are unchanged. |
+| **Convert Timestamps to Local Timezone** | Converts stored `run_start` timestamps from their recorded timezone to the **viewer's browser timezone**. Only applies to runs that have a stored timezone offset — runs without an offset are left unchanged. Useful when runs were recorded in a different timezone than the person viewing the dashboard. |
 
 ### Saving Settings
 

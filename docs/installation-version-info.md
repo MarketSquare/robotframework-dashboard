@@ -79,6 +79,7 @@ The following schema changes are applied automatically:
 | v1.0.0 | Added `metadata` column to runs table |
 | v1.2.0 | Added `owner` column to keywords table |
 | v1.3.0 | Added `project_version` column to runs table |
+| v1.8.0 | Timezone offset appended to `run_start` timestamps (no new column — stored in existing `run_start` field) |
 
 No manual intervention is required — simply run `robotdashboard` with your existing database and it will be upgraded in place. Existing data is preserved.
 
@@ -86,4 +87,5 @@ No manual intervention is required — simply run `robotdashboard` with your exi
 - **Backup first** — once migrated to a newer schema, the database may not be compatible with older versions of RobotDashboard.
 - **New columns are empty for existing records** — when new columns are added during migration, they will have empty values for runs that were already in the database. Features that depend on these columns (e.g., metadata filtering, project versioning, keyword library names) will not work for those older runs until they are re-processed.
 - **Re-adding runs populates new columns** — to enable new features for older runs, remove them from the database and re-add their `output.xml` files. This will populate all columns with the correct data.
+- **Timezone in run_start** — in version 1.8.0 not a new column but changes to the format of `run_start` by appending a UTC offset (e.g. `2025-03-13 00:21:34.123456+02:00`) were added. Existing runs stored without an offset **display exactly as before** — no action is required for normal use. You only need to re-add `output.xml` files (with the correct `-z`/`--timezone` flag) if you want the **Convert Timestamps to Local Timezone** dashboard setting to work for those older runs.
 :::

@@ -36,6 +36,8 @@ var settings = {
         duration: 1500,
         rounding: 6,
         prefixes: true,
+        timezones: false,
+        convertTimezone: false,
     },
     theme_colors: {
         light: {

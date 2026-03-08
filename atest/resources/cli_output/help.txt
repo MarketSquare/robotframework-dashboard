@@ -8,8 +8,9 @@
 ======================================================================================
 usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]OUTPUTPATH ...[]][]]
                       [[]-f [[]OUTPUTFOLDERPATH ...[]][]]
-                      [[]--projectversion PROJECT_VERSION[]] [[]-r [[]REMOVERUNS ...[]][]]
-                      [[]-d DATABASEPATH[]] [[]-n NAMEDASHBOARD[]] [[]-j JSONCONFIG[]]
+                      [[]--projectversion PROJECT_VERSION[]] [[]-z TIMEZONE[]]
+                      [[]-r [[]REMOVERUNS ...[]][]] [[]-d DATABASEPATH[]]
+                      [[]-n NAMEDASHBOARD[]] [[]-j JSONCONFIG[]]
                       [[]--forcejsonconfig [[]FORCEJSONCONFIG[]][]]
                       [[]-t DASHBOARDTITLE[]] [[]-m MESSAGECONFIG[]] [[]-q QUANTITY[]]
                       [[]-u [[]USELOGS[]][]] [[]-g [[]GENERATEDASHBOARD[]][]] [[]-l [[]LISTRUNS[]][]]
@@ -45,6 +46,16 @@ options:
                           • Cannot be mixed with version_ tags
                         Examples:
                           . '--projectversion=1.1'
+  -z TIMEZONE, --timezone TIMEZONE
+                        `string` Specifies the timezone offset of the output.xml timestamps.
+                        Usage behavior:
+                          • Default value: auto-detected from the machine's local timezone
+                          • Provide a UTC offset string like '+02:00' or '-05:00'
+                          • Used to store timezone info with run_start for timezone conversion in the dashboard
+                        Examples:
+                          • '-z +02:00' -> timestamps are from UTC+2
+                          • '--timezone=-05:00' -> timestamps are from UTC-5 (use --timezone= for negative offsets)
+                          • '-z +00:00' -> timestamps are UTC
   -r [[]REMOVERUNS ...[]], --removeruns [[]REMOVERUNS ...[]]
                         `string` Specifies indexes, run_starts, aliases, tags or limit to remove from the database.
                         Usage behavior:

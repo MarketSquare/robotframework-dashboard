@@ -19,6 +19,16 @@ function setup_filtered_data_and_filters() {
     filteredSuites = remove_milliseconds(suites)
     filteredTests = remove_milliseconds(tests)
     filteredKeywords = remove_milliseconds(keywords)
+    // convert timezones if enabled (must run before remove_timezones so the offset is still present)
+    filteredRuns = convert_timezone(filteredRuns);
+    filteredSuites = convert_timezone(filteredSuites);
+    filteredTests = convert_timezone(filteredTests);
+    filteredKeywords = convert_timezone(filteredKeywords);
+    // remove timezone display if disabled
+    filteredRuns = remove_timezones(filteredRuns);
+    filteredSuites = remove_timezones(filteredSuites);
+    filteredTests = remove_timezones(filteredTests);
+    filteredKeywords = remove_timezones(filteredKeywords);
     // filter run data
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
@@ -56,10 +66,74 @@ function setup_filtered_data_and_filters() {
 function remove_milliseconds(data) {
     if (settings.show.milliseconds) { return data; }
 
-    return data.map(obj => ({
-        ...obj,
-        run_start: obj.run_start.slice(0, 19)
-    }));
+    return data.map(obj => {
+        const rs = obj.run_start;
+        const datetime = rs.slice(0, 19); // "YYYY-MM-DD HH:MM:SS"
+        // Check if the last 6 chars are a timezone offset (+HH:MM or -HH:MM)
+        const suffix = rs.slice(-6);
+        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+        return {
+            ...obj,
+            run_start: hasTz ? datetime + suffix : datetime
+        };
+    });
+}
+
+// function to remove timezone offset from run_start labels if disabled
+function remove_timezones(data) {
+    if (settings.show.timezones) { return data; }
+
+    return data.map(obj => {
+        const rs = obj.run_start;
+        // Check if the last 6 chars are a timezone offset (+HH:MM or -HH:MM)
+        const suffix = rs.slice(-6);
+        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+        if (!hasTz) { return obj; }
+        return {
+            ...obj,
+            run_start: rs.slice(0, -6)
+        };
+    });
+}
+
+// function to convert run_start timestamps from their stored timezone to the viewer's local timezone
+function convert_timezone(data) {
+    if (!settings.show.convertTimezone) { return data; }
+
+    return data.map(obj => {
+        const rs = obj.run_start;
+        // Check if run_start has a timezone offset (+HH:MM or -HH:MM) at the end
+        const suffix = rs.slice(-6);
+        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+        if (!hasTz) { return obj; }
+
+        // Parse the run_start with its timezone offset
+        const isoStr = rs.replace(" ", "T");
+        const date = new Date(isoStr);
+        if (isNaN(date.getTime())) { return obj; }
+
+        // Format to viewer's local timezone: YYYY-MM-DD HH:MM:SS+HH:MM
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+        // Compute the viewer's local timezone offset
+        const tzOffset = -date.getTimezoneOffset();
+        const tzSign = tzOffset >= 0 ? "+" : "-";
+        const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
+        const tzMins = String(Math.abs(tzOffset) % 60).padStart(2, "0");
+        const localTz = `${tzSign}${tzHours}:${tzMins}`;
+        // Preserve the full sub-second fractional part from the original string (e.g. ".123456").
+        // Timezone offsets are always whole minutes, so the fractional seconds are unchanged by conversion.
+        // Using the original string avoids JavaScript Date's 3-digit millisecond precision limit.
+        const mainPart = rs.slice(0, -6); // strip the "+HH:MM" suffix
+        const subSecond = mainPart.length > 19 ? mainPart.slice(19) : ""; // ".ffffff" or ""
+        const localStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${subSecond}${localTz}`;
+
+        return { ...obj, run_start: localStr };
+    });
 }
 
 // function to filter run data based on the runs (aka run name) filter
@@ -146,7 +220,7 @@ function filter_dates(runs) {
         return runs;  // Return all runs if invalid range
     }
     return runs.filter(run => {
-        const runStart = new Date(run.run_start);
+        const runStart = new Date(run.run_start.replace(" ", "T"));
         return runStart >= fromDateTime && runStart <= toDateTime;
     });
 }
@@ -346,28 +420,58 @@ function setup_run_amount_filter() {
 
 // function that initializes the from date/time and to date/time selection boxes in the filters
 function setup_lowest_highest_dates() {
-    var dates = [];
-    for (run of runs) {
-        dates.push(new Date(run.run_start));
-    }
-    if (dates.length == 0) {
+    if (runs.length == 0) {
         document.getElementById("fromDate").value = "1900-01-01";
         document.getElementById("fromTime").value = "00:00";
         document.getElementById("toDate").value = "9999-12-31";
         document.getElementById("toTime").value = "23:59";
-        return
+        return;
     }
-    var lowest = new Date(Math.min.apply(null, dates));
-    var highest = new Date(Math.max.apply(null, dates));
-    var tzoffset = new Date().getTimezoneOffset() * 60000;
-    lowest = new Date(new Date(lowest - tzoffset).getTime() + -1 * 60000); // this is to account for seconds in the initial filter value
-    highest = new Date(new Date(highest - tzoffset).getTime() + 1 * 60000); // this is to account for seconds in the initial filter value
-    lowest.setTime(lowest.getTime() - 1 * 60 * 60 * 1000) // minus 1 hour to account for possible daylight saving time switches of 1 hour!
-    highest.setTime(highest.getTime() + 1 * 60 * 60 * 1000) // plus 1 hour to account for possible daylight saving time switches of 1 hour!
-    document.getElementById("fromDate").value = lowest.toISOString().split("T")[0];
-    document.getElementById("fromTime").value = lowest.toISOString().split("T")[1].substring(0, 5);
-    document.getElementById("toDate").value = highest.toISOString().split("T")[0];
-    document.getElementById("toTime").value = highest.toISOString().split("T")[1].substring(0, 5);
+
+    if (settings.show.convertTimezone) {
+        // Convert to viewer's local timezone: parse the stored offset-aware timestamps as UTC
+        // instants, then display the local wall-clock equivalent in the pickers.
+        var dates = runs.map(run => new Date(run.run_start.replace(" ", "T")));
+        var lowest = new Date(Math.min.apply(null, dates));
+        var highest = new Date(Math.max.apply(null, dates));
+        var tzoffset = new Date().getTimezoneOffset() * 60000;
+        lowest = new Date(new Date(lowest - tzoffset).getTime() - 1 * 60000); // account for seconds
+        highest = new Date(new Date(highest - tzoffset).getTime() + 1 * 60000); // account for seconds
+        lowest.setTime(lowest.getTime() - 1 * 60 * 60 * 1000); // minus 1 hour for DST
+        highest.setTime(highest.getTime() + 1 * 60 * 60 * 1000); // plus 1 hour for DST
+        document.getElementById("fromDate").value = lowest.toISOString().split("T")[0];
+        document.getElementById("fromTime").value = lowest.toISOString().split("T")[1].substring(0, 5);
+        document.getElementById("toDate").value = highest.toISOString().split("T")[0];
+        document.getElementById("toTime").value = highest.toISOString().split("T")[1].substring(0, 5);
+    } else {
+        // No conversion: strip the timezone suffix and treat the stored wall-clock datetime
+        // as-is, so picker defaults match exactly what the user sees in the dashboard.
+        const wallClocks = runs.map(run => {
+            const rs = run.run_start;
+            const suffix = rs.slice(-6);
+            const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
+            // Take only YYYY-MM-DD HH:MM:SS (first 19 chars)
+            return hasTz ? rs.slice(0, 19) : rs.slice(0, 19);
+        });
+        wallClocks.sort();
+        const lowestStr = wallClocks[0];
+        const highestStr = wallClocks[wallClocks.length - 1];
+        // Adjust by 1 minute and 1 hour (for seconds and DST) using plain date arithmetic
+        const adjust = (dateStr, deltaMs) => {
+            const d = new Date(dateStr.replace(" ", "T"));
+            d.setTime(d.getTime() + deltaMs);
+            const pad = n => String(n).padStart(2, "0");
+            const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            return { date, time };
+        };
+        const low = adjust(lowestStr, -(1 * 60 + 60 * 60) * 1000); // -1min -1hr
+        const high = adjust(highestStr, (1 * 60 + 60 * 60) * 1000);  // +1min +1hr
+        document.getElementById("fromDate").value = low.date;
+        document.getElementById("fromTime").value = low.time;
+        document.getElementById("toDate").value = high.date;
+        document.getElementById("toTime").value = high.time;
+    }
 }
 
 // function to setup metadata filter if there is metadata in the data

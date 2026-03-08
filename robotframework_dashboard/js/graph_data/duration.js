@@ -69,14 +69,18 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
     const generate_grouped_line_data = (sets) => {
         const grouped = new Map();
         for (const points of sets.values()) {
-            for (const { x, y } of points) {
+            for (const { x, y, _run_start } of points) {
                 const ts = x.getTime();
-                grouped.set(ts, (grouped.get(ts) || 0) + y);
+                if (!grouped.has(ts)) {
+                    grouped.set(ts, { y: 0, _run_start });
+                }
+                grouped.get(ts).y += y;
             }
         }
-        return Array.from(grouped.entries()).map(([ts, y]) => ({
+        return Array.from(grouped.entries()).map(([ts, { y, _run_start }]) => ({
             x: new Date(Number(ts)),
             y,
+            _run_start,
         })).sort((a, b) => a.x - b.x);
     };
 
@@ -122,10 +126,10 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
         for (const value of filteredData) {
             if (!should_include(value)) continue;
             const name = suiteSelectSuitesCombined && dataType === "suite" ? "All Suites Combined" : value.name;
-            const run_start = new Date(value.run_start);
+            const run_start = new Date(value.run_start.replace(" ", "T"));
             const val = Math.round(value[objectDataAttribute] * 100) / 100;
-            if (!sets.has(name)) sets.set(name, [{ x: run_start, y: val }]);
-            else sets.get(name).push({ x: run_start, y: val });
+            if (!sets.has(name)) sets.set(name, [{ x: run_start, y: val, _run_start: value.run_start }]);
+            else sets.get(name).push({ x: run_start, y: val, _run_start: value.run_start });
         }
 
         if (dataType === "suite" && suiteSelectSuitesCombined) {
