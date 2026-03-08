@@ -6,6 +6,8 @@ outline: deep
 
 RobotFramework Dashboard provides flexible filtering options across different pages. This guide explains all filter types, how they interact, and how to use them to narrow down test data efficiently.
 
+> Each filter label in the Filters modal has an **ⓘ info icon** next to it. Hovering over it shows a short description of what that filter does and any special behaviour.
+
 ## Overview Page
 
 The **Overview** page does not have global filters. However, it offers a few **display settings**:
@@ -13,64 +15,115 @@ The **Overview** page does not have global filters. However, it offers a few **d
 - **Display By Name** – Toggle whether to display the names of projects in the statistics.
 - **Display By Tag** – Toggle whether to use custom project tags if defined in your test run metadata. (See [Advanced CLI & Examples](advanced-cli-examples.md#project-tagging) for more information on Tags!)
 - **Duration Percentage Threshold** – Adjust the percentage threshold used to color-code durations (faster/slower runs).
-- **Select Versions** - Filter the displayed runs by their associated versions
+- **Select Versions** – Filter the displayed runs by their associated versions.
 
 > These settings affect only the way the statistics are presented on the Overview page.
 
 ## Dashboard Page
 
-The **Dashboard** page provides both **global filters** and **section-specific filters**.  
+The **Dashboard** page provides both **global filters** and **section-specific filters**.
 
 ### Global Filters
 
-Global filters are applied to the entire dashboard, affecting all sections and graphs:
+Global filters are applied to the entire dashboard, affecting all sections and graphs. Open the filter modal using the filter icon in the top navigation bar.
 
-1. **Run**  
-   - Filter by the run name.
-   - Select from a dropdown of all available runs.
+#### 1. Runs
 
-2. **Run Tag**  
-   - Filter by test tags associated with runs.
-   - Uses **AND/OR logic** to combine multiple tag selections.
-   - Multi-select dropdown allows filtering by one or more tags.
+- Filters the dashboard to only show data for runs of the selected project (run name).
+- **All** (default) shows runs from every project.
+- Each option in the dropdown corresponds to a distinct run name present in the data.
 
-3. **Run Date / Time**  
-   - Filter by a date and time range.
-   - Options include:
-     - **From Date / From Time** – Start of the range
-     - **To Date / To Time** – End of the range
-   - Only runs within this range are displayed.
+#### 2. Run Tags
 
-4. **Run Amount**  
-   - After applying other filters, only the last **X runs** are shown.
-   - Default: **20** runs.
-   - If fewer than X runs exist, only the available runs are shown.
-   - The selected amount is displayed in each dashboard section.
+- Filters runs by their assigned tags. Only runs that have at least one matching tag are included.
+- Click **Select Tags** to open the tag list; tick one or more tags to activate the filter.
+- **All** (ticked by default) means no tag filter is applied — all runs are shown.
+- **AND mode** (default): a run must have **all** selected tags to be included.
+- **OR mode** (toggle *Use OR*): a run needs at least **one** of the selected tags.
+- A dot (●) next to the label indicates the filter is active (i.e. *All* is not selected).
+- Use the search box inside the dropdown to quickly find a tag by name.
 
-5. **Metadata**  
-   - Filter runs by **run-level or suite-level metadata**.
-   - Metadata is automatically collected from the `[Metadata]` setting in your Robot Framework test suites.
-   - Displayed as `key:value` pairs in a dropdown (e.g., `Browser:Chrome`, `Environment:Staging`).
-   - Selecting a metadata filter shows only runs whose suites contain that metadata entry.
-   - To define metadata in your `.robot` files, use the `Metadata` setting in the `*** Settings ***` section:
-     ```robot
-     *** Settings ***
-     Metadata    Browser    Chrome
-     Metadata    Environment    Staging
-     ```
+#### 3. Versions
+
+- Filters runs by their project version label.
+- Click **Select Versions** to open the version list; tick one or more versions to narrow down the data.
+- **All** (ticked by default) means no version filter is applied.
+- **None** covers runs that have no version label set.
+- A dot (●) next to the label indicates the filter is active.
+- Use the search box inside the dropdown to quickly find a version by name.
+
+#### 4. From Date / From Time
+
+- Sets the earliest point in time a run must have started at to be included.
+- Runs that started before this date and time are excluded.
+- Defaults to the date and time of the oldest run in the data (with a small margin to account for seconds and daylight saving time).
+
+#### 5. To Date / To Time
+
+- Sets the latest point in time a run must have started at to be included.
+- Runs that started after this date and time are excluded.
+- Defaults to the date and time of the most recent run in the data (with a small margin).
+
+#### 6. Metadata
+
+- Only visible when at least one run has metadata attached.
+- Filters runs by a metadata value attached to the run.
+- **All** (default) shows runs regardless of metadata.
+- Selecting a specific value limits the view to runs that carry that metadata entry.
+- Metadata is collected from the `Metadata` setting in your Robot Framework test suites:
+  ```
+  *** Settings ***
+  Metadata    Browser    Chrome
+  Metadata    Environment    Staging
+  ```
+
+#### 7. Amount
+
+- After all other filters have been applied, limits the dashboard to the **most recent X runs**.
+- Use **All Runs** to set the value to the total number of runs currently matching the other filters.
+- Useful for focusing on recent history without changing the date filters.
+
+### Filter Profiles
+
+Filter Profiles let you save, name, and reapply a combination of filter settings in one click.
+
+#### Creating a Profile
+
+1. Set your desired filters in the Filters modal.
+2. Click **Add Profile** — the profile editor appears.
+   - A checkbox is shown next to each filter. Checkboxes are pre-filled based on which filters currently differ from their default (dashboard-load) state, but you can toggle them freely.
+   - Checked filters will be saved as part of the profile; unchecked filters are ignored.
+3. Enter a name in the **Profile Name** field.
+4. Click **Save Profile**.
+
+#### Applying a Profile
+
+- Click the **Apply Filter Profile** selector to expand the saved profiles list.
+- Click a profile name to apply all its stored filter values at once.
+- The selector displays the active profile name when the current filter state **exactly matches** a saved profile.
+- A dot (●) next to the selector means a profile was applied but filters have since been changed away from it.
+
+#### Updating a Profile
+
+- After applying a profile and modifying filters, the **Update Profile** button appears.
+- Click it to overwrite the saved profile with the current filter values.
+
+#### Deleting a Profile
+
+- In the profile list, click the **×** next to a profile name.
+- A confirmation prompt prevents accidental deletion.
 
 ### Section Filters on Dashboard
 
-The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each section has specific filtering options.
+The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each section has specific filtering options that apply only to that section.
 
 #### Run Section
-- No additional filters specific to this section.
+- No additional section-specific filters.
 
 #### Suite Section
-- **Folder Filter (Donut Chart)** – Click on folder donuts to "zoom in" on specific suites.
+- **Folder Filter (Donut Chart)** – Click on folder donuts to "zoom in" on specific suites. Affects the Suite Statistics and Suite Duration graphs.
 - **Suite Selection Dropdown** – Choose a specific suite or all suites.
-- **Full Suite Paths Toggle** – When enabled, shows the full suite path instead of only the suite name.  
-  - Useful if there are duplicate suite names in different folders.
+- **Full Suite Paths Toggle** – When enabled, shows the full suite path instead of only the suite name. Useful when duplicate suite names exist in different folders.
 
 #### Test Section
 - **Suite Filter** – Select one or multiple suites from a dropdown.
@@ -87,28 +140,30 @@ The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each
 The **Compare** page is designed to compare runs side by side:
 
 - **Run Selection Dropdowns** – Select up to **4 runs** to compare.
-- **Suite Paths Toggle** – Apply the full suite path logic to graphs to distinguish duplicate suite names.
+- **Suite Paths Toggle** – Apply full suite path logic to graphs to distinguish duplicate suite names.
 
-> Compare page does not use global filters; it only uses the selected runs and optional suite path toggles.
+> The Compare page does not use global filters; it relies only on the selected runs and the optional suite path toggle.
 
 ## Tables Page
 
-The **Tables** page allows for detailed inspection of raw test data:
+The **Tables** page allows for detailed inspection of raw test data and uses the same global filters as the Dashboard page:
 
-- **Global Filters** (same as Dashboard page):
-  - Run
-  - Run Tag
-  - Run Date / Time
-  - Run Amount
-  - Metadata
+- Runs
+- Run Tags
+- Versions
+- From / To Date & Time
+- Metadata
+- Amount
 
-> These filters let you zoom into specific runs, suites, tests, or keywords, allowing precise analysis of the raw data in the tables.
+> These filters let you zoom into specific runs, suites, tests, or keywords for precise analysis of raw data in the tables.
 
-**Summary:**  
+## Summary
 
-- **Overview:** Display-only settings for projects and duration thresholds.  
-- **Dashboard:** Full global filters plus section-specific filters for Runs, Suites, Tests, and Keywords.  
-- **Compare:** Select up to 4 runs for side-by-side comparison with optional suite paths toggle.  
-- **Tables:** Use global filters to zoom into specific raw data.  
+| Page | Filter support |
+|------|---------------|
+| **Overview** | Display-only settings (name, tag, duration threshold, versions) |
+| **Dashboard** | Full global filters + section-specific filters + Filter Profiles |
+| **Compare** | Run selection dropdowns + suite paths toggle |
+| **Tables** | Same global filters as Dashboard |
 
-> By combining global filters and section-specific filters, you can quickly focus on the most relevant parts of your test data and identify trends, failures, or performance issues.
+> By combining global filters, section-specific filters, and saved filter profiles, you can quickly focus on the most relevant parts of your test data and identify trends, failures, or performance issues.

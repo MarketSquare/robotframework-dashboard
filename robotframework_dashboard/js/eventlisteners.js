@@ -36,6 +36,7 @@ import {
     update_profile_select_display,
     update_active_profile,
     clear_active_profile,
+    capture_default_filters,
 } from "./filter.js"
 import { camelcase_to_underscore, underscore_to_camelcase } from "./common.js";
 import {
@@ -157,6 +158,8 @@ function setup_filter_modal() {
     setup_runs_in_select_filter_buttons();
     setup_runtags_in_select_filter_buttons();
     setup_project_versions_in_select_filter_buttons();
+    // snapshot the default/initial filter state so profile checkboxes can reflect changes
+    capture_default_filters();
     // filter profiles setup
     populate_filter_profile_select();
     let showingFilterProfiles = false;

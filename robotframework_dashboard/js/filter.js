@@ -663,6 +663,58 @@ function set_filter_show_current_version(version) {
 // Track the currently active profile name (null if none applied)
 let activeProfileName = null;
 
+// Snapshot of the filter state at dashboard load time (used to determine checkbox defaults when creating a profile)
+let defaultFilters = null;
+
+// Capture the current filter state as the baseline default (called once after filters are initialized)
+function capture_default_filters() {
+    defaultFilters = capture_current_filters();
+}
+
+// Returns true when the current value of a single filter key differs from the default snapshot
+function filter_key_differs_from_default(key) {
+    if (!defaultFilters) return false;
+    const current = capture_current_filters();
+    if (key === 'runTags') {
+        const defaultTagMap = {};
+        (defaultFilters.runTags || []).forEach(t => { defaultTagMap[t.id] = t.checked; });
+        for (const tag of (current.runTags || [])) {
+            if (defaultTagMap[tag.id] !== tag.checked) return true;
+        }
+        return false;
+    }
+    if (key === 'projectVersions') {
+        const defaultVersionMap = {};
+        (defaultFilters.projectVersions || []).forEach(v => { defaultVersionMap[v.value] = v.checked; });
+        for (const ver of (current.projectVersions || [])) {
+            if (defaultVersionMap[ver.value] !== ver.checked) return true;
+        }
+        return false;
+    }
+    return String(current[key] ?? '') !== String(defaultFilters[key] ?? '');
+}
+
+// Returns an object mapping each profile checkbox id to whether it should be checked
+// (i.e. the corresponding filter(s) currently differ from the default state)
+function compute_profile_check_states() {
+    const checkKeyMap = {
+        profileCheckRuns: ['runs'],
+        profileCheckRunTags: ['runTags', 'useOrTags'],
+        profileCheckVersions: ['projectVersions'],
+        profileCheckFromDate: ['fromDate'],
+        profileCheckFromTime: ['fromTime'],
+        profileCheckToDate: ['toDate'],
+        profileCheckToTime: ['toTime'],
+        profileCheckMetadata: ['metadata'],
+        profileCheckAmount: ['amount'],
+    };
+    const result = {};
+    for (const [checkId, keys] of Object.entries(checkKeyMap)) {
+        result[checkId] = keys.some(key => filter_key_differs_from_default(key));
+    }
+    return result;
+}
+
 // Read the current state of all filter controls into a plain object
 function capture_current_filters() {
     const profile = {};
@@ -888,19 +940,9 @@ function enter_profile_edit_mode() {
     document.querySelectorAll(".filter-profile-check").forEach(el => {
         el.style.display = "";
     });
-    // Default: all checked except date/time
-    const defaults = {
-        profileCheckRuns: true,
-        profileCheckRunTags: true,
-        profileCheckVersions: true,
-        profileCheckFromDate: false,
-        profileCheckFromTime: false,
-        profileCheckToDate: false,
-        profileCheckToTime: false,
-        profileCheckMetadata: true,
-        profileCheckAmount: true,
-    };
-    for (const [id, checked] of Object.entries(defaults)) {
+    // Set each checkbox based on whether the corresponding filter currently differs from the default state
+    const states = compute_profile_check_states();
+    for (const [id, checked] of Object.entries(states)) {
         const el = document.getElementById(id);
         if (el) el.checked = checked;
     }
@@ -945,4 +987,5 @@ export {
     update_profile_select_display,
     update_active_profile,
     clear_active_profile,
+    capture_default_filters,
 };

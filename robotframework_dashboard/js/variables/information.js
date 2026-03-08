@@ -133,6 +133,47 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "keywordMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest keyword for each run on a timeline. For every run, only the single most time-consuming keyword is shown. The regular view shows the Top 10 most frequently slowest keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming keywords by duration.",
     "keywordMostUsedGraphBar": "Bar: Displays keywords ranked by how frequently they were used across all runs. Each bar represents how many times a keyword appeared in total. The regular view shows the Top 10 most used keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most used keywords *within the latest run only*, ranked by occurrence count.",
     "keywordMostUsedGraphTimeline": "Timeline: Displays keyword usage trends over time. For each run, the most frequently used keyword (or keywords) is shown, illustrating how keyword usage changes across runs. The regular view highlights the Top 10 most frequently used keywords overall; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most used keywords by frequency.",
+    "filterProfileInformation": `Filter Profiles let you save and reapply a named combination of filter settings.
+- Add Profile: enters edit mode where you name the profile and choose which filters to include using the checkmarks that appear next to each filter. Checkmarks are pre-filled based on which filters currently differ from their default (load-time) state.
+- Save Profile: saves the profile with the selected filter values under the given name.
+- Apply Filter Profile: opens the saved profiles list. Click a profile name to apply all its stored filter values at once.
+- The select box shows the active profile name when an exact match is found, i.e. the current filter state matches a saved profile exactly.
+- A dot (●) next to the select box means a profile was applied but filters have since been changed away from it.
+- Update Profile: appears when the active profile's filters have been modified; click it to overwrite the saved profile with the current filter values.
+- Delete: removes that profile permanently (confirmed via a prompt).`,
+    "filterRunsInformation": `Filters the dashboard to only show data for runs of the selected project (run name).
+- 'All' shows all runs from all projects.
+- Each option corresponds to a distinct run name present in the data.`,
+    "filterRunTagsInformation": `Filters runs by their assigned tags. Only runs that have at least one matching tag are included.
+- Click 'Select Tags' to open the tag list; tick one or more tags to activate the filter.
+- 'All' (ticked by default) means no tag filter is applied — all runs are shown.
+- Use AND mode (default): a run must have ALL selected tags to be included.
+- Use OR mode (toggle 'Use OR'): a run needs at least ONE of the selected tags.
+- A dot (●) next to the label means the filter is active (i.e. 'All' is not selected).
+- Use the search box inside the dropdown to quickly find a tag by name.`,
+    "filterVersionsInformation": `Filters runs by their project version label.
+- Click 'Select Versions' to open the version list; tick one or more versions to narrowdown the data.
+- 'All' (ticked by default) means no version filter is applied.
+- 'None' covers runs that have no version label set.
+- A dot (●) next to the label means the filter is active.
+- Use the search box inside the dropdown to quickly find a version by name.`,
+    "filterFromDateInformation": `Sets the earliest date a run must have started on to be included.
+- Runs that started before this date are excluded.
+- Defaults to the date of the oldest run in the data (with a small margin).`,
+    "filterFromTimeInformation": `Sets the earliest time of day a run must have started at to be included (combined with the From Date).
+- Defaults to the time of the oldest run in the data (with a small margin).`,
+    "filterToDateInformation": `Sets the latest date a run must have started on to be included.
+- Runs that started after this date are excluded.
+- Defaults to the date of the most recent run in the data (with a small margin).`,
+    "filterToTimeInformation": `Sets the latest time of day a run must have started at to be included (combined with the To Date).
+- Defaults to the time of the most recent run in the data (with a small margin).`,
+    "filterMetadataInformation": `Filters runs by a metadata value attached to the run.
+- Only appears when at least one run has metadata.
+- 'All' shows runs regardless of metadata.
+- Selecting a specific value limits the view to runs that carry that metadata entry.`,
+    "filterAmountInformation": `Limits the dashboard to the most recent X runs after all other filters have been applied.
+- 'All Runs' sets the value to the total number of runs currently matching the other filters.
+- Useful for focusing on recent history without changing the date filters.`,
     "compareStatisticsGraphBar": "This graph displays the overall statistics of the selected runs",
     "compareSuiteDurationGraphRadar": "This graph displays the duration per suite in a radar format",
     "compareTestsGraphTimeline": `This graph displays the statistics of the tests in a timeline format
