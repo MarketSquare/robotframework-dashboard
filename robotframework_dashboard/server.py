@@ -308,6 +308,10 @@ class ApiServer:
             "<!-- placeholder_refresh_card_visibility -->",
             "" if self.no_autoupdate else "hidden",
         )
+        admin_html = admin_html.replace(
+            "<!-- placeholder_noautoupdate -->",
+            "true" if self.no_autoupdate else "false",
+        )
 
         dependency_processor = DependencyProcessor(admin_page=True)
         admin_html = admin_html.replace(

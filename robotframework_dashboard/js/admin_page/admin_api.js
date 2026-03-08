@@ -200,8 +200,10 @@ function send_request(method, endpoint, body, spinner, notifications = true) {
                 add_alert(response.message, "danger")
                 console.log(response.console)
             }
-            get_outputs()
-            get_logs()
+            if (document.body.dataset.noAutoupdate !== "true") {
+                get_outputs()
+                get_logs()
+            }
         } else {
             document.getElementById(spinner).hidden = true
             add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
