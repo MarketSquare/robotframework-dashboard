@@ -27,6 +27,7 @@ class DashboardGenerator:
         use_logs: bool,
         offline: bool,
         force_json_config: bool,
+        no_autoupdate: bool,
     ):
         """
         Function that generates the dashboard by replacing all relevant placeholders.
@@ -66,6 +67,18 @@ class DashboardGenerator:
             dashboard_data = dashboard_data.replace(
                 '"placeholder_amount"', str(quantity)
             )
+            dashboard_data = dashboard_data.replace(
+                '"placeholder_server"', str(server).lower()
+            )
+            dashboard_data = dashboard_data.replace(
+                '"placeholder_no_autoupdate"', str(no_autoupdate).lower()
+            )
+            dashboard_data = dashboard_data.replace(
+                '"placeholder_force_json_config"', str(force_json_config).lower()
+            )
+            dashboard_data = dashboard_data.replace(
+                '"placeholder_use_logs"', str(use_logs).lower()
+            )
             if dashboard_title != "":
                 dashboard_data = dashboard_data.replace(
                     '"placeholder_dashboard_title"', dashboard_title
@@ -75,10 +88,6 @@ class DashboardGenerator:
                     '"placeholder_dashboard_title"',
                     f"Robot Framework Dashboard - {str(generation_datetime)[:-7]}",
                 )
-            if server:
-                dashboard_data = dashboard_data.replace('"placeholder_server"', "true")
-            else:
-                dashboard_data = dashboard_data.replace('"placeholder_server"', "false")
             if message_config:
                 dashboard_data = dashboard_data.replace(
                     '"placeholder_message_config"',
@@ -88,15 +97,6 @@ class DashboardGenerator:
                 dashboard_data = dashboard_data.replace(
                     '"placeholder_json_config"',
                     json_config,
-                )
-            dashboard_data = dashboard_data.replace('"placeholder_force_json_config"', str(force_json_config).lower())
-            if use_logs:
-                dashboard_data = dashboard_data.replace(
-                    '"placeholder_use_logs"', "true"
-                )
-            else:
-                dashboard_data = dashboard_data.replace(
-                    '"placeholder_use_logs"', "false"
                 )
 
         # handle possible subdirectories
