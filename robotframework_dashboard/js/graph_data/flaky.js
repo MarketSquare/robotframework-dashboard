@@ -1,6 +1,7 @@
 import { settings } from "../variables/settings.js";
 import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
+import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for (recent) most flaky test graph
 function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, limit) {
@@ -60,7 +61,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
     });
     if (recent) { // do extra filtering to get most recent flaky tests at the top
         sortedData.sort(function (a, b) {
-            return new Date(b[1].failed_run_starts[b[1].failed_run_starts.length - 1].replace(" ", "T")).getTime() - new Date(a[1].failed_run_starts[a[1].failed_run_starts.length - 1].replace(" ", "T")).getTime()
+            return new Date(strip_tz_suffix(b[1].failed_run_starts[b[1].failed_run_starts.length - 1].replace(" ", "T"))).getTime() - new Date(strip_tz_suffix(a[1].failed_run_starts[a[1].failed_run_starts.length - 1].replace(" ", "T"))).getTime()
         })
     }
 
@@ -99,7 +100,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
         var datasets = [];
         var runAxis = 0;
         const pointMeta = {};
-        runStarts = runStarts.sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+        runStarts = runStarts.sort((a, b) => new Date(strip_tz_suffix(a)).getTime() - new Date(strip_tz_suffix(b)).getTime())
         for (const runStart of runStarts) {
             for (const label of labels) {
                 var foundValues = [];
