@@ -3,6 +3,7 @@ import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { failedConfig } from "../variables/chartconfig.js";
 import { message_config } from "../variables/data.js";
 import { convert_timeline_data } from "./helpers.js";
+import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for messages graphs
 function get_messages_data(dataType, graphType, filteredData) {
@@ -78,7 +79,7 @@ function get_messages_data(dataType, graphType, filteredData) {
             runStarts.forEach(runStart => runStartsSet.add(runStart));
             count++;
         }
-        const runStarts = Array.from(runStartsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        const runStarts = Array.from(runStartsSet).sort((a, b) => new Date(strip_tz_suffix(a)).getTime() - new Date(strip_tz_suffix(b)).getTime());
         var datasets = [];
         let runAxis = 0;
         const pointMeta = {};

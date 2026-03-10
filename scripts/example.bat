@@ -6,10 +6,10 @@ robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002338.xml:pro
 robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002400.xml:dev:project_2 --projectversion 1.2 --timezone=+00:00
 robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002431.xml:prod:project_1 --projectversion 1.2
 robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002457.xml:dev:project_2 --projectversion 1.2
-robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002528.xml:prod:project_1 --projectversion 2.0 -z -03:00
-robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002549.xml:dev:project_2 --projectversion 2.3 -z -05:00
-robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002636.xml:prod:project_1 --projectversion 2.3 -z -05:00
+robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002528.xml:prod:project_1 --projectversion 2.0 --timezone=-03:00
+robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002549.xml:dev:project_2 --projectversion 2.3 --timezone=-05:00
+robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002636.xml:prod:project_1 --projectversion 2.3 --timezone=-05:00
 robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002703.xml:dev:project_2 --projectversion 2.3 --timezone=-07:00
-robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002739.xml:prod:project_1 -z -07:00
-robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002915.xml:prod:project_1 --projectversion 2.0 -z -08:00
-robotdashboard -n robot_dashboard -o .\atest\resources\outputs\output-20250313-003006.xml:prod:project_1 --uselogs -z -09:00
+robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002739.xml:prod:project_1 --timezone=-07:00
+robotdashboard -g -l -o .\atest\resources\outputs\output-20250313-002915.xml:prod:project_1 --projectversion 2.0 --timezone=-08:00
+robotdashboard -n robot_dashboard -o .\atest\resources\outputs\output-20250313-003006.xml:prod:project_1 --uselogs --timezone=-09:00

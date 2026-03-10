@@ -1,8 +1,8 @@
 // prepare input data
-const runs = decode_and_decompress("placeholder_runs").sort((a, b) => new Date(a.run_start.replace(" ", "T")).getTime() - new Date(b.run_start.replace(" ", "T")).getTime());
-const suites = decode_and_decompress("placeholder_suites").sort((a, b) => new Date(a.run_start.replace(" ", "T")).getTime() - new Date(b.run_start.replace(" ", "T")).getTime());
-const tests = decode_and_decompress("placeholder_tests").sort((a, b) => new Date(a.run_start.replace(" ", "T")).getTime() - new Date(b.run_start.replace(" ", "T")).getTime());
-const keywords = decode_and_decompress("placeholder_keywords").sort((a, b) => new Date(a.run_start.replace(" ", "T")).getTime() - new Date(b.run_start.replace(" ", "T")).getTime());
+const runs = decode_and_decompress("placeholder_runs");
+const suites = decode_and_decompress("placeholder_suites");
+const tests = decode_and_decompress("placeholder_tests");
+const keywords = decode_and_decompress("placeholder_keywords");
 
 function decode_and_decompress(base64Str) {
     if (base64Str.includes("placeholder_")) return [];

@@ -1,7 +1,7 @@
 import { settings } from './variables/settings.js';
 import { compareRunIds } from './variables/graphs.js';
 import { runs, suites, tests, keywords, unified_dashboard_title } from './variables/data.js';
-import { show_loading_overlay, hide_loading_overlay } from './common.js';
+import { show_loading_overlay, hide_loading_overlay, strip_tz_suffix } from './common.js';
 import { set_local_storage_item } from './localstorage.js';
 import {
     filteredAmount,
@@ -12,6 +12,16 @@ import {
     selectedRunSetting,
     selectedTagSetting
 } from './variables/globals.js';
+
+// Sort an array of run objects by wall-clock run_start (timezone offset stripped),
+// ensuring correct chronological order when timestamps span mixed timezone offsets.
+function sort_wall_clock(data) {
+    return [...data].sort((a, b) => {
+        const ak = strip_tz_suffix(a.run_start);
+        const bk = strip_tz_suffix(b.run_start);
+        return ak < bk ? -1 : ak > bk ? 1 : 0;
+    });
+}
 
 // function updates the data in the graphs whenever filters are updated
 function setup_filtered_data_and_filters() {
@@ -40,6 +50,13 @@ function setup_filtered_data_and_filters() {
     filteredSuites = filter_data(filteredSuites);
     filteredTests = filter_data(filteredTests);
     filteredKeywords = filter_data(filteredKeywords);
+    // re-sort all filtered data by wall-clock run_start so mixed-timezone datasets
+    // appear in the correct chronological order on graphs (timestamps may have been
+    // converted or had their offsets stripped above, so re-sort here is the source of truth)
+    filteredRuns = sort_wall_clock(filteredRuns);
+    filteredSuites = sort_wall_clock(filteredSuites);
+    filteredTests = sort_wall_clock(filteredTests);
+    filteredKeywords = sort_wall_clock(filteredKeywords);
     // set titles with amount of filtered items
     const runAmount = Object.keys(filteredRuns).length
     const message = `<h6>showing ${runAmount} of ${filteredAmount} runs</h6>`
@@ -220,7 +237,13 @@ function filter_dates(runs) {
         return runs;  // Return all runs if invalid range
     }
     return runs.filter(run => {
-        const runStart = new Date(run.run_start.replace(" ", "T"));
+        // When not converting timezones, strip any timezone offset so the run_start is treated
+        // as a plain wall-clock time matching the date picker values (which are also wall-clock).
+        let rs = run.run_start.replace(" ", "T");
+        if (!settings.show.convertTimezone) {
+            rs = strip_tz_suffix(rs);
+        }
+        const runStart = new Date(rs);
         return runStart >= fromDateTime && runStart <= toDateTime;
     });
 }

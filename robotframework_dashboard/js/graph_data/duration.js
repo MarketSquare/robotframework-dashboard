@@ -3,6 +3,7 @@ import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { barConfig, lineConfig } from "../variables/chartconfig.js";
 import { compareRunIds } from "../variables/graphs.js";
 import { exclude_from_suite_data } from "./helpers.js";
+import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for duration graphs
 function get_duration_graph_data(dataType, graphType, objectDataAttribute, filteredData) {
@@ -61,7 +62,6 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
             map.set(label, (map.get(label) || 0) + duration);
         }
         return Array.from(map.entries())
-            .sort(([a], [b]) => new Date(a) - new Date(b))
             .slice(-limit)
             .map(([label, total]) => [label, Math.round(total * 100) / 100]);
     };
@@ -126,7 +126,10 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
         for (const value of filteredData) {
             if (!should_include(value)) continue;
             const name = suiteSelectSuitesCombined && dataType === "suite" ? "All Suites Combined" : value.name;
-            const run_start = new Date(value.run_start.replace(" ", "T"));
+            // When not converting timezones, strip any tz offset so x positions are wall-clock
+            // based and consistent with what the user sees in run_start labels.
+            const rs = strip_tz_suffix(value.run_start);
+            const run_start = new Date(rs.replace(" ", "T"));
             const val = Math.round(value[objectDataAttribute] * 100) / 100;
             if (!sets.has(name)) sets.set(name, [{ x: run_start, y: val, _run_start: value.run_start }]);
             else sets.get(name).push({ x: run_start, y: val, _run_start: value.run_start });

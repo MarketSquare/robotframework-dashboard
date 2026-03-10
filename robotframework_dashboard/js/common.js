@@ -208,6 +208,13 @@ function hide_loading_overlay() {
     }
 }
 
+// Strips the ±HH:MM timezone offset suffix from a run_start string.
+// Returns the wall-clock portion (YYYY-MM-DD HH:MM:SS[.fff]) without the tz offset.
+function strip_tz_suffix(s) {
+    const suffix = s.slice(-6);
+    return /^[+-]\d{2}:\d{2}$/.test(suffix) ? s.slice(0, -6) : s;
+}
+
 export {
     camelcase_to_underscore,
     get_next_folder_level,
@@ -225,5 +232,6 @@ export {
     hide_graph_loading,
     update_graphs_with_loading,
     show_loading_overlay,
-    hide_loading_overlay
+    hide_loading_overlay,
+    strip_tz_suffix
 };

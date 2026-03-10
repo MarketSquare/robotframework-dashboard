@@ -2,6 +2,7 @@ import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { convert_timeline_data } from "./helpers.js";
 import { failedConfig } from "../variables/chartconfig.js";
+import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for most failed graphs
 function get_most_failed_data(dataType, graphType, filteredData, recent) {
@@ -81,7 +82,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
             runStarts.forEach(runStart => runStartsSet.add(runStart));
             count++;
         }
-        const runStarts = Array.from(runStartsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        const runStarts = Array.from(runStartsSet).sort((a, b) => new Date(strip_tz_suffix(a)).getTime() - new Date(strip_tz_suffix(b)).getTime());
         let datasets = [];
         let runAxis = 0;
         const pointMeta = {};
