@@ -215,3 +215,55 @@ body.lock-scroll {
   height: 24px;
   display: block;
 }
+
+/* ── Navbar overflow: hamburger dropdown ── */
+#navHamburgerMenu > a {
+  display: block;
+  padding: 0.35rem 1rem;
+  color: var(--color-menu-text);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+#navHamburgerMenu > a:hover,
+#navHamburgerMenu > a.active {
+  background-color: var(--bs-dropdown-link-hover-bg, rgba(0, 0, 0, 0.06));
+}
+
+/* ── Navbar overflow: icon tray popup ── */
+.icon-tray-popup {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 6px;
+  list-style: none;
+  margin: 0;
+  background: var(--color-card);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  z-index: 1040;
+  max-width: 300px;
+}
+.icon-tray-popup .nav-link svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* ── Navbar overflow: custom title always on one line ── */
+#menuCustomTitle {
+  white-space: nowrap;
+}
+
+/* ── Navbar overflow: abbreviated custom title ── */
+#menuCustomTitle.title-abbreviated {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}

@@ -7,7 +7,7 @@ import {
     setup_filter_modal,
     setup_settings_modal,
 } from "./eventlisteners.js";
-import { setup_menu } from "./menu.js";
+import { setup_menu, setup_navbar_overflow } from "./menu.js";
 
 // function that triggers all functions that should be executed when the dashboard is loaded first
 // in the correct order!
@@ -20,6 +20,7 @@ function main() {
     setup_filter_modal();
     setup_settings_modal();
     setup_menu();
+    setup_navbar_overflow();
 }
 
 Chart.register(ChartDataLabels);

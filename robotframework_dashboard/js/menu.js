@@ -471,5 +471,150 @@ export {
     setup_data_and_graphs,
     setup_spinner,
     update_menu,
-    setup_overview_section_menu_buttons
+    setup_overview_section_menu_buttons,
+    setup_navbar_overflow
 };
+
+// ── Responsive navbar overflow ─────────────────────────────────────────────
+//
+// Level 0: everything visible in the navbar
+// Level 1: page-menu items (Overview, Dashboard, …) collapse into a hamburger
+// Level 2: icons collapse into a Windows-tray-style popup (↑ button)
+// Level 3: custom title is abbreviated with ellipsis
+//
+function setup_navbar_overflow() {
+    const nav          = document.getElementById('navigation');
+    const mainNavDiv   = document.getElementById('mainNavItems');
+    const hamburgerWrap = document.getElementById('navHamburgerWrap');
+    const hamburgerMenu = document.getElementById('navHamburgerMenu');
+    const iconNavUl    = document.getElementById('iconNavItems');
+    const iconTrayWrap = document.getElementById('iconTrayWrap');
+    const iconTrayToggle = document.getElementById('iconTrayToggle');
+    const iconTrayPopup  = document.getElementById('iconTrayPopup');
+    const titleEl      = document.getElementById('menuCustomTitle');
+
+    // IDs of the page-nav items that go into the hamburger at level 1
+    const NAV_ITEM_IDS = [
+        'menuOverview', 'menuDashboard',
+        'runStatisticsSectionNav', 'suiteStatisticsSectionNav',
+        'testStatisticsSectionNav', 'keywordStatisticsSectionNav',
+        'menuCompare', 'menuTables', 'openDashboard',
+    ];
+
+    // Capture icon <li> references once (they move, but references stay valid)
+    const iconLiEls = Array.from(iconNavUl.children).filter(li => li.id !== 'iconTrayWrap');
+
+    // State flags (idempotent guards)
+    let hamburgerActive = false;
+    let trayActive      = false;
+    let titleAbbrev     = false;
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+
+    function nav_item_els() {
+        // Always resolved by ID so they're found wherever they currently live
+        return NAV_ITEM_IDS.map(id => document.getElementById(id)).filter(Boolean);
+    }
+
+    function is_overflowing() {
+        // Bootstrap's .navbar has flex-wrap:wrap (nav grows taller instead of
+        // overflowing) and flex-shrink:1 on children (items shrink to near zero).
+        // Force a true single-row layout on all three containers for measurement.
+        const nfw = nav.style.flexWrap;
+        const mfs = mainNavDiv.style.flexShrink;
+        const ufw = iconNavUl.style.flexWrap;
+        const ufs = iconNavUl.style.flexShrink;
+        nav.style.flexWrap         = 'nowrap';
+        mainNavDiv.style.flexShrink = '0';
+        iconNavUl.style.flexWrap   = 'nowrap';
+        iconNavUl.style.flexShrink = '0';
+        const overflows = nav.scrollWidth > nav.clientWidth + 1;
+        nav.style.flexWrap         = nfw;
+        mainNavDiv.style.flexShrink = mfs;
+        iconNavUl.style.flexWrap   = ufw;
+        iconNavUl.style.flexShrink = ufs;
+        return overflows;
+    }
+
+    // ── level transitions ────────────────────────────────────────────────────
+
+    function apply_hamburger(on) {
+        if (on === hamburgerActive) return;
+        hamburgerActive = on;
+        if (on) {
+            hamburgerWrap.hidden = false;
+            nav_item_els().forEach(el => hamburgerMenu.appendChild(el));
+        } else {
+            nav_item_els().forEach(el => mainNavDiv.appendChild(el));
+            hamburgerWrap.hidden = true;
+        }
+    }
+
+    function apply_icon_tray(on) {
+        if (on === trayActive) return;
+        trayActive = on;
+        if (on) {
+            iconTrayWrap.hidden = false;
+            iconLiEls.forEach(li => iconTrayPopup.appendChild(li));
+        } else {
+            iconTrayPopup.hidden = true;
+            iconLiEls.forEach(li => iconNavUl.insertBefore(li, iconTrayWrap));
+            iconTrayWrap.hidden = true;
+        }
+    }
+
+    function apply_title_abbrev(on) {
+        if (on === titleAbbrev || !titleEl) return;
+        titleAbbrev = on;
+        titleEl.classList.toggle('title-abbreviated', on);
+    }
+
+    // ── core update ──────────────────────────────────────────────────────────
+
+    function update_overflow() {
+        // Reset to level 0 for fresh measurement (idempotent helpers mean this
+        // is cheap when we're already at level 0)
+        apply_title_abbrev(false);
+        apply_icon_tray(false);
+        apply_hamburger(false);
+
+        if (!is_overflowing()) return;            // level 0 fits
+        apply_hamburger(true);
+        if (!is_overflowing()) return;            // level 1 fits
+        apply_icon_tray(true);
+        if (!is_overflowing()) return;            // level 2 fits
+        apply_title_abbrev(true);                 // level 3
+    }
+
+    // ── icon-tray popup positioning & toggle ─────────────────────────────────
+
+    iconTrayToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nowHidden = !iconTrayPopup.hidden;
+        iconTrayPopup.hidden = nowHidden;
+        if (!nowHidden) {
+            const r = iconTrayToggle.getBoundingClientRect();
+            iconTrayPopup.style.top   = (r.bottom + 4) + 'px';
+            iconTrayPopup.style.right = (window.innerWidth - r.right) + 'px';
+            iconTrayPopup.style.left  = '';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!iconTrayPopup.hidden && !iconTrayPopup.contains(e.target)) {
+            iconTrayPopup.hidden = true;
+        }
+    });
+
+    // ── observe nav width ────────────────────────────────────────────────────
+
+    let debounce = null;
+    const ro = new ResizeObserver(() => {
+        clearTimeout(debounce);
+        debounce = setTimeout(update_overflow, 40);
+    });
+    ro.observe(nav);
+
+    // Initial run (after first paint so sizes are accurate)
+    requestAnimationFrame(update_overflow);
+}

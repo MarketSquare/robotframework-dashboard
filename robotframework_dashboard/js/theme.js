@@ -30,6 +30,7 @@ import {
     moveUpSVG,
     moveDownSVG,
     clockSVG,
+    menuSVG,
 } from "./variables/svg.js";
 
 // function to update the theme when the button is clicked
@@ -93,6 +94,8 @@ function setup_theme() {
                 "bug": bugSVG(color),
                 "customizeLayout": customizeViewSVG(color),
                 "saveLayout": saveSVG(color),
+                "navHamburger": menuSVG(color),
+                "iconTrayToggle": moveUpSVG(color),
             },
             classes: {
                 ".percentage-graph": percentageSVG(color),
@@ -151,6 +154,8 @@ function setup_theme() {
     
     // Apply custom theme colors if set
     apply_theme_colors();
+    // Apply custom branding (logo and title) — must run after SVG map to override rflogo
+    apply_custom_branding();
 }
 
 // function to apply custom theme colors
@@ -197,8 +202,37 @@ function apply_theme_colors() {
     root.style.setProperty('--color-section-card-text', finalColors.text);
 }
 
+// function to apply custom branding (logo and title) from settings / localStorage
+function apply_custom_branding() {
+    // --- Custom title ---
+    const titleEl = document.getElementById("menuCustomTitle");
+    const customTitle = settings.branding?.title || "";
+    if (titleEl) {
+        if (customTitle) {
+            titleEl.textContent = customTitle;
+            titleEl.hidden = false;
+        } else {
+            titleEl.hidden = true;
+        }
+    }
+
+    // --- Custom logo ---
+    const rflogoEl = document.getElementById("rflogo");
+    const storedLogo = settings.branding?.logo;
+    if (rflogoEl) {
+        if (storedLogo) {
+            rflogoEl.innerHTML = `<img src="${storedLogo}" alt="Logo" style="height:24px;width:auto;object-fit:contain;">`;
+        } else {
+            // Restore default RF logo (will be re-applied by setup_theme's SVG map)
+            const isDark = document.documentElement.classList.contains("dark-mode");
+            rflogoEl.innerHTML = isDark ? getRflogoDarkSVG() : getRflogoLightSVG();
+        }
+    }
+}
+
 export {
     toggle_theme,
     setup_theme,
-    apply_theme_colors
+    apply_theme_colors,
+    apply_custom_branding
 };
