@@ -39,7 +39,7 @@
   ERROR: Could not find run to remove from the database: run_start=2025-03-13 00:27:39.871333
   ERROR: Could not find run to remove from the database: alias=abc, check out robotdashboard --help for instructions
   WARNING: no runs were removed as no runs were found with tag: tag1
-  Vacuumed the database in 0.0 seconds
+  Vacuumed the database in * seconds
 ======================================================================================
  5. Creating dashboard HTML
   created dashboard *
