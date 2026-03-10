@@ -19,6 +19,7 @@ var filteredAmount = "placeholder_amount"
 var filteredAmountDefault = 0
 const use_logs = "placeholder_use_logs"
 const server = "placeholder_server"
+const no_auto_update = "placeholder_no_autoupdate"
 if (!message_config.includes("placeholder_message_config")) { message_config = JSON.parse(message_config) }
 
 export {
@@ -34,4 +35,5 @@ export {
     use_logs,
     server,
     unified_dashboard_title,
+    no_auto_update
 };
