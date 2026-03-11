@@ -9,4 +9,5 @@ pytest-cov
 fastapi
 fastapi_offline
 httpx
+uvicorn
 robotframework
