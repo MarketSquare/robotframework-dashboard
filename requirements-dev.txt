@@ -4,3 +4,11 @@ build
 wheel
 twine
 mysql-connector-python
+fastapi
+fastapi_offline
+uvicorn
+python-multipart
+robotframework
+pytest
+pytest-cov
+httpx

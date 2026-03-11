@@ -1,6 +1,7 @@
 results
 logs
 *.pyc
+.coverage
 __pycache__
 dist
 build

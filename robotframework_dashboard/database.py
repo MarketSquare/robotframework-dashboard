@@ -5,6 +5,11 @@ from .abstractdb import AbstractDatabaseProcessor
 from time import time
 from datetime import datetime, timezone
 
+# Explicit adapter for datetime -> ISO string, replacing the deprecated default
+# behaviour removed in Python 3.12+. Compatible with Python 3.8+.
+# See: https://docs.python.org/3/library/sqlite3.html#adapter-and-converter-recipes
+sqlite3.register_adapter(datetime, lambda val: val.isoformat(sep=" "))
+
 
 class DatabaseProcessor(AbstractDatabaseProcessor):
     def __init__(self, database_path: Path):
@@ -125,6 +130,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
     def close_database(self):
         """This function is called to close the connection to the database"""
         self.connection.close()
+        self.connection = None
 
     def insert_output_data(
         self,

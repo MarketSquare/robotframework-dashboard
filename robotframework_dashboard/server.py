@@ -302,7 +302,8 @@ class ApiServer:
 
     def _get_admin_page(self):
         admin_file = join(dirname(abspath(__file__)), "./templates", "admin.html")
-        admin_html = open(admin_file, "r").read()
+        with open(admin_file, "r", encoding="utf-8") as _f:
+            admin_html = _f.read()
         admin_html = admin_html.replace('"placeholder_version"', __version__)
         admin_html = admin_html.replace(
             "<!-- placeholder_refresh_card_visibility -->",
@@ -335,8 +336,8 @@ class ApiServer:
             return openapi_examples
 
         def authenticate(credentials: HTTPBasicCredentials = Depends(self.security)):
-            if not self.server_user or not self.server_pass:
-                return "anonymous"
+            if not self.server_user or not self.server_pass:  # pragma: no cover
+                return "anonymous"  # pragma: no cover
             correct_username = compare_digest(credentials.username, self.server_user)
             correct_password = compare_digest(credentials.password, self.server_pass)
             if not (correct_username and correct_password):
@@ -366,7 +367,8 @@ class ApiServer:
         )
         async def dashboard_page():
             """Serve robotdashboard HTML endpoint function"""
-            robot_dashboard_html = open("robot_dashboard.html", "r", encoding="utf-8").read()
+            with open("robot_dashboard.html", "r", encoding="utf-8") as _f:
+                robot_dashboard_html = _f.read()
             return robot_dashboard_html
 
         @self.app.post("/refresh-dashboard")
@@ -800,6 +802,6 @@ class ApiServer:
         """Function to initialize the RobotDashboard class"""
         self.robotdashboard = robotdashboard
 
-    def run(self):
+    def run(self):  # pragma: no cover
         """Function to start up the FastAPI server through uvicorn"""
         run(self.app, host=self.server_host, port=self.server_port)

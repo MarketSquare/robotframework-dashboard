@@ -24,7 +24,7 @@ Generate Dashboard
     ${index}    Get Dashboard Index
     Release Lock    name=dashboard_index
     VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
-    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db -f ${CURDIR}/../outputs:dev:prod:project_1 -n robotdashboard_${DASHBOARD_INDEX}.html
+    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db -f ${CURDIR}/../../../testdata/outputs:dev:prod:project_1 -n robotdashboard_${DASHBOARD_INDEX}.html
     Log    ${output}
 
 Remove Database And Dashboard

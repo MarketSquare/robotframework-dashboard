@@ -126,7 +126,7 @@ class DependencyProcessor():
         modules = {}
         for rel_path in js_files:
             abs_path = base / rel_path
-            if not abs_path.exists():
+            if not abs_path.exists():  # pragma: no cover
                 raise FileNotFoundError(f"JS module not found: {abs_path}")
             modules[str(abs_path)] = abs_path.read_text(encoding="utf-8")
 
