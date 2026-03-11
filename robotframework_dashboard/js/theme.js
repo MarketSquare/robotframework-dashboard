@@ -95,7 +95,6 @@ function setup_theme() {
                 "customizeLayout": customizeViewSVG(color),
                 "saveLayout": saveSVG(color),
                 "navHamburger": menuSVG(color),
-                "iconTrayToggle": moveUpSVG(color),
             },
             classes: {
                 ".percentage-graph": percentageSVG(color),

@@ -18,16 +18,20 @@
     <div class="position-relative alert-container">
         <div class="position-fixed top-20 start-50 translate-middle" id="alertContainer"></div>
     </div>
-    <nav class="navbar navbar-expand-sm sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
-        <div class="navbar-nav ms-4" id="mainNavItems">
+    <div id="sidenavBackdrop" class="sidenav-backdrop" hidden></div>
+    <div id="sidenav" class="sidenav" hidden>
+        <div class="sidenav-header">
+            <span class="sidenav-title">Menu</span>
+            <button class="sidenav-close" id="sidenavClose" aria-label="Close sidebar">&times;</button>
+        </div>
+        <div class="sidenav-body" id="sidenavBody"></div>
+    </div>
+
+    <nav class="navbar navbar-expand sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
+        <div class="navbar-nav flex-nowrap ms-4" id="mainNavItems">
             <a class="nav-link information" id="rflogo" href="https://robotframework.org/" target="_blank"></a>
             <a class="nav-item nav-link fw-bold" id="menuCustomTitle" hidden></a>
-            <!-- Hamburger menu toggle (shown when nav items overflow) -->
-            <div class="nav-item dropdown" id="navHamburgerWrap" hidden>
-                <a class="nav-link information px-1" id="navHamburger" role="button"
-                    data-bs-toggle="dropdown" aria-expanded="false"></a>
-                <ul class="dropdown-menu py-1" id="navHamburgerMenu"></ul>
-            </div>
+            <a class="nav-link information px-1" id="navHamburger" role="button" hidden></a>
             <a class="nav-item nav-link" id="menuOverview">Overview</a>
             <a class="nav-item nav-link active" id="menuDashboard">Dashboard</a>
             <a class="nav-item nav-link" id="runStatisticsSectionNav"><i>Runs</i></a>
@@ -38,7 +42,7 @@
             <a class="nav-item nav-link" id="menuTables">Tables</a>
             <a class="nav-item nav-link" id="openDashboard" href="/admin" hidden>Admin</a>
         </div>
-        <ul class="navbar-nav flex-row flex-wrap ms-md-auto me-4" id="iconNavItems">
+        <ul class="navbar-nav flex-row flex-nowrap ms-md-auto me-4" id="iconNavItems">
             <li class="nav-item">
                 <a class="nav-link information" id="filters" data-bs-toggle="modal" data-bs-target="#filtersModal"></a>
             </li>
@@ -77,13 +81,7 @@
                 <a class="nav-link information" target="_blank" id="docs"
                     href="https://marketsquare.github.io/robotframework-dashboard/"></a>
             </li>
-            <!-- Icon tray toggle (shown when icons overflow) -->
-            <li class="nav-item" id="iconTrayWrap" hidden>
-                <a class="nav-link information px-1" id="iconTrayToggle"></a>
-            </li>
         </ul>
-        <!-- Icon tray popup (fixed-positioned, populated by JS) -->
-        <ul class="icon-tray-popup" id="iconTrayPopup" hidden></ul>
     </nav>
 
     <div class="container-fluid">
