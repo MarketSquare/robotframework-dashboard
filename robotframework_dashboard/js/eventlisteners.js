@@ -14,7 +14,7 @@ import {
 } from "./variables/globals.js";
 import { arrowDown, arrowRight } from "./variables/svg.js";
 import { fullscreenButtons, graphChangeButtons, compareRunIds } from "./variables/graphs.js";
-import { toggle_theme, apply_theme_colors } from "./theme.js";
+import { toggle_theme, apply_theme_colors, apply_custom_branding } from "./theme.js";
 import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading, show_loading_overlay, hide_loading_overlay } from "./common.js";
 import { setup_data_and_graphs, update_menu } from "./menu.js";
 import { update_dashboard_graphs } from "./graph_creation/all.js";
@@ -414,6 +414,11 @@ function setup_settings_modal() {
         cardColorHandler.load_color();
         highlightColorHandler.load_color();
         textColorHandler.load_color();
+        // Load branding state
+        document.getElementById('customBrandingTitle').value = settings.branding?.title || "";
+        const hasLogo = !!settings.branding?.logo;
+        document.getElementById('removeCustomLogo').disabled = !hasLogo;
+        document.getElementById('customLogoUpload').value = "";
     });
 
     // Add event listeners for color inputs
@@ -427,6 +432,39 @@ function setup_settings_modal() {
     document.getElementById('resetCardColor').addEventListener('click', () => cardColorHandler.reset_color());
     document.getElementById('resetHighlightColor').addEventListener('click', () => highlightColorHandler.reset_color());
     document.getElementById('resetTextColor').addEventListener('click', () => textColorHandler.reset_color());
+
+    // Custom title handler
+    document.getElementById('customBrandingTitle').addEventListener('input', function () {
+        const title = this.value.trim();
+        set_local_storage_item('branding.title', title);
+        apply_custom_branding();
+    });
+
+    document.getElementById('clearCustomTitle').addEventListener('click', function () {
+        document.getElementById('customBrandingTitle').value = "";
+        set_local_storage_item('branding.title', "");
+        apply_custom_branding();
+    });
+
+    // Custom logo handler
+    document.getElementById('customLogoUpload').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            set_local_storage_item('branding.logo', e.target.result);
+            document.getElementById('removeCustomLogo').disabled = false;
+            apply_custom_branding();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('removeCustomLogo').addEventListener('click', function () {
+        set_local_storage_item('branding.logo', "");
+        document.getElementById('customLogoUpload').value = "";
+        this.disabled = true;
+        apply_custom_branding();
+    });
 
     function show_settings_in_textarea() {
         const textArea = document.getElementById("settingsTextArea");

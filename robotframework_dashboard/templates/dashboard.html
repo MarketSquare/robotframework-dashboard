@@ -18,9 +18,20 @@
     <div class="position-relative alert-container">
         <div class="position-fixed top-20 start-50 translate-middle" id="alertContainer"></div>
     </div>
-    <nav class="navbar navbar-expand-sm sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
-        <div class="navbar-nav ms-4">
+    <div id="sidenavBackdrop" class="sidenav-backdrop" hidden></div>
+    <div id="sidenav" class="sidenav" hidden>
+        <div class="sidenav-header">
+            <span class="sidenav-title">Menu</span>
+            <button class="sidenav-close" id="sidenavClose" aria-label="Close sidebar">&times;</button>
+        </div>
+        <div class="sidenav-body" id="sidenavBody"></div>
+    </div>
+
+    <nav class="navbar navbar-expand sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
+        <div class="navbar-nav flex-nowrap ms-4" id="mainNavItems">
             <a class="nav-link information" id="rflogo" href="https://robotframework.org/" target="_blank"></a>
+            <a class="nav-item nav-link fw-bold" id="menuCustomTitle" hidden></a>
+            <a class="nav-link information px-1" id="navHamburger" role="button" hidden></a>
             <a class="nav-item nav-link" id="menuOverview">Overview</a>
             <a class="nav-item nav-link active" id="menuDashboard">Dashboard</a>
             <a class="nav-item nav-link" id="runStatisticsSectionNav"><i>Runs</i></a>
@@ -31,7 +42,7 @@
             <a class="nav-item nav-link" id="menuTables">Tables</a>
             <a class="nav-item nav-link" id="openDashboard" href="/admin" hidden>Admin</a>
         </div>
-        <ul class="navbar-nav flex-row flex-wrap ms-md-auto me-4">
+        <ul class="navbar-nav flex-row flex-nowrap ms-md-auto me-4" id="iconNavItems">
             <li class="nav-item">
                 <a class="nav-link information" id="filters" data-bs-toggle="modal" data-bs-target="#filtersModal"></a>
             </li>
@@ -811,7 +822,6 @@
                                                 id="resetCardColor">Reset</button>
                                         </div>
                                     </div>
-
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>Highlight Color</span>
                                         <div class="d-flex align-items-center gap-2">
@@ -828,6 +838,26 @@
                                                 style="width: 80px;">
                                             <button class="btn btn-outline-light btn-sm"
                                                 id="resetTextColor">Reset</button>
+                                        </div>
+                                    </div>
+                                                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Custom Title</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input class="form-control form-control-sm" type="text"
+                                                id="customBrandingTitle" placeholder="Enter title..."
+                                                style="max-width: 200px;">
+                                            <button class="btn btn-outline-light btn-sm"
+                                                id="clearCustomTitle">Reset</button>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Custom Logo <small class="text-muted">(PNG)</small></span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input class="form-control form-control-sm" type="file"
+                                                id="customLogoUpload" accept=".png,image/png"
+                                                style="max-width: 200px;">
+                                            <button class="btn btn-outline-light btn-sm"
+                                                id="removeCustomLogo">Reset</button>
                                         </div>
                                     </div>
                                 </div>
