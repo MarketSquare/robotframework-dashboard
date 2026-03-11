@@ -1,0 +1,192 @@
+import json
+import zlib
+import base64
+import pytest
+from robotframework_dashboard.dashboard import DashboardGenerator
+
+
+# --- _compress_and_encode ---
+
+def test_compress_and_encode_returns_string():
+    result = DashboardGenerator()._compress_and_encode({"key": "value"})
+    assert isinstance(result, str)
+
+
+def test_compress_and_encode_round_trip_list():
+    obj = [{"run_start": "2025-01-01", "name": "Test", "total": 10}]
+    encoded = DashboardGenerator()._compress_and_encode(obj)
+    decoded = json.loads(zlib.decompress(base64.b64decode(encoded)))
+    assert decoded == obj
+
+
+def test_compress_and_encode_round_trip_dict():
+    obj = {"runs": [1, 2, 3], "tests": [{"name": "a"}]}
+    encoded = DashboardGenerator()._compress_and_encode(obj)
+    decoded = json.loads(zlib.decompress(base64.b64decode(encoded)))
+    assert decoded == obj
+
+
+def test_compress_and_encode_empty_list():
+    encoded = DashboardGenerator()._compress_and_encode([])
+    decoded = json.loads(zlib.decompress(base64.b64decode(encoded)))
+    assert decoded == []
+
+
+def test_compress_and_encode_empty_dict():
+    encoded = DashboardGenerator()._compress_and_encode({})
+    decoded = json.loads(zlib.decompress(base64.b64decode(encoded)))
+    assert decoded == {}
+
+
+def test_compress_and_encode_is_deterministic():
+    obj = {"key": "value", "number": 42}
+    gen = DashboardGenerator()
+    assert gen._compress_and_encode(obj) == gen._compress_and_encode(obj)
+
+
+def test_compress_and_encode_unicode():
+    obj = {"name": "Ünïcödé tëst"}
+    encoded = DashboardGenerator()._compress_and_encode(obj)
+    decoded = json.loads(zlib.decompress(base64.b64decode(encoded)))
+    assert decoded == obj
+
+
+# --- _minify_text ---
+
+def test_minify_text_removes_blank_lines():
+    text = "line1\n\nline2\n\nline3\n"
+    result = DashboardGenerator()._minify_text(text)
+    assert result == "line1\nline2\nline3"
+
+
+def test_minify_text_removes_whitespace_only_lines():
+    text = "line1\n   \nline2"
+    result = DashboardGenerator()._minify_text(text)
+    assert result == "line1\nline2"
+
+
+def test_minify_text_strips_indentation():
+    text = "  indented\n  line"
+    result = DashboardGenerator()._minify_text(text)
+    assert result == "indented\nline"
+
+
+def test_minify_text_empty_input():
+    result = DashboardGenerator()._minify_text("")
+    assert result == ""
+
+
+def test_minify_text_all_blank_lines():
+    result = DashboardGenerator()._minify_text("\n\n\n")
+    assert result == ""
+
+
+def test_minify_text_single_line_unchanged():
+    result = DashboardGenerator()._minify_text("hello")
+    assert result == "hello"
+
+
+def test_minify_text_no_trailing_newline():
+    result = DashboardGenerator()._minify_text("a\nb\n")
+    assert not result.endswith("\n")
+
+
+# --- generate_dashboard ---
+
+from datetime import datetime
+from pathlib import Path
+
+_EMPTY_DATA = {"runs": [], "suites": [], "tests": [], "keywords": []}
+
+
+def _call_generate(tmp_path, **kwargs):
+    """Helper that calls generate_dashboard with sensible defaults."""
+    output = tmp_path / "dashboard.html"
+    defaults = dict(
+        name_dashboard=str(output),
+        data=_EMPTY_DATA,
+        generation_datetime=datetime(2025, 1, 1, 12, 0, 0),
+        dashboard_title="",
+        server=False,
+        json_config=None,
+        message_config=[],
+        quantity=20,
+        use_logs=False,
+        offline=False,
+        force_json_config=False,
+    )
+    defaults.update(kwargs)
+    DashboardGenerator().generate_dashboard(**defaults)
+    return output
+
+
+def test_generate_dashboard_creates_file(tmp_path):
+    output = _call_generate(tmp_path)
+    assert output.exists()
+    assert output.stat().st_size > 0
+
+
+def test_generate_dashboard_custom_title(tmp_path):
+    output = _call_generate(tmp_path, dashboard_title="My Custom Dashboard")
+    content = output.read_text(encoding="utf-8")
+    assert "My Custom Dashboard" in content
+
+
+def test_generate_dashboard_default_title_uses_datetime(tmp_path):
+    output = _call_generate(tmp_path, dashboard_title="")
+    content = output.read_text(encoding="utf-8")
+    assert "2025-01-01" in content
+
+
+def test_generate_dashboard_server_mode(tmp_path):
+    output = _call_generate(tmp_path, server=True)
+    content = output.read_text(encoding="utf-8")
+    assert "true" in content
+
+
+def test_generate_dashboard_no_server_mode(tmp_path):
+    output = _call_generate(tmp_path, server=False)
+    content = output.read_text(encoding="utf-8")
+    assert "false" in content
+
+
+def test_generate_dashboard_with_message_config(tmp_path):
+    output = _call_generate(tmp_path, message_config=["Template: ${name}", "Alert: ${value}"])
+    content = output.read_text(encoding="utf-8")
+    assert "Template" in content
+
+
+def test_generate_dashboard_with_json_config(tmp_path):
+    output = _call_generate(tmp_path, json_config='{"theme": "dark"}')
+    content = output.read_text(encoding="utf-8")
+    assert "dark" in content
+
+
+def test_generate_dashboard_use_logs_true(tmp_path):
+    output = _call_generate(tmp_path, use_logs=True)
+    content = output.read_text(encoding="utf-8")
+    assert "true" in content
+
+
+def test_generate_dashboard_empty_runs_prints_warning(tmp_path, capsys):
+    _call_generate(tmp_path, data=_EMPTY_DATA)
+    captured = capsys.readouterr()
+    assert "WARNING" in captured.out
+
+
+def test_generate_dashboard_subdirectory_created(tmp_path):
+    subdir_output = tmp_path / "sub" / "deeper" / "dashboard.html"
+    DashboardGenerator().generate_dashboard(
+        name_dashboard=str(subdir_output),
+        data=_EMPTY_DATA,
+        generation_datetime=datetime.now(),
+        dashboard_title="",
+        server=False,
+        json_config=None,
+        message_config=[],
+        quantity=20,
+        use_logs=False,
+        offline=False,
+        force_json_config=False,
+    )
+    assert subdir_output.exists()

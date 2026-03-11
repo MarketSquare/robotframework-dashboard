@@ -4,3 +4,6 @@ build
 wheel
 twine
 mysql-connector-python
+pytest
+pytest-cov
+httpx
