@@ -218,14 +218,12 @@ function apply_custom_branding() {
     // --- Custom logo ---
     const rflogoEl = document.getElementById("rflogo");
     const storedLogo = settings.branding?.logo;
-    if (rflogoEl) {
-        if (storedLogo) {
-            rflogoEl.innerHTML = `<img src="${storedLogo}" alt="Logo" style="height:24px;width:auto;object-fit:contain;">`;
-        } else {
-            // Restore default RF logo (will be re-applied by setup_theme's SVG map)
-            const isDark = document.documentElement.classList.contains("dark-mode");
-            rflogoEl.innerHTML = isDark ? getRflogoDarkSVG() : getRflogoLightSVG();
-        }
+    if (storedLogo) {
+        rflogoEl.innerHTML = `<img src="${storedLogo}" alt="Logo" style="height:24px;width:24px;object-fit:contain;">`;
+    } else {
+        // Restore default RF logo (will be re-applied by setup_theme's SVG map)
+        const isDark = document.documentElement.classList.contains("dark-mode");
+        rflogoEl.innerHTML = isDark ? getRflogoDarkSVG() : getRflogoLightSVG();
     }
 }
 

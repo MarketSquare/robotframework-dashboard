@@ -16,13 +16,11 @@ let __overviewNavStore = {
     resizeHandler: null,
 };
 
-
 // ---- Shared helpers for menu buttons ----
 function get_sticky_height() {
     const stickyTop = document.getElementById("navigation");
     return stickyTop ? stickyTop.offsetHeight : 0;
 }
-
 
 function expand_and_scroll_to(targetEl) {
     const stickyHeight = get_sticky_height();
@@ -44,7 +42,6 @@ function expand_and_scroll_to(targetEl) {
     performScroll();
 }
 
-
 function compute_best_visible_index(sections) {
     const viewportHeight = window.innerHeight;
     const viewportTop = viewportHeight * 0.2;
@@ -63,7 +60,6 @@ function compute_best_visible_index(sections) {
     });
     return bestIndex;
 }
-
 
 function neighbor_indices(bestIndex, length) {
     const indices = [];
@@ -94,7 +90,6 @@ function update_menu(item) {
     document.getElementById("filters").hidden = (item === "menuOverview");
     setup_data_and_graphs(true, item === "menuOverview" && !areGroupedProjectsPrepared);
 }
-
 
 // function to setup the menu eventlisteners
 function setup_menu() {
@@ -197,7 +192,6 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
     });
 }
 
-
 // function to add a spinner for slow loads
 function setup_spinner(hide) {
     if (hide) {
@@ -269,7 +263,6 @@ function setup_dashboard_section_menu_buttons() {
         });
     });
 }
-
 
 // function to create and manage overview section buttons that highlight dynamically
 // Shows at most 3 buttons: the most visible section in the 20%-50% viewport band
@@ -407,7 +400,6 @@ function setup_overview_section_menu_buttons() {
     __overviewNavStore.resizeHandler = updateVisibleButtons;
     updateVisibleButtons();
 }
-
 
 function get_most_visible_section() {
     const SECTION_IDS = [
