@@ -22,16 +22,35 @@ Validate Dashboard Amount Filter
     Set Amount Filter    amount=5
     Validate Component    id=runStatisticsSection    name=runAmountFilter    folder=run
 
-Validate Profile Filter For Test Runs
+Add Filter Profile With Runs Filter
     Set Run Filter    value=Tests
-    Add Filter Profile For    Runs    profile_name=profile1
-    Reset Filters
+    Add Filter Profile prfRuns For    Runs
+    Filter Profile prfRuns Should Be    {'runs': 'Tests'}
 
-    Apply Filter Profile    profile_name=profile1
-    Sleep    time_=1s
-    ${txt}    Get Property    selector=id=runTitle    property=innerText
-    Should Match    string=${txt}    pattern=*showing 10 of 10 runs
+Add Filter Profile With Run Tags Filter
+    Set Run Tags Filter    prod    project_1
+    Add Filter Profile prfTags For    RunTags
+    Validate Selected Run Tags Of Filter Profile prfTags    prod    project_1    strict=True
+    # Filter Profile prfTags Should Be    {'runTags': [{'id': 'useOrTags', 'checked': False}, {'id': 'All', 'checked': False}, {'id': 'dev', 'checked': False}, {'id': 'prod', 'checked': True}, {'id': 'project_1', 'checked': True}], 'useOrTags': False}
 
-    ${settings}    Get Filter Profile Settings    profile_name=profile1
-    ${expected}    Evaluate    {'runs': 'Tests'}
-    Should Be Equal    first=${settings}    second=${expected}
+Add Filter Profile With Versions Filter
+    Set Versions Filter    None
+    Add Filter Profile prfVersions For    Versions
+    Filter Profile prfVersions Should Be    {'projectVersions': [{'value': 'All', 'checked': False}, {'value': 'None', 'checked': True}]}
+
+Add Filter Profile With Date Filters
+    Set Date Filter    fromDate=13032025    fromTime=0025    toDate=01042025    toTime=2359
+
+    Add Filter Profile prfFrom For    FromDate    FromTime
+    Filter Profile prfFrom Should Be    {'fromDate': '2025-03-13', 'fromTime': '00:25'} 
+
+    Add Filter Profile prfTo For    ToDate    ToTime
+    Filter Profile prfTo Should Be    {'toDate': '2025-04-01', 'toTime': '23:59'} 
+
+    Add Filter Profile prfFromTo For    FromDate    ToTime
+    Filter Profile prfFromTo Should Be    {'fromDate': '2025-03-13', 'toTime': '23:59'} 
+
+Add Filter Profile With Amount Filter
+    Set Amount Filter    amount=876
+    Add Filter Profile prfAmount For    Amount
+    Filter Profile prfAmount Should Be    {'amount': 876} 

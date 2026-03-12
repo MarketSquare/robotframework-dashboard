@@ -1,5 +1,6 @@
 *** Settings ***
 Library    String
+Library    Collections
 Library    json
 Library    Browser
 Library    DocTest.VisualTest
@@ -59,13 +60,25 @@ Validate Component
 
 Set Run Filter
     [Arguments]    ${value}
-    Set Run Filters    ${value}
-
-Set Run Filters
-    [Arguments]    @{values}
     Click    selector=id=filters
-    FOR    ${value}    IN    @{values}
-        Select Options By    id=runs    value    ${value}
+    Select Options By    id=runs    value    ${value}
+    Click    selector=id=closeFilters
+
+Set Run Tags Filter
+    [Arguments]    @{tags}
+    Click    selector=id=filters
+    Click    selector=id=selectRunTags
+    FOR    ${tag}    IN    @{tags}
+        Check Checkbox    selector=id=${tag}
+    END
+    Click    selector=id=closeFilters
+
+Set Versions Filter
+    [Arguments]    @{versions}
+    Click    selector=id=filters
+    Click    selector=id=selectProjectVersion
+    FOR    ${version}    IN    @{versions}
+        Check Checkbox    selector=id=projectVersionInputItem${version}
     END
     Click    selector=id=closeFilters
 
@@ -77,6 +90,7 @@ Set Date Filter
     IF    '${fromTime}' != '${None}'    Type Text    selector=id=fromTime    txt=${fromTime}    clear=True
     IF    '${toDate}' != '${None}'    Type Text    selector=id=toDate    txt=${toDate}    clear=True
     IF    '${toTime}' != '${None}'    Type Text    selector=id=toTime    txt=${toTime}    clear=True
+    Take Screenshot
     Click    selector=id=closeFilters
 
 Set Amount Filter
@@ -94,23 +108,25 @@ Change Settings
     Select Options By    id=toggleBarRounding    value    0
     Click    selector=id=closeSettings
 
-(Un)select Checkbox
-    [Arguments]    ${selector}    ${check}=True
-    ${element}    Get Element    selector=${selector}
-    ${state}    Get Property    selector=${element}    property=checked
-    ${checked}    Evaluate    "${state}" in ['true', 'True']
-    Run Keyword If    (${check} and not ${checked}) or (not ${check} and ${checked})   Click  ${element}
-
 Add Filter Profile For
     [Arguments]    @{selected_filters}    ${profile_name}
+    Add Filter Profile ${profile_name} For    @{selected_filters}
+
+Add Filter Profile ${profile_name} For
+    [Arguments]    @{selected_filters}
     Click    selector=id=filters
     Click    selector=id=addFilterProfile
     Fill Text    selector=id=filterProfileName    txt=${profile_name}
     @{filters}    Create List    Runs    RunTags    Versions    FromDate    FromTime    ToDate    ToTime    Amount
     FOR    ${filter}    IN    @{filters}
         ${check}    Evaluate    '${filter}' in @{selected_filters}
-        (Un)select Checkbox    selector=id=profileCheck${filter}    check=${check}
+        IF    ${check}
+            Check Checkbox    selector=id=profileCheck${filter}
+        ELSE
+            Uncheck Checkbox    selector=id=profileCheck${filter}
+        END
     END
+    Take Screenshot
     Click    selector=id=saveFilterProfile
     Click    selector=id=closeFilters
 
@@ -118,7 +134,7 @@ Apply Filter Profile
     [Arguments]    ${profile_name}
     Click    selector=id=filters
     Click    selector=id=selectFilterProfile
-    Click    selector=xpath=//ul[@id="filterProfileList"]/li/span[contains(text(),'${profile_name}')]
+    Click    selector=id=profile${profile_name}
     Click    selector=id=closeFilters
 
 Get Filter Profile Settings
@@ -132,3 +148,29 @@ Reset Filters
     Click    selector=id=filters
     Click    selector=id=resetFilters
     Click    selector=id=closeFilters
+
+Filter Profile ${profile_name} Should Be
+    [Arguments]    ${filter_value_str}
+    ${settings}    Get Filter Profile Settings    profile_name=${profile_name}
+    ${expected}    Evaluate    ${filter_value_str}
+    Should Be Equal    first=${settings}    second=${expected}
+
+Validate Selected Run Tags Of Filter Profile ${profile_name}
+    [Arguments]    @{tags}    ${strict}=True
+    ${settings}    Get Filter Profile Settings    profile_name=${profile_name}
+    VAR    ${run_tags}    ${settings}[runTags]
+    ${checked_tags}    Create List
+    FOR    ${run_tag}    IN    @{run_tags}
+        Log    ${run_tag}
+        IF    ${run_tag}[checked]
+            Append To List    ${checked_tags}    ${run_tag}[id]
+        END
+    END
+    FOR    ${tag}    IN    @{tags}
+        List Should Contain Value    list_=${checked_tags}    value=${tag}
+    END
+    IF    '${strict}' == 'True'
+        FOR    ${tag}    IN    @{checked_tags}
+            List Should Contain Value    list_=${tags}    value=${tag}
+        END
+    END
