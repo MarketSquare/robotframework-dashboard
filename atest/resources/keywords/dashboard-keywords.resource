@@ -90,14 +90,13 @@ Set Date Filter
     IF    '${fromTime}' != '${None}'    Type Text    selector=id=fromTime    txt=${fromTime}    clear=True
     IF    '${toDate}' != '${None}'    Type Text    selector=id=toDate    txt=${toDate}    clear=True
     IF    '${toTime}' != '${None}'    Type Text    selector=id=toTime    txt=${toTime}    clear=True
-    Take Screenshot
     Click    selector=id=closeFilters
 
 Set Amount Filter
-    [Arguments]    ${amount}
+    [Arguments]    ${amount}    ${close_filter_dialog}=True
     Click    selector=id=filters
     Fill Text    selector=id=amount    txt=${amount}
-    Click    selector=id=closeFilters
+    Run Keyword If    ${close_filter_dialog}    Click    selector=id=closeFilters
 
 Change Settings
     Click    selector=id=themeDark
@@ -113,8 +112,8 @@ Add Filter Profile For
     Add Filter Profile ${profile_name} For    @{selected_filters}
 
 Add Filter Profile ${profile_name} For
-    [Arguments]    @{selected_filters}
-    Click    selector=id=filters
+    [Arguments]    @{selected_filters}    ${open_filter_dialog}=True
+    Run Keyword If    ${open_filter_dialog}   Click    selector=id=filters
     Click    selector=id=addFilterProfile
     Fill Text    selector=id=filterProfileName    txt=${profile_name}
     @{filters}    Create List    Runs    RunTags    Versions    FromDate    FromTime    ToDate    ToTime    Amount
@@ -126,7 +125,6 @@ Add Filter Profile ${profile_name} For
             Uncheck Checkbox    selector=id=profileCheck${filter}
         END
     END
-    Take Screenshot
     Click    selector=id=saveFilterProfile
     Click    selector=id=closeFilters
 
