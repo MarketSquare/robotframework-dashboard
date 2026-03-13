@@ -96,7 +96,7 @@ import {
 function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
     // Only recompute filtered data and update graphs in-place (no layout rebuild needed)
-    $("#filtersModal").on("hidden.bs.modal", function () {
+    $("#filtersModal").on("hide.bs.modal", function () {
         show_loading_overlay();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
