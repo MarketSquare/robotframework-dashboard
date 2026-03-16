@@ -15,7 +15,7 @@ Validate Dashboard Run Name Filter
     Validate Component    id=runStatisticsSection    name=runNameFilter    folder=run
 
 Validate Dashboard Date Filter
-    Set Date Filter    fromDate=13032025    fromTime=0025
+    Set Date Filter    fromDate=03132025    fromTime=1225am
     Validate Component    id=runStatisticsSection    name=runDateFilter    folder=run
 
 Validate Dashboard Amount Filter
@@ -28,10 +28,10 @@ Add Filter Profile With Runs Filter
     Filter Profile prfRuns Should Be    {'runs': 'Tests'}
 
 Add Filter Profile With Run Tags Filter
+    [Setup]    Run Keywords    Generate Dashboard With Mixed Tags    Open Dashboard
     Set Run Tags Filter    prod    project_1
     Add Filter Profile prfTags For    RunTags
     Validate Selected Run Tags Of Filter Profile prfTags    prod    project_1    strict=True
-    # Filter Profile prfTags Should Be    {'runTags': [{'id': 'useOrTags', 'checked': False}, {'id': 'All', 'checked': False}, {'id': 'dev', 'checked': False}, {'id': 'prod', 'checked': True}, {'id': 'project_1', 'checked': True}], 'useOrTags': False}
 
 Add Filter Profile With Versions Filter
     Set Versions Filter    None
@@ -39,7 +39,7 @@ Add Filter Profile With Versions Filter
     Filter Profile prfVersions Should Be    {'projectVersions': [{'value': 'All', 'checked': False}, {'value': 'None', 'checked': True}]}
 
 Add Filter Profile With Date Filters
-    Set Date Filter    fromDate=13032025    fromTime=0025    toDate=01042025    toTime=2359
+    Set Date Filter    fromDate=03132025    fromTime=1225am    toDate=04012025    toTime=1159pm
 
     Add Filter Profile prfFrom For    FromDate    FromTime
     Filter Profile prfFrom Should Be    {'fromDate': '2025-03-13', 'fromTime': '00:25'} 
