@@ -51,6 +51,7 @@ Add Filter Profile With Date Filters
     Filter Profile prfFromTo Should Be    {'fromDate': '2025-03-13', 'toTime': '23:59'}
 
 Add Filter Profile With Amount Filter
+    [Setup]    Run Keywords    Generate Dashboard With Mixed Tags    Open Dashboard
     Set Amount Filter    amount=200    close_filter_dialog=False
     Add Filter Profile prfAmount For    Amount    open_filter_dialog=False
     Filter Profile prfAmount Should Be    {'amount': '200'}

@@ -27,6 +27,29 @@ Generate Dashboard
     ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db -f ${CURDIR}/../outputs:dev:prod:project_1 -n robotdashboard_${DASHBOARD_INDEX}.html
     Log    ${output}
 
+Generate Dashboard With Mixed Tags
+    ${index}    Get Dashboard Index
+    Release Lock    name=dashboard_index
+    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
+    ${files}    Catenate  SEPARATOR=${SPACE}  
+    ...    -o ${CURDIR}/../outputs/output-20250313-002134.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002151.xml:dev:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002222.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002257.xml:dev:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002338.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002400.xml:dev:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002431.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002457.xml:dev:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002528.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002549.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002636.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002703.xml:prod:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002739.xml:dev:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-002915.xml:dev:project_1
+    ...    -o ${CURDIR}/../outputs/output-20250313-003006.xml:dev:project_1:amount
+    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db ${files} -n robotdashboard_${DASHBOARD_INDEX}.html
+    Log    ${output}
+
 Remove Database And Dashboard
     ${files}    List Files In Directory    path=${CURDIR}/../../..
     FOR    ${file}    IN    @{files}
