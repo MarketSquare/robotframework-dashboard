@@ -69,7 +69,7 @@ Set Run Tags Filter
     Click    selector=id=filters
     Click    selector=id=selectRunTags
     FOR    ${tag}    IN    @{tags}
-        Check Checkbox    selector=id=${tag}
+        Check Checkbox    selector=id=runTagCheckBox${tag}
     END
     Click    selector=id=closeFilters
 
