@@ -7,13 +7,33 @@ Resource    ../resources/keywords/general-keywords.resource
 Suite Setup    Start Browser
 Suite Teardown    Close Browser
 Test Setup    Run Keywords    Generate Dashboard    Open Dashboard
-Test Teardown    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+Test Teardown    Run Keywords    Close Dashboard    #Remove Database And Dashboard With Index
 
 
 *** Test Cases ***
 Validate Dashboard Run Name Filter
     Set Run Filter    value=Tests
     Validate Component    id=runStatisticsSection    name=runNameFilter    folder=run
+
+Validate Dashboard Run Tags Filter
+    [Setup]    Run Keywords    Generate Dashboard With Mixed Tags    Open Dashboard
+    Should Show 15 Of 15 Runs
+
+    Set Run Tags Filter    dev
+    Validate Component    id=runStatisticsSection    name=runTagsFilterDev    folder=run
+    Should Show 7 Of 7 Runs
+
+    Set Run Tags Filter    prod
+    Validate Component    id=runStatisticsSection    name=runTagsFilterDevProd    folder=run
+    Should Show 0 Of 0 Runs
+
+    Set Run Tags Filter    prod    strict=True
+    Validate Component    id=runStatisticsSection    name=runTagsFilterProd    folder=run
+    Should Show 8 Of 8 Runs
+
+    Set Run Tags Filter    dev    amount    strict=True
+    Validate Component    id=runStatisticsSection    name=runTagsFilterAmount    folder=run
+    Should Show 1 Of 1 Runs
 
 Validate Dashboard Date Filter
     Set Date Filter    fromDate=03132025    fromTime=1225am

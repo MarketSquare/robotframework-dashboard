@@ -65,9 +65,18 @@ Set Run Filter
     Click    selector=id=closeFilters
 
 Set Run Tags Filter
-    [Arguments]    @{tags}
+    [Arguments]    @{tags}    ${strict}=False
     Click    selector=id=filters
     Click    selector=id=selectRunTags
+    IF    ${strict}
+        ${elements}    Get Elements    selector=id=runTag >> css=input.form-check-input
+        FOR    ${element}    IN    @{elements}
+            ${id}    Get Attribute    ${element}    id
+            IF    "${id}".startswith("runTagCheckBox")
+                Uncheck Checkbox    selector=id=${id}
+            END
+        END
+    END
     FOR    ${tag}    IN    @{tags}
         Check Checkbox    selector=id=runTagCheckBox${tag}
     END
@@ -173,3 +182,6 @@ Validate Selected Run Tags Of Filter Profile ${profile_name}
             List Should Contain Value    list_=${tags}    value=${tag}
         END
     END
+
+Should Show ${runs} Of ${total_runs} Runs
+    Get Property    selector=id=runTitle >> h6    property=innerText    assertion_operator===    assertion_expected=showing ${runs} of ${total_runs} runs
