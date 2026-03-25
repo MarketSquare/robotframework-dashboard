@@ -175,16 +175,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
                 document.dispatchEvent(new Event("graphs-finalized"));
 
                 if (!menuUpdate) {
-                    setTimeout(() => {
-                        const mostVisibleSectionId = get_most_visible_section();
-                        if (mostVisibleSectionId) {
-                            const offsetTop = document.getElementById(mostVisibleSectionId).getBoundingClientRect().top;
-                            window.scrollTo({
-                                top: offsetTop - 67,
-                                behavior: "auto"
-                            });
-                        }
-                    }, 100);
+                    scroll_to_most_visible_section();
                 }
             });
         });
@@ -398,6 +389,16 @@ function setup_overview_section_menu_buttons() {
     __overviewNavStore.scrollHandler = updateVisibleButtons;
     __overviewNavStore.resizeHandler = updateVisibleButtons;
     updateVisibleButtons();
+}
+
+function scroll_to_most_visible_section() {
+    setTimeout(() => {
+        const mostVisibleSectionId = get_most_visible_section();
+        if (mostVisibleSectionId) {
+            const offsetTop = document.getElementById(mostVisibleSectionId).getBoundingClientRect().top;
+            window.scrollTo({ top: offsetTop - 67, behavior: "auto" });
+        }
+    }, 100);
 }
 
 function get_most_visible_section() {
