@@ -94,8 +94,7 @@ Set Versions Filter
 Set Date Filter
     [Arguments]    ${fromDate}=${None}    ${fromTime}=${None}    ${toDate}=${None}    ${toTime}=${None}
     Click    selector=id=filters
-    # instead of: Sleep    time_=500ms
-    Wait For Condition    Text    id=fromDate   should not be    ${EMPTY}
+    Sleep    time_=500ms
     IF    '${fromDate}' != '${None}'    Type Text    selector=id=fromDate    txt=${fromDate}    clear=True
     IF    '${fromTime}' != '${None}'    Type Text    selector=id=fromTime    txt=${fromTime}    clear=True
     IF    '${toDate}' != '${None}'    Type Text    selector=id=toDate    txt=${toDate}    clear=True
