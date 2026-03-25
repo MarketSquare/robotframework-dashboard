@@ -570,7 +570,9 @@ function create_project_cards_container(projectName, projectRuns, percent = null
 
 // function to create overview latest runs statistics
 function create_overview_latest_graphs(preFilteredRuns = null) {
-    const order = document.getElementById("overviewLatestSectionOrder").value;
+    const orderEl = document.getElementById("overviewLatestSectionOrder");
+    if (!orderEl) return;
+    const order = orderEl.value;
     const overviewCardsContainer = document.getElementById("overviewLatestRunCardsContainer");
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
@@ -632,6 +634,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
 // function to create overview total statistics
 function create_overview_total_graphs(preFilteredRuns = null) {
     const overviewCardsContainer = document.getElementById("overviewTotalRunCardsContainer");
+    if (!overviewCardsContainer) return;
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
     const durationsByProject = {};
