@@ -62,6 +62,26 @@ Each color has a **Reset** button to restore its default value. Light and dark m
 
 See [Settings - Theme Tab](/settings#theme-settings-theme-tab) for more details.
 
+### 6. Custom Branding (Title and Logo)
+
+The **Theme** tab also lets you personalize the navigation bar with your own branding:
+
+- **Custom Title** — type a label into the *Custom Title* field and it appears in the menu bar next to the logo. Leave the field blank to hide it. The title is stored in localStorage under `branding.title`.
+- **Custom Logo** — upload a PNG image via the *Custom Logo* file picker to replace the default Robot Framework logo in the navigation bar. Click **Reset** to restore the default logo. The image is stored as a data-URL in localStorage under `branding.logo`.
+
+Both settings take effect immediately and persist across page reloads.
+
+### 7. Responsive Menu Bar
+
+The navigation bar automatically adapts to any screen width — no manual configuration required:
+
+- When the viewport becomes too narrow to display all page links, the menu items (*Overview*, *Dashboard*, *Compare*, *Tables*, etc.) are moved into a **slide-in sidebar**.
+- If the viewport is even smaller and the icon shortcuts also no longer fit, those move into the sidebar too.
+- A **hamburger button** (☰) appears in the top-right corner whenever items have been moved to the sidebar. Clicking it opens the sidebar; clicking the backdrop or the close button dismisses it.
+- The sidebar reorganizes itself to reflect the current page order configured by the user.
+
+This behavior is fully automatic and requires no action from the user.
+
 ### 6. Viewing (and Editing) the JSON Configuration
 
 You can directly inspect the full configuration—exactly as the UI generates it—by opening the `view` key in the JSON output.  
