@@ -1,5 +1,7 @@
 ---
-description: Use when working on, running, or reasoning about the Python unit tests in tests/.
+name: unit-tests
+description: 'Run, analyze, fix, and report on the Python unit tests in tests/. Use when: working on, running, or reasoning about unit tests; tests are failing; CI is red; debugging test errors; adding a missing argument to a test helper after a new parameter was introduced. DO NOT USE FOR: acceptance tests (atest/), Robot Framework test suites.'
+argument-hint: 'Optional: specific test file or test name to focus on'
 ---
 
 # Unit Tests
@@ -17,6 +19,17 @@ bash scripts/unittests.sh
 ```
 
 Both scripts run `pytest` with coverage reporting on the `robotframework_dashboard` package.
+
+**Targeted runs:**
+```bash
+python -m pytest tests/test_server.py --tb=short
+python -m pytest tests/test_dashboard.py::test_generate_dashboard_creates_file --tb=short
+```
+
+**Coverage only (no script):**
+```bash
+python -m pytest tests/ --cov=robotframework_dashboard --cov-report=term-missing --cov-report=html:results/coverage
+```
 
 ## Test layout
 
@@ -72,3 +85,41 @@ Unit tests run as a separate `unit-tests` job in `.github/workflows/tests.yml` *
 ## Schema migration test
 
 `test_schema_migration_runs_table_from_10_to_14` in `test_database.py` creates a legacy 10-column SQLite database by hand and asserts that `DatabaseProcessor.__init__` automatically migrates all four tables to their current column counts (runs: 14, suites: 11, tests: 12, keywords: 12). This protects against regressions when future schema columns are added.
+
+## Analyzing and fixing failures
+
+### Categorize the failure
+
+| Failure pattern | Likely cause | Action |
+|---|---|---|
+| `TypeError: missing required argument` | New parameter added to production code, test helper not updated | **Fix test** — add the new param with a sensible default |
+| `AssertionError` on a value that changed | Business logic changed intentionally | **Verify intent** — check git diff; fix test if change is correct |
+| `AssertionError` on a value that should NOT have changed | Regression in production code | **Fix code** — this is a real bug |
+| `ImportError` / `ModuleNotFoundError` | Refactor moved or renamed something | Check both sides; fix whichever is wrong |
+| `AttributeError` on production object | API surface changed | **Verify intent** — fix test if change was deliberate |
+| Unexpected exception in production code under test | Real bug | **Fix code** |
+
+### Fix appropriately
+
+- **Only fix the tests** when production code changed intentionally and tests need to catch up.
+- **Fix the code** when a test reveals a genuine regression or broken behaviour.
+- **Never** silently skip or `xfail` a test to make CI green without investigating.
+
+### Common fix: new required parameter
+
+When a new required parameter is added to `generate_dashboard()`, `RobotDashboard.__init__()`, or `DashboardServer.__init__()`:
+- Find the test helper function in the relevant test file and add the parameter with its default value (usually `False` for booleans).
+- Also check for any direct call-sites in other test functions in the same file.
+
+**Test helpers in this project:**
+- `tests/test_dashboard.py` → `_call_generate(tmp_path, **kwargs)`
+- `tests/test_robotdashboard.py` → `_make_rd(tmp_path, **kwargs)`
+- `tests/test_server.py` → `_make_server(**kwargs)`
+
+### Report format
+
+After investigating, report:
+
+| Test | Root Cause | Real Bug? | Fix Applied |
+|------|-----------|-----------|-------------|
+| `test_foo` | … | Yes / No | … |

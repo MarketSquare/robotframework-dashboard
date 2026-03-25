@@ -29,6 +29,7 @@ def _make_rd(tmp_path, **kwargs):
         project_version=None,
         no_vacuum=True,
         timezone="+00:00",
+        no_autoupdate=False,
     )
     defaults.update(kwargs)
     return RobotDashboard(**defaults)

@@ -114,6 +114,7 @@ def _call_generate(tmp_path, **kwargs):
         use_logs=False,
         offline=False,
         force_json_config=False,
+        no_autoupdate=False,
     )
     defaults.update(kwargs)
     DashboardGenerator().generate_dashboard(**defaults)
@@ -188,5 +189,6 @@ def test_generate_dashboard_subdirectory_created(tmp_path):
         use_logs=False,
         offline=False,
         force_json_config=False,
+        no_autoupdate=False,
     )
     assert subdir_output.exists()
