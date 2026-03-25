@@ -82,9 +82,8 @@ function neighbor_indices(bestIndex, length) {
 
 function update_menu(item) {
     ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
-        set_local_storage_item(`menu.${menuItem}`, (item === `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`));
-    });
-    ["menuOverview", "menuDashboard", "menuCompare", "menuTables"].forEach(id => {
+        const id = `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`;
+        set_local_storage_item(`menu.${menuItem}`, (item === id));
         document.getElementById(id).classList.toggle("active", id === item);
     });
     document.getElementById("filters").hidden = (item === "menuOverview");
