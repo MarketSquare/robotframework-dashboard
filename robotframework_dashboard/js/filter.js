@@ -383,7 +383,7 @@ function setup_tests_in_select() {
         return names;
     }, []);
     testSelect.options.add(new Option("All", "All"));
-    testNames.forEach(testName => testSelect.options.add(new Option(testName, testName)));
+    testNames.sort().forEach(testName => testSelect.options.add(new Option(testName, testName)));
 }
 
 // function to update the available testtags to select in the filters
@@ -558,7 +558,7 @@ function setup_runtags_in_select_filter_buttons() {
         </li>
     `;
     const listItems = [listItemTemplate("All")].concat(
-        Array.from(tags).map(tag => listItemTemplate(tag))
+        Array.from(tags).sort().map(tag => listItemTemplate(tag))
     ).join("");
     const tagsSelect = document.getElementById("runTag");
     tagsSelect.innerHTML = andOrTags + listItems;
