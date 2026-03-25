@@ -312,7 +312,6 @@ class ApiServer:
             "<!-- placeholder_noautoupdate -->",
             "true" if self.no_autoupdate else "false",
         )
-
         dependency_processor = DependencyProcessor(admin_page=True)
         admin_html = admin_html.replace(
             "<!-- placeholder_javascript -->", dependency_processor.get_js_block()
@@ -324,7 +323,6 @@ class ApiServer:
             "<!-- placeholder_dependencies -->",
             dependency_processor.get_dependencies_block(self.offline),
         )
-        admin_html = admin_html.replace('"placeholder_version"', __version__)
         return admin_html
 
     def _setup_routes(self):
