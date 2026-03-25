@@ -30,6 +30,7 @@ class RobotDashboard:
         force_json_config: bool,
         project_version: str,
         no_vacuum: bool,
+        no_autoupdate: bool,
         timezone: str = "",
     ):
         """Sets the parameters provided in the command line"""
@@ -50,6 +51,7 @@ class RobotDashboard:
         self.database = None
         self.project_version = project_version
         self.no_vacuum = no_vacuum
+        self.no_autoupdate = no_autoupdate
         self.timezone = timezone
 
     def initialize_database(self, suppress=True):
@@ -242,6 +244,7 @@ class RobotDashboard:
                 self.use_logs,
                 self.offline_dependencies,
                 self.force_json_config,
+                self.no_autoupdate,
             )
             end = time()
             console += self._print_console(

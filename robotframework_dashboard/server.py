@@ -303,7 +303,6 @@ class ApiServer:
     def _get_admin_page(self):
         admin_file = join(dirname(abspath(__file__)), "./templates", "admin.html")
         admin_html = open(admin_file, "r").read()
-        admin_html = admin_html.replace('"placeholder_version"', __version__)
         admin_html = admin_html.replace(
             "<!-- placeholder_refresh_card_visibility -->",
             "" if self.no_autoupdate else "hidden",
@@ -312,7 +311,6 @@ class ApiServer:
             "<!-- placeholder_noautoupdate -->",
             "true" if self.no_autoupdate else "false",
         )
-
         dependency_processor = DependencyProcessor(admin_page=True)
         admin_html = admin_html.replace(
             "<!-- placeholder_javascript -->", dependency_processor.get_js_block()
