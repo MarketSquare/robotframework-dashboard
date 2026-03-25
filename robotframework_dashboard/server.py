@@ -303,7 +303,6 @@ class ApiServer:
     def _get_admin_page(self):
         admin_file = join(dirname(abspath(__file__)), "./templates", "admin.html")
         admin_html = open(admin_file, "r").read()
-        admin_html = admin_html.replace('"placeholder_version"', __version__)
         admin_html = admin_html.replace(
             "<!-- placeholder_refresh_card_visibility -->",
             "" if self.no_autoupdate else "hidden",
@@ -323,6 +322,7 @@ class ApiServer:
             "<!-- placeholder_dependencies -->",
             dependency_processor.get_dependencies_block(self.offline),
         )
+        admin_html = admin_html.replace('"placeholder_version"', __version__)
         return admin_html
 
     def _setup_routes(self):
