@@ -86,7 +86,7 @@ For detailed usage instructions, advanced examples, and full documentation, visi
 
 ## 🛠️ Contributions
 
-Contributions are welcome! If you encounter any issues, have suggestions for improvements, or would like to add new features, feel free to open an issue or submit a pull request. Additional information can be found here in [Contributing](./contributing.md)
+Contributions are welcome! If you encounter any issues, have suggestions for improvements, or would like to add new features, feel free to open an issue or submit a pull request. Additional information can be found here in [Contributing](./CONTRIBUTING.md)
 
 Special thanks to the following companies for sponsoring in one form or another!
 - [TestCoders](https://testcoders.nl)

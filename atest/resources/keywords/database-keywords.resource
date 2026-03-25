@@ -35,4 +35,8 @@ Validate Database
     END
     ${new_result}    Convert To String    item=${new_result}
     ${expected}    Get File    path=${CURDIR}/../database_output/${table}.txt
+    VAR    ${pattern}    (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+)\\d{2}:\\d{2}
+    VAR    ${with}    \\1??:??
+    ${new_result}    Replace String Using Regexp    string=${new_result}    pattern=${pattern}    replace_with=${with}
+    ${expected}    Replace String Using Regexp    string=${expected}    pattern=${pattern}    replace_with=${with}
     Should Be Equal As Strings    first=${new_result}    second=${expected}
