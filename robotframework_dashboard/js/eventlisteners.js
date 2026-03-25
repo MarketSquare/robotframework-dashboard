@@ -1,4 +1,4 @@
-import { runs, keywords, filteredAmount, filteredAmountDefault, server } from './variables/data.js';
+import { runs, keywords, filteredAmount, filteredAmountDefault, server, no_auto_update } from './variables/data.js';
 import { settings } from "./variables/settings.js";
 import {
     showingRunTags,
@@ -150,6 +150,34 @@ function setup_filter_modal() {
     document.getElementById("amount").value = filteredAmount
     if (server) {
         document.getElementById("openDashboard").hidden = false
+        if (no_auto_update) {
+            document.getElementById("refreshDashboard").hidden = false
+            document.getElementById("refreshDashboard").addEventListener("click", function () {
+                document.getElementById("refreshDashboardSpinner").hidden = false
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/refresh-dashboard");
+                xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                xhr.onload = () => {
+                    document.getElementById("refreshDashboardSpinner").hidden = true
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success == "1") {
+                            console.log(response.console)
+                            add_alert(`${response.message} Reloading dashboard in 3 seconds!`, "success")
+                            setTimeout(() => {
+                                location.reload();
+                            }, 3000);
+                        } else {
+                            add_alert(response.message, "danger")
+                            console.log(response.console)
+                        }
+                    } else {
+                        add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+                    }
+                };
+                xhr.send(JSON.stringify({}));
+            });
+        }
     }
     // fill the filters with default values
     setup_run_amount_filter();
@@ -351,11 +379,11 @@ function setup_settings_modal() {
             const element = document.getElementById(elementId);
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
-            
+
             // Check if user has custom colors for this theme mode
             const customColors = settings.theme_colors?.custom?.[themeMode];
             const storedColor = customColors?.[colorKey];
-            
+
             if (storedColor) {
                 element.value = to_hex_color(storedColor);
             } else {
@@ -370,14 +398,14 @@ function setup_settings_modal() {
             const newColor = element.value;
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
-            
+
             if (!settings.theme_colors.custom) {
                 settings.theme_colors.custom = { light: {}, dark: {} };
             }
             if (!settings.theme_colors.custom[themeMode]) {
                 settings.theme_colors.custom[themeMode] = {};
             }
-            
+
             settings.theme_colors.custom[themeMode][colorKey] = newColor;
             set_local_storage_item(`theme_colors.custom.${themeMode}.${colorKey}`, newColor);
             apply_theme_colors();
@@ -387,16 +415,16 @@ function setup_settings_modal() {
             const element = document.getElementById(elementId);
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
-            
+
             // Reset to default from settings
             const defaults = settings.theme_colors[themeMode];
             element.value = to_hex_color(defaults[colorKey]);
-            
+
             if (settings.theme_colors?.custom?.[themeMode]) {
                 delete settings.theme_colors.custom[themeMode][colorKey];
                 set_local_storage_item('theme_colors.custom', settings.theme_colors.custom);
             }
-            
+
             apply_theme_colors();
         }
 
@@ -636,8 +664,8 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.suitePathsTestSection", settings.switch.suitePathsTestSection);
         update_graphs_with_loading(
             ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph", "testMessagesGraph",
-             "testMostFlakyGraph", "testRecentMostFlakyGraph", "testMostFailedGraph",
-             "testRecentMostFailedGraph", "testMostTimeConsumingGraph"],
+                "testMostFlakyGraph", "testRecentMostFlakyGraph", "testMostFailedGraph",
+                "testRecentMostFailedGraph", "testMostTimeConsumingGraph"],
             () => {
                 setup_suites_in_test_select();
                 update_test_statistics_graph();
@@ -676,7 +704,7 @@ function setup_sections_filters() {
     document.getElementById("keywordSelect").addEventListener("change", () => {
         update_graphs_with_loading(
             ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
-             "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph"],
+                "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph"],
             () => {
                 update_keyword_statistics_graph();
                 update_keyword_times_run_graph();
@@ -693,8 +721,8 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.useLibraryNames", settings.switch.useLibraryNames);
         update_graphs_with_loading(
             ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
-             "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph",
-             "keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"],
+                "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph",
+                "keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"],
             () => {
                 setup_keywords_in_select();
                 update_keyword_statistics_graph();
@@ -747,10 +775,10 @@ function save_section_filter_values() {
     const suiteFolder = document.getElementById("suiteFolder");
     if (suiteFolder) saved.suiteFolder = suiteFolder.innerText;
     ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
-     "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) saved[id] = el.value;
-    });
+        "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) saved[id] = el.value;
+        });
     return saved;
 }
 
@@ -758,14 +786,14 @@ function restore_section_filter_values(saved) {
     const suiteFolder = document.getElementById("suiteFolder");
     if (suiteFolder && saved.suiteFolder !== undefined) suiteFolder.innerText = saved.suiteFolder;
     ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
-     "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && saved[id] !== undefined) {
-            // Only restore if the saved value still exists as an option
-            const optionExists = Array.from(el.options).some(opt => opt.value === saved[id]);
-            if (optionExists) el.value = saved[id];
-        }
-    });
+        "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && saved[id] !== undefined) {
+                // Only restore if the saved value still exists as an option
+                const optionExists = Array.from(el.options).some(opt => opt.value === saved[id]);
+                if (optionExists) el.value = saved[id];
+            }
+        });
 }
 
 // function to setup eventlisteners for changing the graph view buttons
