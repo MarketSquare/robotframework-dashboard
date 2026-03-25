@@ -1,5 +1,5 @@
 import { setup_filtered_data_and_filters, update_overview_version_select_list } from "./filter.js";
-import { areGroupedProjectsPrepared } from "./variables/globals.js";
+import { areGroupedProjectsPrepared, overviewNavStore } from "./variables/globals.js";
 import { space_to_camelcase } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
 import { create_dashboard_graphs } from "./graph_creation/all.js";
@@ -9,12 +9,6 @@ import { setup_graph_view_buttons, setup_overview_order_filters } from "./eventl
 import { setup_section_order, setup_graph_order, setup_overview_section_layout_buttons } from "./layout.js";
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";
-
-// Track overview nav listeners so we can cleanly remove them when leaving Overview
-let __overviewNavStore = {
-    scrollHandler: null,
-    resizeHandler: null,
-};
 
 // ---- Shared helpers for menu buttons ----
 function get_sticky_height() {
@@ -269,13 +263,13 @@ function setup_overview_section_menu_buttons() {
     if (!isOverviewActive) {
         existingOverviewButtons.forEach(el => el.remove());
         // Detach listeners if still attached
-        if (__overviewNavStore.scrollHandler) {
-            window.removeEventListener("scroll", __overviewNavStore.scrollHandler);
-            __overviewNavStore.scrollHandler = null;
+        if (overviewNavStore.scrollHandler) {
+            window.removeEventListener("scroll", overviewNavStore.scrollHandler);
+            overviewNavStore.scrollHandler = null;
         }
-        if (__overviewNavStore.resizeHandler) {
-            window.removeEventListener("resize", __overviewNavStore.resizeHandler);
-            __overviewNavStore.resizeHandler = null;
+        if (overviewNavStore.resizeHandler) {
+            window.removeEventListener("resize", overviewNavStore.resizeHandler);
+            overviewNavStore.resizeHandler = null;
         }
         return;
     }
@@ -324,13 +318,13 @@ function setup_overview_section_menu_buttons() {
     sections.forEach(makeButtonForSection);
 
     // Before attaching new listeners, remove any previous ones to avoid stale closures
-    if (__overviewNavStore.scrollHandler) {
-        window.removeEventListener("scroll", __overviewNavStore.scrollHandler);
-        __overviewNavStore.scrollHandler = null;
+    if (overviewNavStore.scrollHandler) {
+        window.removeEventListener("scroll", overviewNavStore.scrollHandler);
+        overviewNavStore.scrollHandler = null;
     }
-    if (__overviewNavStore.resizeHandler) {
-        window.removeEventListener("resize", __overviewNavStore.resizeHandler);
-        __overviewNavStore.resizeHandler = null;
+    if (overviewNavStore.resizeHandler) {
+        window.removeEventListener("resize", overviewNavStore.resizeHandler);
+        overviewNavStore.resizeHandler = null;
     }
 
     const updateVisibleButtons = () => {
@@ -340,13 +334,13 @@ function setup_overview_section_menu_buttons() {
         if (!stillOverview) {
             const toRemove = Array.from(navbar.querySelectorAll('a[id^="overview-"][id$="Nav"]'));
             toRemove.forEach(el => el.remove());
-            if (__overviewNavStore.scrollHandler) {
-                window.removeEventListener("scroll", __overviewNavStore.scrollHandler);
-                __overviewNavStore.scrollHandler = null;
+            if (overviewNavStore.scrollHandler) {
+                window.removeEventListener("scroll", overviewNavStore.scrollHandler);
+                overviewNavStore.scrollHandler = null;
             }
-            if (__overviewNavStore.resizeHandler) {
-                window.removeEventListener("resize", __overviewNavStore.resizeHandler);
-                __overviewNavStore.resizeHandler = null;
+            if (overviewNavStore.resizeHandler) {
+                window.removeEventListener("resize", overviewNavStore.resizeHandler);
+                overviewNavStore.resizeHandler = null;
             }
             return;
         }
@@ -386,8 +380,8 @@ function setup_overview_section_menu_buttons() {
 
     window.addEventListener("scroll", updateVisibleButtons, { passive: true });
     window.addEventListener("resize", updateVisibleButtons);
-    __overviewNavStore.scrollHandler = updateVisibleButtons;
-    __overviewNavStore.resizeHandler = updateVisibleButtons;
+    overviewNavStore.scrollHandler = updateVisibleButtons;
+    overviewNavStore.resizeHandler = updateVisibleButtons;
     updateVisibleButtons();
 }
 
@@ -447,21 +441,21 @@ function get_most_visible_section() {
 // Level 2: icon items also move into the sidebar
 //
 function setup_navbar_overflow() {
-    const nav          = document.getElementById('navigation');
-    const mainNavDiv   = document.getElementById('mainNavItems');
+    const nav = document.getElementById('navigation');
+    const mainNavDiv = document.getElementById('mainNavItems');
     const hamburgerBtn = document.getElementById('navHamburger');
-    const iconNavUl    = document.getElementById('iconNavItems');
-    const sidenav      = document.getElementById('sidenav');
-    const sidenavBody  = document.getElementById('sidenavBody');
+    const iconNavUl = document.getElementById('iconNavItems');
+    const sidenav = document.getElementById('sidenav');
+    const sidenavBody = document.getElementById('sidenavBody');
     const sidenavBackdrop = document.getElementById('sidenavBackdrop');
     const sidenavClose = document.getElementById('sidenavClose');
 
     // Capture icon <li> references (they move, but references stay valid)
     const iconLiEls = Array.from(iconNavUl.children);
 
-    let navInSidebar   = false;
+    let navInSidebar = false;
     let iconsInSidebar = false;
-    let updating       = false;
+    let updating = false;
 
     function nav_item_els() {
         return Array.from(mainNavDiv.querySelectorAll('.nav-item'))
