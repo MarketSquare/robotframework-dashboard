@@ -360,7 +360,7 @@ function setup_suites_in_test_select() {
     suiteNames.forEach(suiteName => {
         suiteSelectTests.options.add(new Option(suiteName, suiteName));
     });
-    suiteSelectTests.selectedIndex = 1;
+    suiteSelectTests.selectedIndex = settings.show.allSuitesByDefaultInTestStats ? 0 : 1;
 }
 
 // function to update the available tests to select in the filters

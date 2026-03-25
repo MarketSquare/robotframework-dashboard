@@ -320,6 +320,7 @@ function setup_settings_modal() {
         { key: "show.rounding", elementId: "toggleBarRounding", isNumber: true, event: "change" },
         { key: "show.prefixes", elementId: "togglePrefixes" },
         { key: "show.convertTimezone", elementId: "toggleTimezone" },
+        { key: "show.allSuitesByDefaultInTestStats", elementId: "toggleAllSuitesByDefaultInTestStats" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
         handler(true);

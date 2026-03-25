@@ -38,6 +38,7 @@ var settings = {
         prefixes: true,
         timezones: false,
         convertTimezone: false,
+        allSuitesByDefaultInTestStats: false,
     },
     theme_colors: {
         light: {
