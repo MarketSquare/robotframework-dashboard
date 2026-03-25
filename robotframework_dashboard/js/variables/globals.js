@@ -41,6 +41,12 @@ var ignoreSkips = false; // test most flaky graph
 var ignoreSkipsRecent = false; // test recent most flaky graph
 var onlyFailedFolders = false; // suite folder donut
 
+// Track overview nav listeners so we can cleanly remove them when leaving Overview
+let overviewNavStore = {
+    scrollHandler: null,
+    resizeHandler: null,
+};
+
 export {
     CARDS_PER_ROW,
     DEFAULT_DURATION_PERCENTAGE,
@@ -73,4 +79,5 @@ export {
     ignoreSkips,
     ignoreSkipsRecent,
     onlyFailedFolders,
+    overviewNavStore,
 };

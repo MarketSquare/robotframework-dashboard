@@ -20,7 +20,7 @@ Raw database data in DataTables for runs, suites, tests, and keywords. Useful fo
 
 ## Chart.js Architecture
 
-### Central Config: `graph_config.js`
+### Central Config: `js/graph_data/graph_config.js`
 `get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle)` is the single factory function that returns a complete Chart.js config object. All graphs route through it.
 
 ### Supported Chart Types

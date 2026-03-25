@@ -13,7 +13,6 @@ index.txt
 .pabotsuitenames
 *.db
 *.vscode
-.github/*.md
 log.html
 output.xml
 report.html
