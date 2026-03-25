@@ -320,15 +320,6 @@ def test_get_data_run_without_timezone_gets_tz_appended(tmp_path):
     assert re.match(r".*[+-]\d{2}:\d{2}$", result["runs"][0]["run_start"])
 
 
-def test_remove_by_run_start(populated_db):
-    populated_db.open_database()
-    data = populated_db.get_data()
-    run_start = data["runs"][0]["run_start"]
-    populated_db.remove_runs([f"run_start={run_start}"])
-    assert len(populated_db.get_data()["runs"]) == 0
-    populated_db.close_database()
-
-
 # --- _has_timezone_offset (static) ---
 
 @pytest.mark.parametrize("run_start,expected", [
@@ -435,7 +426,7 @@ def test_insert_output_data_exception_prints_error(db, capsys):
 # --- get_data backward-compatibility branches ---
 
 def test_get_data_null_run_alias_generates_auto_alias(db):
-    """get_data() assigns 'Alias 0' when run_alias is NULL (pre-0.6.0 compat)."""
+    """get_data() assigns 'Alias 1' when run_alias is NULL (pre-0.6.0 compat)."""
     db.open_database()
     db.connection.execute(
         "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",

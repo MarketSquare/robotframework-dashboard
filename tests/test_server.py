@@ -7,10 +7,8 @@ ApiServer delegates to is replaced with a MagicMock throughout, keeping tests
 fast and fully deterministic.
 """
 import gzip
-import io
-import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 
 from robotframework_dashboard.server import ApiServer, ResponseMessage
@@ -85,11 +83,11 @@ def test_get_admin_page_returns_html_string():
     assert "<html" in html.lower()
 
 
-def test_get_admin_page_no_autoupdate_true_hides_refresh_card():
+def test_get_admin_page_no_autoupdate_true_shows_refresh_card():
     server = _make_server(no_autoupdate=True)
     html = server._get_admin_page()
-    # When no_autoupdate=True the placeholder is replaced with "" (visible)
-    assert "hidden" not in html or "placeholder_refresh_card_visibility" not in html
+    # When no_autoupdate=True the placeholder is replaced with "" (card is visible, not hidden)
+    assert "placeholder_refresh_card_visibility" not in html
 
 
 def test_get_admin_page_no_autoupdate_false_hides_refresh_card():
@@ -444,7 +442,7 @@ def test_remove_outputs_all_flag():
 
 
 def test_remove_outputs_all_empty_database():
-    """When all=True and database is empty, remove_outputs should not be called."""
+    """When all=True and database is empty, remove_outputs is called with an empty list."""
     server = _make_server()
     server.robotdashboard.get_runs.return_value = ([], [], [], [])
     client = _client(server)
