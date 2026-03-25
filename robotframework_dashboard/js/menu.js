@@ -1,5 +1,5 @@
 import { setup_filtered_data_and_filters, update_overview_version_select_list } from "./filter.js";
-import { areGroupedProjectsPrepared } from "./variables/globals.js";
+import { areGroupedProjectsPrepared, overviewNavStore } from "./variables/globals.js";
 import { space_to_camelcase } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
 import { create_dashboard_graphs } from "./graph_creation/all.js";
@@ -9,12 +9,6 @@ import { setup_graph_view_buttons, setup_overview_order_filters } from "./eventl
 import { setup_section_order, setup_graph_order, setup_overview_section_layout_buttons } from "./layout.js";
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";
-
-// Track overview nav listeners so we can cleanly remove them when leaving Overview
-let __overviewNavStore = {
-    scrollHandler: null,
-    resizeHandler: null,
-};
 
 // ---- Shared helpers for menu buttons ----
 function get_sticky_height() {
@@ -77,6 +71,132 @@ function neighbor_indices(bestIndex, length) {
     }
     return indices;
 }
+
+// ---- Menu setup and navigation ----
+
+function update_menu(item) {
+    ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
+        const id = `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`;
+        set_local_storage_item(`menu.${menuItem}`, (item === id));
+        document.getElementById(id).classList.toggle("active", id === item);
+    });
+    document.getElementById("filters").hidden = (item === "menuOverview");
+    setup_data_and_graphs(true, item === "menuOverview" && !areGroupedProjectsPrepared);
+}
+
+// function to setup the menu eventlisteners
+function setup_menu() {
+    document.getElementById("menuOverview").addEventListener("click", () => update_menu("menuOverview"));
+    document.getElementById("menuDashboard").addEventListener("click", () => update_menu("menuDashboard"));
+    document.getElementById("menuCompare").addEventListener("click", () => update_menu("menuCompare"));
+    document.getElementById("menuTables").addEventListener("click", () => update_menu("menuTables"));
+
+    const params = new URLSearchParams(window.location.search);
+    const pageParam = params.get("page");
+    let selectedMenu;
+
+    if (pageParam) {
+        switch (pageParam.toLowerCase()) {
+            case "overview":
+                selectedMenu = "menuOverview";
+                break;
+            case "dashboard":
+                selectedMenu = "menuDashboard";
+                break;
+            case "compare":
+                selectedMenu = "menuCompare";
+                break;
+            case "tables":
+                selectedMenu = "menuTables";
+                break;
+        }
+        if (selectedMenu) {
+            settings.menu = {
+                overview: selectedMenu === "menuOverview",
+                dashboard: selectedMenu === "menuDashboard",
+                compare: selectedMenu === "menuCompare",
+                tables: selectedMenu === "menuTables",
+            };
+        }
+    }
+
+    // Priority 2: fall back to settings if no valid URL param
+    if (!selectedMenu) {
+        const menuSettings = settings.menu;
+        if (menuSettings.overview) selectedMenu = "menuOverview";
+        else if (menuSettings.dashboard) selectedMenu = "menuDashboard";
+        else if (menuSettings.compare) selectedMenu = "menuCompare";
+        else if (menuSettings.tables) selectedMenu = "menuTables";
+    }
+    update_menu(selectedMenu);
+}
+
+// ---- Data loading and spinner ----
+
+// function to update all graph data, function is called when updating filters and when the page loads
+function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = false) {
+    setup_spinner(false); // show spinner immediately
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            if (prepareOverviewProjectData) {
+                prepare_overview();
+                setup_overview_localstorage();
+                setup_overview_section_layout_buttons();
+                setup_overview_order_filters();
+                update_overview_version_select_list();
+            }
+            setup_filtered_data_and_filters();
+            setup_section_order();
+            setup_graph_order();
+            setup_information_popups();
+            setup_graph_view_buttons();
+            setup_theme();
+
+            // let the page sections and events be setup before removing the spinner
+            // then load the graphs
+            requestAnimationFrame(() => {
+                setup_spinner(true);
+                setup_dashboard_section_menu_buttons();
+                setup_overview_section_menu_buttons();
+
+                // Always create graphs from scratch because setup_graph_order()
+                // rebuilds all GridStack grids and canvas DOM elements above
+                create_dashboard_graphs();
+
+                // Ensure overview titles reflect current prefix setting
+                update_overview_prefix_display();
+
+                document.dispatchEvent(new Event("graphs-finalized"));
+
+                if (!menuUpdate) {
+                    scroll_to_most_visible_section();
+                }
+            });
+        });
+    });
+}
+
+// function to add a spinner for slow loads
+function setup_spinner(hide) {
+    if (hide) {
+        // Instant transition - hide spinner and show all content immediately
+        $("#loading").fadeOut(200);
+        $("#overview").fadeIn(200);
+        $("#unified").fadeIn(200);
+        $("#dashboard").fadeIn(200);
+        $("#compare").fadeIn(200);
+        $("#tables").fadeIn(200);
+    } else {
+        $("#overview").hide()
+        $("#unified").hide()
+        $("#dashboard").hide()
+        $("#compare").hide()
+        $("#tables").hide()
+        $("#loading").show();
+    }
+}
+
+// ---- Section menu buttons ----
 
 // function to update the section (menu) buttons with the correct eventlisteners
 // also sets up the automatic highlighting of the section that is most visible in the top
@@ -143,13 +263,13 @@ function setup_overview_section_menu_buttons() {
     if (!isOverviewActive) {
         existingOverviewButtons.forEach(el => el.remove());
         // Detach listeners if still attached
-        if (__overviewNavStore.scrollHandler) {
-            window.removeEventListener("scroll", __overviewNavStore.scrollHandler);
-            __overviewNavStore.scrollHandler = null;
+        if (overviewNavStore.scrollHandler) {
+            window.removeEventListener("scroll", overviewNavStore.scrollHandler);
+            overviewNavStore.scrollHandler = null;
         }
-        if (__overviewNavStore.resizeHandler) {
-            window.removeEventListener("resize", __overviewNavStore.resizeHandler);
-            __overviewNavStore.resizeHandler = null;
+        if (overviewNavStore.resizeHandler) {
+            window.removeEventListener("resize", overviewNavStore.resizeHandler);
+            overviewNavStore.resizeHandler = null;
         }
         return;
     }
@@ -189,28 +309,7 @@ function setup_overview_section_menu_buttons() {
 
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
-                const stickyTop = document.getElementById("navigation");
-                const stickyHeight = stickyTop ? stickyTop.offsetHeight : 0;
-
-                const performScroll = () => {
-                    const targetTop = sectionEl.getBoundingClientRect().top + window.pageYOffset;
-                    const top = targetTop < 200 ? 0 : targetTop - stickyHeight - 8;
-                    window.scrollTo({ top: top - 7, behavior: "auto" });
-                };
-
-                // Expand the section if it is currently collapsed, then scroll
-                const collapseBtn = sectionEl.querySelector(".collapse-icon");
-                if (collapseBtn) {
-                    const svg = collapseBtn.querySelector("svg");
-                    const isExpanded = svg && (svg.classList.contains("lucide-chevron-down-icon") || svg.classList.contains("lucide-chevron-down"));
-                    if (!isExpanded) {
-                        // Trigger expansion and wait a tick for layout update
-                        collapseBtn.click();
-                        requestAnimationFrame(() => setTimeout(performScroll, 50));
-                        return;
-                    }
-                }
-                performScroll();
+                expand_and_scroll_to(sectionEl);
             });
         }
         buttonMap.set(sectionId, btn);
@@ -219,13 +318,13 @@ function setup_overview_section_menu_buttons() {
     sections.forEach(makeButtonForSection);
 
     // Before attaching new listeners, remove any previous ones to avoid stale closures
-    if (__overviewNavStore.scrollHandler) {
-        window.removeEventListener("scroll", __overviewNavStore.scrollHandler);
-        __overviewNavStore.scrollHandler = null;
+    if (overviewNavStore.scrollHandler) {
+        window.removeEventListener("scroll", overviewNavStore.scrollHandler);
+        overviewNavStore.scrollHandler = null;
     }
-    if (__overviewNavStore.resizeHandler) {
-        window.removeEventListener("resize", __overviewNavStore.resizeHandler);
-        __overviewNavStore.resizeHandler = null;
+    if (overviewNavStore.resizeHandler) {
+        window.removeEventListener("resize", overviewNavStore.resizeHandler);
+        overviewNavStore.resizeHandler = null;
     }
 
     const updateVisibleButtons = () => {
@@ -235,13 +334,13 @@ function setup_overview_section_menu_buttons() {
         if (!stillOverview) {
             const toRemove = Array.from(navbar.querySelectorAll('a[id^="overview-"][id$="Nav"]'));
             toRemove.forEach(el => el.remove());
-            if (__overviewNavStore.scrollHandler) {
-                window.removeEventListener("scroll", __overviewNavStore.scrollHandler);
-                __overviewNavStore.scrollHandler = null;
+            if (overviewNavStore.scrollHandler) {
+                window.removeEventListener("scroll", overviewNavStore.scrollHandler);
+                overviewNavStore.scrollHandler = null;
             }
-            if (__overviewNavStore.resizeHandler) {
-                window.removeEventListener("resize", __overviewNavStore.resizeHandler);
-                __overviewNavStore.resizeHandler = null;
+            if (overviewNavStore.resizeHandler) {
+                window.removeEventListener("resize", overviewNavStore.resizeHandler);
+                overviewNavStore.resizeHandler = null;
             }
             return;
         }
@@ -254,28 +353,19 @@ function setup_overview_section_menu_buttons() {
                 name = name.replace(/^project_/, '');
             }
             const label = btn.querySelector('i');
+            if (label) label.textContent = name;
         });
         // Determine most visible section and neighboring indices
         const bestIndex = compute_best_visible_index(sections);
         const indices = neighbor_indices(bestIndex, sections.length);
 
-        // Desired left-to-right order: highest (above) on the left, then current, then below
-        const desiredOrder = indices.slice(); // already in [best-1, best, best+1] or edges
-
-        // Reorder buttons in the navbar immediately after the Overview link
+        // Reorder the visible buttons (up to 3) in the navbar after the Overview link
         let last = overviewMenuLink;
-        desiredOrder.forEach(idx => {
-            const section = sections[idx];
-            const btn = buttonMap.get(section.id);
+        indices.forEach(idx => {
+            const btn = buttonMap.get(sections[idx].id);
             if (!btn) return;
-            // Ensure visibility before positioning
-            btn.hidden = !showButtons ? true : false;
-            // Move button to desired position
-            if (last.nextSibling === btn) {
-                // Already in place
-            } else {
-                insertAfter(btn, last);
-            }
+            btn.hidden = !showButtons;
+            if (last.nextSibling !== btn) insertAfter(btn, last);
             last = btn;
         });
 
@@ -283,17 +373,26 @@ function setup_overview_section_menu_buttons() {
         sections.forEach((section, idx) => {
             const btn = buttonMap.get(section.id);
             if (!btn) return;
-            const shouldShow = showButtons && desiredOrder.includes(idx);
-            btn.hidden = !shouldShow;
+            btn.hidden = !showButtons || !indices.includes(idx);
             btn.classList.toggle("active", showButtons && idx === bestIndex);
         });
     };
 
     window.addEventListener("scroll", updateVisibleButtons, { passive: true });
     window.addEventListener("resize", updateVisibleButtons);
-    __overviewNavStore.scrollHandler = updateVisibleButtons;
-    __overviewNavStore.resizeHandler = updateVisibleButtons;
+    overviewNavStore.scrollHandler = updateVisibleButtons;
+    overviewNavStore.resizeHandler = updateVisibleButtons;
     updateVisibleButtons();
+}
+
+function scroll_to_most_visible_section() {
+    setTimeout(() => {
+        const mostVisibleSectionId = get_most_visible_section();
+        if (mostVisibleSectionId) {
+            const offsetTop = document.getElementById(mostVisibleSectionId).getBoundingClientRect().top;
+            window.scrollTo({ top: offsetTop - 67, behavior: "auto" });
+        }
+    }, 100);
 }
 
 function get_most_visible_section() {
@@ -336,134 +435,212 @@ function get_most_visible_section() {
     return bestMatchId;
 }
 
-function update_menu(item) {
-    ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
-        set_local_storage_item(`menu.${menuItem}`, (item === `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`));
-    });
-    ["menuOverview", "menuDashboard", "menuCompare", "menuTables"].forEach(id => {
-        document.getElementById(id).classList.toggle("active", id === item);
-    });
-    document.getElementById("filters").hidden = (item === "menuOverview");
-    setup_data_and_graphs(true, item === "menuOverview" && !areGroupedProjectsPrepared);
-}
+// ---- Responsive navbar / sidebar ----
+//
+// Level 1: page-menu items (Overview, Dashboard, …) move into the sidebar
+// Level 2: icon items also move into the sidebar
+//
+function setup_navbar_overflow() {
+    const nav = document.getElementById('navigation');
+    const mainNavDiv = document.getElementById('mainNavItems');
+    const hamburgerBtn = document.getElementById('navHamburger');
+    const iconNavUl = document.getElementById('iconNavItems');
+    const sidenav = document.getElementById('sidenav');
+    const sidenavBody = document.getElementById('sidenavBody');
+    const sidenavBackdrop = document.getElementById('sidenavBackdrop');
+    const sidenavClose = document.getElementById('sidenavClose');
 
-// function to setup the menu eventlisteners
-function setup_menu() {
-    document.getElementById("menuOverview").addEventListener("click", () => update_menu("menuOverview"));
-    document.getElementById("menuDashboard").addEventListener("click", () => update_menu("menuDashboard"));
-    document.getElementById("menuCompare").addEventListener("click", () => update_menu("menuCompare"));
-    document.getElementById("menuTables").addEventListener("click", () => update_menu("menuTables"));
+    // Capture icon <li> references (they move, but references stay valid)
+    const iconLiEls = Array.from(iconNavUl.children);
 
-    const params = new URLSearchParams(window.location.search);
-    const pageParam = params.get("page");
-    let selectedMenu;
+    let navInSidebar = false;
+    let iconsInSidebar = false;
+    let updating = false;
 
-    if (pageParam) {
-        switch (pageParam.toLowerCase()) {
-            case "overview":
-                selectedMenu = "menuOverview";
-                break;
-            case "dashboard":
-                selectedMenu = "menuDashboard";
-                break;
-            case "compare":
-                selectedMenu = "menuCompare";
-                break;
-            case "tables":
-                selectedMenu = "menuTables";
-                break;
-        }
-        if (selectedMenu) {
-            settings.menu = {
-                overview: selectedMenu === "menuOverview",
-                dashboard: selectedMenu === "menuDashboard",
-                compare: selectedMenu === "menuCompare",
-                tables: selectedMenu === "menuTables",
-            };
-        }
+    function nav_item_els() {
+        return Array.from(mainNavDiv.querySelectorAll('.nav-item'))
+            .filter(el => el.id !== 'menuCustomTitle');
     }
 
-    // Priority 2: fall back to settings if no valid URL param
-    if (!selectedMenu) {
-        const menuSettings = settings.menu;
-        if (menuSettings.overview) selectedMenu = "menuOverview";
-        else if (menuSettings.dashboard) selectedMenu = "menuDashboard";
-        else if (menuSettings.compare) selectedMenu = "menuCompare";
-        else if (menuSettings.tables) selectedMenu = "menuTables";
+    function is_overflowing() {
+        // Temporarily disable flex-shrink so we can measure natural width
+        const saved = mainNavDiv.style.flexShrink;
+        mainNavDiv.style.flexShrink = '0';
+        const overflows = nav.scrollWidth > nav.clientWidth + 1;
+        mainNavDiv.style.flexShrink = saved;
+        return overflows;
     }
-    update_menu(selectedMenu);
-}
 
-// function to update all graph data, function is called when updating filters and when the page loads
-function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = false) {
-    setup_spinner(false); // show spinner immediately
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            if (prepareOverviewProjectData) {
-                prepare_overview();
-                setup_overview_localstorage();
-                setup_overview_section_layout_buttons();
-                setup_overview_order_filters();
-                update_overview_version_select_list();
-            }
-            setup_filtered_data_and_filters();
-            setup_section_order();
-            setup_graph_order();
-            setup_information_popups();
-            setup_graph_view_buttons();
-            setup_theme();
+    function open_sidebar() {
+        sidenav.hidden = false;
+        sidenavBackdrop.hidden = false;
+        void sidenav.offsetHeight; // reflow for CSS transition
+        sidenav.classList.add('sidenav-open');
+    }
 
-            // let the page sections and events be setup before removing the spinner
-            // then load the graphs
-            requestAnimationFrame(() => {
-                setup_spinner(true);
-                setup_dashboard_section_menu_buttons();
-                setup_overview_section_menu_buttons();
+    function close_sidebar() {
+        sidenav.classList.remove('sidenav-open');
+        sidenavBackdrop.hidden = true;
+    }
 
-                // Always create graphs from scratch because setup_graph_order()
-                // rebuilds all GridStack grids and canvas DOM elements above
-                create_dashboard_graphs();
+    hamburgerBtn.addEventListener('click', open_sidebar);
+    sidenavClose.addEventListener('click', close_sidebar);
+    sidenavBackdrop.addEventListener('click', close_sidebar);
 
-                // Ensure overview titles reflect current prefix setting
-                update_overview_prefix_display();
+    // Build an ordered list of nav items for the sidebar, matching the
+    // actual section order on the page (which can be rearranged by the user).
+    function ordered_sidebar_items() {
+        const items = [];
+        const byId = id => document.getElementById(id);
 
-                document.dispatchEvent(new Event("graphs-finalized"));
+        // Helper: create an entry for a nav element (if it exists and should show)
+        const push = (el, forceShow) => {
+            if (!el) return;
+            const isOverviewSub = el.id && el.id.startsWith('overview-') && el.id.endsWith('Nav');
+            if (el.hidden && !isOverviewSub && !forceShow) return;
+            items.push(el);
+        };
 
-                if (!menuUpdate) {
-                    setTimeout(() => {
-                        const mostVisibleSectionId = get_most_visible_section();
-                        if (mostVisibleSectionId) {
-                            const offsetTop = document.getElementById(mostVisibleSectionId).getBoundingClientRect().top;
-                            window.scrollTo({
-                                top: offsetTop - 67,
-                                behavior: "auto"
-                            });
-                        }
-                    }, 100);
-                }
+        // Overview
+        push(byId('menuOverview'));
+        // Overview sub-items in actual DOM section order
+        if (settings.menu && settings.menu.overview) {
+            const overviewBars = Array.from(document.querySelectorAll('#overview .overview-bar'))
+                .filter(el => el.offsetParent !== null || !el.hidden);
+            overviewBars.forEach(bar => {
+                const btn = byId(`overview-${bar.id}Nav`);
+                if (btn) items.push(btn);
             });
-        });
-    });
-}
+        }
 
-// function to add a spinner for slow loads
-function setup_spinner(hide) {
-    if (hide) {
-        // Instant transition - hide spinner and show all content immediately
-        $("#loading").fadeOut(200);
-        $("#overview").fadeIn(200);
-        $("#unified").fadeIn(200);
-        $("#dashboard").fadeIn(200);
-        $("#compare").fadeIn(200);
-        $("#tables").fadeIn(200);
-    } else {
-        $("#overview").hide()
-        $("#unified").hide()
-        $("#dashboard").hide()
-        $("#compare").hide()
-        $("#tables").hide()
-        $("#loading").show();
+        // Dashboard
+        push(byId('menuDashboard'));
+        // Dashboard sub-items in settings order
+        if (settings.menu && settings.menu.dashboard && !settings.show.unified) {
+            const dashSections = settings.view.dashboard.sections;
+            dashSections.show.forEach(name => {
+                const navId = space_to_camelcase(name) + 'SectionNav';
+                push(byId(navId));
+            });
+        }
+
+        // Remaining pages
+        push(byId('menuCompare'));
+        push(byId('menuTables'));
+        push(byId('openDashboard'));
+
+        return items;
     }
+
+    function build_sidebar_content() {
+        sidenavBody.innerHTML = '';
+
+        if (navInSidebar) {
+            const label = document.createElement('div');
+            label.className = 'sidenav-section-label';
+            label.textContent = 'Pages';
+            sidenavBody.appendChild(label);
+
+            ordered_sidebar_items().forEach(el => {
+                const isSubmenu = !!el.querySelector('i');
+                const item = document.createElement('a');
+                item.className = 'sidenav-nav-item' + (isSubmenu ? ' sidenav-nav-submenu' : '');
+                if (el.classList.contains('active')) item.classList.add('active');
+                item.textContent = el.textContent;
+                item.addEventListener('click', () => {
+                    el.click();
+                    close_sidebar();
+                    sidenavBody.querySelectorAll('.sidenav-nav-item').forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+                });
+                sidenavBody.appendChild(item);
+            });
+        }
+
+        if (iconsInSidebar) {
+            const label = document.createElement('div');
+            label.className = 'sidenav-section-label';
+            label.textContent = 'Shortcuts';
+            sidenavBody.appendChild(label);
+
+            const row = document.createElement('div');
+            row.className = 'sidenav-icon-row';
+            iconLiEls.forEach(li => {
+                if (li.hidden) return;
+                const link = li.querySelector('a');
+                if (!link) return;
+                const clone = link.cloneNode(true);
+                clone.removeAttribute('id');  // prevent duplicate IDs conflicting with theme SVG updates
+                clone.addEventListener('click', (e) => {
+                    if (link.dataset.bsToggle) {
+                        e.preventDefault();
+                        close_sidebar();
+                        link.click();
+                    } else if (!link.getAttribute('target')) {
+                        e.preventDefault();
+                        close_sidebar();
+                        link.click();
+                    } else {
+                        close_sidebar();
+                    }
+                });
+                row.appendChild(clone);
+            });
+            sidenavBody.appendChild(row);
+        }
+    }
+
+    function apply_nav_to_sidebar(on) {
+        if (on === navInSidebar) return;
+        navInSidebar = on;
+        nav_item_els().forEach(el => {
+            el.style.display = on ? 'none' : '';
+        });
+    }
+
+    function apply_icons_to_sidebar(on) {
+        if (on === iconsInSidebar) return;
+        iconsInSidebar = on;
+        iconLiEls.forEach(li => {
+            li.style.display = on ? 'none' : '';
+        });
+    }
+
+    function update_overflow() {
+        if (updating) return;
+        updating = true;
+
+        // Reset to level 0 for fresh measurement
+        apply_icons_to_sidebar(false);
+        apply_nav_to_sidebar(false);
+
+        const shouldShowHamburger = is_overflowing();
+
+        if (shouldShowHamburger) {
+            apply_nav_to_sidebar(true);                        // level 1
+            if (is_overflowing()) {
+                apply_icons_to_sidebar(true);                  // level 2
+            }
+        }
+
+        hamburgerBtn.hidden = !navInSidebar && !iconsInSidebar;
+        build_sidebar_content();
+        updating = false;
+    }
+
+    let debounce = null;
+    const triggerUpdate = () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(update_overflow, 40);
+    };
+    const ro = new ResizeObserver(triggerUpdate);
+    ro.observe(nav);
+
+    // Re-check when dynamic nav items are added/removed (e.g. overview sub-items)
+    const mo = new MutationObserver(triggerUpdate);
+    mo.observe(mainNavDiv, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+
+    requestAnimationFrame(update_overflow);
 }
 
 export {
@@ -471,5 +648,6 @@ export {
     setup_data_and_graphs,
     setup_spinner,
     update_menu,
-    setup_overview_section_menu_buttons
+    setup_overview_section_menu_buttons,
+    setup_navbar_overflow
 };

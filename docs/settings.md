@@ -13,7 +13,7 @@ The settings modal is divided into **five tabs**:
 1. **Graphs** – general dashboard and chart behavior  
 2. **Keywords** – which keyword libraries appear in keyword graphs  
 3. **Overview** – controls for the Overview page layout and toggles  
-4. **Theme** – custom color overrides for light and dark mode  
+4. **Theme** – custom color overrides for light and dark mode, plus custom title and logo branding  
 5. **JSON** – direct editing of the full JSON config for advanced users  
 
 ## Theme Toggle
@@ -89,9 +89,9 @@ The **Overview** tab controls which sections and filters are visible on the Over
 
 ## Theme Settings (Theme Tab)
 
-The **Theme** tab allows you to override the default colors used by the dashboard in both light and dark modes. Each mode has independent color customization.
+The **Theme** tab allows you to override the default colors used by the dashboard in both light and dark modes, and to set custom branding (title and logo) for the menu bar. Each mode has independent color customization.
 
-### Details
+### Color Details
 
 | Color | Description |
 |-------|-------------|
@@ -100,17 +100,26 @@ The **Theme** tab allows you to override the default colors used by the dashboar
 | **Highlight** | The accent color used for hover states and interactive elements. |
 | **Text** | The primary text color across the dashboard. |
 
+### Branding Details
+
+| Setting | Description |
+|---------|-------------|
+| **Custom Title** | A text label shown in the navigation bar next to the logo. Type any text to set it; leave blank to hide it. |
+| **Custom Logo** | Upload a PNG image to replace the default Robot Framework logo in the navigation bar. Only PNG files are accepted. |
+
 ### Usage
 
 - Select **Light** or **Dark** mode to edit the colors for that theme  
 - Use the color pickers to set custom values  
 - Each color has a **Reset** button to restore its default value  
-- Changes apply immediately when closing the modal  
+- Type into the **Custom Title** field to display a branded label in the menu bar  
+- Upload a PNG via **Custom Logo** to replace the Robot Framework logo; click **Reset** to restore the default  
+- Changes apply immediately — no need to close the modal  
 
 ### Saving Theme Settings
 
 - Closing the modal **automatically saves** your theme selections  
-- Theme colors are stored in localStorage alongside other settings  
+- Theme colors and branding are stored in localStorage alongside other settings  
 - Export via the JSON tab to share custom themes with your team
 
 ## JSON Settings (JSON Tab)

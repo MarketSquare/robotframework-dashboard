@@ -1,4 +1,4 @@
-import { runs, keywords, filteredAmount, filteredAmountDefault, server } from './variables/data.js';
+import { runs, keywords, filteredAmount, filteredAmountDefault, server, no_auto_update } from './variables/data.js';
 import { settings } from "./variables/settings.js";
 import {
     showingRunTags,
@@ -14,7 +14,7 @@ import {
 } from "./variables/globals.js";
 import { arrowDown, arrowRight } from "./variables/svg.js";
 import { fullscreenButtons, graphChangeButtons, compareRunIds } from "./variables/graphs.js";
-import { toggle_theme, apply_theme_colors } from "./theme.js";
+import { toggle_theme, apply_theme_colors, apply_custom_branding } from "./theme.js";
 import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading, show_loading_overlay, hide_loading_overlay } from "./common.js";
 import { setup_data_and_graphs, update_menu } from "./menu.js";
 import { update_dashboard_graphs } from "./graph_creation/all.js";
@@ -150,6 +150,34 @@ function setup_filter_modal() {
     document.getElementById("amount").value = filteredAmount
     if (server) {
         document.getElementById("openDashboard").hidden = false
+        if (no_auto_update) {
+            document.getElementById("refreshDashboard").hidden = false
+            document.getElementById("refreshDashboard").addEventListener("click", function () {
+                document.getElementById("refreshDashboardSpinner").hidden = false
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/refresh-dashboard");
+                xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                xhr.onload = () => {
+                    document.getElementById("refreshDashboardSpinner").hidden = true
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success == "1") {
+                            console.log(response.console)
+                            add_alert(`${response.message} Reloading dashboard in 3 seconds!`, "success")
+                            setTimeout(() => {
+                                location.reload();
+                            }, 3000);
+                        } else {
+                            add_alert(response.message, "danger")
+                            console.log(response.console)
+                        }
+                    } else {
+                        add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+                    }
+                };
+                xhr.send(JSON.stringify({}));
+            });
+        }
     }
     // fill the filters with default values
     setup_run_amount_filter();
@@ -351,11 +379,11 @@ function setup_settings_modal() {
             const element = document.getElementById(elementId);
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
-            
+
             // Check if user has custom colors for this theme mode
             const customColors = settings.theme_colors?.custom?.[themeMode];
             const storedColor = customColors?.[colorKey];
-            
+
             if (storedColor) {
                 element.value = to_hex_color(storedColor);
             } else {
@@ -370,14 +398,14 @@ function setup_settings_modal() {
             const newColor = element.value;
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
-            
+
             if (!settings.theme_colors.custom) {
                 settings.theme_colors.custom = { light: {}, dark: {} };
             }
             if (!settings.theme_colors.custom[themeMode]) {
                 settings.theme_colors.custom[themeMode] = {};
             }
-            
+
             settings.theme_colors.custom[themeMode][colorKey] = newColor;
             set_local_storage_item(`theme_colors.custom.${themeMode}.${colorKey}`, newColor);
             apply_theme_colors();
@@ -387,16 +415,16 @@ function setup_settings_modal() {
             const element = document.getElementById(elementId);
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
-            
+
             // Reset to default from settings
             const defaults = settings.theme_colors[themeMode];
             element.value = to_hex_color(defaults[colorKey]);
-            
+
             if (settings.theme_colors?.custom?.[themeMode]) {
                 delete settings.theme_colors.custom[themeMode][colorKey];
                 set_local_storage_item('theme_colors.custom', settings.theme_colors.custom);
             }
-            
+
             apply_theme_colors();
         }
 
@@ -414,6 +442,11 @@ function setup_settings_modal() {
         cardColorHandler.load_color();
         highlightColorHandler.load_color();
         textColorHandler.load_color();
+        // Load branding state
+        document.getElementById('customBrandingTitle').value = settings.branding?.title || "";
+        const hasLogo = !!settings.branding?.logo;
+        document.getElementById('removeCustomLogo').disabled = !hasLogo;
+        document.getElementById('customLogoUpload').value = "";
     });
 
     // Add event listeners for color inputs
@@ -427,6 +460,39 @@ function setup_settings_modal() {
     document.getElementById('resetCardColor').addEventListener('click', () => cardColorHandler.reset_color());
     document.getElementById('resetHighlightColor').addEventListener('click', () => highlightColorHandler.reset_color());
     document.getElementById('resetTextColor').addEventListener('click', () => textColorHandler.reset_color());
+
+    // Custom title handler
+    document.getElementById('customBrandingTitle').addEventListener('input', function () {
+        const title = this.value.trim();
+        set_local_storage_item('branding.title', title);
+        apply_custom_branding();
+    });
+
+    document.getElementById('clearCustomTitle').addEventListener('click', function () {
+        document.getElementById('customBrandingTitle').value = "";
+        set_local_storage_item('branding.title', "");
+        apply_custom_branding();
+    });
+
+    // Custom logo handler
+    document.getElementById('customLogoUpload').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            set_local_storage_item('branding.logo', e.target.result);
+            document.getElementById('removeCustomLogo').disabled = false;
+            apply_custom_branding();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('removeCustomLogo').addEventListener('click', function () {
+        set_local_storage_item('branding.logo', "");
+        document.getElementById('customLogoUpload').value = "";
+        this.disabled = true;
+        apply_custom_branding();
+    });
 
     function show_settings_in_textarea() {
         const textArea = document.getElementById("settingsTextArea");
@@ -636,8 +702,8 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.suitePathsTestSection", settings.switch.suitePathsTestSection);
         update_graphs_with_loading(
             ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph", "testMessagesGraph",
-             "testMostFlakyGraph", "testRecentMostFlakyGraph", "testMostFailedGraph",
-             "testRecentMostFailedGraph", "testMostTimeConsumingGraph"],
+                "testMostFlakyGraph", "testRecentMostFlakyGraph", "testMostFailedGraph",
+                "testRecentMostFailedGraph", "testMostTimeConsumingGraph"],
             () => {
                 setup_suites_in_test_select();
                 update_test_statistics_graph();
@@ -676,7 +742,7 @@ function setup_sections_filters() {
     document.getElementById("keywordSelect").addEventListener("change", () => {
         update_graphs_with_loading(
             ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
-             "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph"],
+                "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph"],
             () => {
                 update_keyword_statistics_graph();
                 update_keyword_times_run_graph();
@@ -693,8 +759,8 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.useLibraryNames", settings.switch.useLibraryNames);
         update_graphs_with_loading(
             ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
-             "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph",
-             "keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"],
+                "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph",
+                "keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"],
             () => {
                 setup_keywords_in_select();
                 update_keyword_statistics_graph();
@@ -747,10 +813,10 @@ function save_section_filter_values() {
     const suiteFolder = document.getElementById("suiteFolder");
     if (suiteFolder) saved.suiteFolder = suiteFolder.innerText;
     ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
-     "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) saved[id] = el.value;
-    });
+        "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) saved[id] = el.value;
+        });
     return saved;
 }
 
@@ -758,14 +824,14 @@ function restore_section_filter_values(saved) {
     const suiteFolder = document.getElementById("suiteFolder");
     if (suiteFolder && saved.suiteFolder !== undefined) suiteFolder.innerText = saved.suiteFolder;
     ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
-     "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && saved[id] !== undefined) {
-            // Only restore if the saved value still exists as an option
-            const optionExists = Array.from(el.options).some(opt => opt.value === saved[id]);
-            if (optionExists) el.value = saved[id];
-        }
-    });
+        "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && saved[id] !== undefined) {
+                // Only restore if the saved value still exists as an option
+                const optionExists = Array.from(el.options).some(opt => opt.value === saved[id]);
+                if (optionExists) el.value = saved[id];
+            }
+        });
 }
 
 // function to setup eventlisteners for changing the graph view buttons

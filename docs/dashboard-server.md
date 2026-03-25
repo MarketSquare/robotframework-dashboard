@@ -181,10 +181,10 @@ robotdashboard --server --noautoupdate
 
 When active:
 - API calls (`/add-outputs`, `/add-output-file`, `/remove-outputs`, `/add-log`, `/add-log-file`, `/remove-log`) return immediately after processing the data, without regenerating the dashboard.
-- Two **Refresh** buttons appear in the admin page navbar:
-  - **Refresh Dashboard** — triggers dashboard HTML regeneration on demand by calling `POST /refresh-dashboard`.
-  - **Refresh Admin Page Tables** — reloads the runs and logs tables from the database without a full page reload.
-- The `/refresh-dashboard` endpoint is also callable programmatically:
+- A **Refresh Dashboard** button appears in the navbar of both the **dashboard page** and the **admin page** (hidden when `--noautoupdate` is not active):
+  - On the **dashboard page** — sends a `POST /refresh-dashboard` request, shows a spinner while the server processes the request, and on success displays a notification and automatically reloads the page after 3 seconds to reflect the regenerated dashboard.
+  - On the **admin page** — same `POST /refresh-dashboard` request and spinner behaviour, but the page is not reloaded; a success or error notification is shown instead.
+- A **Refresh Admin Page Tables** button also appears in the **admin page** navbar (hidden when `--noautoupdate` is not active) — reloads the runs and logs tables by querying `/get-outputs` and `/get-logs` from the server, without a full page reload. A spinner is shown briefly and a success notification confirms the refresh.
 
 ::: tip When to use this
 Use `--noautoupdate` when:

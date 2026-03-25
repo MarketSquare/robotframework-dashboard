@@ -18,9 +18,20 @@
     <div class="position-relative alert-container">
         <div class="position-fixed top-20 start-50 translate-middle" id="alertContainer"></div>
     </div>
-    <nav class="navbar navbar-expand-sm sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
-        <div class="navbar-nav ms-4">
+    <div id="sidenavBackdrop" class="sidenav-backdrop" hidden></div>
+    <div id="sidenav" class="sidenav" hidden>
+        <div class="sidenav-header">
+            <span class="sidenav-title">Menu</span>
+            <button class="sidenav-close" id="sidenavClose" aria-label="Close sidebar">&times;</button>
+        </div>
+        <div class="sidenav-body" id="sidenavBody"></div>
+    </div>
+
+    <nav class="navbar navbar-expand sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
+        <div class="navbar-nav flex-nowrap ms-4" id="mainNavItems">
             <a class="nav-link information" id="rflogo" href="https://robotframework.org/" target="_blank"></a>
+            <a class="nav-item nav-link fw-bold" id="menuCustomTitle" hidden></a>
+            <a class="nav-link information px-1" id="navHamburger" role="button" hidden></a>
             <a class="nav-item nav-link" id="menuOverview">Overview</a>
             <a class="nav-item nav-link active" id="menuDashboard">Dashboard</a>
             <a class="nav-item nav-link" id="runStatisticsSectionNav"><i>Runs</i></a>
@@ -30,8 +41,13 @@
             <a class="nav-item nav-link" id="menuCompare">Compare</a>
             <a class="nav-item nav-link" id="menuTables">Tables</a>
             <a class="nav-item nav-link" id="openDashboard" href="/admin" hidden>Admin</a>
+            <button class="btn btn-primary btn-sm ms-3 my-auto" id="refreshDashboard" hidden>
+                &#x21bb;&nbsp; Refresh Dashboard&nbsp;
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                    id="refreshDashboardSpinner" hidden></span>
+            </button>
         </div>
-        <ul class="navbar-nav flex-row flex-wrap ms-md-auto me-4">
+        <ul class="navbar-nav flex-row flex-nowrap ms-md-auto me-4" id="iconNavItems">
             <li class="nav-item">
                 <a class="nav-link information" id="filters" data-bs-toggle="modal" data-bs-target="#filtersModal"></a>
             </li>
@@ -381,7 +397,8 @@
                     <div class="modal-header">
                         <h1 class="modal-title" id="filtersModalLabel">Filters</h1>
                         <div>
-                            <a type="button" class="information information-icon ms-1 me-1 align-middle" id="filterProfileInformation"></a>
+                            <a type="button" class="information information-icon ms-1 me-1 align-middle"
+                                id="filterProfileInformation"></a>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 id="addFilterProfile">Add Profile</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
@@ -393,12 +410,16 @@
                         </div>
                     </div>
                     <div class="filter-profile-bar d-flex align-items-center justify-content-between px-3 py-2">
-                        <div id="filterProfileEditorInline" class="d-flex align-items-center" style="display: none !important;">
-                            <input class="form-control form-control-sm me-2" type="text" id="filterProfileName" placeholder="Profile Name..." style="width: 180px;" />
-                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="saveFilterProfile">Save Profile</button>
+                        <div id="filterProfileEditorInline" class="d-flex align-items-center"
+                            style="display: none !important;">
+                            <input class="form-control form-control-sm me-2" type="text" id="filterProfileName"
+                                placeholder="Profile Name..." style="width: 180px;" />
+                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap"
+                                id="saveFilterProfile">Save Profile</button>
                         </div>
                         <div class="d-flex align-items-center" style="margin-left: auto; margin-right: 17px; gap: 8px;">
-                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap" id="updateFilterProfile" style="display: none;">Update Profile</button>
+                            <button type="button" class="btn btn-outline-light btn-sm text-nowrap"
+                                id="updateFilterProfile" style="display: none;">Update Profile</button>
                             <div style="width: 200px; position: relative;">
                                 <div class="selectBox" id="selectFilterProfile">
                                     <select class="form-select form-select-sm">
@@ -406,8 +427,10 @@
                                     </select>
                                     <div class="overSelect"></div>
                                 </div>
-                                <span id="profileModifiedDot" class="version-selected-dot" style="display: none; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);"></span>
-                                <div id="filterProfileCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; width: 200px;">
+                                <span id="profileModifiedDot" class="version-selected-dot"
+                                    style="display: none; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);"></span>
+                                <div id="filterProfileCheckBoxes" class="filterCheckBoxes mt-2"
+                                    style="max-height: 50vh; overflow-y: auto; width: 200px;">
                                     <ul class="list-group" id="filterProfileList"></ul>
                                 </div>
                             </div>
@@ -416,10 +439,12 @@
                     <div class="modal-body">
                         <div class="list-group">
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckRuns" checked style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckRuns" checked style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     Runs
-                                    <a type="button" class="information information-icon ms-2" id="filterRunsInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterRunsInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="runs" style="width: 200px;"></select>
@@ -427,10 +452,12 @@
                             </div>
                             <div class="list-group-item" id="runTagFilter">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox" id="profileCheckRunTags" checked style="display: none;" />
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
+                                        id="profileCheckRunTags" checked style="display: none;" />
                                     <span class="d-flex align-items-center">
                                         Run Tags
-                                        <a type="button" class="information information-icon ms-2" id="filterRunTagsInformation"></a>
+                                        <a type="button" class="information information-icon ms-2"
+                                            id="filterRunTagsInformation"></a>
                                         <span id="filterRunTagSelectedIndicator" class="version-selected-dot ms-2 mt-1"
                                             style="display: none;"></span>
                                     </span>
@@ -452,10 +479,12 @@
                             </div>
                             <div class="list-group-item" id="projectVersionFilter">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox" id="profileCheckVersions" checked style="display: none;" />
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
+                                        id="profileCheckVersions" checked style="display: none;" />
                                     <span class="d-flex align-items-center">
                                         Versions
-                                        <a type="button" class="information information-icon ms-2" id="filterVersionsInformation"></a>
+                                        <a type="button" class="information information-icon ms-2"
+                                            id="filterVersionsInformation"></a>
                                         <span id="filterVersionSelectedIndicator" class="version-selected-dot ms-2 mt-1"
                                             style="display: none;"></span>
                                     </span>
@@ -478,10 +507,12 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckFromDate" style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckFromDate" style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     From Date
-                                    <a type="button" class="information information-icon ms-2" id="filterFromDateInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterFromDateInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromDate" type="date"
@@ -489,10 +520,12 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckFromTime" style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckFromTime" style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     From Time
-                                    <a type="button" class="information information-icon ms-2" id="filterFromTimeInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterFromTimeInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromTime" type="time"
@@ -500,10 +533,12 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckToDate" style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckToDate" style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     To Date
-                                    <a type="button" class="information information-icon ms-2" id="filterToDateInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterToDateInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toDate" type="date"
@@ -511,10 +546,12 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckToTime" style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckToTime" style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     To Time
-                                    <a type="button" class="information information-icon ms-2" id="filterToTimeInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterToTimeInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toTime" type="time"
@@ -523,10 +560,12 @@
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center"
                                 id="metadataFilter" hidden>
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckMetadata" checked style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckMetadata" checked style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     Metadata
-                                    <a type="button" class="information information-icon ms-2" id="filterMetadataInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterMetadataInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="metadata"
@@ -534,10 +573,12 @@
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox" id="profileCheckAmount" checked style="display: none;" />
+                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                    id="profileCheckAmount" checked style="display: none;" />
                                 <span class="d-flex align-items-center">
                                     Amount
-                                    <a type="button" class="information information-icon ms-2" id="filterAmountInformation"></a>
+                                    <a type="button" class="information information-icon ms-2"
+                                        id="filterAmountInformation"></a>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm information" type="number" min="0"
@@ -811,7 +852,6 @@
                                                 id="resetCardColor">Reset</button>
                                         </div>
                                     </div>
-
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>Highlight Color</span>
                                         <div class="d-flex align-items-center gap-2">
@@ -828,6 +868,26 @@
                                                 style="width: 80px;">
                                             <button class="btn btn-outline-light btn-sm"
                                                 id="resetTextColor">Reset</button>
+                                        </div>
+                                    </div>
+                                                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Custom Title</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input class="form-control form-control-sm" type="text"
+                                                id="customBrandingTitle" placeholder="Enter title..."
+                                                style="max-width: 200px;">
+                                            <button class="btn btn-outline-light btn-sm"
+                                                id="clearCustomTitle">Reset</button>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Custom Logo <small class="text-muted">(PNG)</small></span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input class="form-control form-control-sm" type="file"
+                                                id="customLogoUpload" accept=".png,image/png"
+                                                style="max-width: 200px;">
+                                            <button class="btn btn-outline-light btn-sm"
+                                                id="removeCustomLogo">Reset</button>
                                         </div>
                                     </div>
                                 </div>
