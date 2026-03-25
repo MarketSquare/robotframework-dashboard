@@ -383,7 +383,7 @@ function setup_tests_in_select() {
         return names;
     }, []);
     testSelect.options.add(new Option("All", "All"));
-    testNames.forEach(testName => testSelect.options.add(new Option(testName, testName)));
+    testNames.sort().forEach(testName => testSelect.options.add(new Option(testName, testName)));
 }
 
 // function to update the available testtags to select in the filters
