@@ -38,6 +38,7 @@ var settings = {
         prefixes: true,
         timezones: false,
         convertTimezone: false,
+        suitesSelectionInSuiteStats: "First Suite",
         allSuitesByDefaultInTestStats: false,
     },
     theme_colors: {

@@ -346,7 +346,13 @@ function setup_suites_in_suite_select() {
     suiteNames.forEach(suiteName => {
         suiteSelectSuites.options.add(new Option(suiteName, suiteName));
     });
-    suiteSelectSuites.selectedIndex = 1;
+    if (settings.show.suitesSelectionInSuiteStats == 'All Suites Separate') {
+        suiteSelectSuites.selectedIndex = 0;
+    } else if (settings.show.suitesSelectionInSuiteStats == 'All Suites Combined') {
+        suiteSelectSuites.selectedIndex = 1;
+    } else {
+        suiteSelectSuites.selectedIndex = 2;
+    }
 }
 
 // function to update the available suites to select in the test filters

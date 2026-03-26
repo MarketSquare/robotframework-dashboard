@@ -306,13 +306,17 @@ function setup_settings_modal() {
         render_keyword_libraries();
     });
     // function to create setting toggle handlers
-    function create_toggle_handler({ key, elementId, isNumber = false }) {
+    function create_toggle_handler({ key, elementId, datatype = "boolean" }) {
         return function (load = false) {
             const element = document.getElementById(elementId);
             if (load) {
                 const storedValue = key.split(".").reduce((acc, k) => acc?.[k], settings);
-                if (isNumber) {
+                if (datatype == "number") {
                     if (typeof storedValue === "number") {
+                        element.value = storedValue;
+                    }
+                } else if (datatype == "string") {
+                    if (typeof storedValue === "string") {
                         element.value = storedValue;
                     }
                 } else {
@@ -322,8 +326,10 @@ function setup_settings_modal() {
                 }
             } else {
                 let newValue;
-                if (isNumber) {
+                if (datatype == "number") {
                     newValue = parseInt(element.value);
+                } else if (datatype == "string") {
+                    newValue = element.value;
                 } else {
                     const currentValue = key.split(".").reduce((acc, k) => acc?.[k], settings);
                     newValue = !currentValue;
@@ -344,10 +350,11 @@ function setup_settings_modal() {
         { key: "show.timezones", elementId: "toggleTimezones" },
         { key: "show.axisTitles", elementId: "toggleAxisTitles" },
         { key: "show.animation", elementId: "toggleAnimations" },
-        { key: "show.duration", elementId: "toggleAnimationDuration", isNumber: true, event: "change" },
-        { key: "show.rounding", elementId: "toggleBarRounding", isNumber: true, event: "change" },
+        { key: "show.duration", elementId: "toggleAnimationDuration", datatype: "number", event: "change" },
+        { key: "show.rounding", elementId: "toggleBarRounding", datatype: "number", event: "change" },
         { key: "show.prefixes", elementId: "togglePrefixes" },
         { key: "show.convertTimezone", elementId: "toggleTimezone" },
+        { key: "show.suitesSelectionInSuiteStats", elementId: "toggleSuitesSelectionInSuiteStats", datatype: "string", event: "change" },
         { key: "show.allSuitesByDefaultInTestStats", elementId: "toggleAllSuitesByDefaultInTestStats" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
