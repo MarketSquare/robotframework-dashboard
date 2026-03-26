@@ -258,16 +258,16 @@ function clear_project_filter() {
     for (const input of tagElements) {
         input.checked = false;
         input.parentElement.classList.remove("d-none"); //show filtered rows
-        if (input.id == "All") input.checked = true;
+        if (input.id == "runTagCheckBoxAll") input.checked = true;
     }
-    update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
+    update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
 }
 
 function set_filter_show_current_project(projectName) {
     if (projectName.startsWith("project_")) {
         selectedTagSetting = projectName;
         setTimeout(() => { // hack to prevent update_menu calls from hinderance
-            update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
+            update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
         }, 500);
 
     } else {
@@ -570,7 +570,9 @@ function create_project_cards_container(projectName, projectRuns, percent = null
 
 // function to create overview latest runs statistics
 function create_overview_latest_graphs(preFilteredRuns = null) {
-    const order = document.getElementById("overviewLatestSectionOrder").value;
+    const orderEl = document.getElementById("overviewLatestSectionOrder");
+    if (!orderEl) return;
+    const order = orderEl.value;
     const overviewCardsContainer = document.getElementById("overviewLatestRunCardsContainer");
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
@@ -632,6 +634,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
 // function to create overview total statistics
 function create_overview_total_graphs(preFilteredRuns = null) {
     const overviewCardsContainer = document.getElementById("overviewTotalRunCardsContainer");
+    if (!overviewCardsContainer) return;
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
     const durationsByProject = {};
