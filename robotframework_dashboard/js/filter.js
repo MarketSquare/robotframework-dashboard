@@ -186,7 +186,7 @@ function filter_runtags(runs) {
 
     const selectedTags = Array.from(tagElements)
         .filter(tagElement => tagElement.checked)
-        .map(tagElement => tagElement.id);
+        .map(tagElement => tagElement.id.replace(/^runTagCheckBox/, ""));
     if (selectedTags.includes("All")) { // If "All" is selected, return all runs
         return runs;
     }
@@ -553,8 +553,8 @@ function setup_runtags_in_select_filter_buttons() {
     `;
     const listItemTemplate = (value) => `
         <li class="list-group-item list-group-item-action d-flex small">
-            <input class="form-check-input me-1" type="checkbox" value="${value}" id="${value}">
-            <label class="form-check-label ms-2" for="${value}">${value}</label>
+            <input class="form-check-input me-1" type="checkbox" value="${value}" id="runTagCheckBox${value}">
+            <label class="form-check-label ms-2" for="runTagCheckBox${value}">${value}</label>
         </li>
     `;
     const listItems = [listItemTemplate("All")].concat(
@@ -567,7 +567,7 @@ function setup_runtags_in_select_filter_buttons() {
     } else {
         document.getElementById("runTagFilter").hidden = true
     }
-    const allRunTagsCheckBox = document.getElementById("All");
+    const allRunTagsCheckBox = document.getElementById("runTagCheckBoxAll");
     allRunTagsCheckBox.checked = true;
     const filterActiveIndicatorId = "filterRunTagSelectedIndicator";
     setup_filter_active_indicator(allRunTagsCheckBox, filterActiveIndicatorId);
@@ -849,7 +849,7 @@ function capture_current_filters() {
     profile.runs = document.getElementById("runs").value;
     // Run tags checkboxes
     const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
-    profile.runTags = Array.from(tagInputs).map(el => ({ id: el.id, checked: el.checked }));
+    profile.runTags = Array.from(tagInputs).map(el => ({ id: el.id.replace(/^runTagCheckBox/, ""), checked: el.checked }));
     profile.useOrTags = document.getElementById("useOrTags")?.checked ?? false;
     // Project version checkboxes
     const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
@@ -976,14 +976,16 @@ function apply_filter_profile(profile, name) {
     if (profile.runs !== undefined) {
         document.getElementById("runs").value = profile.runs;
     }
+
     if (profile.runTags !== undefined) {
         const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
         const tagMap = {};
         profile.runTags.forEach(t => tagMap[t.id] = t.checked);
         tagInputs.forEach(el => {
-            if (tagMap[el.id] !== undefined) el.checked = tagMap[el.id];
+            tag=el.id.replace(/^runTagCheckBox/, "")
+            if (tagMap[tag] !== undefined) el.checked = tagMap[tag];
         });
-        update_filter_active_indicator("All", "filterRunTagSelectedIndicator");
+        update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
     }
     if (profile.useOrTags !== undefined) {
         const orEl = document.getElementById("useOrTags");
@@ -1050,8 +1052,8 @@ function populate_filter_profile_select() {
     for (const name of names) {
         const li = document.createElement("li");
         li.className = "list-group-item list-group-item-action d-flex align-items-center small";
-        li.innerHTML = `<span class="filter-profile-apply flex-grow-1" data-profile="${name}" style="cursor: pointer;">${name}</span>`
-            + `<span class="filter-profile-delete ms-2" data-profile="${name}" title="Delete profile" style="cursor: pointer;">&times;</span>`;
+        li.innerHTML = `<span class="filter-profile-apply flex-grow-1" data-profile="${name}" id="profile${name}" style="cursor: pointer;">${name}</span>`
+            + `<span class="filter-profile-delete ms-2" data-profile="${name}" id="profileCheck${name}" title="Delete profile" style="cursor: pointer;">&times;</span>`;
         list.appendChild(li);
     }
 }

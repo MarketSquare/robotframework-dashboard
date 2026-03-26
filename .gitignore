@@ -16,6 +16,9 @@ index.txt
 log.html
 output.xml
 report.html
+browser/
+playwright-log.txt
+screenshots/
 
 # docs entries
 node_modules
