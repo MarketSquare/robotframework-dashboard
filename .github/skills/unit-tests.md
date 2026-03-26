@@ -1,6 +1,6 @@
 ---
 name: unit-tests
-description: 'Run, analyze, fix, and report on the Python unit tests in tests/. Use when: working on, running, or reasoning about unit tests; tests are failing; CI is red; debugging test errors; adding a missing argument to a test helper after a new parameter was introduced. DO NOT USE FOR: acceptance tests (atest/), Robot Framework test suites.'
+description: 'Run, analyze, fix, and report on the Python unit tests in tests/python/. Use when: working on, running, or reasoning about unit tests; tests are failing; CI is red; debugging test errors; adding a missing argument to a test helper after a new parameter was introduced. DO NOT USE FOR: acceptance tests (tests/e2e/), Robot Framework test suites.'
 argument-hint: 'Optional: specific test file or test name to focus on'
 ---
 
@@ -22,40 +22,40 @@ Both scripts run `pytest` with coverage reporting on the `robotframework_dashboa
 
 **Targeted runs:**
 ```bash
-python -m pytest tests/test_server.py --tb=short
-python -m pytest tests/test_dashboard.py::test_generate_dashboard_creates_file --tb=short
+python -m pytest tests/python/test_server.py --tb=short
+python -m pytest tests/python/test_dashboard.py::test_generate_dashboard_creates_file --tb=short
 ```
 
 **Coverage only (no script):**
 ```bash
-python -m pytest tests/ --cov=robotframework_dashboard --cov-report=term-missing --cov-report=html:results/coverage
+python -m pytest tests/python/ --cov=robotframework_dashboard --cov-report=term-missing --cov-report=html:results/coverage
 ```
 
 ## Test layout
 
-All unit tests live flat in `tests/` — no subdirectories.
+All unit tests live flat in `tests/python/` — no subdirectories.
 
 | File | What it covers |
 |---|---|
-| `tests/conftest.py` | Shared pytest fixtures (XML paths, `OutputProcessor`, `DatabaseProcessor`) |
-| `tests/test_arguments.py` | `dotdict`, `_normalize_bool`, `_check_project_version_usage`, `_process_arguments` (all branches), `get_arguments` via mocked `sys.argv` |
-| `tests/test_processors.py` | `OutputProcessor`: `get_run_start`, `get_output_data`, `calculate_keyword_averages`, `merge_run_and_suite_metadata`; legacy RF compat branches (`RunProcessor`, `SuiteProcessor`, `TestProcessor`, `KeywordProcessor`) |
-| `tests/test_database.py` | `DatabaseProcessor`: table creation, schema migration, insert/get round-trip, all `remove_runs` strategies, `list_runs`, `vacuum_database`, `update_output_path`, static helpers |
-| `tests/test_dashboard.py` | `DashboardGenerator`: `_compress_and_encode`, `_minify_text`, `generate_dashboard` (file creation, title, server mode, configs, subdirectory) |
-| `tests/test_dependencies.py` | `DependencyProcessor`: JS/CSS block generation, CDN vs offline mode, admin-page variant, file gathering |
-| `tests/test_robotdashboard.py` | `RobotDashboard`: `initialize_database`, `process_outputs`, `print_runs`, `remove_outputs`, `create_dashboard`, `get_runs`, `get_run_paths`, `update_output_path` |
-| `tests/test_main.py` | `main()`: orchestration pipeline via mocked `ArgumentParser` and `RobotDashboard`; server branch |
-| `tests/test_server.py` | `ApiServer`: all FastAPI endpoints via `TestClient` — auth, add/remove outputs, add/remove logs, file uploads (plain and gzip), catch-all resource route, autoupdate flag |
+| `tests/python/conftest.py` | Shared pytest fixtures (XML paths, `OutputProcessor`, `DatabaseProcessor`) |
+| `tests/python/test_arguments.py` | `dotdict`, `_normalize_bool`, `_check_project_version_usage`, `_process_arguments` (all branches), `get_arguments` via mocked `sys.argv` |
+| `tests/python/test_processors.py` | `OutputProcessor`: `get_run_start`, `get_output_data`, `calculate_keyword_averages`, `merge_run_and_suite_metadata`; legacy RF compat branches (`RunProcessor`, `SuiteProcessor`, `TestProcessor`, `KeywordProcessor`) |
+| `tests/python/test_database.py` | `DatabaseProcessor`: table creation, schema migration, insert/get round-trip, all `remove_runs` strategies, `list_runs`, `vacuum_database`, `update_output_path`, static helpers |
+| `tests/python/test_dashboard.py` | `DashboardGenerator`: `_compress_and_encode`, `_minify_text`, `generate_dashboard` (file creation, title, server mode, configs, subdirectory) |
+| `tests/python/test_dependencies.py` | `DependencyProcessor`: JS/CSS block generation, CDN vs offline mode, admin-page variant, file gathering |
+| `tests/python/test_robotdashboard.py` | `RobotDashboard`: `initialize_database`, `process_outputs`, `print_runs`, `remove_outputs`, `create_dashboard`, `get_runs`, `get_run_paths`, `update_output_path` |
+| `tests/python/test_main.py` | `main()`: orchestration pipeline via mocked `ArgumentParser` and `RobotDashboard`; server branch |
+| `tests/python/test_server.py` | `ApiServer`: all FastAPI endpoints via `TestClient` — auth, add/remove outputs, add/remove logs, file uploads (plain and gzip), catch-all resource route, autoupdate flag |
 
 ## Test data
 
-Real `output.xml` files live in `testdata/outputs/`. These are the same 15 Robot Framework output files used by the acceptance tests — no synthetic mocks. Using real XMLs means `OutputProcessor` and `DatabaseProcessor` are exercised against genuine data, not fabricated inputs.
+Real `output.xml` files live in `tests/e2e/resources/outputs/`. These are the same 15 Robot Framework output files used by the acceptance tests — no synthetic mocks. Using real XMLs means `OutputProcessor` and `DatabaseProcessor` are exercised against genuine data, not fabricated inputs.
 
 Inline data fixtures (plain Python tuples/dicts) are used only for edge cases that real XMLs cannot cover, such as malformed inputs and single-entry keyword lists.
 
 ## Testing the server
 
-`tests/test_server.py` uses `fastapi.testclient.TestClient` (backed by `httpx`) to exercise every endpoint in `ApiServer` without starting a real network process.  The `RobotDashboard` dependency is replaced with a `MagicMock`, making every test fast and deterministic.  `httpx` is a required dev dependency — install it with `pip install httpx`.
+`tests/python/test_server.py` uses `fastapi.testclient.TestClient` (backed by `httpx`) to exercise every endpoint in `ApiServer` without starting a real network process.  The `RobotDashboard` dependency is replaced with a `MagicMock`, making every test fast and deterministic.  `httpx` is a required dev dependency — install it with `pip install httpx`.
 
 Key patterns used:
 - `_make_server()` helper creates an `ApiServer` with mock `RobotDashboard` attached.

@@ -7,9 +7,9 @@ vi.mock('@js/common.js', () => ({
     camelcase_to_underscore: (str) =>
         str.replace(/([A-Z]+)/g, '_$1').replace(/^_/, '').toLowerCase(),
 }));
-vi.mock('@js/variables/data.js', () => import('../jstests/mocks/data.js'));
-vi.mock('@js/variables/globals.js', () => import('../jstests/mocks/globals.js'));
-vi.mock('@js/variables/graphs.js', () => import('../jstests/mocks/graphs.js'));
+vi.mock('@js/variables/data.js', () => import('./mocks/data.js'));
+vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
+vi.mock('@js/variables/graphs.js', () => import('./mocks/graphs.js'));
 
 // We need to test merge_deep and related functions.
 // Since they use structuredClone (available in Node 17+), we can import them.

@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from robotframework_dashboard.processors import OutputProcessor
 
-OUTPUTS_DIR = Path(__file__).parent.parent / "testdata" / "outputs"
+OUTPUTS_DIR = Path(__file__).parent.parent / "e2e" / "resources" / "outputs"
 SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
 
 

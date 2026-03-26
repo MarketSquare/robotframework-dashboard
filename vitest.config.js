@@ -8,7 +8,7 @@ export default defineConfig({
         },
     },
     test: {
-        include: ['jstests/**/*.test.js'],
+        include: ['tests/js/**/*.test.js'],
         environment: 'node',
     },
 });

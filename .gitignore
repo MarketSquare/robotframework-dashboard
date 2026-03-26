@@ -22,3 +22,5 @@ report.html
 node_modules
 docs/.vitepress/dist
 docs/.vitepress/cache
+
+.pytest_cache

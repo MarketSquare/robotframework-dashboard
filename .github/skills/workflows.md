@@ -13,10 +13,10 @@ All tests are Robot Framework acceptance tests run with **pabot** (parallel exec
 
 ```bash
 # Windows
-pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\atest\testsuites\*.robot
+pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\tests\e2e\testsuites\*.robot
 
 # Linux / macOS
-pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results atest/testsuites/*.robot
+pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/e2e/testsuites/*.robot
 ```
 
 Convenience scripts: `scripts/tests.bat` and `scripts/tests.sh`.

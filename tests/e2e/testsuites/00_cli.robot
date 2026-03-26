@@ -7,7 +7,7 @@ Suite Teardown    Run Teardown Only Once    keyword=Remove Database And Dashboar
 
 
 *** Variables ***
-${OUTPUTS_FOLDER}    ${CURDIR}/../../testdata/outputs
+${OUTPUTS_FOLDER}    ${CURDIR}/../resources/outputs
 ${OS}   ${None}    # set on runtime
 
 

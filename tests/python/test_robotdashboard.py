@@ -4,7 +4,7 @@ from pathlib import Path
 
 from robotframework_dashboard.robotdashboard import RobotDashboard
 
-OUTPUTS_DIR = Path(__file__).parent.parent / "testdata" / "outputs"
+OUTPUTS_DIR = Path(__file__).parent.parent / "e2e" / "resources" / "outputs"
 SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
 SAMPLE_XML_2 = OUTPUTS_DIR / "output-20250313-002151.xml"
 

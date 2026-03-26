@@ -19,13 +19,13 @@ robotdashboard -n robot_dashboard.html
 There are three levels of tests in this project:
 
 ### Python Unit Tests
-Python unit tests are located in `tests/` and run with pytest.
+Python unit tests are located in `tests/python/` and run with pytest.
 ```sh
 bash scripts/unittests.sh
 ```
 
 ### JavaScript Unit Tests
-JavaScript unit tests are located in `jstests/` and run with [Vitest](https://vitest.dev/).
+JavaScript unit tests are located in `tests/js/` and run with [Vitest](https://vitest.dev/).
 ```sh
 npm install
 npm run test:js
@@ -40,7 +40,7 @@ npm run test:js:watch
 ```
 
 ### Robot Framework End-to-End Tests
-End-to-end tests are located in `atest/` and cover:
+End-to-end tests are located in `tests/e2e/` and cover:
 - CLI
 - Database
 - Dashboard

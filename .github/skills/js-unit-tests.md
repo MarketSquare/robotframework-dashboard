@@ -1,6 +1,6 @@
 ---
 name: js-unit-tests
-description: 'Run, analyze, fix, and write JavaScript unit tests in jstests/. Use when: working on, running, or reasoning about JS unit tests; JS tests are failing; adding tests for JS modules; debugging Vitest errors. DO NOT USE FOR: Python unit tests (tests/), acceptance tests (atest/), or Robot Framework test suites.'
+description: 'Run, analyze, fix, and write JavaScript unit tests in tests/js/. Use when: working on, running, or reasoning about JS unit tests; JS tests are failing; adding tests for JS modules; debugging Vitest errors. DO NOT USE FOR: Python unit tests (tests/python/), acceptance tests (tests/e2e/), or Robot Framework test suites.'
 argument-hint: 'Optional: specific test file or test name to focus on'
 ---
 
@@ -22,7 +22,7 @@ Both scripts run `npx vitest run --reporter=verbose`.
 
 **Targeted runs:**
 ```bash
-npx vitest run jstests/graph_data/failed.test.js
+npx vitest run tests/js/graph_data/failed.test.js
 npx vitest run --reporter=verbose -t "sorts by total failures"
 ```
 
@@ -35,7 +35,7 @@ npx vitest run --reporter=verbose -t "sorts by total failures"
 ## Test layout
 
 ```
-jstests/
+tests/js/
 ├── mocks/            # shared mock modules (see below)
 │   ├── chartconfig.js
 │   ├── data.js
@@ -107,9 +107,9 @@ vi.mock('@js/variables/chartconfig.js', () => ({
 import { get_most_failed_data } from '@js/graph_data/failed.js';
 ```
 
-### Shared mocks (`jstests/mocks/`)
+### Shared mocks (`tests/js/mocks/`)
 
-Four reusable mock modules exist in `jstests/mocks/` for modules that are widely imported:
+Four reusable mock modules exist in `tests/js/mocks/` for modules that are widely imported:
 
 | Mock file | Replaces | Key exports |
 |---|---|---|
@@ -164,7 +164,7 @@ Use `beforeEach` to reset mutable state when multiple tests share the same mock.
 
 ## Writing a new test file
 
-1. Create the test file in `jstests/` (or `jstests/graph_data/` for graph data modules).
+1. Create the test file in `tests/js/` (or `tests/js/graph_data/` for graph data modules).
 2. Add `vi.mock()` calls for every import of the source module.
 3. Import the function(s) under test **after** the mock calls.
 4. Write `describe`/`it` blocks with clear descriptions.
