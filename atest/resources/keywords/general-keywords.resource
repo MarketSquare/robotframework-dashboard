@@ -24,13 +24,6 @@ Generate Dashboard
     ${index}    Get Dashboard Index
     Release Lock    name=dashboard_index
     VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
-    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db -f ${CURDIR}/../outputs:dev:prod:project_1 -n robotdashboard_${DASHBOARD_INDEX}.html
-    Log    ${output}
-
-Generate Dashboard With Mixed Tags
-    ${index}    Get Dashboard Index
-    Release Lock    name=dashboard_index
-    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
     ${files}    Catenate  SEPARATOR=${SPACE}  
     ...    -o ${CURDIR}/../outputs/output-20250313-002134.xml:prod:project_1:version_1.0
     ...    -o ${CURDIR}/../outputs/output-20250313-002151.xml:dev:project_1:version_1.0

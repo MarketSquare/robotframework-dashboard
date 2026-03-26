@@ -16,7 +16,6 @@ Validate Dashboard Run Name Filter
     Validate Component    id=runStatisticsSection    name=runNameFilter    folder=run
 
 Validate Dashboard Run Tags Filter
-    [Setup]    Run Keywords    Generate Dashboard With Mixed Tags    Open Dashboard
     Should Show 15 Of 15 Runs
 
     Set Run Tags Filter    dev
@@ -56,7 +55,7 @@ Add Filter Profile With Run Tags Filter
 Add Filter Profile With Versions Filter
     Set Versions Filter    None
     Add Filter Profile PrfVersions For    Versions
-    Filter Profile PrfVersions Should Be    {'projectVersions': [{'value': 'All', 'checked': False}, {'value': 'None', 'checked': True}]}
+    Filter Profile PrfVersions Should Be    {'projectVersions': [{'value': 'All', 'checked': False}, {'value': 'None', 'checked': True}, {'value': '1.2', 'checked': False}, {'value': '1.1', 'checked': False}, {'value': '1.0', 'checked': False}]}
 
 Add Filter Profile With Date Filters
     Set Date Filter    fromDate=03132025    fromTime=1225am    toDate=04012025    toTime=1159pm
@@ -71,13 +70,11 @@ Add Filter Profile With Date Filters
     Filter Profile PrfFromTo Should Be    {'fromDate': '2025-03-13', 'toTime': '23:59'}
 
 Add Filter Profile With Amount Filter
-    [Setup]    Run Keywords    Generate Dashboard With Mixed Tags    Open Dashboard
     Set Amount Filter    amount=200    close_filter_dialog=False
     Add Filter Profile PrfAmount For    Amount    open_filter_dialog=False
     Filter Profile PrfAmount Should Be    {'amount': '200'}
 
 Applied Filter Profile Adds New Filter
-    [Setup]    Run Keywords    Generate Dashboard With Mixed Tags    Open Dashboard
     Set Run Filter    value=Tests
     Set Run Tags Filter    prod    project_1
     Set Versions Filter    1.2
