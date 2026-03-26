@@ -736,6 +736,24 @@
                                                 id="toggleTimezone">
                                         </div>
                                     </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Suite Statistics - Default suite selection</span>
+                                        <div class="d-flex align-items-center">
+                                            <select class="form-select form-select-sm" id="toggleSuitesSelectionInSuiteStats"
+                                                style="width: 200px;">
+                                                <option value="All Suites Separate">All Suites Separate</option>
+                                                <option value="All Suites Combined">All Suites Combined</option>
+                                                <option value="First Suite">First Suite</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Test Statistics – Load all suites by default (off by default)</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleAllSuitesByDefaultInTestStats">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="overview-settings" role="tabpanel"

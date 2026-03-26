@@ -42,6 +42,8 @@ The **Graphs** tab contains the core configuration options for all charts in the
 | **Bar Graph Edge Rounding (Pixels)** | Controls rounding of bar edges (e.g., `0` = square, `8` = softer). |
 | **Display Timezone Offsets** | Show or hide the timezone offset suffix (e.g. `+02:00`) appended to `run_start` timestamps in graphs and tables. Only has a visible effect on runs that have a stored timezone offset. Runs without an offset are unchanged. |
 | **Convert Timestamps to Local Timezone** | Converts stored `run_start` timestamps from their recorded timezone to the **viewer's browser timezone**. Only applies to runs that have a stored timezone offset — runs without an offset are left unchanged. Useful when runs were recorded in a different timezone than the person viewing the dashboard. |
+| **Suite Statistics - Default suite selection** | Suites to be used when generating the *Suite Statistics*. Can be one of `All Suites Separate`, `All Suites Combine` and `First Suite` (default) |
+| **Test Statistics – Load all suites by default** | When enabled (disabled by default) then the figures in the *Test Statistics* tab are generated from all suites, otherwise from the selected one only. This can mpact the response time depending on the number of suites within the dashboard. |
 
 ### Saving Settings
 
