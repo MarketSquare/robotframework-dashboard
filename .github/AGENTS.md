@@ -106,6 +106,8 @@ The `.github/skills/` directory contains domain-specific knowledge files:
 | `coding-style.md` | Python/JS/CSS style conventions |
 | `workflows.md` | CLI usage, running tests, server mode, docs site |
 | `testing.md` | Test suite structure, pabot parallelism, how to add tests |
+| `unit-tests.md` | Python unit tests (pytest, coverage, test layout, fixtures) |
+| `js-unit-tests.md` | JavaScript unit tests (Vitest, mocking patterns, which modules are testable) |
 | `server-api.md` | All REST endpoints, authentication, log linking, auto-update behavior |
 | `filtering-and-settings.md` | Filter pipeline, settings object, localStorage persistence, layout/GridStack system |
 

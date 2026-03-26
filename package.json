@@ -1,8 +1,13 @@
 {
   "devDependencies": {
-    "vitepress": "^2.0.0-alpha.13"
+    "jsdom": "^29.0.1",
+    "vitepress": "^2.0.0-alpha.13",
+    "vitest": "^4.1.1"
   },
   "scripts": {
+    "test:js": "vitest run --reporter=verbose",
+    "test:js:watch": "vitest",
+    "test:js:coverage": "vitest run --coverage",
     "docs:dev": "vitepress dev docs",
     "docs:build": "node scripts/copy-static.mjs && vitepress build docs",
     "docs:preview": "vitepress preview docs"

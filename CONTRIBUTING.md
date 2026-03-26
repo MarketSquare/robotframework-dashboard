@@ -16,13 +16,36 @@ robotdashboard -n robot_dashboard.html
 ```
 
 ## ✅ Tests
-Tests are located in `atest`. There are different tests for the different parts of the tool.
+There are three levels of tests in this project:
 
+### Python Unit Tests
+Python unit tests are located in `tests/` and run with pytest.
+```sh
+bash scripts/unittests.sh
+```
+
+### JavaScript Unit Tests
+JavaScript unit tests are located in `jstests/` and run with [Vitest](https://vitest.dev/).
+```sh
+npm install
+npm run test:js
+```
+Or on Windows:
+```
+scripts\jstests.bat
+```
+To run in watch mode during development:
+```sh
+npm run test:js:watch
+```
+
+### Robot Framework End-to-End Tests
+End-to-end tests are located in `atest/` and cover:
 - CLI
 - Database
 - Dashboard
 
-Tests will run automatically in GitHub actions. They are triggered through the `.github/workflows/tests.yml` yml script. In this script details regarding the test pipeline can be found. The tests will run when:
+All tests run automatically in GitHub Actions. They are triggered through the `.github/workflows/tests.yml` yml script. In this script details regarding the test pipeline can be found. The tests will run when:
 
 - Creating a PR
 - Pushing a commit to a PR

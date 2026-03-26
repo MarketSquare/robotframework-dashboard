@@ -31,8 +31,27 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
+  js-unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run JavaScript unit tests
+        run: |
+          bash scripts/jstests.sh
+
   robot-tests:
-    needs: unit-tests
+    needs: [unit-tests, js-unit-tests]
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.56.0-jammy
