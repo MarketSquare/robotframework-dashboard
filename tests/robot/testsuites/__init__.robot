@@ -20,7 +20,7 @@ Remove Index
 
 Move All Screenshots
     # All screenshots in pabot dirs have to go to a central screenshot dir to be able to see them in the log.html file
-    @{directories}    List Directories In Directory    path=${CURDIR}/../../results/pabot_results
+    @{directories}    List Directories In Directory    path=${CURDIR}/../../../results/pabot_results
     FOR    ${directory}    IN    @{directories}
         VAR    ${pabot_dir}    ${CURDIR}/../../results/pabot_results/${directory}/screenshots
         ${exists}    Run Keyword And Return Status    Directory Should Exist    path=${pabot_dir}
