@@ -39,7 +39,7 @@ var settings = {
         timezones: false,
         convertTimezone: false,
         suitesSelectionInSuiteStats: "First Suite",
-        allSuitesByDefaultInTestStats: false,
+        suitesSelectionInTestStats: "First Suite",
     },
     theme_colors: {
         light: {
