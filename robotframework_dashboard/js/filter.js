@@ -327,8 +327,10 @@ function setup_runs_in_compare_selects() {
 // function to update the available suites to select in the suite filters
 function setup_suites_in_suite_select() {
     const suiteSelectSuites = document.getElementById("suiteSelectSuites");
+    const toggleSuitesSelectionInSuiteStats = document.getElementById("toggleSuitesSelectionInSuiteStats");
     const suiteFolder = document.getElementById("suiteFolder").innerText;
     suiteSelectSuites.innerHTML = "";
+    toggleSuitesSelectionInSuiteStats.innerHTML = "";
     var suiteNames = new Set()
     for (const suite of filteredSuites) {
         if (suiteFolder != "All" && !(suite.full_name.startsWith(suiteFolder + ".") || suite.full_name == suiteFolder)) {
@@ -343,30 +345,63 @@ function setup_suites_in_suite_select() {
     suiteNames = [...suiteNames].sort()
     suiteSelectSuites.options.add(new Option("All Suites Separate", "All Suites Separate"));
     suiteSelectSuites.options.add(new Option("All Suites Combined", "All Suites Combined"));
+    toggleSuitesSelectionInSuiteStats.options.add(new Option("All Suites Separate", "All Suites Separate"));
+    toggleSuitesSelectionInSuiteStats.options.add(new Option("All Suites Combined", "All Suites Combined"));
     suiteNames.forEach(suiteName => {
         suiteSelectSuites.options.add(new Option(suiteName, suiteName));
+        toggleSuitesSelectionInSuiteStats.options.add(new Option(suiteName, suiteName));
     });
-    if (settings.show.suitesSelectionInSuiteStats == 'All Suites Separate') {
+    const suiteStatsSelection = settings.show.suitesSelectionInSuiteStats;
+    if (suiteStatsSelection === 'All Suites Separate') {
         suiteSelectSuites.selectedIndex = 0;
-    } else if (settings.show.suitesSelectionInSuiteStats == 'All Suites Combined') {
+        toggleSuitesSelectionInSuiteStats.selectedIndex = 0;
+    } else if (suiteStatsSelection === 'All Suites Combined') {
         suiteSelectSuites.selectedIndex = 1;
+        toggleSuitesSelectionInSuiteStats.selectedIndex = 1;
     } else {
-        suiteSelectSuites.selectedIndex = 2;
+        let suiteIndex = suiteNames.indexOf(suiteStatsSelection);
+        // If not found or not set, default to first suite and update localStorage
+        if (suiteIndex < 0 && suiteNames.length > 0) {
+            suiteIndex = 0;
+            settings.show.suitesSelectionInSuiteStats = suiteNames[0];
+            set_local_storage_item('show.suitesSelectionInSuiteStats', suiteNames[0]);
+        }
+        const resolvedIndex = suiteIndex >= 0 ? suiteIndex + 2 : 2;
+        suiteSelectSuites.selectedIndex = resolvedIndex;
+        toggleSuitesSelectionInSuiteStats.selectedIndex = resolvedIndex;
     }
 }
 
 // function to update the available suites to select in the test filters
 function setup_suites_in_test_select() {
     const suiteSelectTests = document.getElementById("suiteSelectTests");
+    const suitesSelectionInTestStats = document.getElementById("toggleSuitesSelectionInTestStats");
     suiteSelectTests.innerHTML = "";
+    suitesSelectionInTestStats.innerHTML = "";
     const suiteNames = settings.switch.suitePathsTestSection
         ? [...new Set(filteredSuites.map(suite => suite.full_name))].sort()
         : [...new Set(filteredSuites.map(suite => suite.name))].sort();
     suiteSelectTests.options.add(new Option("All", "All"));
+    suitesSelectionInTestStats.options.add(new Option("All", "All"));
     suiteNames.forEach(suiteName => {
         suiteSelectTests.options.add(new Option(suiteName, suiteName));
+        suitesSelectionInTestStats.options.add(new Option(suiteName, suiteName));
     });
-    suiteSelectTests.selectedIndex = settings.show.allSuitesByDefaultInTestStats ? 0 : 1;
+    const testStatsSelection = settings.show.suitesSelectionInTestStats;
+    if (testStatsSelection === 'All') {
+        suiteSelectTests.selectedIndex = 0;
+        suitesSelectionInTestStats.selectedIndex = 0;
+    } else {
+        let suiteIndex = suiteNames.indexOf(testStatsSelection);
+        // If not found or not set, default to first suite and update localStorage
+        if (suiteIndex < 0 && suiteNames.length > 0) {
+            suiteIndex = 0;
+            settings.show.suitesSelectionInTestStats = suiteNames[0];
+            set_local_storage_item('show.suitesSelectionInTestStats', suiteNames[0]);
+        }
+        suiteSelectTests.selectedIndex = suiteIndex >= 0 ? suiteIndex + 1 : 0;
+        suitesSelectionInTestStats.selectedIndex = suiteIndex >= 0 ? suiteIndex + 1 : 0;
+    }
 }
 
 // function to update the available tests to select in the filters

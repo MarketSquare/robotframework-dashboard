@@ -355,7 +355,7 @@ function setup_settings_modal() {
         { key: "show.prefixes", elementId: "togglePrefixes" },
         { key: "show.convertTimezone", elementId: "toggleTimezone" },
         { key: "show.suitesSelectionInSuiteStats", elementId: "toggleSuitesSelectionInSuiteStats", datatype: "string", event: "change" },
-        { key: "show.allSuitesByDefaultInTestStats", elementId: "toggleAllSuitesByDefaultInTestStats" },
+        { key: "show.suitesSelectionInTestStats", elementId: "toggleSuitesSelectionInTestStats", datatype: "string", event: "change" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
         handler(true);

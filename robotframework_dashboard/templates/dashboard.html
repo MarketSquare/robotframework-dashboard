@@ -739,19 +739,22 @@
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>Suite Statistics - Default suite selection</span>
                                         <div class="d-flex align-items-center">
-                                            <select class="form-select form-select-sm" id="toggleSuitesSelectionInSuiteStats"
-                                                style="width: 200px;">
+                                            <select class="form-select form-select-sm"
+                                                id="toggleSuitesSelectionInSuiteStats" style="width: 200px;">
                                                 <option value="All Suites Separate">All Suites Separate</option>
-                                                <option value="All Suites Combined">All Suites Combined</option>
+                                                <option value="All">First Suite</option>
                                                 <option value="First Suite">First Suite</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Test Statistics – Load all suites by default (off by default)</span>
-                                        <div class="form-check form-switch mb-0">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                id="toggleAllSuitesByDefaultInTestStats">
+                                        <span>Test Statistics - Default suite selection</span>
+                                        <div class="d-flex align-items-center">
+                                            <select class="form-select form-select-sm"
+                                                id="toggleSuitesSelectionInTestStats" style="width: 200px;">
+                                                <option value="All Suites Separate">All Suites Separate</option>
+                                                <option value="First Suite">First Suite</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -888,7 +891,7 @@
                                                 id="resetTextColor">Reset</button>
                                         </div>
                                     </div>
-                                                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>Custom Title</span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="text"
@@ -902,8 +905,7 @@
                                         <span>Custom Logo <small class="text-muted">(PNG)</small></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="file"
-                                                id="customLogoUpload" accept=".png,image/png"
-                                                style="max-width: 200px;">
+                                                id="customLogoUpload" accept=".png,image/png" style="max-width: 200px;">
                                             <button class="btn btn-outline-light btn-sm"
                                                 id="removeCustomLogo">Reset</button>
                                         </div>
