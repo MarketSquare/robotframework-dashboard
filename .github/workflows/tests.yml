@@ -1,10 +1,10 @@
-name: Robot Tests
+name: Project Test Suite
 
 on:
   pull_request:
 
 jobs:
-  unit-tests:
+  python-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,17 +21,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Run unit tests
+      - name: Run Python unit tests
         run: |
-          bash scripts/unittests.sh
+          bash scripts/python-tests.sh
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.xml
+          path: results/coverage.xml
 
-  js-unit-tests:
+  javascript-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -48,10 +48,10 @@ jobs:
 
       - name: Run JavaScript unit tests
         run: |
-          bash scripts/jstests.sh
+          bash scripts/javascript-tests.sh
 
   robot-tests:
-    needs: [unit-tests, js-unit-tests]
+    needs: [python-tests, javascript-tests]
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.56.0-jammy
@@ -105,10 +105,10 @@ jobs:
         run: |
           rfbrowser init
 
-      - name: Run Robot tests
+      - name: Run Robot Framework tests
         id: robot
         run: |
-          bash scripts/tests.sh
+          bash scripts/robot-tests.sh
         continue-on-error: true  # allows workflow to continue even if some tests fail
 
       - name: Upload Robot logs
