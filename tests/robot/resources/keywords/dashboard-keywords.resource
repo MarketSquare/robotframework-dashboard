@@ -8,7 +8,7 @@ Resource    ../variables/variables.resource
 
 
 *** Variables ***
-${ROOT_FOLDER}    ${CURDIR}/../../..
+${ROOT_FOLDER}    ${CURDIR}/../../../..
 ${SCREENSHOT_FOLDER}    ${ROOT_FOLDER}/results/browser/screenshot
 ${REFERENCE_FOLDER}    ${CURDIR}/../dashboard_output
 
