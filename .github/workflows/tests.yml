@@ -51,7 +51,6 @@ jobs:
           bash scripts/javascript-tests.sh
 
   robot-tests:
-    needs: [python-tests, javascript-tests]
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.56.0-jammy
@@ -106,10 +105,8 @@ jobs:
           rfbrowser init
 
       - name: Run Robot Framework tests
-        id: robot
         run: |
           bash scripts/robot-tests.sh
-        continue-on-error: true  # allows workflow to continue even if some tests fail
 
       - name: Upload Robot logs
         if: always()
@@ -117,9 +114,3 @@ jobs:
         with:
           name: robot-results
           path: results/
-
-      - name: Fail workflow if robot tests failed
-        if: steps.robot.outcome == 'failure'
-        run: |
-          echo "Robot tests failed."
-          exit 1
