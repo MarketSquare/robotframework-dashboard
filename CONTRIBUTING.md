@@ -25,7 +25,7 @@ bash scripts/unittests.sh
 ```
 
 ### JavaScript Unit Tests
-JavaScript unit tests are located in `tests/js/` and run with [Vitest](https://vitest.dev/).
+JavaScript unit tests are located in `tests/javascript/` and run with [Vitest](https://vitest.dev/).
 ```sh
 npm install
 npm run test:js
