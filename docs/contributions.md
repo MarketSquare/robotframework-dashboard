@@ -18,3 +18,4 @@ And many thanks to the following people for contributing to the project with fee
 - [Elias Haberl](https://github.com/HuntTheSun)
 - [Pekka Klarck](https://github.com/pekkaklarck) maintainer of [Robot Framework](https://github.com/robotframework/robotframework)
 - [Daniel Biehl](https://github.com/d-biehl) maintainer of the [RobotCode Plugin](https://github.com/robotcodedev/robotcode)
+- [Christian Zahl](https://github.com/poWer4aiX)
