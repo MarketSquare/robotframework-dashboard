@@ -913,7 +913,7 @@ function build_profile_from_checks() {
     const profile = {};
     const checkMap = {
         profileCheckRuns: 'runs',
-        profileCheckRunTags: ['runTags', 'useOrTags'],
+        profileCheckRunTags: 'runTags',
         profileCheckVersions: 'projectVersions',
         profileCheckFromDate: 'fromDate',
         profileCheckFromTime: 'fromTime',
@@ -1027,10 +1027,6 @@ function apply_filter_profile(profile, name) {
             if (tagMap[tag] !== undefined) el.checked = tagMap[tag];
         });
         update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
-    }
-    if (profile.useOrTags !== undefined) {
-        const orEl = document.getElementById("useOrTags");
-        if (orEl) orEl.checked = profile.useOrTags;
     }
     if (profile.projectVersions !== undefined) {
         const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
