@@ -1,29 +1,43 @@
-results
-logs
-*.pyc
-.coverage
-__pycache__
-dist
-build
-robotframework_dashboard.egg-info
-robot_results.db
-robotdashboard*.html
-robot_dashboard*.html
-robot_logs
+# General output and results
+results/
+logs/
+robot_logs/
 index.txt
+robot_results.db
+
+# Python bytecode and cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Build and distribution
+dist/
+build/
+robotframework_dashboard.egg-info/
+
+# Test and coverage outputs
+.coverage
 .pabotsuitenames
+
+# Database files
 *.db
-*.vscode
+
+# HTML reports and dashboards
 log.html
 output.xml
 report.html
+robotdashboard*.html
+robot_dashboard*.html
+
+# Browser and Playwright outputs
 browser/
 playwright-log.txt
 screenshots/
 
-# docs entries
-node_modules
-docs/.vitepress/dist
-docs/.vitepress/cache
+# Editor and tool settings
+*.vscode/
 
-.pytest_cache
+# Node and docs build artifacts
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
