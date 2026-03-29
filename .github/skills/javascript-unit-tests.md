@@ -1,6 +1,6 @@
 ---
 name: js-unit-tests
-description: 'Run, analyze, fix, and write JavaScript unit tests in tests/js/. Use when: working on, running, or reasoning about JS unit tests; JS tests are failing; adding tests for JS modules; debugging Vitest errors. DO NOT USE FOR: Python unit tests (tests/python/), acceptance tests (tests/e2e/), or Robot Framework test suites.'
+description: 'Run, analyze, fix, and write JavaScript unit tests in tests/javascript/. Use when: working on, running, or reasoning about JS unit tests; JS tests are failing; adding tests for JS modules; debugging Vitest errors. DO NOT USE FOR: Python unit tests (tests/python/), acceptance tests (tests/robot/), or Robot Framework test suites.'
 argument-hint: 'Optional: specific test file or test name to focus on'
 ---
 

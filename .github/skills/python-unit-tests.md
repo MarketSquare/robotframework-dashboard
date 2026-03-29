@@ -1,6 +1,6 @@
 ---
 name: unit-tests
-description: 'Run, analyze, fix, and report on the Python unit tests in tests/python/. Use when: working on, running, or reasoning about unit tests; tests are failing; CI is red; debugging test errors; adding a missing argument to a test helper after a new parameter was introduced. DO NOT USE FOR: acceptance tests (tests/e2e/), Robot Framework test suites.'
+description: 'Run, analyze, fix, and report on the Python unit tests in tests/python/. Use when: working on, running, or reasoning about unit tests; tests are failing; CI is red; debugging test errors; adding a missing argument to a test helper after a new parameter was introduced. DO NOT USE FOR: acceptance tests (tests/robot/), Robot Framework test suites.'
 argument-hint: 'Optional: specific test file or test name to focus on'
 ---
 
@@ -49,7 +49,7 @@ All unit tests live flat in `tests/python/` — no subdirectories.
 
 ## Test data
 
-Real `output.xml` files live in `tests/e2e/resources/outputs/`. These are the same 15 Robot Framework output files used by the acceptance tests — no synthetic mocks. Using real XMLs means `OutputProcessor` and `DatabaseProcessor` are exercised against genuine data, not fabricated inputs.
+Real `output.xml` files live in `tests/robot/resources/outputs/`. These are the same 15 Robot Framework output files used by the acceptance tests — no synthetic mocks. Using real XMLs means `OutputProcessor` and `DatabaseProcessor` are exercised against genuine data, not fabricated inputs.
 
 Inline data fixtures (plain Python tuples/dicts) are used only for edge cases that real XMLs cannot cover, such as malformed inputs and single-entry keyword lists.
 

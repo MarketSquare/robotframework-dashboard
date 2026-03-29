@@ -40,7 +40,7 @@ npm run test:js:watch
 ```
 
 ### Robot Framework End-to-End Tests
-End-to-end tests are located in `tests/e2e/` and cover:
+End-to-end tests are located in `tests/robot/` and cover:
 - CLI
 - Database
 - Dashboard

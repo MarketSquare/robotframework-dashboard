@@ -124,7 +124,7 @@ export default defineConfig({
             res.end(html);
             return;
           }
-          if (normalizedUrl && normalizedUrl.startsWith('/tests/e2e/resources/outputs/')) {
+          if (normalizedUrl && normalizedUrl.startsWith('/tests/robot/resources/outputs/')) {
             const relativePath = normalizedUrl.replace(/^\//, '');
             const filePath = resolve(process.cwd(), relativePath);
             try {
