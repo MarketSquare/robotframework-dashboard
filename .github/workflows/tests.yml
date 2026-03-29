@@ -1,4 +1,4 @@
-name: Project Test Suite
+name: Robotdashboard Tests
 
 on:
   pull_request:

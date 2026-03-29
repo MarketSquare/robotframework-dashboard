@@ -41,4 +41,4 @@ function copyHtmlOnly(srcRel, destRel) {
 copyFileRelative('example/robot_dashboard.html', 'docs/public/example/robot_dashboard.html');
 
 // Copy only HTML files from Robot Framework outputs into VitePress public
-copyHtmlOnly('tests/e2e/resources/outputs', 'docs/public/tests/e2e/resources/outputs');
+copyHtmlOnly('tests/robot/resources/outputs', 'docs/public/tests/e2e/resources/outputs');
