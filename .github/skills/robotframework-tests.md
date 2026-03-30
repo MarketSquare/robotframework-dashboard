@@ -20,7 +20,7 @@ pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --
 pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/*.robot
 ```
 
-Convenience scripts: `scripts/tests.bat` and `scripts/tests.sh`.
+Convenience scripts: `scripts/robot-tests.bat` and `scripts/robot-tests.sh`.
 
 Key pabot flags:
 - `--pabotlib` — starts the pabot shared library server (required for cross-process locks used by the index counter)
@@ -47,9 +47,9 @@ cd .../robotframework-dashboard
 bash scripts/run-in-test-container.sh
 
 # Running in batch mode to execute some connands
-bash scripts/run-in-test-container.sh "bash scripts/tests.sh"
+bash scripts/run-in-test-container.sh "bash scripts/robot-tests.sh"
 
-bash scripts/run-in-test-container.sh "robot -t *version* atest/testsuites/00_cli.robot"
+bash scripts/run-in-test-container.sh "robot -t *version* tests/robot/testsuites/00_cli.robot"
 ```
 
 The script has to be started from the top level git working directory as it mounts it into the container.

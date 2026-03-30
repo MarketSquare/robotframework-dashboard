@@ -35,5 +35,5 @@ EOF-EOF
 # add the ~/.local/bin to your path
 #   export PATH=$PATH:~/.local/bin
 # and run the tests, e.g.
-#   robot atest/testsuites/06_filters.robot
+#   robot tests/robot/testsuites/06_filters.robot
 #

@@ -54,7 +54,7 @@ All tests run automatically in GitHub Actions. They are triggered through the `.
 Results can be found at the `PR > checks > Upload robot logs`.
 The check will have a failed status if any tests has failed.
 
-## Running Tests Locally
+### Running Tests Locally
 Perhaps you want to run the tests locally on your PC before pushing and waiting for the results from the GitHub actions. But this requires to install the required components in your native PC. In most cases this will not work as expected bacause of the differemt versions used. E.g.  screenshots taken during the tests may differ, so that the tests will fail.
 
 Using a Docker container to run the tests in avoids both, messing up your local system with installing the required parts for the tests and getting failed tests due to your setup.
@@ -63,20 +63,20 @@ Using a Docker container to run the tests in avoids both, messing up your local 
 
 To run all the tests in the Docker container in the same way as in the GitHub action:
 ```bash
-bash scripts/run-in-test-container.sh bash scripts/tests.sh
+bash scripts/run-in-test-container.sh bash scripts/robot-tests.sh
 ```
 To run a individual tests out of a suite:
 ```bash
-bash scripts/run-in-test-container.sh robot -t "*version*" atest/testsuites/00_cli.robot
+bash scripts/run-in-test-container.sh robot -t "*version*" tests/robot/testsuites/00_cli.robot
 ```
 To run a single test suite in such a container:
 ```bash
-bash scripts/run-in-test-container.sh robot atest/testsuites/02_overview.robot
+bash scripts/run-in-test-container.sh robot tests/robot/testsuites/02_overview.robot
 ```
 
 > Note: It is not required to run any `pip install .` as this will be done by the script within the Docker container.
 
-### How does it Work
+#### How does it Work
 Using the script requires that you are in the top-level directory of your working copy of the git repository. When using the script, the following happens:
 - It is launching a new Docker container based on the image created (see below)
 - The current working directory is getting mounted to `/robotframework-dashboard` within the container
@@ -85,7 +85,7 @@ Using the script requires that you are in the top-level directory of your workin
     - Due to the mounted working directory all the generated results can be accessed directly 
 - Once the command is completed, the running container is stopped and throw away
 
-### Prerequisuites and Setup
+#### Prerequisuites and Setup
 Running the tests in a Docker container requires a working docker installation. To check if your system has Docker installed check for the version:
 ```bash
 $ docker -v
@@ -107,7 +107,7 @@ $ sudo usermod -aG docker $USER
 ```
 Don't forget to relogin to make the new group membership effective for your user.
 
-### Creating the the Docker Image
+#### Creating the the Docker Image
 Once Docker is working you need to generate an *image*. The image can be easily created by:
 ```bash
 $ bash scripts/create-test-image.sh

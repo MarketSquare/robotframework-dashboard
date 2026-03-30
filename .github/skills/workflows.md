@@ -19,7 +19,7 @@ pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --
 pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/testsuites/*.robot
 ```
 
-Convenience scripts: `scripts/tests.bat` and `scripts/tests.sh`.
+Convenience scripts: `scripts/robot-tests.bat` and `scripts/robot-tests.sh`.
 
 Key flags: `--pabotlib` starts the shared lock server; `--testlevelsplit` runs each test case in parallel (not suite-level); `-d results` captures output in `results/`.
 
