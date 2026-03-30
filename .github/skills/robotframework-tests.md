@@ -20,7 +20,7 @@ pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --
 pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/*.robot
 ```
 
-Convenience scripts: `scripts/tests.bat` and `scripts/tests.sh`.
+Convenience scripts: `scripts/robot-tests.bat` and `scripts/robot-tests.sh`.
 
 Key pabot flags:
 - `--pabotlib` — starts the pabot shared library server (required for cross-process locks used by the index counter)
@@ -29,6 +29,30 @@ Key pabot flags:
 - `-d results` — all output goes to `results/`
 
 ---
+
+## Running Tests in Docker Container
+
+Tests can also be executed within an isolated docker container instead. This limts the dependencies
+in your local setup (like fontweights). A prerequisite is to have a running docker installation.
+
+Running the script `scripts/create-test-image.sh` will create a new docker image with the tag `test-dashboard`. The inline Dockerfile is based on the setup in the `.github/workflows/tests.yml`.
+Running the script again can be used to update amd replace the image based on the latest patches.
+
+The script `scripts/run-in-test-container.sh` can be used to start a new container based on the created image in one of two ways:
+
+```bash
+cd .../robotframework-dashboard
+
+# Running as an interactive shell
+bash scripts/run-in-test-container.sh
+
+# Running in batch mode to execute some connands
+bash scripts/run-in-test-container.sh "bash scripts/robot-tests.sh"
+
+bash scripts/run-in-test-container.sh "robot -t *version* tests/robot/testsuites/00_cli.robot"
+```
+
+The script has to be started from the top level git working directory as it mounts it into the container.
 
 ## Test Dependencies (`requirements-test.txt`)
 

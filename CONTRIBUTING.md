@@ -54,6 +54,74 @@ All tests run automatically in GitHub Actions. They are triggered through the `.
 Results can be found at the `PR > checks > Upload robot logs`.
 The check will have a failed status if any tests has failed.
 
+### Running Tests Locally
+Perhaps you want to run the tests locally on your PC before pushing and waiting for the results from the GitHub actions. But this requires to install the required components in your native PC. In most cases this will not work as expected bacause of the differemt versions used. E.g.  screenshots taken during the tests may differ, so that the tests will fail.
+
+Using a Docker container to run the tests in avoids both, messing up your local system with installing the required parts for the tests and getting failed tests due to your setup.
+
+> Note: To use this methond there is no need to understand how Docker is working in detail.
+
+To run all the tests in the Docker container in the same way as in the GitHub action:
+```bash
+bash scripts/run-in-test-container.sh bash scripts/robot-tests.sh
+```
+To run a individual tests out of a suite:
+```bash
+bash scripts/run-in-test-container.sh robot -t "*version*" tests/robot/testsuites/00_cli.robot
+```
+To run a single test suite in such a container:
+```bash
+bash scripts/run-in-test-container.sh robot tests/robot/testsuites/02_overview.robot
+```
+
+> Note: It is not required to run any `pip install .` as this will be done by the script within the Docker container.
+
+#### How does it Work
+Using the script requires that you are in the top-level directory of your working copy of the git repository. When using the script, the following happens:
+- It is launching a new Docker container based on the image created (see below)
+- The current working directory is getting mounted to `/robotframework-dashboard` within the container
+- In the container the working copy is installed by `pip install .`
+- The arguments you provide are executed as a bash command within the container
+    - Due to the mounted working directory all the generated results can be accessed directly 
+- Once the command is completed, the running container is stopped and throw away
+
+#### Prerequisuites and Setup
+Running the tests in a Docker container requires a working docker installation. To check if your system has Docker installed check for the version:
+```bash
+$ docker -v
+Docker version 29.3.0, build 5927d80
+```
+If you have no Docker installer yet, follow the instructions to [Install Docker Engine](https://docs.docker.com/engine/install/) depending on your OS. One way is to use the *convenient script*:
+```bash
+$ curl -fsSL https://get.docker.com -o get-docker.sh
+$ sudo sh get-docker.sh
+```
+Once Docker is available verify if you are allowed to run docker commands.
+```bash
+$ docker ps
+permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
+```
+If you see such an error message then your user is not configured to use docker. In most Linux environments this can be done by adding your user to the `docker` group (see [Linux post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)):
+```bash
+$ sudo usermod -aG docker $USER
+```
+Don't forget to relogin to make the new group membership effective for your user.
+
+#### Creating the the Docker Image
+Once Docker is working you need to generate an *image*. The image can be easily created by:
+```bash
+$ bash scripts/create-test-image.sh
+```
+> Note: If you are not familar with docker, imagine an *image* as an ISO image of a Linux live-CD. It is an immutable preconfigured setup of an OS which can be used to run it without installing.
+
+The image is created in the following steps:
+- It is based on the public image `mcr.microsoft.com/playwright:v1.56.0-jammy`, a *framework for Web Testing and Automation*.
+    - which is based on `ubuntu:jammy` (ubuntu 22.04)
+- Installs the latest `python3-pip` from the distribution
+- Installs all the project requirements to perform the tests from `requirements-test.txt`
+- Initializes the `robotframework-browser` library
+- Creates a working directory `/robotframework-dashboard`
+The image created is being used whenever a new docker container is launched by the `scripts/run-in-test-container.sh`. The image is static. To address changes in the `requirements-test.txt` you can recreate (and replace) the image by running the `create-test-image.sh` once again.
 
 ## 📖 Docs
 
