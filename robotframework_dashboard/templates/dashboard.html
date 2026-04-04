@@ -392,7 +392,7 @@
     <div id="modals">
         <!-- Modal for the filter -->
         <div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h1 class="modal-title" id="filtersModalLabel">Filters</h1>
@@ -403,6 +403,8 @@
                                 id="addFilterProfile">Add Profile</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 id="cancelFilterProfile" style="display: none;">Stop Adding</button>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
+                                id="mergeFilterProfiles">Merge Profiles</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 id="resetFilters">Reset Filters</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
@@ -935,6 +937,54 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-light btn-sm" id="confirmCancel">Cancel</button>
                         <button type="button" class="btn btn-outline-light btn-sm" id="confirmOk">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Merge Filter Profiles Modal -->
+        <div class="modal fade" id="mergeProfilesModal" tabindex="-1" aria-labelledby="mergeProfilesModalLabel">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content mt-5">
+                    <div class="modal-header">
+                        <h1 class="modal-title" id="mergeProfilesModalLabel">Merge Filter Profiles</h1>
+                        <div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-5"
+                                data-bs-dismiss="modal" id="closeMergeProfiles">Close</button>
+                        </div>
+                    </div>
+                    <div class="filter-profile-bar d-flex align-items-center px-3 py-2">
+                        <input class="form-control form-control-sm me-2" type="text" id="mergeProfileNewName"
+                            placeholder="Merged Profile Name..." style="width: 180px;" />
+                        <button type="button" class="btn btn-outline-light btn-sm text-nowrap"
+                            id="saveMergeProfile">Add Merged Profile</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3 align-items-start">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold" for="mergeProfileLeft">Left Profile</label>
+                                <select class="form-select form-select-sm" id="mergeProfileLeft">
+                                    <option value="">-- Select Profile --</option>
+                                </select>
+                                <div id="mergeLeftSettings" class="mt-2 border rounded p-2"
+                                    style="display: none;"></div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold" for="mergeProfileRight">Right Profile</label>
+                                <select class="form-select form-select-sm" id="mergeProfileRight">
+                                    <option value="">-- Select Profile --</option>
+                                </select>
+                                <div id="mergeRightSettings" class="mt-2 border rounded p-2"
+                                    style="display: none;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label fw-semibold">Resulting Filters</label>
+                            <div id="mergeResultPreview" class="border rounded p-2">
+                                <span class="text-muted small">Select profiles and settings above to
+                                    preview.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

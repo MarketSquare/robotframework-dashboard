@@ -136,6 +136,8 @@ def _make_namespace(**kwargs):
         "quantity": None,
         "databasepath": "robot_results.db",
         "dashboardtitle": "",
+        "ssl_certfile": None,
+        "ssl_keyfile": None,
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
@@ -333,10 +335,62 @@ def test_process_arguments_returns_all_keys():
         "server_port", "server_user", "server_pass", "json_config",
         "message_config", "quantity", "use_logs", "offline_dependencies",
         "force_json_config", "project_version", "no_vacuum", "timezone",
-        "no_autoupdate",
+        "no_autoupdate", "ssl_certfile", "ssl_keyfile",
     }
     for key in expected_keys:
         assert key in result, f"Missing key: {key}"
+
+
+def test_process_arguments_ssl_defaults_none():
+    args = _make_namespace()
+    result = ArgumentParser()._process_arguments(args)
+    assert result.ssl_certfile is None
+    assert result.ssl_keyfile is None
+
+
+def test_process_arguments_ssl_certfile_without_keyfile_exits(capsys):
+    args = _make_namespace(ssl_certfile="cert.pem", ssl_keyfile=None)
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "ssl-certfile" in captured.out.lower() or "ssl_certfile" in captured.out.lower()
+
+
+def test_process_arguments_ssl_keyfile_without_certfile_exits(capsys):
+    args = _make_namespace(ssl_certfile=None, ssl_keyfile="key.pem")
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "ssl-keyfile" in captured.out.lower() or "ssl_keyfile" in captured.out.lower()
+
+
+def test_process_arguments_ssl_certfile_not_exists_exits(tmp_path, capsys):
+    args = _make_namespace(ssl_certfile=str(tmp_path / "missing.pem"), ssl_keyfile="key.pem")
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "ssl-certfile" in captured.out.lower() or "ssl_certfile" in captured.out.lower()
+
+
+def test_process_arguments_ssl_keyfile_not_exists_exits(tmp_path, capsys):
+    cert_file = tmp_path / "cert.pem"
+    cert_file.write_text("cert")
+    args = _make_namespace(ssl_certfile=str(cert_file), ssl_keyfile=str(tmp_path / "missing.pem"))
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "ssl-keyfile" in captured.out.lower() or "ssl_keyfile" in captured.out.lower()
+
+
+def test_process_arguments_ssl_certfile_and_keyfile_valid(tmp_path):
+    cert_file = tmp_path / "cert.pem"
+    key_file = tmp_path / "key.pem"
+    cert_file.write_text("cert")
+    key_file.write_text("key")
+    args = _make_namespace(ssl_certfile=str(cert_file), ssl_keyfile=str(key_file))
+    result = ArgumentParser()._process_arguments(args)
+    assert result.ssl_certfile == str(cert_file)
+    assert result.ssl_keyfile == str(key_file)
 
 
 # --- get_arguments (full pipeline via mocked sys.argv) ---

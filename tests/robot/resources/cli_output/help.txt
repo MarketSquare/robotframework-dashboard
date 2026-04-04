@@ -17,11 +17,13 @@ usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]OUTPUTPATH ...[]][]]
                       [[]--offlinedependencies [[]OFFLINEDEPENDENCIES[]][]]
                       [[]--novacuum [[]NOVACUUM[]][]] [[]-c DATABASECLASS[]]
                       [[]--noautoupdate [[]NOAUTOUPDATE[]][]] [[]-s [[]SERVER[]][]]
+                      [[]--ssl-certfile SSL_CERTFILE[]]
+                      [[]--ssl-keyfile SSL_KEYFILE[]]
 
 options:
   -v, --version         Display application version information.
   -h, --help            Provide additional information.
-  -o*, --outputpath [[]OUTPUTPATH ...[]]
+  -o [[]OUTPUTPATH ...[]], --outputpath [[]OUTPUTPATH ...[]]
                         `path` Specifies one or more paths to output.xml.
                         Usage behavior:
                           • Multiple XML files: repeat '-o' for each file
@@ -30,7 +32,7 @@ options:
                         Examples:
                           • '-o path/to/output1.xml' -> add one output
                           • '-o output2.xml:dev:nightly -o output3.xml:prod' -> add two outputs with tags
-  -f*, --outputfolderpath [[]OUTPUTFOLDERPATH ...[]]
+  -f [[]OUTPUTFOLDERPATH ...[]], --outputfolderpath [[]OUTPUTFOLDERPATH ...[]]
                         `path` Specifies a directory path scanned recursively for *output*.xml files.
                         Usage behavior:
                           • Provide a folder path
@@ -46,7 +48,7 @@ options:
                           • Cannot be mixed with version_ tags
                         Examples:
                           . '--projectversion=1.1'
-  -z*, --timezone TIMEZONE
+  -z TIMEZONE, --timezone TIMEZONE
                         `string` Specifies the timezone offset of the output.xml timestamps.
                         Usage behavior:
                           • Default value: auto-detected from the machine's local timezone
@@ -56,7 +58,7 @@ options:
                           • '-z +02:00' -> timestamps are from UTC+2
                           • '--timezone=-05:00' -> timestamps are from UTC-5 (use --timezone= for negative offsets)
                           • '-z +00:00' -> timestamps are UTC
-  -r*, --removeruns [[]REMOVERUNS ...[]]
+  -r [[]REMOVERUNS ...[]], --removeruns [[]REMOVERUNS ...[]]
                         `string` Specifies indexes, run_starts, aliases, tags or limit to remove from the database.
                         Usage behavior:
                           • Multiple values separated by commas (,)
@@ -67,21 +69,21 @@ options:
                           • '-r run_start=2024-07-30 15:27:20.184407,index=20' -> remove specified run and index 20
                           • '-r alias=some_alias,tag=prod,tag=dev' -> remove all runs with alias some_alias or tag prod or dev
                           • '-r limit=10' -> remove all runs, leaving only the 10 most recent additions
-  -d*, --databasepath DATABASEPATH
+  -d DATABASEPATH, --databasepath DATABASEPATH
                         `path` Specifies the path to the database file.
                         Usage behavior:
                           • Default value: robot_results.db
                           • Provide a custom .db file to use instead of the default
                         Examples:
                           • '-d path/to/myresults.db'
-  -n*, --namedashboard NAMEDASHBOARD
+  -n NAMEDASHBOARD, --namedashboard NAMEDASHBOARD
                         `string` Specifies a custom HTML dashboard file name.
                         Usage behavior:
                           • Default value: robot_dashboard_yyyymmdd-hhssmm.html
                           • Provide a filename to override
                         Examples:
                           • '-n dashboard.html'
-  -j*, --jsonconfig JSONCONFIG
+  -j JSONCONFIG, --jsonconfig JSONCONFIG
                         `path` Specifies a path to a dashboard JSON configuration.
                         Usage behavior:
                           • Default value: None
@@ -95,14 +97,14 @@ options:
                           • Using '--forcejsonconfig' with no value -> True (reverse default)
                           • Using '--forcejsonconfig true'  -> True
                           • Using '--forcejsonconfig false' -> False
-  -t*, --dashboardtitle DASHBOARDTITLE
+  -t DASHBOARDTITLE, --dashboardtitle DASHBOARDTITLE
                         `string` Specifies the dashboard HTML title.
                         Usage behavior:
                           • Default value: Robot Framework Dashboard - yyyy-mm-dd hh:mm:ss
                           • Provide text to set a custom title
                         Examples:
                           • '-t My_Test_Dashboard'
-  -m*, --messageconfig MESSAGECONFIG
+  -m MESSAGECONFIG, --messageconfig MESSAGECONFIG
                         `path` Specifies a config file containing message templates.
                         Usage behavior:
                           • Default value: None
@@ -111,28 +113,28 @@ options:
                           • 'The test has failed on date: ${date}' -> example line in messages.txt
                           • 'Expected ${x} but received: ${y}' -> example line in messages.txt
                           • '-m messages.txt'
-  -q*, --quantity QUANTITY
+  -q QUANTITY, --quantity QUANTITY
                         `integer` Specifies the number of runs shown on initial dashboard load.
                         Usage behavior:
                           • Default value: 20
                           • Provide an integer to override, the higher this number the slower initial load
                         Examples:
                           • '-q 25'
-  -u*, --uselogs [[]USELOGS[]]
+  -u [[]USELOGS[]], --uselogs [[]USELOGS[]]
                         `boolean` Enables clickable graphs linking to log.html.
                         Usage behavior:
                           • Default value: False
                           • Using '--uselogs' with no value -> True (reverse default)
                           • Using '--uselogs true'  -> True
                           • Using '--uselogs false' -> False
-  -g*, --generatedashboard [[]GENERATEDASHBOARD[]]
+  -g [[]GENERATEDASHBOARD[]], --generatedashboard [[]GENERATEDASHBOARD[]]
                         `boolean` Whether to generate the HTML dashboard.
                         Usage behavior:
                           • Default value: True
                           • Using '--generatedashboard' with no value -> False (reverse default)
                           • Using '--generatedashboard true'  -> True
                           • Using '--generatedashboard false' -> False
-  -l*, --listruns [[]LISTRUNS[]]
+  -l [[]LISTRUNS[]], --listruns [[]LISTRUNS[]]
                         `boolean` Whether runs should be listed in the dashboard.
                         Usage behavior:
                           • Default value: True
@@ -153,7 +155,7 @@ options:
                           • Using '--novacuum' with no value -> True (reverse default)
                           • Using '--novacuum true'  -> True
                           • Using '--novacuum false' -> False
-  -c*, --databaseclass DATABASECLASS
+  -c DATABASECLASS, --databaseclass DATABASECLASS
                         `path` Specifies a custom database class to override SQLite.
                         Usage behavior:
                           • Default value: None (built-in SQLite engine)
@@ -169,7 +171,7 @@ options:
                           • Using '--noautoupdate true'  -> True
                           • Using '--noautoupdate false' -> False
                           • When enabled, use the 'Refresh Dashboard' button on the admin page
-  -s*, --server [[]SERVER[]]
+  -s [[]SERVER[]], --server [[]SERVER[]]
                         Starts the dashboard webserver.
                         Usage behavior:
                           • Default value: None (no webserver)
@@ -181,5 +183,21 @@ options:
                           • '--server default' -> default behaviour
                           • '--server 0.0.0.0:8080' -> custom host/port
                           • '--server 0.0.0.0:8080:admin:secret' -> custom host/port and admin username/password
+  --ssl-certfile SSL_CERTFILE
+                        `path` Path to an SSL certificate file to enable HTTPS on the server.
+                        Usage behavior:
+                          • Default value: None (HTTP only)
+                          • Must be combined with --ssl-keyfile
+                          • Enables HTTPS when both --ssl-certfile and --ssl-keyfile are provided
+                        Examples:
+                          • '--ssl-certfile cert.pem --ssl-keyfile key.pem'
+  --ssl-keyfile SSL_KEYFILE
+                        `path` Path to an SSL private key file to enable HTTPS on the server.
+                        Usage behavior:
+                          • Default value: None (HTTP only)
+                          • Must be combined with --ssl-certfile
+                          • Enables HTTPS when both --ssl-certfile and --ssl-keyfile are provided
+                        Examples:
+                          • '--ssl-certfile cert.pem --ssl-keyfile key.pem'
 
 For full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/

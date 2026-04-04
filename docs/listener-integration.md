@@ -60,6 +60,24 @@ robot --listener robotdashboardlistener.py:uploadlog=true tests.robot
 robot --listener path/to/listeners/robotdashboardlistener.py:host=10.0.0.5:port=8543 tests.robot  
 ```
 
+**With HTTPS**
+
+```bash
+robot --listener robotdashboardlistener.py:protocol=https:port=8543 tests.robot  
+```
+
+**With HTTPS and SSL verification disabled (for self-signed certificates)**
+
+```bash
+robot --listener robotdashboardlistener.py:protocol=https:sslverify=false tests.robot  
+```
+
+**With HTTPS and a custom CA bundle**
+
+```bash
+robot --listener robotdashboardlistener.py:protocol=https:sslverify=/path/to/ca-bundle.pem tests.robot  
+```
+
 ## Full Listener Options
 
 The listener supports the following arguments:
@@ -71,13 +89,15 @@ The listener supports the following arguments:
 | `uploadlog` | Set to `true` to upload the log file to the server (default: `false`) |
 | `host` | Dashboard server hostname (default: `127.0.0.1`) |
 | `port` | Dashboard server port (default: `8543`) |
+| `protocol` | Protocol to use when connecting to the server: `http` or `https` (default: `http`) |
+| `sslverify` | SSL certificate verification for HTTPS: `true` (default), `false` (skip verification for self-signed certs), or a path to a CA bundle file |
 | `limit` | Maximum number of runs stored in the database (older runs will be auto-deleted, based on the order in the database) |
 | `output` | Required only when using Pabot **with a custom output.xml name** |
 
 **Example with all options**
 
 ```bash
-robot --listener robotdashboardlistener.py:tags=dev1,dev2:version=v2.0:host=127.0.0.2:port=8888:limit=100:uploadlog=true tests.robot  
+robot --listener robotdashboardlistener.py:tags=dev1,dev2:version=v2.0:host=127.0.0.2:port=8888:protocol=https:sslverify=false:limit=100:uploadlog=true tests.robot  
 ```
 
 ## Using the Listener with Pabot

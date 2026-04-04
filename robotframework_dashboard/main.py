@@ -85,6 +85,8 @@ def main():
             arguments.server_pass,
             arguments.offline_dependencies,
             arguments.no_autoupdate,
+            arguments.ssl_certfile,
+            arguments.ssl_keyfile,
         )
         server.set_robotdashboard(robotdashboard)
         server.run()

@@ -29,6 +29,14 @@
 # [listeners]
 # "robotdashboardlistener.py" = ["host=127.0.0.2", "port=8888", "limit=100"]
 
+# HTTPS with SSL verification disabled (for self-signed certificates)
+# [listeners]
+# "robotdashboardlistener.py" = ["protocol=https", "port=8543", "sslverify=false"]
+
+# HTTPS with a custom CA bundle
+# [listeners]
+# "robotdashboardlistener.py" = ["protocol=https", "port=8543", "sslverify=/path/to/ca-bundle.pem"]
+
 # All features combined
 # [listeners]
 # "robotdashboardlistener.py" = ["tags=dev1,dev2", "version=v2.0", "uploadlog=true", "limit=100", "host=127.0.0.2", "port=8888"]

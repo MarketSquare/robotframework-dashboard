@@ -63,6 +63,14 @@ def test_init_sets_expected_attributes():
     assert server.log_dir == "robot_logs"
     assert server.no_autoupdate is True
     assert server.latest_log_dir is None
+    assert server.ssl_certfile is None
+    assert server.ssl_keyfile is None
+
+
+def test_init_stores_ssl_certfile_and_keyfile():
+    server = ApiServer("127.0.0.1", 8543, "", "", False, ssl_certfile="cert.pem", ssl_keyfile="key.pem")
+    assert server.ssl_certfile == "cert.pem"
+    assert server.ssl_keyfile == "key.pem"
 
 
 def test_set_robotdashboard_stores_instance():

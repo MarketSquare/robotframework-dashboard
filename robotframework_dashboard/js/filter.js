@@ -1125,6 +1125,101 @@ function exit_profile_edit_mode() {
     });
 }
 
+// Merge two profile objects according to the "largest horizon" rules:
+//   runTags / projectVersions : union of checked entries
+//   useOrTags                 : OR wins (more permissive)
+//   fromDate / fromTime       : take the earlier value  (widest start)
+//   toDate   / toTime         : take the later  value  (widest end)
+//   amount                   : take the larger value
+//   runs / metadata          : keep if identical, otherwise "All"
+function merge_two_profiles(profileA, profileB) {
+    const result = {};
+
+    // runs: same → keep; otherwise "All"
+    if (profileA.runs !== undefined && profileB.runs !== undefined) {
+        result.runs = profileA.runs === profileB.runs ? profileA.runs : "All";
+    } else if (profileA.runs !== undefined) {
+        result.runs = profileA.runs;
+    } else if (profileB.runs !== undefined) {
+        result.runs = profileB.runs;
+    }
+
+    // runTags: union of checked states
+    if (profileA.runTags !== undefined || profileB.runTags !== undefined) {
+        const tagsA = profileA.runTags || [];
+        const tagsB = profileB.runTags || [];
+        const merged = {};
+        tagsA.forEach(t => { merged[t.id] = t.checked; });
+        tagsB.forEach(t => { merged[t.id] = merged[t.id] || t.checked; });
+        result.runTags = Object.entries(merged).map(([id, checked]) => ({ id, checked }));
+    }
+
+    // useOrTags: OR wins (more permissive)
+    if (profileA.useOrTags !== undefined || profileB.useOrTags !== undefined) {
+        result.useOrTags = !!(profileA.useOrTags || profileB.useOrTags);
+    }
+
+    // projectVersions: union of checked states
+    if (profileA.projectVersions !== undefined || profileB.projectVersions !== undefined) {
+        const versA = profileA.projectVersions || [];
+        const versB = profileB.projectVersions || [];
+        const merged = {};
+        versA.forEach(v => { merged[v.value] = v.checked; });
+        versB.forEach(v => { merged[v.value] = merged[v.value] || v.checked; });
+        result.projectVersions = Object.entries(merged).map(([value, checked]) => ({ value, checked }));
+    }
+
+    // fromDate + fromTime: take the earlier combination (widest horizon)
+    if (profileA.fromDate !== undefined && profileB.fromDate !== undefined) {
+        const dtA = `${profileA.fromDate}T${profileA.fromTime || "00:00"}`;
+        const dtB = `${profileB.fromDate}T${profileB.fromTime || "00:00"}`;
+        const earlier = dtA <= dtB ? profileA : profileB;
+        result.fromDate = earlier.fromDate;
+        if (earlier.fromTime !== undefined) result.fromTime = earlier.fromTime;
+    } else if (profileA.fromDate !== undefined) {
+        result.fromDate = profileA.fromDate;
+        if (profileA.fromTime !== undefined) result.fromTime = profileA.fromTime;
+    } else if (profileB.fromDate !== undefined) {
+        result.fromDate = profileB.fromDate;
+        if (profileB.fromTime !== undefined) result.fromTime = profileB.fromTime;
+    }
+
+    // toDate + toTime: take the later combination (widest horizon)
+    if (profileA.toDate !== undefined && profileB.toDate !== undefined) {
+        const dtA = `${profileA.toDate}T${profileA.toTime || "23:59"}`;
+        const dtB = `${profileB.toDate}T${profileB.toTime || "23:59"}`;
+        const later = dtA >= dtB ? profileA : profileB;
+        result.toDate = later.toDate;
+        if (later.toTime !== undefined) result.toTime = later.toTime;
+    } else if (profileA.toDate !== undefined) {
+        result.toDate = profileA.toDate;
+        if (profileA.toTime !== undefined) result.toTime = profileA.toTime;
+    } else if (profileB.toDate !== undefined) {
+        result.toDate = profileB.toDate;
+        if (profileB.toTime !== undefined) result.toTime = profileB.toTime;
+    }
+
+    // metadata: same → keep; otherwise "All"
+    if (profileA.metadata !== undefined && profileB.metadata !== undefined) {
+        result.metadata = profileA.metadata === profileB.metadata ? profileA.metadata : "All";
+    } else if (profileA.metadata !== undefined) {
+        result.metadata = profileA.metadata;
+    } else if (profileB.metadata !== undefined) {
+        result.metadata = profileB.metadata;
+    }
+
+    // amount: take the larger value
+    if (profileA.amount !== undefined && profileB.amount !== undefined) {
+        result.amount = String(Math.max(Number(profileA.amount), Number(profileB.amount)));
+    } else if (profileA.amount !== undefined) {
+        result.amount = profileA.amount;
+    } else if (profileB.amount !== undefined) {
+        result.amount = profileB.amount;
+    }
+
+    return result;
+}
+
 export {
     setup_filtered_data_and_filters,
     setup_run_amount_filter,
@@ -1154,4 +1249,5 @@ export {
     update_active_profile,
     clear_active_profile,
     capture_default_filters,
+    merge_two_profiles,
 };
