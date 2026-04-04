@@ -1,4 +1,4 @@
-from os.path import join, abspath, dirname
+from os.path import join, abspath, dirname, relpath
 from pathlib import Path
 from datetime import datetime
 from json import dumps
@@ -51,8 +51,12 @@ class DashboardGenerator:
             dashboard_data = dashboard_data.replace(
                 '"placeholder_version"', __version__
             )
+            if use_logs and not server:
+                runs_data = self._make_paths_relative(data["runs"], name_dashboard)
+            else:
+                runs_data = data["runs"]
             dashboard_data = dashboard_data.replace(
-                '"placeholder_runs"', f'"{self._compress_and_encode(data["runs"])}"'
+                '"placeholder_runs"', f'"{self._compress_and_encode(runs_data)}"'
             )
             dashboard_data = dashboard_data.replace(
                 '"placeholder_suites"', f'"{self._compress_and_encode(data["suites"])}"'
@@ -113,6 +117,20 @@ class DashboardGenerator:
         # warn in case of empty database
         if len(data["runs"]) == 0:
             print("  WARNING: There are no runs so the dashboard will be empty!")
+
+    def _make_paths_relative(self, runs, dashboard_name):
+        dashboard_dir = dirname(abspath(dashboard_name))
+        result = []
+        for run in runs:
+            if run.get("path"):
+                try:
+                    relative = relpath(run["path"], dashboard_dir).replace("\\", "/")
+                    run = dict(run)
+                    run["path"] = relative
+                except ValueError:
+                    pass  # different Windows drive — keep absolute path as-is
+            result.append(run)
+        return result
 
     def _compress_and_encode(self, obj):
         json_data = dumps(obj).encode("utf-8")
