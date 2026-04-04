@@ -380,6 +380,34 @@ class ArgumentParser:
                 "  • '--server 0.0.0.0:8080:admin:secret' -> custom host/port and admin username/password\n"
             ),
         )
+        parser.add_argument(
+            "--ssl-certfile",
+            help=(
+                "`path` Path to an SSL certificate file to enable HTTPS on the server.\n"
+                "Usage behavior:\n"
+                "  • Default value: None (HTTP only)\n"
+                "  • Must be combined with --ssl-keyfile\n"
+                "  • Enables HTTPS when both --ssl-certfile and --ssl-keyfile are provided\n"
+                "Examples:\n"
+                "  • '--ssl-certfile cert.pem --ssl-keyfile key.pem'\n"
+            ),
+            dest="ssl_certfile",
+            default=None,
+        )
+        parser.add_argument(
+            "--ssl-keyfile",
+            help=(
+                "`path` Path to an SSL private key file to enable HTTPS on the server.\n"
+                "Usage behavior:\n"
+                "  • Default value: None (HTTP only)\n"
+                "  • Must be combined with --ssl-certfile\n"
+                "  • Enables HTTPS when both --ssl-certfile and --ssl-keyfile are provided\n"
+                "Examples:\n"
+                "  • '--ssl-certfile cert.pem --ssl-keyfile key.pem'\n"
+            ),
+            dest="ssl_keyfile",
+            default=None,
+        )
         return parser.parse_args()
 
     def _process_arguments(self, arguments):
@@ -529,6 +557,28 @@ class ArgumentParser:
             minutes = remainder // 60
             timezone = f"{sign}{hours:02d}:{minutes:02d}"
 
+        # handles the ssl certfile/keyfile arguments
+        ssl_certfile = arguments.ssl_certfile
+        ssl_keyfile = arguments.ssl_keyfile
+        if ssl_certfile and not ssl_keyfile:
+            print(
+                "  ERROR: --ssl-certfile was provided without --ssl-keyfile\n"
+                "   Both --ssl-certfile and --ssl-keyfile must be provided together"
+            )
+            exit(0)
+        if ssl_keyfile and not ssl_certfile:
+            print(
+                "  ERROR: --ssl-keyfile was provided without --ssl-certfile\n"
+                "   Both --ssl-certfile and --ssl-keyfile must be provided together"
+            )
+            exit(0)
+        if ssl_certfile and not exists(ssl_certfile):
+            print(f"  ERROR: --ssl-certfile path does not exist: {ssl_certfile}")
+            exit(0)
+        if ssl_keyfile and not exists(ssl_keyfile):
+            print(f"  ERROR: --ssl-keyfile path does not exist: {ssl_keyfile}")
+            exit(0)
+
         # return all provided arguments
         provided_args = {
             "outputs": outputs,
@@ -556,5 +606,7 @@ class ArgumentParser:
             "no_vacuum": no_vacuum,
             "timezone": timezone,
             "no_autoupdate": no_autoupdate,
+            "ssl_certfile": ssl_certfile,
+            "ssl_keyfile": ssl_keyfile,
         }
         return dotdict(provided_args)

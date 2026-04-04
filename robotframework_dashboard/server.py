@@ -281,6 +281,8 @@ class ApiServer:
         server_pass: str,
         offline_dependencies: bool,
         no_autoupdate: bool = False,
+        ssl_certfile: str = None,
+        ssl_keyfile: str = None,
     ):
         """Init function that starts up the fastapi app and initializes all the vars and endpoints"""
         self.app = FastAPIOffline(
@@ -294,6 +296,8 @@ class ApiServer:
         self.server_pass = server_pass
         self.offline = offline_dependencies
         self.no_autoupdate = no_autoupdate
+        self.ssl_certfile = ssl_certfile
+        self.ssl_keyfile = ssl_keyfile
         self.log_dir = "robot_logs"
         self.latest_log_dir = None
 
@@ -802,4 +806,10 @@ class ApiServer:
 
     def run(self):  # pragma: no cover
         """Function to start up the FastAPI server through uvicorn"""
-        run(self.app, host=self.server_host, port=self.server_port)
+        run(
+            self.app,
+            host=self.server_host,
+            port=self.server_port,
+            ssl_certfile=self.ssl_certfile,
+            ssl_keyfile=self.ssl_keyfile,
+        )

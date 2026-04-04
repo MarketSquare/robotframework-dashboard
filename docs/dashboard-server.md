@@ -10,10 +10,11 @@ RobotFramework Dashboard includes a built-in server that lets you host the dashb
 
 ## Why Use the Dashboard Server
 
-- Host a centralized, always-available dashboard accessible via HTTP  
+- Host a centralized, always-available dashboard accessible via HTTP or HTTPS  
 - Enable remote clients to push or delete runs in your database  
 - Provide a web-based admin interface for manual management  
 - Secure access via optional basic authentication (username/password)  
+- Secure transport via optional HTTPS using your own SSL certificate  
 - The server automatically uses offline CDN (js/css) because `FastAPI-offline` is used, making it compatible with [`--offlinedependencies`](https://marketsquare.github.io/robotframework-dashboard/advanced-cli-examples) for full offline usage!
 > **Tip:** To implement your server into your test runs look at the example [listener](/listener-integration.md) integration!
 
@@ -47,6 +48,22 @@ Or with a custom host and port plus authentication:
 ```bash 
 robotdashboard -s host:port:user:password  
 ```
+
+**Enable HTTPS**
+
+To serve over HTTPS, provide paths to your SSL certificate and private key:
+
+```bash 
+robotdashboard --server --ssl-certfile cert.pem --ssl-keyfile key.pem  
+```
+
+Combined with a custom host, port, and authentication:
+
+```bash 
+robotdashboard -s 0.0.0.0:8543:admin:secret --ssl-certfile cert.pem --ssl-keyfile key.pem  
+```
+
+> **Tip:** Both `--ssl-certfile` and `--ssl-keyfile` must be provided together. Use any valid PEM certificate/key pair, including self-signed certificates for testing.
 
 Once the server is running, open your browser at the configured address (for example, `http://127.0.0.1:8543/`) to access:
 
@@ -87,6 +104,21 @@ If you start the server with a username and password, the admin page will be pro
 - Add or remove logs manually  
 
 The dashboard itself (the HTML) does **not** require authentication. API calls as of now do also **not** require authentication.
+
+## Security: HTTPS (Optional)
+
+To encrypt traffic between clients and the server, you can enable HTTPS by providing an SSL certificate and private key:
+
+```bash
+robotdashboard --server --ssl-certfile cert.pem --ssl-keyfile key.pem
+```
+
+- Both `--ssl-certfile` and `--ssl-keyfile` must be provided together.  
+- Any valid PEM certificate/key pair is accepted, including self-signed certificates.  
+- When HTTPS is enabled, the server URL becomes `https://host:port/` instead of `http://host:port/`.  
+- The [listener](/listener-integration.md) must be configured with `protocol=https` to match.
+
+> **Tip:** For production deployments it is recommended to use a certificate from a trusted Certificate Authority (CA). For local or internal testing, a self-signed certificate is sufficient.
 
 ## Working Programmatically with the Server
 
@@ -192,3 +224,21 @@ Use `--noautoupdate` when:
 - You are uploading many outputs in quick succession and want uploads to return fast.
 - You prefer to control exactly when the dashboard is updated.
 :::
+
+## Known Issues
+
+### `ConnectionResetError` on Windows with HTTPS
+
+When running the server with HTTPS on Windows, you may see the following error in the server console:
+
+```
+Exception in callback _ProactorBasePipeTransport._call_connection_lost()
+...
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+```
+
+This is a known Windows-specific behaviour caused by the interaction between uvicorn's `ProactorEventLoop` and TLS connections. Browsers and HTTP clients sometimes open speculative TCP connections that are dropped before the TLS handshake completes. On Linux this is silently handled, but on Windows the asyncio `ProactorEventLoop` surfaces it as an unhandled exception.
+
+It does **not** affect any completed request — all requests that returned `200 OK` were served and encrypted correctly. The server continues to function normally.
+
+The server logs will still show `HTTP/1.1` in request lines (e.g. `GET / HTTP/1.1`) even when HTTPS is active. This is expected: uvicorn decrypts TLS traffic first and then processes it as a regular HTTP/1.1 request internally. The traffic is encrypted in transit regardless of what the log line shows.
