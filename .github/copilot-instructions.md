@@ -1,6 +1,10 @@
-# robotframework-dashboard — Agent Guide
+# robotframework-dashboard — Copilot Instructions
 
 This file gives AI agents and contributors the context needed to work effectively in this codebase.
+
+## How to Use the Skills Files
+
+Before starting work on any non-trivial task, read the relevant skill file from `.github/skills/`. Each file contains deep domain knowledge that avoids re-exploring the codebase from scratch. Use the table in the **Skills** section below to pick the right one(s). Read the skill file with a file-read tool before making any changes.
 
 ---
 
@@ -109,7 +113,7 @@ The `.github/skills/` directory contains domain-specific knowledge files:
 | `unit-tests.md` | Python unit tests (pytest, coverage, test layout, fixtures) |
 | `js-unit-tests.md` | JavaScript unit tests (Vitest, mocking patterns, which modules are testable) |
 | `server-api.md` | All REST endpoints, authentication, log linking, auto-update behavior |
-| `filtering-and-settings.md` | Filter pipeline, settings object, localStorage persistence, layout/GridStack system |
+| `filtering-and-settings.md` | Filter pipeline, settings object, localStorage persistence, layout/GridStack system, **filter profiles** (data structure, all profile functions, merge modal) |
 
 ---
 
