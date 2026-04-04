@@ -41,6 +41,77 @@ var ignoreSkips = false; // test most flaky graph
 var ignoreSkipsRecent = false; // test recent most flaky graph
 var onlyFailedFolders = false; // suite folder donut
 
+// Merge profiles modal
+let lastMergeResult = {};
+
+function escape_html_for_merge(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+// Each entry describes one checkbox row in the merge settings panel
+const filterRows = [
+    {
+        key: 'runs',
+        label: 'Run',
+        fields: ['runs'],
+        present: p => p.runs !== undefined,
+        valueHtml: p => escape_html_for_merge(p.runs),
+    },
+    {
+        key: 'runTags',
+        label: 'Run Tags',
+        fields: ['runTags', 'useOrTags'],
+        present: p => p.runTags !== undefined,
+        valueHtml: p => {
+            const checked = (p.runTags || []).filter(t => t.checked).map(t => escape_html_for_merge(t.id));
+            const mode = p.useOrTags ? ' <em>(OR)</em>' : ' <em>(AND)</em>';
+            return (checked.length ? checked.join(', ') : '<em>none</em>') + mode;
+        },
+    },
+    {
+        key: 'projectVersions',
+        label: 'Versions',
+        fields: ['projectVersions'],
+        present: p => p.projectVersions !== undefined,
+        valueHtml: p => {
+            const checked = (p.projectVersions || []).filter(v => v.checked).map(v => escape_html_for_merge(v.value));
+            return checked.length ? checked.join(', ') : '<em>none</em>';
+        },
+    },
+    {
+        key: 'fromDate',
+        label: 'From',
+        fields: ['fromDate', 'fromTime'],
+        present: p => p.fromDate !== undefined || p.fromTime !== undefined,
+        valueHtml: p => escape_html_for_merge(`${p.fromDate || ''} ${p.fromTime || ''}`.trim()),
+    },
+    {
+        key: 'toDate',
+        label: 'To',
+        fields: ['toDate', 'toTime'],
+        present: p => p.toDate !== undefined || p.toTime !== undefined,
+        valueHtml: p => escape_html_for_merge(`${p.toDate || ''} ${p.toTime || ''}`.trim()),
+    },
+    {
+        key: 'metadata',
+        label: 'Metadata',
+        fields: ['metadata'],
+        present: p => p.metadata !== undefined,
+        valueHtml: p => escape_html_for_merge(p.metadata),
+    },
+    {
+        key: 'amount',
+        label: 'Amount',
+        fields: ['amount'],
+        present: p => p.amount !== undefined,
+        valueHtml: p => escape_html_for_merge(String(p.amount)),
+    },
+];
+
 // Track overview nav listeners so we can cleanly remove them when leaving Overview
 let overviewNavStore = {
     scrollHandler: null,
@@ -80,4 +151,6 @@ export {
     ignoreSkipsRecent,
     onlyFailedFolders,
     overviewNavStore,
+    lastMergeResult,
+    filterRows,
 };
