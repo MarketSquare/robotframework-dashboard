@@ -44,7 +44,7 @@ Generate Dashboard
     Log    ${output}
 
 Remove Database And Dashboard
-    ${files}    List Files In Directory    path=${CURDIR}/../../..
+    ${files}    List Files In Directory    path=${CURDIR}/../../../..
     FOR    ${file}    IN    @{files}
         IF    ('.db' in $file or '.html' in $file) and not ('robotresults_' in $file or 'robotdashboard_' in $file)
             Remove File    path=${file}

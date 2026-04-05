@@ -21,7 +21,7 @@ There are three levels of tests in this project:
 ### Python Unit Tests
 Python unit tests are located in `tests/python/` and run with pytest.
 ```sh
-bash scripts/unittests.sh
+bash scripts/python-tests.sh
 ```
 
 ### JavaScript Unit Tests
@@ -32,7 +32,7 @@ npm run test:js
 ```
 Or on Windows:
 ```
-scripts\jstests.bat
+scripts\javascript-tests.bat
 ```
 To run in watch mode during development:
 ```sh
@@ -63,15 +63,25 @@ Using a Docker container to run the tests in avoids both, messing up your local 
 
 To run all the tests in the Docker container in the same way as in the GitHub action:
 ```bash
+# Linux
 bash scripts/run-in-test-container.sh bash scripts/robot-tests.sh
+# Windows
+C:> scripts\run-in-test-container.bat bash scripts/robot-tests.sh
 ```
+
 To run a individual tests out of a suite:
 ```bash
+# Linux
 bash scripts/run-in-test-container.sh robot -t "*version*" tests/robot/testsuites/00_cli.robot
+# Windows
+C:> scripts\run-in-test-container.bat robot -t "*version*" tests/robot/testsuites/00_cli.robot
 ```
 To run a single test suite in such a container:
 ```bash
+# Linux
 bash scripts/run-in-test-container.sh robot tests/robot/testsuites/02_overview.robot
+# Windows
+C:> scripts\run-in-test-container.bat robot tests/robot/testsuites/02_overview.robot
 ```
 
 > Note: It is not required to run any `pip install .` as this will be done by the script within the Docker container.
@@ -88,16 +98,23 @@ Using the script requires that you are in the top-level directory of your workin
 #### Prerequisuites and Setup
 Running the tests in a Docker container requires a working docker installation. To check if your system has Docker installed check for the version:
 ```bash
+# Linux
 $ docker -v
 Docker version 29.3.0, build 5927d80
+# Windows
+C:> docker -v
+Docker version 29.3.1, build c2be9cc
 ```
-If you have no Docker installer yet, follow the instructions to [Install Docker Engine](https://docs.docker.com/engine/install/) depending on your OS. One way is to use the *convenient script*:
+If you have no Docker installer yet, follow the instructions to [Install Docker Engine](https://docs.docker.com/engine/install/) depending on your Linux OS. One way is to use the *convenient script*:
 ```bash
 $ curl -fsSL https://get.docker.com -o get-docker.sh
 $ sudo sh get-docker.sh
 ```
+If you are running on Windows, follow the instructions in [Install Docker Desktop on Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
+
 Once Docker is available verify if you are allowed to run docker commands.
 ```bash
+# Linux
 $ docker ps
 permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
 ```
@@ -107,10 +124,13 @@ $ sudo usermod -aG docker $USER
 ```
 Don't forget to relogin to make the new group membership effective for your user.
 
-#### Creating the the Docker Image
+#### Creating the Docker Image
 Once Docker is working you need to generate an *image*. The image can be easily created by:
 ```bash
+# Linux
 $ bash scripts/create-test-image.sh
+# Windows
+C:> scripts\create-test-image.bat
 ```
 > Note: If you are not familar with docker, imagine an *image* as an ISO image of a Linux live-CD. It is an immutable preconfigured setup of an OS which can be used to run it without installing.
 
@@ -121,7 +141,13 @@ The image is created in the following steps:
 - Installs all the project requirements to perform the tests from `requirements-test.txt`
 - Initializes the `robotframework-browser` library
 - Creates a working directory `/robotframework-dashboard`
-The image created is being used whenever a new docker container is launched by the `scripts/run-in-test-container.sh`. The image is static. To address changes in the `requirements-test.txt` you can recreate (and replace) the image by running the `create-test-image.sh` once again.
+The image created is being used whenever a new docker container is launched by the `scripts/run-in-test-container.sh`. The image is static. To address changes in the `requirements-test.txt` you can recreate (and replace) the image by running the `create-test-image.sh` or `create-test-image.bat` once again. You can also force a complete requild of the image by:
+```bash
+# Linux
+$ bash scripts/create-test-image.sh --no-cache
+# Windows
+C:> scripts\create-test-image.bat --no-cache
+```
 
 ## 📖 Docs
 
