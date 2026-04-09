@@ -54,46 +54,68 @@ All tests run automatically in GitHub Actions. They are triggered through the `.
 Results can be found at the `PR > checks > Upload robot logs`.
 The check will have a failed status if any tests has failed.
 
-### Running Tests Locally
-Perhaps you want to run the tests locally on your PC before pushing and waiting for the results from the GitHub actions. But this requires to install the required components in your native PC. In most cases this will not work as expected bacause of the differemt versions used. E.g.  screenshots taken during the tests may differ, so that the tests will fail.
+## Running Tests Locally - in a Docker Container
+Run the tests locally on your PC before pushing and waiting for the results from the GitHub actions is always a good idea. But this requires to install the required components in your native PC. In some cases this will not work as expected bacause of the differemt versions used. E..  screenshots taken during the tests may differ, so that the tests might fail.
 
-Using a Docker container to run the tests in avoids both, messing up your local system with installing the required parts for the tests and getting failed tests due to your setup.
+Using a Docker container to run the tests in avoids both, messing up your local system with installing the required parts for the tests and getting failed tests due to your setup. You just need to create the respective docker *images* by running the scripts as described below.
 
 > Note: To use this methond there is no need to understand how Docker is working in detail.
 
-To run all the tests in the Docker container in the same way as in the GitHub action:
+### Python Unit Tests - in Docker Container
+To run the python based tests in a docker container, execute:
 ```bash
 # Linux
-bash scripts/run-in-test-container.sh bash scripts/robot-tests.sh
+bash scripts/docker/run-in-python-container.sh bash scripts/python-tests.sh
 # Windows
-C:> scripts\run-in-test-container.bat bash scripts/robot-tests.sh
+C:> scripts\docker\run-in-python-container.bat bash scripts/python-tests.sh
+```
+
+### JavaScript Unit Tests - in Docker Container
+To run the javascript based tests in a docker container, execute:
+```bash
+# Linux
+bash scripts/docker/run-in-js-container.sh bash scripts/javascript-tests.sh
+# Windows
+C:> scripts\docker\run-in-js-container.bat bash scripts/javascript-tests.sh
+```
+
+### Robot Framework End-to-End Tests - in Docker Container
+To run all the robot framework end-to-end tests in the Docker container in the same way as in the GitHub action:
+```bash
+# Linux
+bash scripts/docker/run-in-robot-container.sh bash scripts/robot-tests.sh
+# Windows
+C:> scripts\docker\run-in-robot-container.bat bash scripts/robot-tests.sh
 ```
 
 To run a individual tests out of a suite:
 ```bash
 # Linux
-bash scripts/run-in-test-container.sh robot -t "*version*" tests/robot/testsuites/00_cli.robot
+bash scripts/docker/run-in-robot-container.sh robot -t "*version*" tests/robot/testsuites/00_cli.robot
 # Windows
-C:> scripts\run-in-test-container.bat robot -t "*version*" tests/robot/testsuites/00_cli.robot
+C:> scripts\docker\run-in-robot-container.bat robot -t "*version*" tests/robot/testsuites/00_cli.robot
 ```
 To run a single test suite in such a container:
 ```bash
 # Linux
-bash scripts/run-in-test-container.sh robot tests/robot/testsuites/02_overview.robot
+bash scripts/docker/run-in-robot-container.sh robot tests/robot/testsuites/02_overview.robot
 # Windows
-C:> scripts\run-in-test-container.bat robot tests/robot/testsuites/02_overview.robot
+C:> scripts\docker\run-in-robot-container.bat robot tests/robot/testsuites/02_overview.robot
 ```
 
 > Note: It is not required to run any `pip install .` as this will be done by the script within the Docker container.
 
 #### How does it Work
-Using the script requires that you are in the top-level directory of your working copy of the git repository. When using the script, the following happens:
+Using the scripts require that you are in the top-level directory of your working copy of the git repository. When using the script, the following happens:
 - It is launching a new Docker container based on the image created (see below)
 - The current working directory is getting mounted to `/robotframework-dashboard` within the container
-- In the container the working copy is installed by `pip install .`
+- Depending on the script / image you use:
+    - The python based container contains all the setup required to run the python utit tests.
+    - The javascript based container contains all the setup of node.js and npm. The dependenies are getting installed automatically by `npm ci`.
+    - The robot based container contains the setup to run robot framework tests. Your current version of the dashboard from the working directory is installed by `pip install .`
 - The arguments you provide are executed as a bash command within the container
     - Due to the mounted working directory all the generated results can be accessed directly 
-- Once the command is completed, the running container is stopped and throw away
+- Once the command is completed, the running container is stopped and thrown away
 
 #### Prerequisuites and Setup
 Running the tests in a Docker container requires a working docker installation. To check if your system has Docker installed check for the version:
@@ -124,29 +146,51 @@ $ sudo usermod -aG docker $USER
 ```
 Don't forget to relogin to make the new group membership effective for your user.
 
-#### Creating the Docker Image
-Once Docker is working you need to generate an *image*. The image can be easily created by:
-```bash
-# Linux
-$ bash scripts/create-test-image.sh
-# Windows
-C:> scripts\create-test-image.bat
-```
+#### Creating the Docker Images
+Once Docker is working you need to generate an *image* for each type of tests (python, javascript, robot framework). 
 > Note: If you are not familar with docker, imagine an *image* as an ISO image of a Linux live-CD. It is an immutable preconfigured setup of an OS which can be used to run it without installing.
 
+The respective image can be easily created by one of the following:
+```bash
+# Linux
+$ bash scripts/docker/create-test-image.sh python
+$ bash scripts/docker/create-test-image.sh js
+$ bash scripts/docker/create-test-image.sh robot
+# Windows
+C:> scripts\docker\create-test-image.bat python
+C:> scripts\docker\create-test-image.bat js
+C:> scripts\docker\create-test-image.bat robot
+```
+
 The image is created in the following steps:
+##### Image for Python Tests
+For the python based one:
+- It is based on the public image `ubuntu:latest`, as of writing 24.04 LTS.
+- Installs the latest `python3` and `pip` from the distribution
+- Installs all the project requirements to perform the tests from `requirements-dev.txt`
+- Creates and go into the working directory `/robotframework-dashboard`
+
+##### Image for Javascript Tests
+For the javascript based one:
+- It is based on the public image `ubuntu:latest`, as of writing 24.04 LTS.
+- Installs `curl` and the latest `node.js v24` from the distribution
+- Creates and go into the working directory `/robotframework-dashboard`
+
+##### Image for Robot Framework Tests
+For the robot framework based one:
 - It is based on the public image `mcr.microsoft.com/playwright:v1.56.0-jammy`, a *framework for Web Testing and Automation*.
     - which is based on `ubuntu:jammy` (ubuntu 22.04)
 - Installs the latest `python3-pip` from the distribution
 - Installs all the project requirements to perform the tests from `requirements-test.txt`
 - Initializes the `robotframework-browser` library
 - Creates a working directory `/robotframework-dashboard`
-The image created is being used whenever a new docker container is launched by the `scripts/run-in-test-container.sh`. The image is static. To address changes in the `requirements-test.txt` you can recreate (and replace) the image by running the `create-test-image.sh` or `create-test-image.bat` once again. You can also force a complete requild of the image by:
+
+The image created is being used whenever a new docker container is launched by the `scripts/docker/run-in-test-container.sh`. The image is static. To address changes in the `requirements-test.txt` you can recreate (and replace) the image by running the `create-test-image.sh` or `create-test-image.bat` once again. You can also force a complete requild of the image by:
 ```bash
 # Linux
-$ bash scripts/create-test-image.sh --no-cache
+$ bash scripts/docker/create-test-image.sh python --no-cache
 # Windows
-C:> scripts\create-test-image.bat --no-cache
+C:> scripts\docker\create-test-image.bat python --no-cache
 ```
 
 ## 📖 Docs
