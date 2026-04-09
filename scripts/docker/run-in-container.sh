@@ -15,7 +15,7 @@ docker -v 2> /dev/null ||
     die "Docker seems not being installed"
 [ -n "$(docker images -q "$IMAGE" 2> /dev/null)" ] || 
     die "Docker image $IMAGE not found, please run 'scripts/docker/create-test-image.sh $1'"
-[ -d .git ] ||
+[ -f robotframework_dashboard/robotdashboard.py ] ||
     die "you need to start this script from the toplevel directory of the robotframework-dashboard repository"
 
 USER_MAPPING="--user $(id -u):$(id -g)"
