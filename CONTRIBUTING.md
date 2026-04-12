@@ -55,11 +55,11 @@ Results can be found at the `PR > checks > Upload robot logs`.
 The check will have a failed status if any tests has failed.
 
 ## Running Tests Locally - in a Docker Container
-Run the tests locally on your PC before pushing and waiting for the results from the GitHub actions is always a good idea. But this requires to install the required components in your native PC. In some cases this will not work as expected bacause of the differemt versions used. E..  screenshots taken during the tests may differ, so that the tests might fail.
+Run the tests locally on your PC before pushing and waiting for the results from the GitHub actions is always a good idea. But this requires to install the required components in your native PC. In some cases this will not work as expected bacause of the differemt versions used. E.g.  screenshots taken during the tests may differ, so that the tests might fail.
 
 Using a Docker container to run the tests in avoids both, messing up your local system with installing the required parts for the tests and getting failed tests due to your setup. You just need to create the respective docker *images* by running the scripts as described below.
 
-> Note: To use this methond there is no need to understand how Docker is working in detail.
+> Note: To use this method there is no need to understand how Docker is working in detail.
 
 ### Python Unit Tests - in Docker Container
 To run the python based tests in a docker container, execute:
