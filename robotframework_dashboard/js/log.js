@@ -40,10 +40,14 @@ function open_log_from_path(path) {
     var fileUrl = ""
     if (server) { // server url
         fileUrl = `/log?path=${path}`
-    } else if (window.location.href.includes("file:///")) { // local machine url
-        fileUrl = `file:///${path}`
-    } else { // remote machine file server
-        fileUrl = combine_paths(window.location.href, path)
+    } else if (/^[A-Za-z]:/.test(path) || path.startsWith("/")) { // absolute path
+        if (window.location.href.includes("file:///")) { // local machine url
+            fileUrl = `file:///${path}`
+        } else { // remote machine file server
+            fileUrl = combine_paths(window.location.href, path)
+        }
+    } else { // relative path — resolve against the dashboard's own location
+        fileUrl = new URL(path, window.location.href).href
     }
     const win = window.open(fileUrl, "_blank")
 }
