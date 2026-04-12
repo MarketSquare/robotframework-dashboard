@@ -80,6 +80,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
     } else if (graphType == "timeline") {
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", dataLabel);
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
+        config.options.scales.x.type = "timelineScale";
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -101,6 +102,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
     } else if (graphType == "timeline") {
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", "Test");
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
+        config.options.scales.x.type = "timelineScale";
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -176,6 +178,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
                 display: settings.show.axisTitles,
                 text: "Run",
             },
+            type: "timelineScale",
         };
         config.options.onClick = (event, chartElement) => {
             if (chartElement.length) {
