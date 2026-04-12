@@ -61,6 +61,7 @@ function _build_test_statistics_timeline_config() {
             display: settings.show.axisTitles,
             text: "Run",
         },
+        type: "timelineScale",
     };
     config.options.onClick = (event, chartElement) => {
         if (chartElement.length) {
@@ -268,6 +269,7 @@ function _build_test_messages_config() {
                 display: settings.show.axisTitles,
                 text: "Run",
             },
+            type: "timelineScale",
         };
         config.options.onClick = (event, chartElement) => {
             if (chartElement.length) {
