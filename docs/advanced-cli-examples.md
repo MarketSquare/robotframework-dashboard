@@ -70,7 +70,10 @@ Aliases help replace long timestamps with clean, readable names. They also signi
 ### How aliases work
 
 - By default, the dashboard identifies runs using their `run_start` timestamp.
-- Alias display can be enabled in the **Dashboard Settings**.
+- The **Run Label Display** setting in **Dashboard Settings** controls which label is shown across all graphs, tooltips, axes, and comparison selects. Three options are available:
+  - **Run Start** (default) — raw `run_start` timestamp
+  - **Alias** — label derived from the output filename (described below)
+  - **Run Name** — the Robot Framework suite name from the output file; duplicate names are automatically numbered (e.g. *Tests*, *Tests 2*, *Tests 3*)
 - Aliases are generated **during processing** when output files are added to the database.
 - The alias is derived from the output filename by removing only:
   - the prefix `output_`

@@ -34,7 +34,7 @@ The **Graphs** tab contains the core configuration options for all charts in the
 | **Display Legends** | Show or hide graph legends. Useful to disable this when graphs contain many series. |
 | **Display Axis Titles** | Shows axis labels (e.g., *Run Time*, *Pass/Fail Count*). Disable for a cleaner look. |
 | **Display Run Start/Alias Labels On Axes** | Enables labels directly on graph axes. Disable for a cleaner look. |
-| **Display Alias Labels** | Labels graphs using **aliases** instead of the default *run_start*. |
+| **Run Label Display** | Controls which label is used to identify runs across graphs, tooltips, axes, and comparison selects. Three options are available: **Run Start** (default) — uses the raw `run_start` timestamp; **Alias** — uses the alias derived from the output filename (see [Aliases](/advanced-cli-examples#aliases-for-clean-dashboard-identification)); **Run Name** — uses the Robot Framework suite name recorded in the output file. When multiple runs share the same name, a numeric suffix is appended automatically (e.g. *Tests*, *Tests 2*, *Tests 3*). |
 | **Display Prefixes** | Shows or hides the `project_` prefix text on Overview page tags. |
 | **Display Milliseconds Run Start Labels** | Adds millisecond precision to run_start timestamps. |
 | **Display Drawing Animations** | Enables animated graph rendering. |
