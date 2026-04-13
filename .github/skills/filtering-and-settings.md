@@ -93,11 +93,65 @@ After filtering: updates count headlines (`#runTitle`, etc.), repopulates all dr
 
 ## Filter Profiles
 
-Named snapshots of the filter modal state, stored in `settings.filterProfiles` (localStorage-only).
+Named snapshots of the filter modal state, stored in `settings.filterProfiles` (localStorage-only key, never dropped by `merge_deep`).
 
-- `build_profile_from_checks()` — captures all checkbox/input/select states from the filter modal
-- `apply_filter_profile(name)` — restores a saved profile into the modal's UI and triggers filtering
-- The active profile name and whether it has been modified since last save is shown in the profile dropdown
+### Data structure
+```js
+settings.filterProfiles = {
+  "ProfileName": {
+    runs: "All",                          // string — run name or "All"
+    runTags: [{ id: "All", checked: true }, ...],   // array of {id, checked}
+    useOrTags: false,                     // boolean — AND/OR tag logic
+    projectVersions: [{ value: "All", checked: true }, ...],
+    fromDate: "YYYY-MM-DD", fromTime: "HH:MM",
+    toDate:   "YYYY-MM-DD", toTime:   "HH:MM",
+    metadata: "All",
+    amount: "10"                          // string (input value)
+  }
+}
+```
+A profile need not contain all keys — only the keys that were checked when the profile was saved.
+
+### Key functions (`filter.js`)
+| Function | What it does |
+|---|---|
+| `capture_current_filters()` | Reads all filter DOM controls → plain profile object |
+| `build_profile_from_checks()` | Like `capture_current_filters()` but only for keys whose `.filter-profile-check` checkbox is checked |
+| `save_filter_profile_to_storage(name, data)` | Merges into `settings.filterProfiles`, persists immediately |
+| `load_filter_profiles()` | Returns `settings.filterProfiles \|\| {}` |
+| `delete_filter_profile(name)` | Removes one entry and persists |
+| `apply_filter_profile(profile, name)` | Writes each key of a profile back into the filter modal DOM |
+| `populate_filter_profile_select()` | Rebuilds `#filterProfileList` `<ul>` from stored profiles |
+| `enter_profile_edit_mode()` / `exit_profile_edit_mode()` | Shows/hides per-row `.filter-profile-check` checkboxes + `#filterProfileEditorInline` |
+| `update_profile_select_display()` | Updates `#profileModifiedDot` and `#updateFilterProfile` visibility |
+| `update_active_profile()` | Re-saves only the keys that were in the original profile |
+| `merge_two_profiles(a, b)` | Merges two partial profiles with widest-horizon rules (see below) |
+| `capture_default_filters()` | Snapshots the initial filter state so checkboxes can show which fields differ |
+
+### Profile UI layout (dashboard.html)
+- **`.filter-profile-bar`** stripe between modal header and body: holds `#filterProfileEditorInline` (name input + Save Profile) on the left, `#updateFilterProfile` + `#selectFilterProfile` fake-dropdown on the right.
+- **`.filter-profile-check`** checkboxes appear inline on each filter row (hidden outside edit mode).
+- **`#filterProfileList`** `<ul>` inside `#filterProfileCheckBoxes` — each `<li>` has a `.filter-profile-apply` span and a `.filter-profile-delete` ×.
+
+### Merge profiles modal (`#mergeProfilesModal`)
+Opened by `#mergeFilterProfiles` button. Layout mirrors the filter modal:
+1. Modal header + Close button
+2. `.filter-profile-bar` stripe: name input + "Add Merged Profile" button
+3. Modal body: two-column profile selects with per-field checkboxes + "Resulting Filters" preview `<dl>`
+
+When a profile is selected, `render_merge_profile_settings(profile, side)` builds a checkbox list (one row per defined field) in `#mergeLeftSettings` / `#mergeRightSettings`. Any checkbox change calls `update_merge_result_preview()`, which runs `get_checked_partial_profile()` on both sides then `merge_two_profiles()` and renders the result as a `<dl>`.
+
+### `merge_two_profiles` rules
+| Field | Rule |
+|---|---|
+| `runs` / `metadata` | Same value → keep; different → `"All"` |
+| `runTags` / `projectVersions` | Union of checked entries (OR) |
+| `useOrTags` | OR wins |
+| `fromDate` + `fromTime` | Earlier datetime (widest start) |
+| `toDate` + `toTime` | Later datetime (widest end) |
+| `amount` | `Math.max` of both values |
+
+Fields present in only one side pass through unchanged.
 
 ---
 

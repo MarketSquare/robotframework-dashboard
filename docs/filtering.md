@@ -113,6 +113,31 @@ Filter Profiles let you save, name, and reapply a combination of filter settings
 - In the profile list, click the **×** next to a profile name.
 - A confirmation prompt prevents accidental deletion.
 
+#### Merging Profiles
+
+The **Merge Profiles** button (in the Filters modal header) opens a dedicated modal for combining filter settings from two saved profiles into a new one.
+
+**Layout of the merge modal:**
+- A **Profile Name** field and **Add Merged Profile** button sit directly below the title bar.
+- Below that, two columns let you independently choose a **Left Profile** and a **Right Profile**.
+- Once a profile is selected in a column, its individual filter settings appear as a checklist. Each row is pre-checked; uncheck any row to exclude that setting from the merge.
+- A **Resulting Filters** section at the bottom shows a live preview of what the merged profile will contain, updating instantly as you change selections or toggle checkboxes.
+
+**Merge rules** — when the same filter field is checked in both columns, the values are combined as follows:
+
+| Filter | Rule |
+|---|---|
+| **Run Tags** / **Versions** | Union of all checked entries (OR) |
+| **Use OR Tags** | OR wins (more permissive) |
+| **From Date / Time** | The earlier value is kept (widest horizon) |
+| **To Date / Time** | The later value is kept (widest horizon) |
+| **Amount** | The larger value is kept |
+| **Runs** / **Metadata** | Kept if both sides have the same value; otherwise resets to **All** |
+
+Fields checked on only one side pass through unchanged.
+
+You can also use this modal with only one column selected to quickly create a copy of an existing profile under a new name, with any settings individually removed.
+
 ### Section Filters on Dashboard
 
 The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each section has specific filtering options that apply only to that section.
