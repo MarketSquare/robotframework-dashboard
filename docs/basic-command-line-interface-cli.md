@@ -136,6 +136,7 @@ robotdashboard -t "My Cool Title"
 ```
 - Optional: `-t` or `--dashboardtitle` sets a custom HTML title for the dashboard.
 - Default: title is **Robot Framework Dashboard - YYYY-MM-DD HH:MM:SS**.
+- The title also appears in the navigation bar of the dashboard, overriding any *Custom Title* value set in the Theme settings.
 - It is also possible to combine all sections into a single unified view, see [Settings - General Settings (Graphs Tab)](/settings#general-settings-graphs-tab), for the details
 - The unified title will be the same as the `-t, --dashboardtitle` argument if provided, otherwise it defaults to "Dashboard Statistics"
 

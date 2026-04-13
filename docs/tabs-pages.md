@@ -24,7 +24,7 @@ The Dashboard supports a **Unified Mode** that combines all four sections (run, 
 In Unified Mode:
 - All graphs from all sections are shown on one page
 - A **Section Filters** button opens a modal for cross-section filtering (suite, test, and keyword filters)
-- The page title defaults to "Dashboard Statistics" or uses the custom `--dashboardtitle` value if provided
+- The page title defaults to "Dashboard Statistics", uses the *Custom Title* from the Theme settings if one is set, or uses the `--dashboardtitle` CLI value if provided — `--dashboardtitle` takes highest priority
 - Layout customization and persistence works independently from the standard view
 
 ## Compare Page

@@ -107,8 +107,8 @@ The **Theme** tab allows you to override the default colors used by the dashboar
 
 | Setting | Description |
 |---------|-------------|
-| **Custom Title** | A text label shown in the navigation bar next to the logo. Type any text to set it; leave blank to hide it. |
-| **Custom Logo** | Upload a PNG image to replace the default Robot Framework logo in the navigation bar. Only PNG files are accepted. |
+| **Custom Title** | A text label shown in the navigation bar next to the logo. Type any text to set it; leave blank to hide it. If `-t` / `--dashboardtitle` was set when generating the dashboard, that value takes **priority** and cannot be overridden from the UI. |
+| **Custom Logo** | Upload a PNG image to replace the default Robot Framework logo in the navigation bar. Images of any size or aspect ratio are accepted — the image is automatically scaled and padded to a square so it fits neatly in the logo slot. The logo is also applied as the browser tab **favicon** (at 48 × 48 px). Click **Reset** to restore the default. |
 
 ### Usage
 
