@@ -280,6 +280,7 @@ function _build_test_messages_config() {
             callback: function (value, index, ticks) {
                 return this.getLabelForValue(value).slice(0, 40);
             },
+            autoSkip: false,
         };
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }

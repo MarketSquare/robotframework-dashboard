@@ -81,6 +81,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", dataLabel);
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
         config.options.scales.x.type = "timelineScale";
+        config.options.scales.y.ticks.autoSkip = false;
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -103,6 +104,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", "Test");
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
         config.options.scales.x.type = "timelineScale";
+        config.options.scales.y.ticks.autoSkip = false;
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -186,6 +188,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
             }
         };
         if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false; }
+        config.options.scales.y.ticks.autoSkip = false;
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
