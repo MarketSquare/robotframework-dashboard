@@ -1,4 +1,4 @@
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { get_next_folder_level } from "../common.js";
 import { onlyFailedFolders } from "../variables/globals.js";
 import {
@@ -46,7 +46,7 @@ function get_donut_graph_data(dataType, filteredData) {
             hoverOffset: 4
         }]
     };
-    const callBackData = latest ? settings.show.aliases ? latest.run_alias : latest.run_start : ""
+    const callBackData = latest ? get_run_label(latest) : ""
     return [graphData, callBackData]
 }
 

@@ -1,17 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('@js/variables/settings.js', () => ({
-    settings: {
+vi.mock('@js/variables/settings.js', () => {
+    const settings = {
         switch: {
             suitePathsTestSection: false,
         },
         show: {
-            aliases: false,
+            aliases: 'run_start',
             rounding: 6,
         },
-    },
-}));
+    };
+    const is_custom_run_label_mode = () => {
+        const mode = settings.show.aliases;
+        return mode === 'alias' || mode === true || mode === 'run_name';
+    };
+    return {
+        settings,
+        is_custom_run_label_mode,
+        get_run_label: (item) => {
+            const mode = settings.show.aliases;
+            if (mode === 'alias' || mode === true) return item.run_alias;
+            if (mode === 'run_name') return item.run_name ?? item.name;
+            return item.run_start;
+        },
+    };
+});
 vi.mock('@js/variables/chartconfig.js', () => ({
     passedConfig: { backgroundColor: 'rgba(151, 189, 97, 0.7)', borderColor: '#97bd61' },
     failedConfig: { backgroundColor: 'rgba(206, 62, 1, 0.7)', borderColor: '#ce3e01' },

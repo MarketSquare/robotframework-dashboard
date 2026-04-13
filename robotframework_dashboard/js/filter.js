@@ -1,4 +1,4 @@
-import { settings } from './variables/settings.js';
+import { settings, get_run_label } from './variables/settings.js';
 import { compareRunIds } from './variables/graphs.js';
 import { runs, suites, tests, keywords, unified_dashboard_title } from './variables/data.js';
 import { show_loading_overlay, hide_loading_overlay, strip_tz_suffix } from './common.js';
@@ -314,7 +314,7 @@ function filter_data(data) {
 // function to update the available runs in the selects
 function setup_runs_in_compare_selects() {
     const selects = compareRunIds.map(id => document.getElementById(id));
-    const items = filteredRuns.map(run => settings.show.aliases ? run.run_alias : run.run_start);
+    const items = filteredRuns.map(run => get_run_label(run));
     selects.forEach(select => select.innerHTML = "")
     selects.forEach(select => {
         select.options.add(new Option("None", "None"));

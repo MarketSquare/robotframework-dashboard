@@ -8,7 +8,7 @@ import { update_height } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filteredTests } from "../variables/globals.js";
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_flaky_config, build_most_time_consuming_config } from "./config_helpers.js";
 
@@ -148,7 +148,7 @@ function _build_test_statistics_line_config() {
                             const idx = context.dataIndex;
                             if (!pointMeta[idx]) return "";
                             const point = pointMeta[idx];
-                            const runLabel = settings.show.aliases ? point.runAlias : point.runStart;
+                            const runLabel = get_run_label({ run_start: point.runStart, run_alias: point.runAlias, run_name: point.runName });
                             const lines = [
                                 `Status: ${point.status}`,
                                 `Run: ${runLabel}`,

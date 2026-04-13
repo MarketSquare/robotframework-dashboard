@@ -485,7 +485,7 @@ function setup_settings_modal() {
         { key: "show.unified", elementId: "toggleUnified" },
         { key: "show.dateLabels", elementId: "toggleLabels" },
         { key: "show.legends", elementId: "toggleLegends" },
-        { key: "show.aliases", elementId: "toggleAliases" },
+        { key: "show.aliases", elementId: "toggleAliases", datatype: "string", event: "change" },
         { key: "show.milliseconds", elementId: "toggleMilliseconds" },
         { key: "show.timezones", elementId: "toggleTimezones" },
         { key: "show.axisTitles", elementId: "toggleAxisTitles" },

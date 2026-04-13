@@ -1,4 +1,4 @@
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label, is_custom_run_label_mode } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { failedConfig } from "../variables/chartconfig.js";
 import { message_config } from "../variables/data.js";
@@ -9,14 +9,17 @@ import { strip_tz_suffix } from "../common.js";
 function get_messages_data(dataType, graphType, filteredData) {
     const data = new Map();
     const aliases = new Map();
+    const run_names = new Map();
     for (const value of filteredData) {
         if (value.message && (value.failed === 1 || value.skipped === 1)) {
             if (!data.has(value.message)) {
                 data.set(value.message, []);
                 aliases.set(value.message, []);
+                run_names.set(value.message, []);
             }
             data.get(value.message).push(value.run_start);
             aliases.get(value.message).push(value.run_alias);
+            run_names.get(value.message).push(value.run_name);
         }
     }
     // If there is a message config use that to merge the data
@@ -49,13 +52,16 @@ function get_messages_data(dataType, graphType, filteredData) {
     if (graphType === "bar") {
         const [datasets, labels] = [[], []];
         let count = 0;
+        const runStartsForCb = new Map();
 
         for (const [message, runStarts] of sortedData) {
             if (count == limit) break;
             labels.push(message);
             datasets.push(runStarts.length);
-            if (settings.show.aliases) {
-                data.set(message, aliases.get(message));
+            runStartsForCb.set(message, runStarts);
+            if (is_custom_run_label_mode()) {
+                const labelMap = settings.show.aliases === "run_name" ? run_names : aliases;
+                data.set(message, labelMap.get(message));
             }
             count++;
         }
@@ -66,12 +72,17 @@ function get_messages_data(dataType, graphType, filteredData) {
                 ...failedConfig,
             }],
         };
-        const callbackData = Object.fromEntries(sortedData.map(([message, runs]) => [message, aliases.get(message)]));
+        const callbackData = is_custom_run_label_mode()
+            ? Object.fromEntries(sortedData.map(([message]) => [
+                message,
+                settings.show.aliases === "run_name" ? run_names.get(message) : aliases.get(message)
+              ]))
+            : Object.fromEntries(sortedData.map(([message]) => [message, runStartsForCb.get(message)]));
         return [graphData, callbackData];
     } else if (graphType === "timeline") {
         const labels = [];
         const runStartsSet = new Set();
-        const runAliasesSet = new Set();
+        const runLabelsSet = new Set();
         let count = 0;
         for (const [message, runStarts] of sortedData) { // Collect unique run starts and labels
             if (count == limit) break;
@@ -103,13 +114,13 @@ function get_messages_data(dataType, graphType, filteredData) {
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
                         ...failedConfig,
                     });
-                    foundValues.forEach(value => runAliasesSet.add(value.run_alias));
+                    foundValues.forEach(value => runLabelsSet.add(get_run_label(value)));
                 }
             }
             runAxis++;
         }
         datasets = convert_timeline_data(datasets)
-        const runStartsArray = settings.show.aliases ? Array.from(runAliasesSet) : runStarts;
+        const runStartsArray = is_custom_run_label_mode() ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,

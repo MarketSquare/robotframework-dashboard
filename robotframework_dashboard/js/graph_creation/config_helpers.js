@@ -5,7 +5,7 @@ import { get_graph_config } from "../graph_data/graph_config.js";
 import { update_height } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
-import { settings } from "../variables/settings.js";
+import { settings, is_custom_run_label_mode } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 
 // Shared timeline scale/tooltip config used by most failed, flaky, and time consuming graphs
@@ -129,7 +129,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
                     const key = tooltipItem.label;
                     const cb = callbackData;
                     const runStarts = cb.run_starts[key] || [];
-                    const namesToShow = settings.show.aliases ? cb.aliases[key] : runStarts;
+                    const namesToShow = cb.aliases[key] || runStarts;
                     return runStarts.map((runStart, idx) => {
                         const info = cb.details[key][runStart];
                         const displayName = namesToShow[idx];
@@ -149,9 +149,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
                     const runIndex = context.raw.x[0];
                     const runStart = callbackData.runs[runIndex];
                     const info = callbackData.details[key][runStart];
-                    const displayName = settings.show.aliases
-                        ? callbackData.aliases[runIndex]
-                        : runStart;
+                    const displayName = callbackData.aliases[runIndex];
                     if (!info) return `${displayName}: (no data)`;
                     const lines = [
                         `Run: ${displayName}`,
@@ -170,9 +168,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
                 maxRotation: 45,
                 stepSize: 1,
                 callback: function (value) {
-                    const displayName = settings.show.aliases
-                        ? callbackData.aliases[this.getLabelForValue(value)]
-                        : callbackData.runs[this.getLabelForValue(value)];
+                    const displayName = callbackData.aliases[this.getLabelForValue(value)];
                     return displayName;
                 },
             },

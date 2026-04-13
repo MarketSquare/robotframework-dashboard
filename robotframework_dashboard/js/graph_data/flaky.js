@@ -1,4 +1,4 @@
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label, is_custom_run_label_mode } from "../variables/settings.js";
 import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
@@ -84,7 +84,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
         };
         return [graphData, data];
     } else if (graphType == "timeline") {
-        var [labels, runStarts, count, run_aliases] = [[], [], 0, []];
+        var [labels, runStarts, count, run_labels] = [[], [], 0, []];
         for (const key in sortedData) {
             if (count == limit) {
                 break;
@@ -109,7 +109,8 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
                     if (compareKey == label && value.run_start == runStart) {
                         // if (value.name == label && value.run_start == runStart) {
                         foundValues.push(value);
-                        if (!run_aliases.includes(value.run_alias)) { run_aliases.push(value.run_alias) }
+                        const runLabel = get_run_label(value);
+                        if (!run_labels.includes(runLabel)) { run_labels.push(runLabel) }
                     }
                 }
                 if (foundValues.length > 0) {
@@ -145,7 +146,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
             }
             runAxis += 1;
         }
-        if (settings.show.aliases) { runStarts = run_aliases }
+        if (is_custom_run_label_mode()) { runStarts = run_labels }
         datasets = convert_timeline_data(datasets)
         var graphData = {
             labels: labels,

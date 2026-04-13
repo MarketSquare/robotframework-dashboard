@@ -19,6 +19,9 @@ function setup_local_storage() {
         } else if (storedSettings) {
             // 2) Prefer existing localStorage when not forcing a config
             const parsedSettings = JSON.parse(storedSettings);
+            // Migrate legacy boolean show.aliases to string values
+            if (parsedSettings?.show?.aliases === true) parsedSettings.show.aliases = "alias";
+            else if (parsedSettings?.show?.aliases === false) parsedSettings.show.aliases = "run_start";
             resolvedSettings = mergeWithDefaults(parsedSettings);
         } else if (!force_json_config && hasJsonConfig) {
             // 3) Use provided json_config when not forcing and no localStorage present

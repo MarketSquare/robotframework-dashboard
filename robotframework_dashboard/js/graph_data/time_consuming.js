@@ -1,4 +1,4 @@
-import { settings } from "../variables/settings.js";
+import { settings, is_custom_run_label_mode } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { blueConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
@@ -59,6 +59,7 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
                     key,
                     metric,
                     alias: value.run_alias,
+                    runName: value.run_name,
                     runStart: run,
                     timesRun: Number(value.times_run),
                     passed: value.passed || 0,
@@ -72,6 +73,7 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
                         key,
                         metric,
                         alias: value.run_alias,
+                        runName: value.run_name,
                         runStart: run,
                         timesRun: Number(value.times_run),
                         passed: value.passed || 0,
@@ -85,6 +87,7 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
                 key,
                 metric,
                 alias: value.run_alias,
+                runName: value.run_name,
                 runStart: run,
                 timesRun: Number(value.times_run),
                 passed: value.passed || 0,
@@ -162,8 +165,10 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
             {
                 aliases: Object.fromEntries(sortedData.map(([name]) => [
                     name,
-                    settings.show.aliases
+                    settings.show.aliases === "alias" || settings.show.aliases === true
                         ? perRunEntries.filter((e) => e.key === name).map((e) => e.alias)
+                        : settings.show.aliases === "run_name"
+                        ? perRunEntries.filter((e) => e.key === name).map((e) => e.runName)
                         : perRunEntries.filter((e) => e.key === name).map((e) => e.runStart)
                 ])),
                 run_starts: Object.fromEntries(sortedData.map(([name]) => [
@@ -196,12 +201,16 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
         }
         datasets = convert_timeline_data(datasets);
         const runStartOutput = runStarts.map((r) => r.runStart);
-        const aliasOutput = runStarts.map((r) => r.alias);
+        const labelsOutput = runStarts.map((r) =>
+            settings.show.aliases === "run_name" ? r.runName
+            : settings.show.aliases === "alias" || settings.show.aliases === true ? r.alias
+            : r.runStart
+        );
         return [
             { labels, datasets },
             {
                 runs: runStartOutput,
-                aliases: aliasOutput,
+                aliases: labelsOutput,
                 details: Object.fromEntries(details)
             }
         ];

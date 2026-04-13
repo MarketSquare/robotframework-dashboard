@@ -240,8 +240,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
     def get_data(self):
         """This function gets all the data in the database"""
         data, runs, suites, tests, keywords, aliases = {}, [], [], [], [], {}
+        name_labels = {}
         local_tz = self._get_local_timezone_offset()
         counter = 1
+        name_counter = 1
         # Get runs from run table
         run_rows = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
         for run_row in run_rows:
@@ -260,6 +262,16 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                     counter += 1
                 else:
                     aliases[row["run_start"]] = row["run_alias"]
+            # Build a deduplicated run_name for display (separate from name, same pattern as aliases)
+            run_name = row["name"] or ""
+            if run_name in name_labels.values():
+                dedup_name = f"{run_name} {name_counter}"
+                name_labels[row["run_start"]] = dedup_name
+                row["run_name"] = dedup_name
+                name_counter += 1
+            else:
+                name_labels[row["run_start"]] = run_name
+                row["run_name"] = run_name
             # exception made from versions before 0.8.1 without path
             if row["path"] == None:
                 row["path"] = ""
@@ -268,7 +280,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 row["run_start"] = f"{row['run_start']}{local_tz}"
             runs.append(row)
         data["runs"] = runs
-        # Build a lookup for run_start -> alias that works for both old and new data
+        # Build a lookup for run_start -> alias/name that works for both old and new data
         # Old data: aliases dict keys are "run_start+tz" (timezone added during runs loop)
         # New data: aliases dict keys are "run_start+tz" (timezone already in DB)
         # Suites/tests/keywords will also get timezone appended, so direct match works
@@ -277,6 +289,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         for key, alias in aliases.items():
             prefix = key[:19]
             alias_prefix_lookup[prefix] = alias
+        name_prefix_lookup = {}
+        for key, name in name_labels.items():
+            prefix = key[:19]
+            name_prefix_lookup[prefix] = name
         # Get suites from run table
         suite_rows = self.connection.cursor().execute(SELECT_FROM_SUITES).fetchall()
         for suite_row in suite_rows:
@@ -288,6 +304,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 row["run_start"] = f"{row['run_start']}{local_tz}"
             row["run_alias"] = aliases.get(row["run_start"],
                 alias_prefix_lookup.get(row["run_start"][:19], ""))
+            row["run_name"] = name_labels.get(row["run_start"],
+                name_prefix_lookup.get(row["run_start"][:19], ""))
             suites.append(row)
         data["suites"] = suites
         # Get tests from run table
@@ -303,6 +321,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 row["run_start"] = f"{row['run_start']}{local_tz}"
             row["run_alias"] = aliases.get(row["run_start"],
                 alias_prefix_lookup.get(row["run_start"][:19], ""))
+            row["run_name"] = name_labels.get(row["run_start"],
+                name_prefix_lookup.get(row["run_start"][:19], ""))
             tests.append(row)
         data["tests"] = tests
         # Get keywords from run table
@@ -314,6 +334,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 row["run_start"] = f"{row['run_start']}{local_tz}"
             row["run_alias"] = aliases.get(row["run_start"],
                 alias_prefix_lookup.get(row["run_start"][:19], ""))
+            row["run_name"] = name_labels.get(row["run_start"],
+                name_prefix_lookup.get(row["run_start"][:19], ""))
             keywords.append(row)
         data["keywords"] = keywords
         return data

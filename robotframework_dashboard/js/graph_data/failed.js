@@ -1,4 +1,4 @@
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label, is_custom_run_label_mode } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { convert_timeline_data } from "./helpers.js";
 import { failedConfig } from "../variables/chartconfig.js";
@@ -21,15 +21,18 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
     }
     const data = new Map();
     const aliases = new Map();
+    const run_names = new Map();
     for (const value of filteredData) {
         if (value.failed > 0) {
             const key = getTestKey(value, dataType);
             if (!data.has(key)) {
                 data.set(key, []);
                 aliases.set(key, []);
+                run_names.set(key, []);
             }
             data.get(key).push(value.run_start);
             aliases.get(key).push(value.run_alias);
+            run_names.get(key).push(value.run_name);
         }
     }
     let sortedData = [...data.entries()].sort((a, b) => b[1].length - a[1].length);
@@ -51,8 +54,9 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
         for (const [name, runStarts] of sortedData) {
             if (count === limit) break;
             labels.push(name);
-            if (settings.show.aliases) {
-                data.set(name, aliases.get(name));
+            if (is_custom_run_label_mode()) {
+                const labelMap = settings.show.aliases === "run_name" ? run_names : aliases;
+                data.set(name, labelMap.get(name));
             }
             datasets.push(runStarts.length);
             runStartsLabels.set(name, runStarts);
@@ -65,8 +69,11 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                 ...failedConfig,
             }],
         };
-        const callbackData = settings.show.aliases
-            ? Object.fromEntries(sortedData.map(([name]) => [name, aliases.get(name)]))
+        const callbackData = is_custom_run_label_mode()
+            ? Object.fromEntries(sortedData.map(([name]) => [
+                name,
+                settings.show.aliases === "run_name" ? run_names.get(name) : aliases.get(name)
+              ]))
             : Object.fromEntries(sortedData.map(([name]) => [name, runStartsLabels.get(name)]));
 
         return [graphData, callbackData];
@@ -74,7 +81,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
     else if (graphType === "timeline") {
         const labels = [];
         const runStartsSet = new Set();
-        const runAliasesSet = new Set();
+        const runLabelsSet = new Set();
         let count = 0;
         for (const [name, runStarts] of sortedData) {
             if (count === limit) break;
@@ -108,13 +115,13 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
                         ...failedConfig,
                     });
-                    foundValues.forEach(v => runAliasesSet.add(v.run_alias));
+                    foundValues.forEach(v => runLabelsSet.add(get_run_label(v)));
                 }
             }
             runAxis++;
         }
         datasets = convert_timeline_data(datasets);
-        const runStartsArray = settings.show.aliases ? Array.from(runAliasesSet) : runStarts;
+        const runStartsArray = is_custom_run_label_mode() ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,

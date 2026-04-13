@@ -11,7 +11,7 @@ import {
     failedConfig,
     skippedConfig
 } from "../variables/chartconfig.js";
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { convert_timeline_data, exclude_from_suite_data } from "./helpers.js";
 import { compareRunIds } from "../variables/graphs.js";
 
@@ -20,7 +20,7 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
     const suiteSelectSuitesCombined = document.getElementById("suiteSelectSuites").value === "All Suites Combined";
     const keywordSelect = document.getElementById("keywordSelect").value;
     const useLibraryNames = settings?.switch?.useLibraryNames === true;
-    const rawPassed = [], rawFailed = [], rawSkipped = [], labels = [], aliases = [];
+    const rawPassed = [], rawFailed = [], rawSkipped = [], labels = [], aliases = [], runNames = [];
     let names = [];
     const process_value = (value) => {
         rawPassed.push(value.passed);
@@ -28,6 +28,7 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
         rawSkipped.push(value.skipped);
         labels.push(value.run_start);
         aliases.push(value.run_alias);
+        runNames.push(value.run_name ?? value.name);
         names.push(value.name);
     };
     for (const value of filteredData) {
@@ -40,7 +41,11 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
         }
         process_value(value);
     }
-    const finalLabels = graphType !== "line" ? (settings.show.aliases ? aliases : labels) : labels;
+    const finalLabels = graphType !== "line"
+        ? (settings.show.aliases === "alias" || settings.show.aliases === true ? aliases
+            : settings.show.aliases === "run_name" ? runNames
+            : labels)
+        : labels;
     const styling = graphType !== "line" ? barConfig : lineConfig;
     let statisticsData = {
         labels: finalLabels,
@@ -166,7 +171,7 @@ function get_test_statistics_data(filteredTests) {
         if (!labels.includes(testLabel)) {
             labels.push(testLabel);
         }
-        const runId = settings.show.aliases ? test.run_alias : test.run_start;
+        const runId = get_run_label(test);
 
         if (!runStarts.includes(runId)) {
             runStarts.push(runId);
@@ -258,6 +263,7 @@ function get_test_statistics_line_data(filteredTests) {
             status: statusName,
             runStart: test.run_start,
             runAlias: test.run_alias,
+            runName: test.run_name,
             elapsed: test.elapsed_s,
             testLabel: testLabel,
         });
@@ -334,10 +340,10 @@ function get_compare_statistics_graph_data(filteredData) {
     )];
     const datasets = selectedRuns.map(runId => {
         const match = filteredData.find(d =>
-            d.run_start === runId || d.run_alias === runId
+            d.run_start === runId || d.run_alias === runId || (d.run_name ?? d.name) === runId
         );
         return match ? {
-            label: settings.show.aliases ? match.run_alias : match.run_start,
+            label: get_run_label(match),
             data: [match.passed, match.failed, match.skipped],
             ...barConfig
         } : null;

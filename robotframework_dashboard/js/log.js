@@ -1,6 +1,6 @@
 import { runs, suites, tests, server, use_logs } from './variables/data.js';
 import { format_date_to_string, transform_file_path, combine_paths } from './common.js';
-import { settings } from './variables/settings.js';
+import { settings, get_run_label } from './variables/settings.js';
 import { filteredRuns } from './variables/globals.js';
 
 // function to open the log files through the graphs
@@ -26,7 +26,8 @@ function open_log_file(event, chartElement, callbackData = undefined, directRunS
         runStart = event.chart.data.labels[index]
     }
     var output = runs.find(run => run.run_start.slice(0, 19) === runStart.slice(0, 19))
-    var path = output ? output.path : runs.find(run => run.run_alias === runStart).path
+    if (!output) { output = runs.find(run => get_run_label(run) === runStart) }
+    var path = output ? output.path : ""
     if (path == "") {
         alert("Log file error: this output didn't have a path in the database so the log file cannot be found!");
         return
@@ -65,11 +66,7 @@ function open_log_from_label(chart, click) {
         if (xCoor >= left + (right * i) && xCoor <= left + right + (right * i) && yCoor >= top && yCoor <= bottom) {
             var run
             const identifier = chart.config._config.options.indexAxis === "y" ? Object.values(ticks).map(item => item.label) : data.labels // exception for timelines
-            if (settings.show.aliases) {
-                run = filteredRuns.find(run => run.run_alias === identifier[i])
-            } else {
-                run = filteredRuns.find(run => run.run_start === identifier[i])
-            }
+            run = filteredRuns.find(run => get_run_label(run) === identifier[i])
             if (run) {
                 const path = transform_file_path(run.path)
                 if (path == "") {

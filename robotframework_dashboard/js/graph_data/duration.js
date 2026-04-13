@@ -1,4 +1,4 @@
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { barConfig, lineConfig } from "../variables/chartconfig.js";
 import { compareRunIds } from "../variables/graphs.js";
@@ -49,7 +49,7 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
         const entries = [];
         for (const value of filteredData) {
             if (!should_include(value)) continue;
-            const label = settings.show.aliases ? value.run_alias : value.run_start;
+            const label = get_run_label(value);
             const duration = Math.round(value[objectDataAttribute] * 100) / 100;
             entries.push({ label, name: value.name, duration });
         }
@@ -165,7 +165,7 @@ function get_compare_suite_duration_data(filteredData) {
 
     for (const value of filteredData) {
         for (const run of selectedRuns) {
-            if (value.run_start === run || value.run_alias === run) {
+            if (value.run_start === run || value.run_alias === run || value.run_name === run) {
                 if (settings.switch.suitePathsCompareSection) {
                     labelSet.add(value.full_name)
                 } else {
