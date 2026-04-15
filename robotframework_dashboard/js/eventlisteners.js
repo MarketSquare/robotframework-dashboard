@@ -996,7 +996,10 @@ function restore_section_filter_values(saved) {
 }
 
 // function to setup eventlisteners for changing the graph view buttons
+let graphViewButtonsInitialized = false;
 function setup_graph_view_buttons() {
+    if (graphViewButtonsInitialized) return;
+    graphViewButtonsInitialized = true;
     // eventlisteners for fullscreen buttons
     for (let fullscreenButton of fullscreenButtons) {
         const fullscreenId = `${fullscreenButton}Fullscreen`;
@@ -1106,42 +1109,87 @@ function setup_graph_view_buttons() {
         });
     });
     // ignore skip button eventlisteners
+    // Load initial states from settings
+    document.getElementById("ignoreSkips").checked = settings.switch.ignoreSkips;
+    ignoreSkips = settings.switch.ignoreSkips;
+    document.getElementById("ignoreSkipsRecent").checked = settings.switch.ignoreSkipsRecent;
+    ignoreSkipsRecent = settings.switch.ignoreSkipsRecent;
+    document.getElementById("onlyFailedFolders").checked = settings.switch.onlyFailedFolders;
+    onlyFailedFolders = settings.switch.onlyFailedFolders;
+
     document.getElementById("ignoreSkips").addEventListener("change", () => {
         ignoreSkips = !ignoreSkips;
+        set_local_storage_item("switch.ignoreSkips", ignoreSkips);
         update_graphs_with_loading(["testMostFlakyGraph"], () => {
             update_test_most_flaky_graph();
         });
     });
     document.getElementById("ignoreSkipsRecent").addEventListener("change", () => {
         ignoreSkipsRecent = !ignoreSkipsRecent;
+        set_local_storage_item("switch.ignoreSkipsRecent", ignoreSkipsRecent);
         update_graphs_with_loading(["testRecentMostFlakyGraph"], () => {
             update_test_recent_most_flaky_graph();
         });
     });
     document.getElementById("onlyFailedFolders").addEventListener("change", () => {
         onlyFailedFolders = !onlyFailedFolders;
+        set_local_storage_item("switch.onlyFailedFolders", onlyFailedFolders);
         update_graphs_with_loading(["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"], () => {
             update_suite_folder_donut_graph("");
         });
     });
+
+    // Load initial states for checkbox switches
+    [
+        ["onlyLastRunSuite", "switch.onlyLastRunSuite"],
+        ["onlyLastRunTest", "switch.onlyLastRunTest"],
+        ["onlyLastRunKeyword", "switch.onlyLastRunKeyword"],
+        ["onlyLastRunKeywordMostUsed", "switch.onlyLastRunKeywordMostUsed"],
+        ["testOnlyChanges", "switch.testOnlyChanges"],
+        ["compareOnlyChanges", "switch.compareOnlyChanges"],
+    ].forEach(([elementId, settingsKey]) => {
+        const value = settingsKey.split(".").reduce((acc, k) => acc?.[k], settings);
+        if (typeof value === "boolean") {
+            document.getElementById(elementId).checked = value;
+        }
+    });
+
+    // Load initial states for select switches
+    [
+        ["heatMapTestType", "switch.heatmapStatus"],
+        ["heatMapHour", "switch.heatmapHour"],
+        ["testNoChanges", "switch.testStatusFilter"],
+        ["compareNoChanges", "switch.compareStatusFilter"],
+    ].forEach(([elementId, settingsKey]) => {
+        const value = settingsKey.split(".").reduce((acc, k) => acc?.[k], settings);
+        if (typeof value === "string") {
+            document.getElementById(elementId).value = value;
+        }
+    });
+    heatMapHourAll = document.getElementById("heatMapHour").value === "All";
+
     // Simple graph update listeners: element change triggers single graph update
     [
-        ["heatMapTestType", "runHeatmapGraph", update_run_heatmap_graph],
-        ["testOnlyChanges", "testStatisticsGraph", update_test_statistics_graph],
-        ["testNoChanges", "testStatisticsGraph", update_test_statistics_graph],
-        ["compareOnlyChanges", "compareTestsGraph", update_compare_tests_graph],
-        ["compareNoChanges", "compareTestsGraph", update_compare_tests_graph],
-        ["onlyLastRunSuite", "suiteMostTimeConsumingGraph", update_suite_most_time_consuming_graph],
-        ["onlyLastRunTest", "testMostTimeConsumingGraph", update_test_most_time_consuming_graph],
-        ["onlyLastRunKeyword", "keywordMostTimeConsumingGraph", update_keyword_most_time_consuming_graph],
-        ["onlyLastRunKeywordMostUsed", "keywordMostUsedGraph", update_keyword_most_used_graph],
-    ].forEach(([elementId, graphId, updateFn]) => {
+        ["heatMapTestType", "runHeatmapGraph", update_run_heatmap_graph, "switch.heatmapStatus", "select"],
+        ["testOnlyChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testOnlyChanges", "checkbox"],
+        ["testNoChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testStatusFilter", "select"],
+        ["compareOnlyChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareOnlyChanges", "checkbox"],
+        ["compareNoChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareStatusFilter", "select"],
+        ["onlyLastRunSuite", "suiteMostTimeConsumingGraph", update_suite_most_time_consuming_graph, "switch.onlyLastRunSuite", "checkbox"],
+        ["onlyLastRunTest", "testMostTimeConsumingGraph", update_test_most_time_consuming_graph, "switch.onlyLastRunTest", "checkbox"],
+        ["onlyLastRunKeyword", "keywordMostTimeConsumingGraph", update_keyword_most_time_consuming_graph, "switch.onlyLastRunKeyword", "checkbox"],
+        ["onlyLastRunKeywordMostUsed", "keywordMostUsedGraph", update_keyword_most_used_graph, "switch.onlyLastRunKeywordMostUsed", "checkbox"],
+    ].forEach(([elementId, graphId, updateFn, settingsKey, type]) => {
         document.getElementById(elementId).addEventListener("change", () => {
+            const el = document.getElementById(elementId);
+            const newValue = type === "select" ? el.value : el.checked;
+            set_local_storage_item(settingsKey, newValue);
             update_graphs_with_loading([graphId], updateFn);
         });
     });
     document.getElementById("heatMapHour").addEventListener("change", () => {
-        heatMapHourAll = document.getElementById("heatMapHour").value == "All" ? true : false;
+        heatMapHourAll = document.getElementById("heatMapHour").value === "All";
+        set_local_storage_item("switch.heatmapHour", document.getElementById("heatMapHour").value);
         update_graphs_with_loading(["runHeatmapGraph"], () => {
             update_run_heatmap_graph();
         });

@@ -155,7 +155,7 @@ function _should_skip_test(test, filters) {
             if (!tagList.includes(filters.testTagsSelect)) return true;
         }
     } else if (settings.menu.compare) {
-        if (!(filters.selectedRuns.includes(test.run_start) || filters.selectedRuns.includes(test.run_alias))) return true;
+        if (!(filters.selectedRuns.includes(test.run_start) || filters.selectedRuns.includes(test.run_alias) || filters.selectedRuns.includes(test.run_name))) return true;
     }
     return false;
 }
