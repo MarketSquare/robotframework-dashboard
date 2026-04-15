@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
+
 import {
     get_next_folder_level,
     format_duration,

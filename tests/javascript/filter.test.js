@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
+
 import { strip_tz_suffix } from '@js/common.js';
 
 // Test the pure data transformation logic from filter.js.
