@@ -996,10 +996,7 @@ function restore_section_filter_values(saved) {
 }
 
 // function to setup eventlisteners for changing the graph view buttons
-let graphViewButtonsInitialized = false;
 function setup_graph_view_buttons() {
-    if (graphViewButtonsInitialized) return;
-    graphViewButtonsInitialized = true;
     // eventlisteners for fullscreen buttons
     for (let fullscreenButton of fullscreenButtons) {
         const fullscreenId = `${fullscreenButton}Fullscreen`;
@@ -1091,7 +1088,7 @@ function setup_graph_view_buttons() {
     // close fullscreen on Escape key
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && inFullscreen) {
-            const closeBtn = document.querySelector(`[id$="Close"]:not([hidden])`);
+            const closeBtn = document.querySelector(`.close-graph[id$="Close"]:not([hidden])`);
             if (closeBtn) closeBtn.click();
         }
     });
