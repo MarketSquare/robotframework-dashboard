@@ -1,4 +1,4 @@
-import { settings, get_run_label, is_custom_run_label_mode } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
@@ -146,7 +146,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
             }
             runAxis += 1;
         }
-        if (is_custom_run_label_mode()) { runStarts = run_labels }
+        if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") { runStarts = run_labels }
         datasets = convert_timeline_data(datasets)
         var graphData = {
             labels: labels,

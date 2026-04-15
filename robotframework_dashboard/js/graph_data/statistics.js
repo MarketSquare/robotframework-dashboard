@@ -42,7 +42,7 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
         process_value(value);
     }
     const finalLabels = graphType !== "line"
-        ? (settings.show.aliases === "alias" || settings.show.aliases === true ? aliases
+        ? (settings.show.aliases === "alias" ? aliases
             : settings.show.aliases === "run_name" ? runNames
             : labels)
         : labels;

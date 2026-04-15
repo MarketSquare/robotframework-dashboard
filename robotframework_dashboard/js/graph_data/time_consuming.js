@@ -1,4 +1,4 @@
-import { settings, is_custom_run_label_mode } from "../variables/settings.js";
+import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { blueConfig } from "../variables/chartconfig.js";
 import { convert_timeline_data } from "./helpers.js";
@@ -165,7 +165,7 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
             {
                 aliases: Object.fromEntries(sortedData.map(([name]) => [
                     name,
-                    settings.show.aliases === "alias" || settings.show.aliases === true
+                    settings.show.aliases === "alias"
                         ? perRunEntries.filter((e) => e.key === name).map((e) => e.alias)
                         : settings.show.aliases === "run_name"
                         ? perRunEntries.filter((e) => e.key === name).map((e) => e.runName)
@@ -202,8 +202,8 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
         datasets = convert_timeline_data(datasets);
         const runStartOutput = runStarts.map((r) => r.runStart);
         const labelsOutput = runStarts.map((r) =>
-            settings.show.aliases === "run_name" ? r.runName
-            : settings.show.aliases === "alias" || settings.show.aliases === true ? r.alias
+            settings.show.aliases === "alias" ? r.alias
+            : settings.show.aliases === "run_name" ? r.runName
             : r.runStart
         );
         return [

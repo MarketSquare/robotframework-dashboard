@@ -1,4 +1,4 @@
-import { settings, get_run_label, is_custom_run_label_mode } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { failedConfig } from "../variables/chartconfig.js";
 import { message_config } from "../variables/data.js";
@@ -59,7 +59,7 @@ function get_messages_data(dataType, graphType, filteredData) {
             labels.push(message);
             datasets.push(runStarts.length);
             runStartsForCb.set(message, runStarts);
-            if (is_custom_run_label_mode()) {
+            if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") {
                 const labelMap = settings.show.aliases === "run_name" ? run_names : aliases;
                 data.set(message, labelMap.get(message));
             }
@@ -72,7 +72,7 @@ function get_messages_data(dataType, graphType, filteredData) {
                 ...failedConfig,
             }],
         };
-        const callbackData = is_custom_run_label_mode()
+        const callbackData = (settings.show.aliases === "alias" || settings.show.aliases === "run_name")
             ? Object.fromEntries(sortedData.map(([message]) => [
                 message,
                 settings.show.aliases === "run_name" ? run_names.get(message) : aliases.get(message)
@@ -120,7 +120,7 @@ function get_messages_data(dataType, graphType, filteredData) {
             runAxis++;
         }
         datasets = convert_timeline_data(datasets)
-        const runStartsArray = is_custom_run_label_mode() ? Array.from(runLabelsSet) : runStarts;
+        const runStartsArray = (settings.show.aliases === "alias" || settings.show.aliases === "run_name") ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,

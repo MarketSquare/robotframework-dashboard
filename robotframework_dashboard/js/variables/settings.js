@@ -125,22 +125,14 @@ var settings = {
 };
 
 // Returns the run label for an item (run/suite/test/keyword) based on the current aliases mode.
-// Handles legacy boolean values stored in localStorage for backward compatibility.
 function get_run_label(item) {
     const mode = settings.show.aliases;
-    if (mode === "alias" || mode === true) return item.run_alias;
+    if (mode === "alias") return item.run_alias;
     if (mode === "run_name") return item.run_name ?? item.name;
     return item.run_start;
 }
 
-// Returns true when any non-run_start label mode is active.
-function is_custom_run_label_mode() {
-    const mode = settings.show.aliases;
-    return mode === "alias" || mode === true || mode === "run_name";
-}
-
 export { 
     settings,
-    get_run_label,
-    is_custom_run_label_mode
+    get_run_label
 };

@@ -11,16 +11,11 @@ vi.mock('@js/variables/settings.js', () => {
             rounding: 6,
         },
     };
-    const is_custom_run_label_mode = () => {
-        const mode = settings.show.aliases;
-        return mode === 'alias' || mode === true || mode === 'run_name';
-    };
     return {
         settings,
-        is_custom_run_label_mode,
         get_run_label: (item) => {
             const mode = settings.show.aliases;
-            if (mode === 'alias' || mode === true) return item.run_alias;
+            if (mode === 'alias') return item.run_alias;
             if (mode === 'run_name') return item.run_name ?? item.name;
             return item.run_start;
         },

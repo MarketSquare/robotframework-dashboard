@@ -1,4 +1,4 @@
-import { settings, get_run_label, is_custom_run_label_mode } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { convert_timeline_data } from "./helpers.js";
 import { failedConfig } from "../variables/chartconfig.js";
@@ -54,7 +54,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
         for (const [name, runStarts] of sortedData) {
             if (count === limit) break;
             labels.push(name);
-            if (is_custom_run_label_mode()) {
+            if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") {
                 const labelMap = settings.show.aliases === "run_name" ? run_names : aliases;
                 data.set(name, labelMap.get(name));
             }
@@ -69,7 +69,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                 ...failedConfig,
             }],
         };
-        const callbackData = is_custom_run_label_mode()
+        const callbackData = (settings.show.aliases === "alias" || settings.show.aliases === "run_name")
             ? Object.fromEntries(sortedData.map(([name]) => [
                 name,
                 settings.show.aliases === "run_name" ? run_names.get(name) : aliases.get(name)
@@ -121,7 +121,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
             runAxis++;
         }
         datasets = convert_timeline_data(datasets);
-        const runStartsArray = is_custom_run_label_mode() ? Array.from(runLabelsSet) : runStarts;
+        const runStartsArray = (settings.show.aliases === "alias" || settings.show.aliases === "run_name") ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,

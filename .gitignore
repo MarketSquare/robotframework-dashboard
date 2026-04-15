@@ -1,5 +1,6 @@
 # General output and results
 results/
+pabot_results/
 logs/
 robot_logs/
 index.txt

@@ -5,7 +5,7 @@ import { get_graph_config } from "../graph_data/graph_config.js";
 import { update_height } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
-import { settings, is_custom_run_label_mode } from "../variables/settings.js";
+import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 
 // Shared timeline scale/tooltip config used by most failed, flaky, and time consuming graphs
