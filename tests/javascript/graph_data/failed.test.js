@@ -61,6 +61,7 @@ function makeTestData(entries) {
         full_name: e.full_name || `Suite.${e.name}`,
         run_start: e.run_start,
         run_alias: e.run_alias || e.run_start,
+        run_name: e.run_name || '',
         failed: e.failed ?? 1,
         passed: e.passed ?? 0,
         skipped: e.skipped ?? 0,
@@ -157,12 +158,21 @@ describe('get_most_failed_data', () => {
         });
 
         it('uses aliases in callback data when show.aliases is true', () => {
-            settings.show.aliases = true;
+            settings.show.aliases = 'alias';
             const data = makeTestData([
                 { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', failed: 1 },
             ]);
             const [, callbackData] = get_most_failed_data('test', 'bar', data, false);
             expect(callbackData['Test A']).toEqual(['Alias1']);
+        });
+
+        it('uses run_name in callback data when show.aliases is run_name', () => {
+            settings.show.aliases = 'run_name';
+            const data = makeTestData([
+                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'My Run', failed: 1 },
+            ]);
+            const [, callbackData] = get_most_failed_data('test', 'bar', data, false);
+            expect(callbackData['Test A']).toEqual(['My Run']);
         });
 
         it('returns empty data when no failures', () => {
@@ -212,12 +222,21 @@ describe('get_most_failed_data', () => {
         });
 
         it('uses aliases for runStartsArray when show.aliases is true', () => {
-            settings.show.aliases = true;
+            settings.show.aliases = 'alias';
             const data = makeTestData([
                 { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', failed: 1 },
             ]);
             const [, runStartsArray] = get_most_failed_data('test', 'timeline', data, false);
             expect(runStartsArray).toContain('Alias1');
+        });
+
+        it('uses run_name for runStartsArray when show.aliases is run_name', () => {
+            settings.show.aliases = 'run_name';
+            const data = makeTestData([
+                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'My Run', failed: 1 },
+            ]);
+            const [, runStartsArray] = get_most_failed_data('test', 'timeline', data, false);
+            expect(runStartsArray).toContain('My Run');
         });
     });
 });

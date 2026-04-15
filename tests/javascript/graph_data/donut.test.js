@@ -10,7 +10,7 @@ vi.mock('@js/variables/settings.js', () => {
         settings,
         get_run_label: (item) => {
             const mode = settings.show.aliases;
-            if (mode === 'alias' || mode === true) return item.run_alias;
+            if (mode === 'alias') return item.run_alias;
             if (mode === 'run_name') return item.run_name ?? item.name;
             return item.run_start;
         },
@@ -87,12 +87,21 @@ describe('get_donut_graph_data', () => {
     });
 
     it('returns run_alias as callback data when aliases enabled', () => {
-        settings.show.aliases = true;
+        settings.show.aliases = 'alias';
         const filteredData = [
             { run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', passed: 5, failed: 0, skipped: 0 },
         ];
         const [, callbackData] = get_donut_graph_data('test', filteredData);
         expect(callbackData).toBe('Alias1');
+    });
+
+    it('returns run_name as callback data when run_name mode enabled', () => {
+        settings.show.aliases = 'run_name';
+        const filteredData = [
+            { run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'My Suite Run', passed: 5, failed: 0, skipped: 0 },
+        ];
+        const [, callbackData] = get_donut_graph_data('test', filteredData);
+        expect(callbackData).toBe('My Suite Run');
     });
 
     it('returns empty callback data for empty input', () => {

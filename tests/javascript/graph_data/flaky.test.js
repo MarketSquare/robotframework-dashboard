@@ -53,6 +53,7 @@ function makeTestData(entries) {
         full_name: e.full_name || `Suite.${e.name}`,
         run_start: e.run_start,
         run_alias: e.run_alias || e.run_start,
+        run_name: e.run_name || '',
         passed: e.passed ?? 0,
         failed: e.failed ?? 0,
         skipped: e.skipped ?? 0,
@@ -199,7 +200,7 @@ describe('get_most_flaky_data', () => {
         });
 
         it('uses run_alias when show.aliases is true', () => {
-            settings.show.aliases = true;
+            settings.show.aliases = 'alias';
             const data = makeTestData([
                 { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', passed: 1 },
                 { name: 'Test A', run_start: '2025-01-16 10:00:00', run_alias: 'Alias2', failed: 1 },
@@ -207,6 +208,17 @@ describe('get_most_flaky_data', () => {
             const [, runStarts] = get_most_flaky_data('test', 'timeline', data, false, false, 10);
             expect(runStarts).toContain('Alias1');
             expect(runStarts).toContain('Alias2');
+        });
+
+        it('uses run_name when show.aliases is run_name', () => {
+            settings.show.aliases = 'run_name';
+            const data = makeTestData([
+                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'Run One', passed: 1 },
+                { name: 'Test A', run_start: '2025-01-16 10:00:00', run_alias: 'Alias2', run_name: 'Run Two', failed: 1 },
+            ]);
+            const [, runStarts] = get_most_flaky_data('test', 'timeline', data, false, false, 10);
+            expect(runStarts).toContain('Run One');
+            expect(runStarts).toContain('Run Two');
         });
 
         it('color codes by status (PASS, FAIL, SKIP)', () => {

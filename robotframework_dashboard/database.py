@@ -242,33 +242,33 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         data, runs, suites, tests, keywords, aliases = {}, [], [], [], [], {}
         name_labels = {}
         local_tz = self._get_local_timezone_offset()
-        counter = 1
-        name_counter = 1
+        alias_counter = 1
+        run_name_counter = 1
         # Get runs from run table
         run_rows = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
         for run_row in run_rows:
             row = self._dict_from_row(run_row)
             # exception made for versions before 0.6.0 without run_aliases
             if row["run_alias"] == None or row["run_alias"] == "":
-                alias = f"Alias {counter}"
+                alias = f"Alias {alias_counter}"
                 aliases[row["run_start"]] = alias
                 row["run_alias"] = alias
-                counter += 1
+                alias_counter += 1
             else:
                 if row["run_alias"] in aliases.values():
-                    alias = f"{row['run_alias']} {counter}"
+                    alias = f"{row['run_alias']} {alias_counter}"
                     aliases[row["run_start"]] = alias
                     row["run_alias"] = alias
-                    counter += 1
+                    alias_counter += 1
                 else:
                     aliases[row["run_start"]] = row["run_alias"]
             # Build a deduplicated run_name for display (separate from name, same pattern as aliases)
             run_name = row["name"] or ""
             if run_name in name_labels.values():
-                dedup_name = f"{run_name} {name_counter}"
+                dedup_name = f"{run_name} {run_name_counter}"
                 name_labels[row["run_start"]] = dedup_name
                 row["run_name"] = dedup_name
-                name_counter += 1
+                run_name_counter += 1
             else:
                 name_labels[row["run_start"]] = run_name
                 row["run_name"] = run_name
