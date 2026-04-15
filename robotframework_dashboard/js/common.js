@@ -1,3 +1,5 @@
+import { inFullscreen } from "./variables/globals.js";
+
 // function to get a higher folder path based on the full_path or partial full_path provided
 function get_next_folder_level(currentPath, fullPath) {
     const fullParts = fullPath.split(".");
@@ -159,6 +161,8 @@ function show_graph_loading(elementId) {
     if (!el) return;
     const container = el.closest('.grid-stack-item-content') || el.closest('.table-section');
     if (!container || container.querySelector('.graph-loading-overlay')) return;
+    // When in fullscreen, only show overlay on the fullscreen container
+    if (inFullscreen && !container.classList.contains('fullscreen')) return;
     const overlay = document.createElement('div');
     overlay.className = 'graph-loading-overlay';
     overlay.innerHTML = '<div class="ball-grid-beat ball-grid-beat-sm"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
