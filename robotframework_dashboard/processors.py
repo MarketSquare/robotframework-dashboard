@@ -2,6 +2,7 @@ from robot.api import ExecutionResult, ResultVisitor
 from robot.result.model import TestCase, TestSuite, Keyword
 from datetime import datetime
 from pathlib import Path
+from collections import Counter
 
 
 class OutputProcessor:
@@ -43,6 +44,8 @@ class OutputProcessor:
         self.execution_result.visit(
             KeywordProcessor(self.generation_time, keyword_list)
         )
+        exception_processor = ExceptionProcessor(self.generation_time)
+        self.execution_result.visit(exception_processor)
         average_keyword_list = self.calculate_keyword_averages(keyword_list)
         run_list, suite_list = self.merge_run_and_suite_metadata(run_list, suite_list)
         return {
@@ -50,6 +53,7 @@ class OutputProcessor:
             "suites": suite_list,
             "tests": test_list,
             "keywords": average_keyword_list,
+            "exceptions": exception_processor.get_aggregated_exceptions(),
         }
 
     def calculate_keyword_averages(self, keyword_list: list):
@@ -302,3 +306,37 @@ class KeywordProcessor(ResultVisitor):
                 owner,
             )
         )
+
+
+class ExceptionProcessor(ResultVisitor):
+    """Processor to collect exception messages from keywords inside TRY/EXCEPT blocks"""
+
+    def __init__(self, run_time: datetime):
+        self.run_time = run_time
+        self._try_depth = 0
+        self._exception_counts = Counter()
+        self._child_failed = []
+
+    def start_try_branch(self, branch):
+        if branch.type == "TRY":
+            self._try_depth += 1
+
+    def end_try_branch(self, branch):
+        if branch.type == "TRY":
+            self._try_depth -= 1
+
+    def start_keyword(self, keyword: Keyword):
+        self._child_failed.append(False)
+
+    def end_keyword(self, keyword: Keyword):
+        child_already_counted = self._child_failed.pop()
+        if self._try_depth > 0 and keyword.failed and keyword.message and not child_already_counted:
+            self._exception_counts[keyword.message[:150]] += 1
+        if self._child_failed and keyword.failed:
+            self._child_failed[-1] = True
+
+    def get_aggregated_exceptions(self):
+        return [
+            (self.run_time, message, count)
+            for message, count in self._exception_counts.items()
+        ]
