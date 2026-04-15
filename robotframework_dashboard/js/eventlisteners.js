@@ -628,9 +628,22 @@ function setup_settings_modal() {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function (e) {
-            set_local_storage_item('branding.logo', e.target.result);
-            document.getElementById('removeCustomLogo').disabled = false;
-            apply_custom_branding();
+            const img = new Image();
+            img.onload = function () {
+                const size = Math.max(img.width, img.height);
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                const offsetX = Math.floor((size - img.width) / 2);
+                const offsetY = Math.floor((size - img.height) / 2);
+                ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
+                const squaredDataUrl = canvas.toDataURL('image/png');
+                set_local_storage_item('branding.logo', squaredDataUrl);
+                document.getElementById('removeCustomLogo').disabled = false;
+                apply_custom_branding();
+            };
+            img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     });

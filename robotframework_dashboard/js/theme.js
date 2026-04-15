@@ -1,6 +1,8 @@
 import { set_local_storage_item } from "./localstorage.js";
 import { update_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
+import { defaultFaviconHref } from "./variables/globals.js";
+import { unified_dashboard_title } from "./variables/data.js";
 import { graphFontSize } from "./variables/chartconfig.js";
 import {
     githubSVG,
@@ -201,14 +203,30 @@ function apply_theme_colors() {
     root.style.setProperty('--color-section-card-text', finalColors.text);
 }
 
+function update_favicon(dataUrl) {
+    const link = document.querySelector("link[rel~='icon']");
+    if (link) link.setAttribute('href', dataUrl);
+}
+
+function restore_default_favicon() {
+    if (defaultFaviconHref === null) return;
+    const link = document.querySelector("link[rel~='icon']");
+    if (link) link.setAttribute('href', defaultFaviconHref);
+}
+
 // function to apply custom branding (logo and title) from settings / localStorage
 function apply_custom_branding() {
     // --- Custom title ---
+    // Priority: --dashboardtitle (unified_dashboard_title) > settings.branding.title
     const titleEl = document.getElementById("menuCustomTitle");
-    const customTitle = settings.branding?.title || "";
+    const cliTitle = (unified_dashboard_title
+        && !unified_dashboard_title.includes("Robot Framework Dashboard -")
+        && !unified_dashboard_title.includes("placeholder_"))
+        ? unified_dashboard_title : "";
+    const effectiveTitle = cliTitle || settings.branding?.title || "";
     if (titleEl) {
-        if (customTitle) {
-            titleEl.textContent = customTitle;
+        if (effectiveTitle) {
+            titleEl.textContent = effectiveTitle;
             titleEl.hidden = false;
         } else {
             titleEl.hidden = true;
@@ -220,10 +238,12 @@ function apply_custom_branding() {
     const storedLogo = settings.branding?.logo;
     if (storedLogo) {
         rflogoEl.innerHTML = `<img src="${storedLogo}" alt="Logo" style="height:24px;width:24px;object-fit:contain;">`;
+        update_favicon(storedLogo);
     } else {
         // Restore default RF logo (will be re-applied by setup_theme's SVG map)
         const isDark = document.documentElement.classList.contains("dark-mode");
         rflogoEl.innerHTML = isDark ? getRflogoDarkSVG() : getRflogoLightSVG();
+        restore_default_favicon();
     }
 }
 
