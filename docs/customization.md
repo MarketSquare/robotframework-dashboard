@@ -67,7 +67,8 @@ See [Settings - Theme Tab](/settings#theme-settings-theme-tab) for more details.
 The **Theme** tab also lets you personalize the navigation bar with your own branding:
 
 - **Custom Title** — type a label into the *Custom Title* field and it appears in the menu bar next to the logo. Leave the field blank to hide it. The title is stored in localStorage under `branding.title`.
-- **Custom Logo** — upload a PNG image via the *Custom Logo* file picker to replace the default Robot Framework logo in the navigation bar. Click **Reset** to restore the default logo. The image is stored as a data-URL in localStorage under `branding.logo`.
+  > If `-t` / `--dashboardtitle` was set when generating the dashboard, that value takes **priority** over the Custom Title field and cannot be overridden from the UI.
+- **Custom Logo** — upload a PNG image via the *Custom Logo* file picker to replace the default Robot Framework logo in the navigation bar. Click **Reset** to restore the default logo. Images of any size or aspect ratio are accepted — the dashboard automatically scales and pads the image to a square before storing it, so it fits neatly in the 24 × 24 px logo slot. The logo is also applied as the browser tab **favicon**. The image is stored as a data-URL in localStorage under `branding.logo`.
 
 Both settings take effect immediately and persist across page reloads.
 

@@ -118,6 +118,11 @@ let overviewNavStore = {
     resizeHandler: null,
 };
 
+var defaultFaviconHref = (() => {
+    const link = document.querySelector("link[rel~='icon']");
+    return link ? link.getAttribute('href') : null;
+})();
+
 export {
     CARDS_PER_ROW,
     DEFAULT_DURATION_PERCENTAGE,
@@ -153,4 +158,5 @@ export {
     overviewNavStore,
     lastMergeResult,
     filterRows,
+    defaultFaviconHref
 };
