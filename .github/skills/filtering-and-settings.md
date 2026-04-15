@@ -21,7 +21,7 @@ The `settings` object is the single source of truth for all dashboard configurat
 
 | Key | Type | Contents |
 |---|---|---|
-| `switch` | Object | Feature toggles (booleans): run tags, total stats, latest runs, percentage filters, suite paths visibility, etc. |
+| `switch` | Object | Feature toggles (booleans/strings): run tags, total stats, latest runs, percentage filters, suite paths visibility, graph-level toggles (ignoreSkips, onlyLastRun*, onlyFailedFolders, testOnlyChanges, compareOnlyChanges, heatmapStatus, heatmapHour, testStatusFilter, compareStatusFilter) — all persisted to localStorage |
 | `show` | Object | Display settings: date labels, legends, aliases, milliseconds, axis titles, animation, duration, rounding, timezone conversion |
 | `theme_colors` | Object | `light`, `dark`, and `custom: {light, dark}` sub-objects with color values |
 | `branding` | Object | `title`, `logo` |
@@ -49,6 +49,14 @@ The `settings` object is the single source of truth for all dashboard configurat
 After resolving, always writes back to `localStorage.setItem('settings', JSON.stringify(settings))`.
 
 `set_local_storage_item(path, value)` — updates the live `settings` object using a dot-separated path (e.g. `"show.legends"`) and persists immediately. Used by all settings toggle handlers.
+
+### Graph-Level Switch Persistence
+
+All graph-level toggle switches (the controls directly on individual graphs, not in the settings modal) are persisted to localStorage under `settings.switch.*`. On page load, their stored values are read from `settings.switch` and applied to the corresponding DOM elements (checkboxes/selects). When the user toggles a switch, the new state is immediately saved via `set_local_storage_item()`. Key functions:
+
+- `update_switch_local_storage(key, state, firstLoad)` — for checkbox switches (overview toggles, suite paths); on `firstLoad=true`, reads from `settings` and sets the DOM element
+- Direct `set_local_storage_item("switch.*", value)` calls — for graph-specific switches like `ignoreSkips`, `onlyLastRunSuite`, `heatmapStatus`, etc.
+- Data-driven initialization loops in `eventlisteners.js` — arrays of `[elementId, settingsKey]` pairs that restore checkbox/select states on load and wire change listeners that persist to localStorage
 
 ### Deep Merge Behavior (`merge_deep`)
 

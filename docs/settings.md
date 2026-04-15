@@ -125,6 +125,12 @@ The **Theme** tab allows you to override the default colors used by the dashboar
 - Theme colors and branding are stored in localStorage alongside other settings  
 - Export via the JSON tab to share custom themes with your team
 
+## Graph-Level Switches
+
+In addition to the settings modal, individual graphs have their own toggle switches and dropdown filters (e.g. *Ignore Skips*, *Only Last Run*, *Only Failed Tests*, *Status*, *Only Changes*, *Hour*). These graph-level switches are **automatically saved to localStorage** and restored when the dashboard is reopened — your per-graph preferences are remembered across browser sessions.
+
+See [Graphs & Tables – Graph Switch Persistence](/graphs-tables#graph-switch-persistence) for the full list of persisted switches and their defaults. All graph switches are stored under the `switch` key in the settings JSON.
+
 ## JSON Settings (JSON Tab)
 
 For advanced use cases, you can directly edit the internal settings JSON.  
@@ -133,7 +139,7 @@ This allows complete control over:
 - Section ordering  
 - Graph ordering  
 - Graph sizes  
-- Switch toggles  
+- Switch toggles (including graph-level switches like *Ignore Skips*, *Only Last Run*, etc.)  
 - Display toggles  
 - Keyword configuration  
 - Animation settings  

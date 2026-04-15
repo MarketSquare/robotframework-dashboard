@@ -36,6 +36,33 @@ The Overview page supports several display toggles (configured in [Settings - Ov
 | **Version Filters** | Enables per-project version filtering with checkbox selectors. |
 | **Sort Filters** | Enables sort controls on the Overview page. |
 
+## Graph Switch Persistence
+
+Many graphs include toggle switches and dropdown filters (e.g. *Ignore Skips*, *Only Last Run*, *Only Failed Tests*, *Status*, *Only Changes*, *Hour*). All of these graph-level switches are **automatically saved to localStorage** and restored when the dashboard is reopened. This means your per-graph preferences are remembered across browser sessions without any manual action.
+
+The persisted graph switches include:
+
+| Switch | Graph(s) | Default |
+|--------|----------|--------|
+| **Ignore Skips** | Test Most Flaky | Off |
+| **Ignore Skips** | Test Recent Most Flaky | Off |
+| **Only Failed Tests** | Suite Folder Donut | Off |
+| **Only Last Run** | Suite Most Time-Consuming | Off |
+| **Only Last Run** | Test Most Time-Consuming | Off |
+| **Only Last Run** | Keyword Most Time-Consuming | Off |
+| **Only Last Run** | Keyword Most Used | Off |
+| **Only Changes** | Test Statistics | Off |
+| **Status** | Test Statistics | All |
+| **Only Changes** | Compare Tests | Off |
+| **Status** | Compare Tests | All |
+| **Status** | Run Heatmap | All |
+| **Hour** | Run Heatmap | All |
+| **Suite Paths** | Suite Statistics | Off |
+| **Suite Paths** | Test Statistics | Off |
+| **Suite Paths** | Compare Tests | Off |
+
+These switches are stored alongside the other dashboard settings and can also be viewed or edited via the [JSON Settings tab](/settings#json-settings-json-tab) under the `switch` key.
+
 ## Dashboard Tab
 
 ### Run Section
@@ -44,7 +71,7 @@ The Overview page supports several display toggles (configured in [Settings - Ov
 | Run Statistics | Percentages<br>Amount<br>Line | Percentages: Displays the distribution of passed, failed, skipped tests per run.<br>Amount: Displays the actual number of passed, failed, skipped tests per run.<br>Line: Displays the same data over a time axis, useful for spotting failure patterns. | -     |
 | Run Donut      | Donut                         | Two donut charts: first for the most recent run, second for totals across all runs.                                                                                                                                                                      | -     |
 | Run Duration   | Bar<br>Line                   | Bar: Displays total run durations represented as vertical bars.<br>Line: Displays run durations over a time axis for trend analysis.                                                                                                                     | -     |
-| Run Heatmap    | Heatmap<br>Status<br>Hour     | Heatmap: Shows how many tests ran during hours/minutes of weekdays.                                                         | Status: Filters to display only tests with the selected status.<br>Hour: Zoom in on a specific hour to see activity per minute.    |
+| Run Heatmap    | Heatmap<br>Status<br>Hour     | Heatmap: Shows how many tests ran during hours/minutes of weekdays.                                                         | Status: Filters to display only tests with the selected status (persisted).<br>Hour: Zoom in on a specific hour to see activity per minute (persisted).    |
 | Run Stats | Stats                              | High-level summary of projects and associated runs, including duration, pass rates, and custom project grouping.                                                                                                                                         | -     |
 
 
@@ -52,25 +79,25 @@ The Overview page supports several display toggles (configured in [Settings - Ov
 
 | Graph Name                | Views                         | Views Description                                                                                                                                                                                              | Notes                                                                                      |
 | ------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Suite Folder Donut        | Donut                         | First donut: top-level folders and number of tests.<br>Second donut: only most recent run, failed tests.<br>Clicking navigates subfolders.                                                                     | Go Up, Only Failed Tests                                                                   |
+| Suite Folder Donut        | Donut                         | First donut: top-level folders and number of tests.<br>Second donut: only most recent run, failed tests.<br>Clicking navigates subfolders.                                                                     | Go Up, Only Failed Tests (persisted)                                                                   |
 | Suite Statistics          | Percentages<br>Amount<br>Line | Percentages: Displays pass/fail/skip rate of test suites per run.<br>Amount: Displays actual number of passed, failed, skipped suites per run.<br>Line: Displays suite statistics over a time axis for trends. | -                                                                                          |
 | Suite Duration            | Bar<br>Line                   | Bar: Shows total suite durations represented as vertical bars.<br>Line: Shows suite durations over a time axis for trend analysis.                                                                             | -                                                                                          |
 | Suite Most Failed         | Bar<br>Timeline               | Bar: Ranks suites by number of failures.<br>Timeline: Shows when failures occurred over time.                                                                                                                  | Top 10 default, Top 50 fullscreen                                                          |
-| Suite Most Time-Consuming | Bar<br>Timeline               | Bar: Displays suites ranked by how often they were the slowest (most time-consuming) suite in a run.<br>Timeline: Displays the slowest suite for each run on a timeline.                                       | Top 10 default, Top 50 fullscreen; "Only Last Run" option for showing only latest run data |
+| Suite Most Time-Consuming | Bar<br>Timeline               | Bar: Displays suites ranked by how often they were the slowest (most time-consuming) suite in a run.<br>Timeline: Displays the slowest suite for each run on a timeline.                                       | Top 10 default, Top 50 fullscreen; "Only Last Run" option for showing only latest run data (persisted) |
 
 ### Test Section
 
 | Graph Name               | Views                    | Views Description                                                                                                                  | Notes                                                                         |
 | ------------------------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Test Statistics          | Timeline<br>Line | Timeline: Displays statistics of tests in timeline format.<br>Line: Displays test results as a scatter plot with a timestamp-based x-axis and one row per test, colored by status (pass/fail/skip). Useful for spotting patterns across many runs.  | Status: Displays only tests that don't have any status changes and have the selected status.<br>Only Changes: Displays only tests that changed status at some point.<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph.                                        |
+| Test Statistics          | Timeline<br>Line | Timeline: Displays statistics of tests in timeline format.<br>Line: Displays test results as a scatter plot with a timestamp-based x-axis and one row per test, colored by status (pass/fail/skip). Useful for spotting patterns across many runs.  | Status: Displays only tests that don't have any status changes and have the selected status (persisted).<br>Only Changes: Displays only tests that changed status at some point (persisted).<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph.                                        |
 | Test Duration            | Bar<br>Line              | Bar: Displays test durations represented as vertical bars.<br>Line: Displays test durations over a time axis.                      | -                                                                             |
 | Test Duration Deviation  | Boxplot                  | Shows deviations of test durations from average, highlighting flaky tests.                                                         | -                                                                             |
 | Test Messages            | Bar<br>Timeline          | Bar: Displays messages ranked by frequency.<br>Timeline: Displays when messages occurred to reveal spikes.                         | Top 10 default, Top 50 fullscreen                                             |
-| Test Most Flaky          | Bar<br>Timeline          | Bar: Tests ranked by frequency of status changes.<br>Timeline: Shows when status changes occurred over runs.                       | Top 10 default, Top 50 fullscreen, Ignore Skips option                        |
-| Test Recent Most Flaky   | Bar<br>Timeline          | Bar: Recent tests ranked by frequency of status changes.<br>Timeline: Shows when recent status changes occurred.                   | Top 10 default, Top 50 fullscreen, Ignore Skips option                        |
+| Test Most Flaky          | Bar<br>Timeline          | Bar: Tests ranked by frequency of status changes.<br>Timeline: Shows when status changes occurred over runs.                       | Top 10 default, Top 50 fullscreen, Ignore Skips option (persisted)                        |
+| Test Recent Most Flaky   | Bar<br>Timeline          | Bar: Recent tests ranked by frequency of status changes.<br>Timeline: Shows when recent status changes occurred.                   | Top 10 default, Top 50 fullscreen, Ignore Skips option (persisted)                        |
 | Test Most Failed         | Bar<br>Timeline          | Bar: Tests ranked by total number of failures.<br>Timeline: Displays when failures occurred across runs.                           | Top 10 default, Top 50 fullscreen                                             |
 | Test Recent Most Failed  | Bar<br>Timeline          | Bar: Recent tests ranked by total number of failures.<br>Timeline: Shows when most recent failures occurred.                       | Top 10 default, Top 50 fullscreen                                             |
-| Test Most Time-Consuming | Bar<br>Timeline          | Bar: Ranked by how often a test was the slowest in a run.<br>Timeline: Slowest test per run shown on timeline.                     | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only |
+| Test Most Time-Consuming | Bar<br>Timeline          | Bar: Ranked by how often a test was the slowest in a run.<br>Timeline: Slowest test per run shown on timeline.                     | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only (persisted) |
 
 ### Keyword Section
 
@@ -83,8 +110,8 @@ The Overview page supports several display toggles (configured in [Settings - Ov
 | Keyword Min Duration        | Bar<br>Line                   | Bar: Displays minimum durations per keyword.<br>Line: Minimum durations over a time axis.                                  | -                                                                             |
 | Keyword Max Duration        | Bar<br>Line                   | Bar: Displays maximum durations per keyword.<br>Line: Maximum durations over a time axis.                                  | -                                                                             |
 | Keyword Most Failed         | Bar<br>Timeline               | Bar: Keywords ranked by total failures.<br>Timeline: Shows when failures occurred across runs.                             | Top 10 default, Top 50 fullscreen                                             |
-| Keyword Most Time-Consuming | Bar<br>Timeline               | Bar: Ranked by how often a keyword was the slowest in a run.<br>Timeline: Slowest keyword per run on timeline.             | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only |
-| Keyword Most Used           | Bar<br>Timeline               | Bar: Ranked by how frequently keywords were used.<br>Timeline: Shows keyword usage trends over time.                       | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only |
+| Keyword Most Time-Consuming | Bar<br>Timeline               | Bar: Ranked by how often a keyword was the slowest in a run.<br>Timeline: Slowest keyword per run on timeline.             | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only (persisted) |
+| Keyword Most Used           | Bar<br>Timeline               | Bar: Ranked by how frequently keywords were used.<br>Timeline: Shows keyword usage trends over time.                       | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only (persisted) |
 
 
 ## Compare Tab
@@ -92,7 +119,7 @@ The Overview page supports several display toggles (configured in [Settings - Ov
 | ---------------------- | ------------------------ | ----------------------------------------------------------------------| -------------------------------------- |
 | Compare Statistics     | Bar                      | Displays overall statistics of the selected runs.                     | -                                      |
 | Compare Suite Duration | Radar                    | Shows suite durations in radar format for multiple runs.              | -                                      |
-| Compare Tests          | Timeline                 | Timeline: Displays test statistics over time.                         | Status: Displays only tests that don't have any status changes and have the selected status.<br>Only Changes: Displays only tests that changed status at some point.<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph. |
+| Compare Tests          | Timeline                 | Timeline: Displays test statistics over time.                         | Status: Displays only tests that don't have any status changes and have the selected status (persisted).<br>Only Changes: Displays only tests that changed status at some point (persisted).<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph. |
 
 
 ## Tooltips
