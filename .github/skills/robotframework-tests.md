@@ -31,28 +31,35 @@ Key pabot flags:
 ---
 
 ## Running Tests in Docker Container
+Tests can also be executed within an isolated docker container instead. This limts the dependencies in your local setup (like fontweights). A prerequisite is to have a running docker installation. To isolate `robot`, `javascript` and `python` test one container is available for each.
 
-Tests can also be executed within an isolated docker container instead. This limts the dependencies
-in your local setup (like fontweights). A prerequisite is to have a running docker installation.
+Running the script `scripts/docker/create-test-image.sh TYPE` will create a new docker image for the given type (robot, js or python). The image gets the tag `test-dashboard-TYPE`. The corresponding dockerfiles are based on the setup in the `.github/workflows/tests.yml`. Running the script again can be used to update amd replace the image based on the latest patches.
 
-Running the script `scripts/create-test-image.sh` will create a new docker image with the tag `test-dashboard`. The inline Dockerfile is based on the setup in the `.github/workflows/tests.yml`.
-Running the script again can be used to update amd replace the image based on the latest patches.
-
-The script `scripts/run-in-test-container.sh` can be used to start a new container based on the created image in one of two ways:
+The generic script `scripts/docker/run-in-container.sh` is used to start a new container based on the created image. There are wrapper scripts to start a corresponding container:
+* `scripts/docker/run-in-robot-container.sh`
+* `scripts/docker/run-in-js-container.sh`
+* `scripts/docker/run-in-python-container.sh`
 
 ```bash
+# Make sure your working directory is the toplevel one of the repository
 cd .../robotframework-dashboard
 
 # Running as an interactive shell
-bash scripts/run-in-test-container.sh
+bash scripts/run-in-robot-container.sh bash
+bash scripts/run-in-js-container.sh bash
+bash scripts/run-in-python-container.sh bash
 
 # Running in batch mode to execute some connands
-bash scripts/run-in-test-container.sh "bash scripts/robot-tests.sh"
+bash scripts/run-in-robot-container.sh bash scripts/robot-tests.sh
+bash scripts/run-in-robot-container.sh robot -t \"*version*\" tests/robot/testsuites/00_cli.robot
 
-bash scripts/run-in-test-container.sh "robot -t *version* tests/robot/testsuites/00_cli.robot"
+bash scripts/run-in-js-container.sh bash scripts/javascript-tests.sh
+bash scripts/run-in-python-container.sh bash scripts/python-tests.sh
 ```
 
-The script has to be started from the top level git working directory as it mounts it into the container.
+The scripts have to be started from the top level git working directory as it mounts it into the container.
+
+The scripts can be used on `windwos` in a `git-bash` as well. If you prefer to run thin in a `cmd` or `powershell` use the `*.bat` scripts instead.
 
 ## Test Dependencies (`requirements-test.txt`)
 
@@ -117,8 +124,8 @@ Because tests run in parallel and each test needs its own `.db` and `.html` file
 - Open a generated `robotdashboard_N.html` via `file://` URL (no server needed)
 - Interact with UI (clicks, fills, waits for elements)
 - Take screenshots and compare with reference images in `tests/robot/resources/dashboard_output/`
-- Comparison uses `DocTest.VisualTest` at **98% accuracy** (`threshold=0.02`)
-- Screenshots per worker are moved to `results/screenshots/` in the suite teardown so they appear in `log.html`
+- Comparison uses `DocTest.VisualTest` at **99.9% accuracy** (`threshold=0.001`) by default
+- Screenshots are getting embedded within the `log.html`
 
 ---
 
