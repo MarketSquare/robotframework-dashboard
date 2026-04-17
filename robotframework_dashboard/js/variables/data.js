@@ -3,6 +3,7 @@ const runs = decode_and_decompress("placeholder_runs");
 const suites = decode_and_decompress("placeholder_suites");
 const tests = decode_and_decompress("placeholder_tests");
 const keywords = decode_and_decompress("placeholder_keywords");
+const exceptions = decode_and_decompress("placeholder_exceptions");
 
 function decode_and_decompress(base64Str) {
     if (base64Str.includes("placeholder_")) return [];
@@ -27,6 +28,7 @@ export {
     suites,
     tests,
     keywords,
+    exceptions,
     message_config,
     force_json_config,
     json_config,

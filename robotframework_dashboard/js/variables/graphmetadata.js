@@ -621,6 +621,14 @@ const graphMetadata = [
                 </div>`,
     },
     {
+        key: "keywordExceptions",
+        label: "Keyword Exceptions",
+        defaultType: "bar",
+        viewOptions: ["Bar", "Timeline"],
+        hasFullscreenButton: true,
+        html: _graphHtml("keywordExceptions", "Exceptions", ["Bar", "Timeline"], { hasVertical: true }),
+    },
+    {
         key: "compareStatistics",
         label: "Compare Statistics",
         defaultType: "bar",
@@ -710,6 +718,15 @@ const graphMetadata = [
         hasFullscreenButton: false,
         information: null,
         html: _tableHtml("keywordTable", "Keyword"),
+    },
+    {
+        key: "exceptionTable",
+        label: "Table Exception",
+        defaultType: "table",
+        viewOptions: ["Table"],
+        hasFullscreenButton: false,
+        information: null,
+        html: _tableHtml("exceptionTable", "Exception"),
     },
 ];
 
