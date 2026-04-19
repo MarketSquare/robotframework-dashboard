@@ -78,6 +78,53 @@ Make sure to start the server with the `--uselogs` flag so that graph elements b
 
 For more details about the server and its API, see [Dashboard Server](/dashboard-server.md).
 
+### CI Pipelines and Hosted Logs
+
+In a typical CI setup, tests are run and logs are published to a server at a unique URL per build, for example:
+
+```
+https://ci.example.com/pipeline/build42/log.html
+```
+
+The default log-linking behaviour (deriving the log path from the stored `output.xml` path) breaks here because the base URL changes for every build. The `--logurl` flag lets you store the exact URL directly in the database so each run links to its own log, wherever it is hosted.
+
+#### Single Output
+
+When processing one output file per run, pass the direct URL:
+
+```bash
+robotdashboard -u true \
+  -o output-20250313-003006.xml \
+  --logurl https://marketsquare.github.io/robotframework-dashboard/example/tests/robot/resources/outputs/log-20250313-003006.html
+```
+
+The URL is stored in the database for that run. Clicking any graph element for that run opens it directly in a new tab.
+
+#### Multiple Outputs — `{run_alias}` Placeholder
+
+When processing multiple output files at once (via `-f` or repeated `-o`), use `{run_alias}` as a placeholder in the URL. It is substituted per file with the run alias — derived from the filename by stripping the `output_` prefix and `.xml` extension.
+
+**File naming:** files must use an underscore separator (`output_<alias>.xml`) so the alias strips cleanly:
+
+| File | Alias | Resolved URL |
+|---|---|---|
+| `output_20250313-002134.xml` | `20250313-002134` | `…/log-20250313-002134.html` |
+| `output_20250313-003006.xml` | `20250313-003006` | `…/log-20250313-003006.html` |
+
+```bash
+robotdashboard -u true \
+  -f ./tests/robot/resources/outputs/ \
+  --logurl "https://marketsquare.github.io/robotframework-dashboard/example/tests/robot/resources/outputs/log-{run_alias}.html"
+```
+
+::: warning
+If `--logurl` is provided **without** `{run_alias}` while multiple output files are being processed, the command will fail with an error. Either add the `{run_alias}` placeholder or use one `-o` per invocation.
+:::
+
+::: tip
+`--logurl` requires `--uselogs` (or `-u`) to also be set. Without it, graph elements are not clickable and the stored URL has no visible effect.
+:::
+
 ## Deep Linking
 
 When clicking a data point on a **suite** or **test** graph, the dashboard doesn't just open `log.html` — it navigates directly to the corresponding suite or test within the log file by appending the element's ID as a URL fragment (e.g., `log.html#s1-s1-t2`).

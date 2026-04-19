@@ -138,6 +138,7 @@ def _make_namespace(**kwargs):
         "dashboardtitle": "",
         "ssl_certfile": None,
         "ssl_keyfile": None,
+        "logurl": None,
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
@@ -313,7 +314,7 @@ def test_process_arguments_databaseclass_none():
 def test_process_arguments_databaseclass_not_exists_raises(tmp_path):
     nonexistent = tmp_path / "nonexistent" / "db.py"
     args = _make_namespace(databaseclass=str(nonexistent))
-    with pytest.raises(Exception, match="ERROR"):
+    with pytest.raises(SystemExit):
         ArgumentParser()._process_arguments(args)
 
 
@@ -335,7 +336,7 @@ def test_process_arguments_returns_all_keys():
         "server_port", "server_user", "server_pass", "json_config",
         "message_config", "quantity", "use_logs", "offline_dependencies",
         "force_json_config", "project_version", "no_vacuum", "timezone",
-        "no_autoupdate", "ssl_certfile", "ssl_keyfile",
+        "no_autoupdate", "ssl_certfile", "ssl_keyfile", "log_url",
     }
     for key in expected_keys:
         assert key in result, f"Missing key: {key}"
@@ -432,3 +433,60 @@ def test_get_arguments_parse_exception_prints_error(capsys):
     captured = capsys.readouterr()
     assert "ERROR" in captured.out
     assert "bad parse" in captured.out
+
+
+# --- _check_argument_warnings ---
+
+def test_check_argument_warnings_logurl_no_outputs(capsys):
+    args = _make_namespace(logurl="https://ci.example.com/log.html")
+    result = ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "logurl" in captured.out.lower() or "log" in captured.out.lower()
+    assert result.log_url == "https://ci.example.com/log.html"
+
+
+def test_check_argument_warnings_logurl_without_uselogs(capsys):
+    args = _make_namespace(logurl="https://ci.example.com/log.html", uselogs=False,
+                           outputpath=[["path/to/output.xml"]])
+    result = ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "uselogs" in captured.out.lower() or "logurl" in captured.out.lower()
+
+
+def test_check_argument_warnings_noautoupdate_without_server(capsys):
+    args = _make_namespace(noautoupdate=True, server=None)
+    ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "noautoupdate" in captured.out.lower()
+
+
+def test_check_argument_warnings_project_version_no_outputs(capsys):
+    args = _make_namespace(project_version="1.0")
+    ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "projectversion" in captured.out.lower()
+
+
+def test_check_argument_warnings_no_dashboard_offline_title_quantity(capsys):
+    args = _make_namespace(
+        generatedashboard=False,
+        offlinedependencies=True,
+        dashboardtitle="My Title",
+        quantity="10",
+    )
+    ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "offlinedependencies" in captured.out.lower()
+    assert "dashboardtitle" in captured.out.lower()
+    assert "quantity" in captured.out.lower()
+
+
+def test_check_argument_errors_logurl_no_placeholder_multiple_outputs_exits(capsys):
+    args = _make_namespace(
+        logurl="https://ci.example.com/log.html",
+        outputpath=[["path/to/output1.xml"], ["path/to/output2.xml"]],
+    )
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(args)
+    captured = capsys.readouterr()
+    assert "logurl" in captured.out.lower()

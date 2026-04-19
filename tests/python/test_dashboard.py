@@ -279,6 +279,16 @@ def test_make_paths_relative_multiple_runs(tmp_path):
     assert result[2]["path"] == ""
 
 
+def test_make_paths_relative_different_drive_keeps_absolute(tmp_path):
+    from unittest.mock import patch
+    dashboard = tmp_path / "dashboard.html"
+    absolute_path = r"D:\other_drive\output.xml"
+    runs = [{"run_start": "2025-01-01", "path": absolute_path}]
+    with patch("robotframework_dashboard.dashboard.relpath", side_effect=ValueError("Different drives")):
+        result = DashboardGenerator()._make_paths_relative(runs, str(dashboard))
+    assert result[0]["path"] == absolute_path
+
+
 def test_generate_dashboard_uselogs_embeds_relative_paths(tmp_path):
     import json, zlib, base64, re
     output_xml = tmp_path / "output.xml"

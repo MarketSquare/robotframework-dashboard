@@ -175,6 +175,17 @@ robotdashboard --uselogs True
 - Requirements: log files must be in the same folder as their respective output.xml files, with `output` replaced by `log` and `.xml` replaced by `.html`.
 - See [Log Linking](/log-linking.md) for the full guide on file naming, local vs. server usage, and remote log uploads.
 
+### Provide a custom URL for log files
+```bash
+robotdashboard -u true -o output.xml --logurl https://ci.example.com/build/42/log.html
+robotdashboard -u true -f ./results --logurl "https://ci.example.com/build/42/log_{run_alias}.html"
+```
+- Optional: `--logurl` overrides the default log path with a custom URL stored in the database for the processed run(s).
+- Useful in CI/CD pipelines where logs are published to a remote server at a unique URL per build.
+- Supports a `{run_alias}` placeholder that is replaced per file when processing multiple outputs.
+- If `--logurl` is provided without `{run_alias}` and multiple outputs are being processed, the command will produce an error.
+- See [Log Linking — CI Pipelines and Hosted Logs](/log-linking.md#ci-pipelines-and-hosted-logs) for full details and examples.
+
 ### Add messages config for bundling test messages
 ```bash
 robotdashboard -m message_config.txt  
