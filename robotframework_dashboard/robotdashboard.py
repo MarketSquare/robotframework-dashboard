@@ -6,7 +6,7 @@ from os import walk, getcwd
 from time import time
 from pathlib import Path
 from datetime import datetime
-
+from typing import Optional
 
 class RobotDashboard:
     """Class that provides all functionality that robotdashboard has to offer
@@ -32,7 +32,7 @@ class RobotDashboard:
         no_vacuum: bool,
         no_autoupdate: bool,
         timezone: str = "",
-        log_url: str = None,
+        log_url: Optional[str] = None,
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
