@@ -44,8 +44,8 @@ class ArgumentParser:
         else:
             print(
                 f"  ERROR: The provided value: '{value}' for --{arg_name} is invalid\n"
-                f" Please provide True, False, or leave empty for the reverse boolean of the default\n"
-                f" See the --h / --help for more information and usage examples"
+                f"   Please provide True, False, or leave empty for the reverse boolean of the default\n"
+                f"   See the --h / --help for more information and usage examples"
             )
             exit(0)
 
@@ -66,50 +66,50 @@ class ArgumentParser:
         no_outputs = not outputs and not outputfolderpaths
         if arguments.logurl and no_outputs:
             print(
-                "  WARNING: '--logurl' was provided but no output files are being processed."
-                " The URL will not be stored. Add '-o' or '-f' to process output files."
+                "  WARNING: '--logurl' was provided but no output files are being processed.\n"
+                "   The URL will not be stored. Add '-o' or '-f' to process output files."
             )
         if arguments.logurl and not use_logs:
             print(
-                "  WARNING: '--logurl' was provided without '--uselogs'."
-                " The URL will be stored in the database but graph elements will not be clickable."
-                " Add '--uselogs' to enable log linking in the dashboard."
+                "  WARNING: '--logurl' was provided without '--uselogs'.\n"
+                "   The URL will be stored in the database but graph elements will not be clickable.\n"
+                "   Add '--uselogs' to enable log linking in the dashboard."
             )
         if no_autoupdate and not arguments.server:
             print(
-                "  WARNING: '--noautoupdate' was provided without '--server'."
-                " This flag only has effect in server mode and will be ignored."
+                "  WARNING: '--noautoupdate' was provided without '--server'.\n"
+                "   This flag only has effect in server mode and will be ignored."
             )
         if arguments.project_version and no_outputs:
             print(
-                "  WARNING: '--projectversion' was provided but no output files are being processed."
-                " The version will not be stored. Add '-o' or '-f' to process output files."
+                "  WARNING: '--projectversion' was provided but no output files are being processed.\n"
+                "   The version will not be stored. Add '-o' or '-f' to process output files."
             )
         if arguments.timezone and no_outputs:
             print(
-                "  WARNING: '--timezone' was provided but no output files are being processed."
-                " The timezone will not be applied. Add '-o' or '-f' to process output files."
+                "  WARNING: '--timezone' was provided but no output files are being processed.\n"
+                "   The timezone will not be applied. Add '-o' or '-f' to process output files."
             )
         if arguments.messageconfig and no_outputs:
             print(
-                "  WARNING: '--messageconfig' was provided but no output files are being processed."
-                " The message config will have no effect. Add '-o' or '-f' to process output files."
+                "  WARNING: '--messageconfig' was provided but no output files are being processed.\n"
+                "   The message config will have no effect. Add '-o' or '-f' to process output files."
             )
         if not generate_dashboard:
             if offline_dependencies:
                 print(
-                    "  WARNING: '--offlinedependencies' was provided but dashboard generation is disabled."
-                    " This flag will have no effect. Remove '--generatedashboard false' to generate a dashboard."
+                    "  WARNING: '--offlinedependencies' was provided but dashboard generation is disabled.\n"
+                    "   This flag will have no effect. Remove '--generatedashboard false' to generate a dashboard."
                 )
             if arguments.dashboardtitle:
                 print(
-                    "  WARNING: '--dashboardtitle' was provided but dashboard generation is disabled."
-                    " The title will have no effect. Remove '--generatedashboard false' to generate a dashboard."
+                    "  WARNING: '--dashboardtitle' was provided but dashboard generation is disabled.\n"
+                    "   The title will have no effect. Remove '--generatedashboard false' to generate a dashboard."
                 )
             if arguments.quantity:
                 print(
-                    "  WARNING: '--quantity' was provided but dashboard generation is disabled."
-                    " This flag will have no effect. Remove '--generatedashboard false' to generate a dashboard."
+                    "  WARNING: '--quantity' was provided but dashboard generation is disabled.\n"
+                    "   This flag will have no effect. Remove '--generatedashboard false' to generate a dashboard."
                 )
 
     def _check_argument_errors(self, arguments, outputs, outputfolderpaths, force_json_config, database_class):
@@ -118,8 +118,8 @@ class ArgumentParser:
             is_multiple = outputfolderpaths or (outputs and len(outputs) > 1)
             if is_multiple:
                 print(
-                    "  ERROR: '--logurl' was provided without a '{run_alias}' placeholder while processing multiple outputs."
-                    " Either add '{run_alias}' to the URL template or provide a single output file with '-o'."
+                    "  ERROR: '--logurl' was provided without a '{run_alias}' placeholder while processing multiple outputs.\n"
+                    "   Either add '{run_alias}' to the URL template or provide a single output file with '-o'."
                 )
                 exit(0)
         if force_json_config and not arguments.jsonconfig:
