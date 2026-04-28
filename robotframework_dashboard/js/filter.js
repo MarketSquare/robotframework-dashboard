@@ -1,6 +1,6 @@
 import { settings, get_run_label } from './variables/settings.js';
 import { compareRunIds } from './variables/graphs.js';
-import { runs, suites, tests, keywords, unified_dashboard_title } from './variables/data.js';
+import { runs, suites, tests, keywords, exceptions, unified_dashboard_title } from './variables/data.js';
 import { show_loading_overlay, hide_loading_overlay, strip_tz_suffix } from './common.js';
 import { set_local_storage_item } from './localstorage.js';
 import {
@@ -9,6 +9,7 @@ import {
     filteredSuites,
     filteredTests,
     filteredKeywords,
+    filteredExceptions,
     selectedRunSetting,
     selectedTagSetting
 } from './variables/globals.js';
@@ -29,16 +30,19 @@ function setup_filtered_data_and_filters() {
     filteredSuites = remove_milliseconds(suites)
     filteredTests = remove_milliseconds(tests)
     filteredKeywords = remove_milliseconds(keywords)
+    filteredExceptions = remove_milliseconds(exceptions)
     // convert timezones if enabled (must run before remove_timezones so the offset is still present)
     filteredRuns = convert_timezone(filteredRuns);
     filteredSuites = convert_timezone(filteredSuites);
     filteredTests = convert_timezone(filteredTests);
     filteredKeywords = convert_timezone(filteredKeywords);
+    filteredExceptions = convert_timezone(filteredExceptions);
     // remove timezone display if disabled
     filteredRuns = remove_timezones(filteredRuns);
     filteredSuites = remove_timezones(filteredSuites);
     filteredTests = remove_timezones(filteredTests);
     filteredKeywords = remove_timezones(filteredKeywords);
+    filteredExceptions = remove_timezones(filteredExceptions);
     // filter run data
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
@@ -50,6 +54,7 @@ function setup_filtered_data_and_filters() {
     filteredSuites = filter_data(filteredSuites);
     filteredTests = filter_data(filteredTests);
     filteredKeywords = filter_data(filteredKeywords);
+    filteredExceptions = filter_data(filteredExceptions);
     // re-sort all filtered data by wall-clock run_start so mixed-timezone datasets
     // appear in the correct chronological order on graphs (timestamps may have been
     // converted or had their offsets stripped above, so re-sort here is the source of truth)
@@ -57,6 +62,7 @@ function setup_filtered_data_and_filters() {
     filteredSuites = sort_wall_clock(filteredSuites);
     filteredTests = sort_wall_clock(filteredTests);
     filteredKeywords = sort_wall_clock(filteredKeywords);
+    filteredExceptions = sort_wall_clock(filteredExceptions);
     // set titles with amount of filtered items
     const runAmount = Object.keys(filteredRuns).length
     const message = `<h6>showing ${runAmount} of ${filteredAmount} runs</h6>`

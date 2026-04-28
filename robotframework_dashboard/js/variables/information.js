@@ -133,6 +133,8 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "keywordMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest keyword for each run on a timeline. For every run, only the single most time-consuming keyword is shown. The regular view shows the Top 10 most frequently slowest keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming keywords by duration.",
     "keywordMostUsedGraphBar": "Bar: Displays keywords ranked by how frequently they were used across all runs. Each bar represents how many times a keyword appeared in total. The regular view shows the Top 10 most used keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most used keywords *within the latest run only*, ranked by occurrence count.",
     "keywordMostUsedGraphTimeline": "Timeline: Displays keyword usage trends over time. For each run, the most frequently used keyword (or keywords) is shown, illustrating how keyword usage changes across runs. The regular view highlights the Top 10 most frequently used keywords overall; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most used keywords by frequency.",
+    "keywordExceptionsGraphBar": "Bar: Displays exception messages caught by TRY/EXCEPT blocks, ranked by how many times each exception occurred across all runs. The regular view shows the Top 10; fullscreen mode expands to the Top 50.",
+    "keywordExceptionsGraphTimeline": "Timeline: Displays exception messages caught by TRY/EXCEPT blocks over time. Each row is a distinct exception message; each cell represents a run where that exception occurred, with the count shown.",
     "filterProfileInformation": `Filter Profiles let you save and reapply a named combination of filter settings.
 - Add Profile: enters edit mode where you name the profile and choose which filters to include using the checkmarks that appear next to each filter. Checkmarks are pre-filled based on which filters currently differ from their default (load-time) state.
 - Save Profile: saves the profile with the selected filter values under the given name.
@@ -189,7 +191,7 @@ const graphKeys = [
     "testStatistics", "testDuration", "testDurationDeviation", "testMessages",
     "testMostFlaky", "testRecentMostFlaky", "testMostFailed", "testRecentMostFailed", "testMostTimeConsuming",
     "keywordStatistics", "keywordTimesRun", "keywordTotalDuration", "keywordAverageDuration",
-    "keywordMinDuration", "keywordMaxDuration", "keywordMostFailed", "keywordMostTimeConsuming", "keywordMostUsed",
+    "keywordMinDuration", "keywordMaxDuration", "keywordMostFailed", "keywordMostTimeConsuming", "keywordMostUsed", "keywordExceptions",
     "compareStatistics", "compareSuiteDuration", "compareTests",
 ];
 graphKeys.forEach(key => {
@@ -199,7 +201,7 @@ graphKeys.forEach(key => {
     informationMap[`${key}Hidden`] = "Show Graph";
 });
 
-["runTable", "suiteTable", "testTable", "keywordTable"].forEach(key => {
+["runTable", "suiteTable", "testTable", "keywordTable", "exceptionTable"].forEach(key => {
     informationMap[`${key}MoveUp`] = "Move Up";
     informationMap[`${key}MoveDown`] = "Move Down";
     informationMap[`${key}Shown`] = "Hide Table";

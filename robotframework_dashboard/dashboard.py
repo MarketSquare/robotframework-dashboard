@@ -69,6 +69,10 @@ class DashboardGenerator:
                 f'"{self._compress_and_encode(data["keywords"])}"',
             )
             dashboard_data = dashboard_data.replace(
+                '"placeholder_exceptions"',
+                f'"{self._compress_and_encode(data.get("exceptions", []))}"',
+            )
+            dashboard_data = dashboard_data.replace(
                 '"placeholder_amount"', str(quantity)
             )
             dashboard_data = dashboard_data.replace(

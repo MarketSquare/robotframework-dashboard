@@ -1,4 +1,4 @@
-import { filteredRuns, filteredSuites, filteredTests, filteredKeywords } from "../variables/globals.js";
+import { filteredRuns, filteredSuites, filteredTests, filteredKeywords, filteredExceptions } from "../variables/globals.js";
 
 // data builder functions
 function _get_run_table_data() {
@@ -30,6 +30,12 @@ function _get_keyword_table_data() {
     ]);
 }
 
+function _get_exception_table_data() {
+    return filteredExceptions.map(exception => [
+        exception.run_start, exception.message, exception.amount, exception.run_alias,
+    ]);
+}
+
 // column definitions
 const runColumns = [
     { title: "run" }, { title: "full_name" }, { title: "name" }, { title: "total" },
@@ -52,6 +58,9 @@ const keywordColumns = [
     { title: "average_execution_time" }, { title: "min_execution_time" },
     { title: "max_execution_time" }, { title: "alias" }, { title: "owner" },
 ];
+const exceptionColumns = [
+    { title: "run" }, { title: "message" }, { title: "amount" }, { title: "alias" },
+];
 
 // create functions
 function create_data_table(tableId, columns, getDataFn) {
@@ -66,6 +75,7 @@ function create_run_table() { create_data_table("runTable", runColumns, _get_run
 function create_suite_table() { create_data_table("suiteTable", suiteColumns, _get_suite_table_data); }
 function create_test_table() { create_data_table("testTable", testColumns, _get_test_table_data); }
 function create_keyword_table() { create_data_table("keywordTable", keywordColumns, _get_keyword_table_data); }
+function create_exception_table() { create_data_table("exceptionTable", exceptionColumns, _get_exception_table_data); }
 
 // update functions
 function update_data_table(tableId, columns, getDataFn) {
@@ -78,14 +88,17 @@ function update_run_table() { update_data_table("runTable", runColumns, _get_run
 function update_suite_table() { update_data_table("suiteTable", suiteColumns, _get_suite_table_data); }
 function update_test_table() { update_data_table("testTable", testColumns, _get_test_table_data); }
 function update_keyword_table() { update_data_table("keywordTable", keywordColumns, _get_keyword_table_data); }
+function update_exception_table() { update_data_table("exceptionTable", exceptionColumns, _get_exception_table_data); }
 
 export {
     create_run_table,
     create_suite_table,
     create_test_table,
     create_keyword_table,
+    create_exception_table,
     update_run_table,
     update_suite_table,
     update_test_table,
-    update_keyword_table
+    update_keyword_table,
+    update_exception_table
 };

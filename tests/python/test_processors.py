@@ -1,7 +1,8 @@
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 import pytest
-from robotframework_dashboard.processors import OutputProcessor
+from robotframework_dashboard.processors import OutputProcessor, ExceptionProcessor
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
@@ -31,7 +32,7 @@ def test_get_run_start_all_xml_files(all_xml_outputs):
 
 def test_get_output_data_returns_expected_keys(processed_output):
     data = processed_output.get_output_data()
-    assert set(data.keys()) == {"runs", "suites", "tests", "keywords"}
+    assert set(data.keys()) == {"runs", "suites", "tests", "keywords", "exceptions"}
 
 
 def test_get_output_data_runs_has_one_entry(processed_output):
@@ -126,6 +127,121 @@ def test_calculate_keyword_averages_skipped_counted():
     keyword_list = [(run_start, "Skip Kw", 0, 0, 3, 0.0, "Lib")]
     result = _make_processor().calculate_keyword_averages(keyword_list)
     assert result[0][4] == 3    # skipped
+
+# --- ExceptionProcessor ---
+
+def _branch(branch_type):
+    return SimpleNamespace(type=branch_type)
+
+
+def _keyword(failed, message=""):
+    return SimpleNamespace(failed=failed, message=message)
+
+
+def test_exception_processor_start_try_branch_increments_depth():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep.start_try_branch(_branch("TRY"))
+    assert ep._try_depth == 1
+
+
+def test_exception_processor_start_try_branch_ignores_non_try():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep.start_try_branch(_branch("EXCEPT"))
+    assert ep._try_depth == 0
+
+
+def test_exception_processor_end_try_branch_decrements_depth():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    ep.end_try_branch(_branch("TRY"))
+    assert ep._try_depth == 0
+
+
+def test_exception_processor_end_try_branch_ignores_non_try():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    ep.end_try_branch(_branch("EXCEPT"))
+    assert ep._try_depth == 1
+
+
+def test_exception_processor_end_keyword_records_failure_in_try():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    kw = _keyword(failed=True, message="Something went wrong")
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert ep._exception_counts["Something went wrong"] == 1
+
+
+def test_exception_processor_end_keyword_ignores_outside_try():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    kw = _keyword(failed=True, message="Error")
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert len(ep._exception_counts) == 0
+
+
+def test_exception_processor_end_keyword_ignores_passed():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    kw = _keyword(failed=False, message="OK")
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert len(ep._exception_counts) == 0
+
+
+def test_exception_processor_end_keyword_ignores_empty_message():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    kw = _keyword(failed=True, message="")
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert len(ep._exception_counts) == 0
+
+
+def test_exception_processor_aggregates_same_message():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    kw1 = _keyword(failed=True, message="Timeout")
+    ep.start_keyword(kw1)
+    ep.end_keyword(kw1)
+    kw2 = _keyword(failed=True, message="Timeout")
+    ep.start_keyword(kw2)
+    ep.end_keyword(kw2)
+    assert ep._exception_counts["Timeout"] == 2
+
+
+def test_exception_processor_get_aggregated_exceptions():
+    run_time = datetime(2025, 1, 1)
+    ep = ExceptionProcessor(run_time)
+    ep._try_depth = 1
+    for msg in ["Error A", "Error A", "Error B"]:
+        kw = _keyword(failed=True, message=msg)
+        ep.start_keyword(kw)
+        ep.end_keyword(kw)
+    result = ep.get_aggregated_exceptions()
+    assert len(result) == 2
+    by_msg = {r[1]: r for r in result}
+    assert by_msg["Error A"] == (run_time, "Error A", 2)
+    assert by_msg["Error B"] == (run_time, "Error B", 1)
+
+
+def test_exception_processor_get_aggregated_exceptions_empty():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    assert ep.get_aggregated_exceptions() == []
+
+
+def test_exception_processor_only_counts_leaf_keyword():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    # Simulate: parent keyword wraps a child that fails
+    parent = _keyword(failed=True, message="Error")
+    child = _keyword(failed=True, message="Error")
+    ep.start_keyword(parent)
+    ep.start_keyword(child)
+    ep.end_keyword(child)   # leaf — counted
+    ep.end_keyword(parent)  # parent — should NOT be counted
+    assert ep._exception_counts["Error"] == 1
 
 
 def test_calculate_keyword_averages_from_real_xml(processed_output):
