@@ -255,6 +255,7 @@ class ArgumentParser:
                 "  • Separate multiple values with commas; ranges use ':', lists use ';'\n"
                 "Examples:\n"
                 "  • '-r index=0,index=1:4;9,index=10'\n"
+                "  • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run\n"
                 "  • '-r alias=some_alias,tag=prod'\n"
                 "  • '-r limit=10' -> keep only the 10 most recent runs\n"
             ),
