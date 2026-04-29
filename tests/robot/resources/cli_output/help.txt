@@ -6,7 +6,16 @@
 |_| \_\\___/|____/ \___/ |_| |____/_/   \_|____/|_| |_|____/ \___/_/   \_|_| \_|____/ 
 
 ======================================================================================
-*
+usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]PATH ...[]][]] [[]-f [[]PATH ...[]][]]
+                      [[]--projectversion VERSION[]] [[]-z OFFSET[]] [[]-d PATH[]]
+                      [[]-r [[]QUERY ...[]][]] [[]-c PATH[]] [[]--novacuum [[]BOOL[]][]]
+                      [[]-g [[]BOOL[]][]] [[]-l [[]BOOL[]][]] [[]-n NAME[]] [[]-t TITLE[]] [[]-q INT[]]
+                      [[]--offlinedependencies [[]BOOL[]][]] [[]-u [[]BOOL[]][]]
+                      [[]--logurl URL[]] [[]-j PATH[]] [[]--forcejsonconfig [[]BOOL[]][]]
+                      [[]-m PATH[]] [[]-s [[]HOST:PORT:USERNAME:PASSWORD[]][]]
+                      [[]--noautoupdate [[]BOOL[]][]] [[]--ssl-certfile PATH[]]
+                      [[]--ssl-keyfile PATH[]]
+
 Generate an interactive HTML dashboard from Robot Framework output.xml results.
 
 options:
@@ -14,14 +23,14 @@ options:
   -h, --help            Provide additional information.
 
 output files:
-  -o, --outputpath [[]PATH ...[]]
+  -o [[]PATH ...[]], --outputpath [[]PATH ...[]]
                         Path to one or more output.xml files.
                           • Repeat '-o' for multiple files
                           • Append ':tag1:tag2' to add tags
                         Examples:
                           • '-o path/to/output1.xml'
                           • '-o output2.xml:dev:nightly -o output3.xml:prod'
-  -f, --outputfolderpath [[]PATH ...[]]
+  -f [[]PATH ...[]], --outputfolderpath [[]PATH ...[]]
                         Directory scanned recursively for *output*.xml files.
                           • All matching files in subfolders are included
                           • Append ':tag1:tag2' to add tags
@@ -33,7 +42,7 @@ output files:
                           • Cannot be mixed with version_ output tags
                         Examples:
                           • '--projectversion=1.1'
-  -z, --timezone OFFSET
+  -z OFFSET, --timezone OFFSET
                         UTC offset of the output.xml timestamps (default: auto-detected).
                           • Format: +HH:MM or -HH:MM
                           • Use '--timezone=' form for negative offsets
@@ -41,11 +50,11 @@ output files:
                           • '-z +02:00'  '--timezone=-05:00'  '-z +00:00'
 
 database:
-  -d, --databasepath PATH
+  -d PATH, --databasepath PATH
                         Path to the database file (default: robot_results.db).
                         Examples:
                           • '-d path/to/myresults.db'
-  -r, --removeruns [[]QUERY ...[]]
+  -r [[]QUERY ...[]], --removeruns [[]QUERY ...[]]
                         Remove runs by index, run_start, alias, tag, or limit.
                           • Separate multiple values with commas; ranges use ':', lists use ';'
                         Examples:
@@ -53,7 +62,7 @@ database:
                           • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run
                           • '-r alias=some_alias,tag=prod'
                           • '-r limit=10' -> keep only the 10 most recent runs
-  -c, --databaseclass PATH
+  -c PATH, --databaseclass PATH
                         Path to a custom database class (.py) to override the built-in SQLite engine.
                           • See docs for implementation details
                         Examples:
@@ -61,19 +70,20 @@ database:
   --novacuum [[]BOOL[]]     `boolean` [[]default: False[]] Disable automatic database vacuuming.
 
 dashboard:
-  -g, --generatedashboard [[]BOOL[]]
+  -g [[]BOOL[]], --generatedashboard [[]BOOL[]]
                         `boolean` [[]default: True[]] Generate the HTML dashboard file.
-  -l, --listruns [[]BOOL[]]
+  -l [[]BOOL[]], --listruns [[]BOOL[]]
                         `boolean` [[]default: True[]] List runs in the console output.
-  -n, --namedashboard NAME
+  -n NAME, --namedashboard NAME
                         Custom HTML dashboard file name (default: robot_dashboard_yyyymmdd-hhssmm.html).
                         Examples:
                           • '-n dashboard.html'
-  -t, --dashboardtitle TITLE
+  -t TITLE, --dashboardtitle TITLE
                         Custom HTML title (default: Robot Framework Dashboard - yyyy-mm-dd hh:mm:ss).
                         Examples:
                           • '-t My_Test_Dashboard'
-  -q, --quantity INT    Number of runs shown on initial dashboard load (default: 20).
+  -q INT, --quantity INT
+                        Number of runs shown on initial dashboard load (default: 20).
                           • Higher values slow initial load
                         Examples:
                           • '-q 25'
@@ -81,7 +91,8 @@ dashboard:
                         `boolean` [[]default: False[]] Embed JS/CSS locally instead of loading from CDN.
 
 log linking:
-  -u, --uselogs [[]BOOL[]]  `boolean` [[]default: False[]] Enable clickable graphs that open the corresponding log.html.
+  -u [[]BOOL[]], --uselogs [[]BOOL[]]
+                        `boolean` [[]default: False[]] Enable clickable graphs that open the corresponding log.html.
   --logurl URL          URL to the log file for the processed run(s), stored in the database.
                           • Overrides the path derived from the output.xml location
                           • Use '{run_alias}' placeholder for multi-file processing
@@ -90,20 +101,20 @@ log linking:
                           • '--logurl https://ci.example.com/build42/log_{run_alias}.html'
 
 dashboard configuration:
-  -j, --jsonconfig PATH
+  -j PATH, --jsonconfig PATH
                         Path to a JSON configuration file applied on first dashboard load.
                         Examples:
                           • '-j settings.json'
   --forcejsonconfig [[]BOOL[]]
                         `boolean` [[]default: False[]] Force --jsonconfig to override existing localstorage settings.
-  -m, --messageconfig PATH
+  -m PATH, --messageconfig PATH
                         Path to a file containing test message templates with ${placeholder} syntax.
                         Examples:
                           • 'The test failed on: ${date}' -> example line
                           • '-m messages.txt'
 
 server:
-  -s, --server [[]HOST:PORT:USERNAME:PASSWORD[]]
+  -s [[]HOST:PORT:USERNAME:PASSWORD[]], --server [[]HOST:PORT:USERNAME:PASSWORD[]]
                         Start the dashboard webserver.
                           • Format: 'default' or 'host:port', optionally ':username:password'
                         Examples:
