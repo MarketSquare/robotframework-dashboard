@@ -90,11 +90,6 @@ class ArgumentParser:
                 "  WARNING: '--timezone' was provided but no output files are being processed.\n"
                 "   The timezone will not be applied. Add '-o' or '-f' to process output files."
             )
-        if arguments.messageconfig and no_outputs:
-            print(
-                "  WARNING: '--messageconfig' was provided but no output files are being processed.\n"
-                "   The message config will have no effect. Add '-o' or '-f' to process output files."
-            )
         if not generate_dashboard:
             if offline_dependencies:
                 print(

@@ -6,8 +6,6 @@
 |_| \_\\___/|____/ \___/ |_| |____/_/   \_|____/|_| |_|____/ \___/_/   \_|_| \_|____/ 
 
 ======================================================================================
-  WARNING: '--messageconfig' was provided but no output files are being processed.
-   The message config will have no effect. Add '-o' or '-f' to process output files.
  1. Database preparation
   created database: '*.db'
 ======================================================================================
