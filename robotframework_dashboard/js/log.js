@@ -38,6 +38,10 @@ function open_log_file(event, chartElement, callbackData = undefined, directRunS
 
 // function to open the log file
 function open_log_from_path(path) {
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+        window.open(path, "_blank")
+        return
+    }
     var fileUrl = ""
     if (server) { // server url
         fileUrl = `/log?path=${path}`

@@ -122,7 +122,7 @@ class DashboardGenerator:
         dashboard_dir = dirname(abspath(dashboard_name))
         result = []
         for run in runs:
-            if run.get("path"):
+            if run.get("path") and not run["path"].startswith(("http://", "https://")):
                 try:
                     relative = relpath(run["path"], dashboard_dir).replace("\\", "/")
                     run = dict(run)
