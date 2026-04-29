@@ -60,6 +60,7 @@ function create_data_table(tableId, columns, getDataFn) {
         layout: { topStart: "info", bottomStart: null },
         columns,
         data: getDataFn(),
+        scrollX: true,
     });
 }
 function create_run_table() { create_data_table("runTable", runColumns, _get_run_table_data); }
