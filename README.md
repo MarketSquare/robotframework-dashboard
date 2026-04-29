@@ -82,6 +82,24 @@ For detailed usage instructions, advanced examples, and full documentation, visi
 - 🗄️ [**Custom Database Class**](https://marketsquare.github.io/robotframework-dashboard/custom-database-class.html) - Extend or replace the default database backend to suit your storage needs, including SQLite, MySQL, or custom implementations.
 - 🔔 [**Listener Integration**](https://marketsquare.github.io/robotframework-dashboard/listener-integration.html) - Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
 - 📂 [**Log Linking**](https://marketsquare.github.io/robotframework-dashboard/log-linking.html) - Enable clickable log navigation from dashboard graphs, covering file naming conventions, local and server usage, and remote log uploads.
+- 📈 [**Performance**](https://marketsquare.github.io/robotframework-dashboard/performance.html) - Benchmark results across different workload sizes, guidance on scaling to hundreds of runs, and tips for large result sets.
+
+
+## 📈 Performance
+
+robotframework-dashboard is designed to stay fast even as your result set grows. Key characteristics:
+
+- **XML processing** scales linearly with file size — the `robot.api` parser is the bottleneck, not the dashboard code itself. Typical runs process in **under 1 second each**.
+- **Dashboard generation** is nearly always **under 1 second** regardless of scale — data is already aggregated in the database, so re-generating HTML after adding new runs is essentially free.
+- **Incremental processing** — output files already in the database are automatically skipped, so you can safely re-run against a folder of XMLs without re-processing old results.
+- **HTML size** stays modest (~500 KB–1 MB for typical workloads) thanks to zlib compression of the embedded data.
+
+| Scale | Runs | Tests/run | XML/run | Processing | HTML size |
+|---|---|---|---|---|---|
+| Small | 10 | 30 | 242 KB | 0.9s total | 497 KB |
+| Medium | 50 | 150 | 2.8 MB | 38s total | 654 KB |
+
+For detailed results, scaling guidance, and a runnable benchmark script, see the [Performance docs](https://marketsquare.github.io/robotframework-dashboard/performance.html).
 
 
 ## 🛠️ Contributions
