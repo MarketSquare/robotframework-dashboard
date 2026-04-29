@@ -193,6 +193,29 @@ body.lock-scroll {
   cursor: pointer;
 }
 
+/* ── Info label + small icon (tooltip on label hover) ── */
+.info-label {
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.info-icon-small {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.info-label:hover .info-icon-small {
+  opacity: 1;
+}
+
+.info-label:hover .info-icon-small svg {
+  stroke: var(--color-highlight) !important;
+}
+
 .navbar-disabled {
   opacity: 0.5;
   user-select: none;

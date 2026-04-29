@@ -13,60 +13,56 @@ const informationMap = {
     "docs": "Docs",
     "amount": "Amount of runs that are shown. Only the most recent x runs are shown after applying the other filters.",
     "amountLabel": "Amount of runs that are shown. Only the most recent x runs are shown after applying the other filters.",
-    "overviewTotalInformation": `This section displays aggregate statistics across all runs:
-- Passed/Failed/Skipped Runs: total count of runs with each status
-- Average Duration: the mean duration across all runs in the project
-- Average Pass Rate: the mean pass rate across all runs in the project
-- Check out all options in the settings: 'Gear Icon' > 'Overview'`,
-    "overviewLatestInformation": `This section displays the latest run for each project:
-- Duration color indicates performance relative to the average: green if more than x% faster, red if more than x% slower. You can adjust this threshold using the Percentage toggle. Version filters do not affect this.
-- Passed runs represent the percentage of runs with zero failures.
-- The 'Select Versions' dropdown menu allows filtering by desired versions. Click 'All' to quickly deselect all other checkboxes.
-- The runs can also be filtered to only those whose version contains the text entered in the 'Version Filter...' input.
-- Clicking on the run card applies a filter for that project and switches to dashboard
-- Check out all options in the settings: 'Gear Icon' > 'Overview'`,
-    "unifiedStatisticsInformation": `This section provides unified statistics across all projects and runs:
-- It combines run/suite/test/keyword data from all projects into a single dashboard view.
-- You can apply the filters (menu filter icon) to focus on specific projects, versions, or timeframes.
-- You can also apply specific suite/test/keyword filters (section filters) to drill down into particular areas of interest.
-- Use the 'Customize Layout' option to tailor which graphs are displayed and their order.`,
-    "suiteStatisticsInformation": `This section provides statistics on the suite level:
-- Folder Filter: Click on folder donuts to "zoom in" on specific suites. (Applies to Folders, Statistics and Duration Graphs)
-- Suite Selection Dropdown: Choose a specific suite or all suites. (Applies to Statistics and Duration Graphs)
-- Full Suite Paths Toggle: When enabled, shows the full suite path instead of only the suite name. Useful if there are duplicate suite names in different folders. (Applies to all Suite Graphs)`,
-    "testStatisticsInformation": `This section provides statistics on the test level:
-- Suite Filter: Select one or multiple suites from a dropdown. (Applies to Statistics, Duration and Duration Deviation Graphs)
-- Suite Paths Toggle: Same logic as the Suite section; allows distinguishing duplicate suite names. (Applies to all Test Graphs)
-- Test Selection Dropdown: Zoom in on a specific test. (Applies to Statistics, Duration and Duration Deviation Graphs)
-- Test Tag Dropdown: Filter tests by tags. (Applies to Statistics, Duration and Duration Deviation Graphs)`,
-    "keywordStatisticsInformation": `This section provides statistics on the keyword level:
-- Keyword Dropdown: Select a specific keyword to zoom in on. (Applies to Statistics, Times Run, Total Duration, Average Duration, Min Duration, Max Duration Graphs)
-- Library Names Toggle: Include library names in the keyword selection dropdown. (Applies to all Keyword Graphs)`,
+    "overviewTotalInformation": `Shows aggregate statistics across all projects:
+- Passed/Failed/Skipped Runs: total counts by status
+- Average Duration: mean across all runs
+- Average Pass Rate: mean pass rate across all runs
+See Settings > Overview for display options.`,
+    "overviewLatestInformation": "Shows the latest run per project. Click a card to apply a project filter and open the dashboard.",
+    "overviewLatestPercentageInfo": "Duration color threshold: green if the run is at least X% faster than average, red if X% slower.",
+    "overviewLatestVersionsInfo": "Filter overview cards by project version. 'All' shows all versions.",
+    "overviewLatestSortInfo": "Sort project cards by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.",
+    "unifiedStatisticsInformation": `Unified view combining data from all projects into one dashboard.
+- Use the top filters to focus on specific projects, versions, or timeframes.
+- Use the section filters to drill down into suites, tests, or keywords.
+- Use 'Customize Layout' to choose which graphs are shown and their order.`,
+    "suiteStatisticsInformation": `Suite section: statistics, duration and folder charts for all suites.`,
+    "suiteSectionFolderFilter": "Click any row in the folder chart to drill down into that folder. Shows the active folder filter.",
+    "suiteSectionSuiteFilter": "Select a specific suite to focus the statistics and duration graphs. 'All' shows all suites.",
+    "suiteSectionPathsFilter": "Show full suite paths instead of just suite names — useful when duplicate names exist across different folders.",
+    "testStatisticsInformation": `Test section: statistics, duration and deviation charts per test.`,
+    "testSectionSuiteFilter": "Filter tests to those in the selected suite. Applies to Statistics, Duration and Duration Deviation graphs.",
+    "testSectionPathsFilter": "Show full suite paths instead of just suite names — useful when duplicate names exist across different folders.",
+    "testSectionTestFilter": "Zoom in on a specific test. Applies to Statistics, Duration and Duration Deviation graphs.",
+    "testSectionTagFilter": "Filter tests by tag. Applies to Statistics, Duration and Duration Deviation graphs.",
+    "keywordStatisticsInformation": `Keyword section: statistics and duration charts per keyword.`,
+    "keywordSectionKeywordFilter": "Zoom in on a specific keyword. Applies to Statistics, Times Run, and all Duration graphs.",
+    "keywordSectionLibNamesFilter": "Include the library name as a prefix in the keyword dropdown.",
     "runStatisticsGraphPercentages": "Percentages: Displays the distribution of passed, failed, skipped tests per run, where 100% equals all tests combined",
     "runStatisticsGraphAmount": "Amount: Displays the actual number of passed, failed, skipped tests per run",
     "runStatisticsGraphLine": "Line: Displays the same data but over a time axis, useful for spotting failure patterns on specific dates or times",
     "runDonutGraphDonut": `This graph contains two donut charts:
 - The first donut displays the percentage of passed, failed, and skipped tests for the most recent run..
 - The second donut displays the total percentage of passed, failed, and skipped tests across all runs`,
-    "runStatsGraphStats": `This section provides key statistics:
-- Executed: Total counts of Runs, Suites, Tests, and Keywords that have been executed.
-- Unique Tests: Displays the number of distinct test cases across all runs.
-- Outcomes: Total Passed, Failed, and Skipped tests, including their percentages relative to the full test set.
-- Duration: Displays the cumulative runtime of all runs, the average runtime per run, and the average duration of individual tests.
-- Pass Rate: Displays the average run-level pass rate, helping evaluate overall reliability over time.`,
+    "runStatsGraphStats": `Key statistics across all runs:
+- Executed: total counts of Runs, Suites, Tests, and Keywords.
+- Unique Tests: distinct test cases across all runs.
+- Outcomes: total Passed, Failed, Skipped with percentages.
+- Duration: cumulative runtime, average per run, and average per test.
+- Pass Rate: average run-level pass rate over time.`,
     "runDurationGraphBar": "Bar: Displays total run durations represented as vertical bars",
     "runDurationGraphLine": "Displays the same data but over a time axis for clearer trend analysis",
-    "runHeatmapGraphHeatmap": `This graph visualizes a heatmap of when tests are executed the most:
-- All: Displays how many tests ran during the hours or minutes of the week days.
-- Status: Displays only tests of the selected status.
-- Hour: Displays only that hour so you get insights per minute.`,
-    "suiteFolderDonutGraphDonut": `This graph contains two donut charts:
-- The first donut displays the top-level folders of the suites and the amount of tests each folder contains.
-- The second donut displays the same folder structure but only for the most recent run and only includes failed tests.
-- Clicking on a folder updates the chart with the subfolders/suites it contains.
-- Navigating folders also updates Suite Statistics and Suite Duration.
-- Go Up: navigates to the parent folder level.
-- Only Failed: filters to show only folders with failing tests.`,
+    "runHeatmapGraphHeatmap": `Heatmap of when tests are executed:
+- All: tests run during each hour/minute of the week.
+- Status: only tests with the selected status.
+- Hour: zoom into a specific hour for per-minute detail.`,
+    "suiteFolderDonutGraphDonut": `Two donut charts for suite folders:
+- First donut: top-level folders and the number of tests each contains.
+- Second donut: same structure but only for the most recent run's failed tests.
+- Click a folder slice to zoom into its subfolders/suites.
+- Navigating also updates Suite Statistics and Suite Duration.
+- Go Up: navigate to the parent folder level.
+- Only Failed: show only folders with failing tests.`,
     "suiteStatisticsGraphPercentages": "Percentages: Displays the passed, failed, skipped rate of test suites per run",
     "suiteStatisticsGraphAmount": "Amount: Displays the actual number of passed, failed, skipped suites per run",
     "suiteStatisticsGraphLine": "Line: Displays the same data but over a time axis, useful for spotting failure patterns on specific dates or times",
@@ -74,18 +70,18 @@ const informationMap = {
     "suiteDurationGraphLine": "Line: Displays the same data but over a time axis for clearer trend analysis",
     "suiteMostFailedGraphBar": "Bar: Displays suites ranked by number of failures represented as vertical bars. The default view shows the Top 10 most failed suites; fullscreen expands this to the Top 50.",
     "suiteMostFailedGraphTimeline": "Timeline: Displays when failures occurred to identify clustering over time. The default view shows the Top 10 most failed suites; fullscreen expands this to the Top 50",
-    "suiteMostTimeConsumingGraphBar": "Bar: Displays suites ranked by how often they were the slowest (most time-consuming) suite in a run. Each bar represents how many times a suite was the single slowest one across all runs. The regular view shows the Top 10; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most time-consuming suites *within the latest run only*, ranked by duration.",
-    "suiteMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest suite for each run on a timeline. For every run, only the single most time-consuming suite is shown. The regular view shows the Top 10 most frequently slowest suites; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming suites by duration.",
-    "testStatisticsGraphTimeline": `This graph displays the statistics of the tests in a timeline format
-Status: Displays only tests don't have any status changes and have the selected status
-Only Changes: Displays only tests that have changed statuses at some point in time
-Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph`,
-    "testStatisticsGraphLine": `Scatter: Displays test results as dots on a time axis, with each row representing a different test
-- Green dots indicate passed, red dots indicate failed, and yellow dots indicate skipped tests
-- The horizontal spacing between dots is proportional to the actual time between executions
-- Hover over a dot to see the test name, status, run, duration and failure message
-- Useful for spotting environmental issues where multiple tests fail at the same timestamp
-- Status and Only Changes filters apply to this view as well`,
+    "suiteMostTimeConsumingGraphBar": "Bar: suites ranked by how often they were the slowest suite in a run (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the Top 10/50 slowest suites in the latest run by duration.",
+    "suiteMostTimeConsumingGraphTimeline": "Timeline: the slowest suite per run over time (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the latest run's slowest suites.",
+    "testStatisticsGraphTimeline": `Timeline of test statuses across runs.
+- Status: show only tests with the selected status and no changes.
+- Only Changes: show only tests whose status changed at some point.
+Tip: avoid using Status and Only Changes together — the result will be empty.`,
+    "testStatisticsGraphLine": `Scatter: test results as dots on a time axis, one row per test.
+- Green = passed, red = failed, yellow = skipped.
+- Horizontal spacing is proportional to actual time between executions.
+- Hover a dot to see test name, status, run, duration, and failure message.
+- Useful for spotting failures clustered at the same timestamp.
+- Status and Only Changes filters apply here too.`,
     "testDurationGraphBar": "Bar: Displays test durations represented as vertical bars",
     "testDurationGraphLine": "Line: Displays the same data but over a time axis for clearer trend analysis",
     "testDurationDeviationGraphBar": `This boxplot chart displays how much test durations deviate from the average, represented as vertical bars.
@@ -112,8 +108,8 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "testMostFailedGraphTimeline": `Displays when failures occurred across runs. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
     "testRecentMostFailedGraphBar": `Bar: Displays recent tests ranked by total number of failures represented as vertical bars. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
     "testRecentMostFailedGraphTimeline": `Displays when most recent failures occurred across runs. The regular view shows the Top 10 most failed tests; fullscreen mode expands the list to the Top 50.`,
-    "testMostTimeConsumingGraphBar": "Bar: Displays tests ranked by how often they were the slowest (most time-consuming) test in a run. Each bar represents how many times a test was the single slowest one across all runs. The regular view shows the Top 10; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most time-consuming tests *within the latest run only*, ranked by duration.",
-    "testMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest test for each run on a timeline. For every run, only the single most time-consuming test is shown. The regular view shows the Top 10 most frequently slowest tests; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming tests by duration.",
+    "testMostTimeConsumingGraphBar": "Bar: tests ranked by how often they were the slowest test in a run (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the Top 10/50 slowest tests in the latest run by duration.",
+    "testMostTimeConsumingGraphTimeline": "Timeline: the slowest test per run over time (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the latest run's slowest tests.",
     "keywordStatisticsGraphPercentages": "Percentages: Displays the distribution of passed, failed, skipped statuses for each keyword per run",
     "keywordStatisticsGraphAmount": "Amount: Displays raw counts of each status per run",
     "keywordStatisticsGraphLine": "Line: Displays the same data but over a time axis",
@@ -129,57 +125,64 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "keywordMaxDurationGraphLine": "Line: Displays the same data but over a time axis",
     "keywordMostFailedGraphBar": "Bar: Displays keywords ranked by total number of failures represented as vertical bars. The regular view shows the Top 10 most failed keywords; fullscreen mode expands the list to the Top 50.",
     "keywordMostFailedGraphTimeline": "Timeline: Displays when failures occurred across runs. The regular view shows the Top 10 most failed keywords; fullscreen mode expands the list to the Top 50.",
-    "keywordMostTimeConsumingGraphBar": "Bar: Displays keywords ranked by how often they were the slowest (most time-consuming) keyword in a run. Each bar represents how many times a keyword was the single slowest one across all runs. The regular view shows the Top 10; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most time-consuming keywords *within the latest run only*, ranked by duration.",
-    "keywordMostTimeConsumingGraphTimeline": "Timeline: Displays the slowest keyword for each run on a timeline. For every run, only the single most time-consuming keyword is shown. The regular view shows the Top 10 most frequently slowest keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most time-consuming keywords by duration.",
-    "keywordMostUsedGraphBar": "Bar: Displays keywords ranked by how frequently they were used across all runs. Each bar represents how many times a keyword appeared in total. The regular view shows the Top 10 most used keywords; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, this graph instead shows the Top 10 (or Top 50 in fullscreen) most used keywords *within the latest run only*, ranked by occurrence count.",
-    "keywordMostUsedGraphTimeline": "Timeline: Displays keyword usage trends over time. For each run, the most frequently used keyword (or keywords) is shown, illustrating how keyword usage changes across runs. The regular view highlights the Top 10 most frequently used keywords overall; fullscreen mode expands the list to the Top 50. When 'Only Last Run' is enabled, the timeline shows only the latest run, highlighting its Top 10 (or Top 50 in fullscreen) most used keywords by frequency.",
-    "filterProfileInformation": `Filter Profiles let you save and reapply a named combination of filter settings.
-- Add Profile: enters edit mode where you name the profile and choose which filters to include using the checkmarks that appear next to each filter. Checkmarks are pre-filled based on which filters currently differ from their default (load-time) state.
-- Save Profile: saves the profile with the selected filter values under the given name.
-- Apply Filter Profile: opens the saved profiles list. Click a profile name to apply all its stored filter values at once.
-- The select box shows the active profile name when an exact match is found, i.e. the current filter state matches a saved profile exactly.
-- A dot next to the select box means a profile was applied but filters have since been changed away from it.
-- Update Profile: appears when the active profile's filters have been modified; click it to overwrite the saved profile with the current filter values.
-- Delete: removes that profile permanently (confirmed via a prompt).`,
-    "filterRunsInformation": `Filters the dashboard to only show data for runs of the selected project (run name).
-- 'All' shows all runs from all projects.
-- Each option corresponds to a distinct run name present in the data.`,
-    "filterRunTagsInformation": `Filters runs by their assigned tags. Only runs that have at least one matching tag are included.
-- Click 'Select Tags' to open the tag list; tick one or more tags to activate the filter.
-- 'All' (ticked by default) means no tag filter is applied — all runs are shown.
-- Use AND mode (default): a run must have ALL selected tags to be included.
-- Use OR mode (toggle 'Use OR'): a run needs at least ONE of the selected tags.
-- A dot next to the label means the filter is active (i.e. 'All' is not selected).
-- Use the search box inside the dropdown to quickly find a tag by name.`,
-    "filterVersionsInformation": `Filters runs by their project version label.
-- Click 'Select Versions' to open the version list; tick one or more versions to narrowdown the data.
-- 'All' (ticked by default) means no version filter is applied.
-- 'None' covers runs that have no version label set.
-- A dot next to the label means the filter is active.
-- Use the search box inside the dropdown to quickly find a version by name.`,
-    "filterFromDateInformation": `Sets the earliest date a run must have started on to be included.
-- Runs that started before this date are excluded.
-- Defaults to the date of the oldest run in the data (with a small margin).`,
-    "filterFromTimeInformation": `Sets the earliest time of day a run must have started at to be included (combined with the From Date).
-- Defaults to the time of the oldest run in the data (with a small margin).`,
-    "filterToDateInformation": `Sets the latest date a run must have started on to be included.
-- Runs that started after this date are excluded.
-- Defaults to the date of the most recent run in the data (with a small margin).`,
-    "filterToTimeInformation": `Sets the latest time of day a run must have started at to be included (combined with the To Date).
-- Defaults to the time of the most recent run in the data (with a small margin).`,
-    "filterMetadataInformation": `Filters runs by a metadata value attached to the run.
-- Only appears when at least one run has metadata.
-- 'All' shows runs regardless of metadata.
-- Selecting a specific value limits the view to runs that carry that metadata entry.`,
-    "filterAmountInformation": `Limits the dashboard to the most recent X runs after all other filters have been applied.
-- 'All Runs' sets the value to the total number of runs currently matching the other filters.
-- Useful for focusing on recent history without changing the date filters.`,
+    "keywordMostTimeConsumingGraphBar": "Bar: keywords ranked by how often they were the slowest keyword in a run (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the Top 10/50 slowest keywords in the latest run by duration.",
+    "keywordMostTimeConsumingGraphTimeline": "Timeline: the slowest keyword per run over time (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the latest run's slowest keywords.",
+    "keywordMostUsedGraphBar": "Bar: keywords ranked by total usage frequency across all runs (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the most-used keywords in the latest run.",
+    "keywordMostUsedGraphTimeline": "Timeline: keyword usage trends across runs (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the latest run's most-used keywords.",
+    "filterProfileInformation": `Filter Profiles let you save and reapply named filter combinations.
+- Add Profile: name a new profile and choose which filters to include.
+- Save Profile: saves the current filter values under that name.
+- Apply Profile: opens the saved profiles list — click a name to apply it.
+- A dot means the active profile's filters have been modified since it was applied.
+- Update Profile: overwrites the saved profile with the current filter values.
+- Merge Profiles: combine two profiles using the widest coverage for each filter.`,
+    "filterRunsInformation": "Filter by project name. 'All' includes every project.",
+    "filterRunTagsInformation": `Filter by run tags. 'All' disables the filter.
+- AND mode (default): run must have all selected tags.
+- OR mode: run needs at least one selected tag.
+- A dot indicates the filter is active.`,
+    "filterVersionsInformation": `Filter by project version. 'All' disables the filter.
+- 'None' covers runs without a version label.
+- A dot indicates the filter is active.`,
+    "filterFromDateInformation": "Show only runs that started on or after this date.",
+    "filterFromTimeInformation": "Show only runs that started at or after this time (combined with From Date).",
+    "filterToDateInformation": "Show only runs that started on or before this date.",
+    "filterToTimeInformation": "Show only runs that started at or before this time (combined with To Date).",
+    "filterMetadataInformation": "Filter by a metadata value attached to the run. Only shown when runs have metadata.",
+    "filterAmountInformation": "Limit to the most recent X runs after all other filters are applied. 'All Runs' sets this to the total matching count.",
     "compareStatisticsGraphBar": "This graph displays the overall statistics of the selected runs",
     "compareSuiteDurationGraphRadar": "This graph displays the duration per suite in a radar format",
-    "compareTestsGraphTimeline": `This graph displays the statistics of the tests in a timeline format
-Status: Displays only tests don't have any status changes and have the selected status
-Only Changes: Displays only tests that have changed statuses at some point in time
-Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph`,
+    "compareTestsGraphTimeline": `Timeline of test statuses across the selected runs.
+- Status: show only tests with the selected status and no changes.
+- Only Changes: show only tests whose status changed at some point.
+Tip: avoid using Status and Only Changes together — the result will be empty.`,
+    "settingUnified": "Show all dashboard sections (run, suite, test, keyword) in a single unified view instead of separate tabs.",
+    "settingLegends": "Show or hide graph legends. Useful to disable when graphs contain many data series.",
+    "settingAxisTitles": "Show axis labels on graphs (e.g. Run Time, Pass/Fail Count). Disable for a cleaner look.",
+    "settingLabels": "Show run start timestamps or aliases directly on graph axes. Disable for a cleaner look.",
+    "settingRunLabel": "Which label identifies runs across graphs, tooltips and axes: Run Start (timestamp), Alias (from output filename), or Run Name (suite name from output file). Duplicate names get a numeric suffix.",
+    "settingMilliseconds": "Add millisecond precision to run_start timestamps shown on graph axes and tooltips.",
+    "settingAnimations": "Enable animated graph rendering when charts are drawn or updated.",
+    "settingAnimationDuration": "Duration of graph draw animations in milliseconds, e.g. 1500.",
+    "settingBarRounding": "Corner rounding for bar chart edges in pixels. 0 = square, 8 = fully rounded.",
+    "settingTimezones": "Show or hide the timezone offset suffix (e.g. +02:00) on run_start timestamps. Only affects runs with a stored timezone.",
+    "settingConvertTimezone": "Convert stored run_start timestamps to your browser's local timezone. Only applies to runs that have a stored timezone offset.",
+    "settingSuiteStatsDefault": "Default suite shown in the Suite Statistics tab when the dashboard opens.",
+    "settingTestStatsDefault": "Default suite shown in the Test Statistics tab when the dashboard opens.",
+    "settingLatestRuns": "Show the Latest Runs bar with the most recent run per project, color-coded by duration.",
+    "settingTotalStats": "Show the Total Stats bar with aggregate pass/fail/skip counts and average pass rates per project.",
+    "settingProjectsByName": "Group and display projects on the Overview by their Robot Framework run name.",
+    "settingProjectsByTag": "Group and display projects on the Overview by custom project_ tags. See the docs for project tagging.",
+    "settingPrefixes": "Show or hide the 'project_' prefix on tag-based project names on the Overview.",
+    "settingPercentageFilters": "Show the duration percentage threshold filter used to color-code run durations on the Overview.",
+    "settingVersionFilters": "Show the version filter for per-project version selection on the Overview.",
+    "settingSortFilters": "Show the sort controls for ordering Overview project bars.",
+    "settingBackgroundColor": "Main page background color for the current theme.",
+    "settingCardColor": "Background color for graph cards and content panels.",
+    "settingHighlightColor": "Accent color used for hover states and interactive elements.",
+    "settingTextColor": "Primary text color across the dashboard.",
+    "settingCustomTitle": "Text label shown in the nav bar next to the logo. Leave blank to hide. The --dashboardtitle CLI flag takes priority over this.",
+    "settingCustomLogo": "Upload a PNG to replace the Robot Framework logo in the nav bar. Also used as the browser favicon. Click Reset to restore the default.",
 };
 
 // Generate standard control entries for all graphs

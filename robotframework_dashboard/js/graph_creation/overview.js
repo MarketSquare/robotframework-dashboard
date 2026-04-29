@@ -96,13 +96,12 @@ function generate_overview_section_html(sectionId, prefix, filtersHtml = '') {
                         <div class="btn btn-sm collapse-icon" id="collapsegridOverview${prefix}"></div>
                     </div>
                     <div class="col-3">
-                        <h4 id="overview${prefix}Title"></h4>
+                        <span class="d-flex align-items-center information info-label" id="overview${prefix}Information">
+                            <h4 id="overview${prefix}Title" class="mb-0 me-1"></h4>
+                            <span class="info-icon-small"></span>
+                        </span>
                     </div>
                     <div class="d-flex flex-wrap align-items-start col align-items-center">
-                        <div class="col-auto">
-                            <a type="button" class="information information-icon me-2"
-                                id="overview${prefix}Information"></a>
-                        </div>
                         ${filtersHtml}
                         <div class="col-auto ms-auto">
                             <a class="move-up-section information" id="${sectionId}MoveUp" hidden></a>
@@ -296,7 +295,7 @@ function create_overview_latest_runs_section() {
     const filtersHtml = `
         <div class="col-auto percentage-filter" id="overviewLatestPercentageFilterContainer">
             <div class="btn-group">
-                <label class="form-check-label" for="overviewLatestDurationPercentage">Percentage</label>
+                <label class="form-check-label information info-label" for="overviewLatestDurationPercentage" id="overviewLatestPercentageInfo">Percentage <span class="info-icon-small ms-1"></span></label>
             </div>
             <div class="btn-group">
                 <select class="form-select form-select-sm me-2" id="overviewLatestDurationPercentage">
@@ -305,6 +304,9 @@ function create_overview_latest_runs_section() {
             </div>
         </div>
         <div class="col-auto me-2 version-filter" id="overviewLatestVersionFilterContainer">
+            <div class="btn-group">
+                <label class="form-label mb-0 information info-label" id="overviewLatestVersionsInfo">Versions <span class="info-icon-small ms-1"></span></label>
+            </div>
             <div class="btn-group">
                 <div id="overviewLatestVersionFilterDropDown" class="dropdown">
                     <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button"
@@ -325,7 +327,7 @@ function create_overview_latest_runs_section() {
         </div>
         <div class="col-auto me-1 sort-filter" id="overviewLatestSortFilterContainer">
             <div class="btn-group">
-                <label class="form-label mb-0" for="overviewLatestSectionOrder">Sort</label>
+                <label class="form-label mb-0 information info-label" for="overviewLatestSectionOrder" id="overviewLatestSortInfo">Sort <span class="info-icon-small ms-1"></span></label>
             </div>
             <div class="btn-group">
                 <select class="form-select form-select-sm section-order-filter"
@@ -407,14 +409,10 @@ function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate)
     const displayProjectName = (!settings.show.prefixes && projectName.startsWith('project_'))
         ? projectName.replace(/^project_/, '')
         : projectName;
-    const projectInformation = `This section shows the runs associated with the project '${displayProjectName}':
-                                - Duration color indicates performance relative to the average: green if more than x% faster, red if more than x% slower. You can adjust this threshold using the Percentage toggle. Version filters do not affect this.
-                                - Passed runs represent the percentage of runs with zero failures. Version filters do not affect this.
-                                - The 'Select Versions' dropdown menu allows filtering the runs of the current project by the desired versions. Click 'All' to quickly deselect all other checkboxes.
-                                - The runs can also be filtered to only those whose version contains the text entered in the 'Version Filter...' input, even when a checkbox filter is already applied.
-                                - Clicking on the run card applies a filter for that project and switches to dashboard
-                                - Clicking on the version element within the run card additionally applies a filter for that version
-                                - Check out all options in the settings: 'Gear Icon' > 'Overview'`;
+    const projectInformation = `Shows all runs for '${displayProjectName}'.
+- Click a card to filter to that project and open the dashboard.
+- Click the version element in a card to also filter by that version.
+See Settings > Overview for more options.`;
 
     const projectCard = `
     <div class="card mb-3 overview-bar overview-project-card" id="${projectName}Section">
@@ -426,16 +424,16 @@ function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate)
                         </div>
                     </div>
                     <div class="col-3">
-                        <h4>${displayProjectName}</h4>
+                        <span class="information info-label" data-title="${projectInformation}">
+                            <h4 class="d-inline">${displayProjectName}</h4>
+                            <span class="info-icon-small ms-1"></span>
+                        </span>
                         <h6>Total Runs: ${totalRunsAmount} | Passed Runs: ${passRate}%</h6>
                     </div>
                     <div class="d-flex flex-wrap align-items-start col align-items-center">
-                        <div class="col-auto">
-                            <a type="button" class="information information-icon me-2" id="${projectName}Information" data-title="${projectInformation}"></a>
-                        </div>
                          <div class="col-auto me-2 percentage-filter">
                             <div class="btn-group">
-                                <label class="form-check-label" for="${projectName}DurationPercentage">Percentage</label>
+                                <label class="form-check-label information info-label" for="${projectName}DurationPercentage" data-title="Duration color threshold: green if the run is at least X% faster than average, red if X% slower.">Percentage <span class="info-icon-small ms-1"></span></label>
                             </div>
                             <div class="btn-group">
                                 <select class="form-select form-select-sm" id="${projectName}DurationPercentage">
@@ -444,6 +442,9 @@ function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate)
                             </div>
                         </div>
                         <div class="col-auto me-2 version-filter">
+                            <div class="btn-group">
+                                <label class="form-label mb-0 information info-label" data-title="Filter runs by version. 'All' shows all versions.">Versions <span class="info-icon-small ms-1"></span></label>
+                            </div>
                             <div class="btn-group">
                                 <div id="${projectName}VersionFilterDropDown" class="dropdown" >
                                     <button class="btn btn-sm btn-outline-dark dropdown-toggle"
@@ -463,7 +464,7 @@ function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate)
                         </div>
                         <div class="col-auto me-1 sort-filter">
                             <div class="btn-group">
-                                <label class="form-label mb-0" for="${projectName}SectionOrder">Sort</label>
+                                <label class="form-label mb-0 information info-label" for="${projectName}SectionOrder" data-title="Sort runs by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.">Sort <span class="info-icon-small ms-1"></span></label>
                             </div>
                             <div class="btn-group">
                                 <select class="form-select form-select-sm section-order-filter" id="${projectName}SectionOrder">
