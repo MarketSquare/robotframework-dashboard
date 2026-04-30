@@ -6,7 +6,7 @@ from os import walk, getcwd
 from time import time
 from pathlib import Path
 from datetime import datetime
-
+from typing import Optional
 
 class RobotDashboard:
     """Class that provides all functionality that robotdashboard has to offer
@@ -32,6 +32,7 @@ class RobotDashboard:
         no_vacuum: bool,
         no_autoupdate: bool,
         timezone: str = "",
+        log_url: Optional[str] = None,
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -53,6 +54,7 @@ class RobotDashboard:
         self.no_vacuum = no_vacuum
         self.no_autoupdate = no_autoupdate
         self.timezone = timezone
+        self.log_url = log_url
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
@@ -158,7 +160,8 @@ class RobotDashboard:
             )
         if not self.database.run_start_exists(run_start):
             output_data = outputProcessor.get_output_data()
-            self.database.insert_output_data(output_data, tags, run_alias, output_path, project_version, self.timezone)
+            path_to_store = self.log_url.replace("{run_alias}", run_alias or "") if self.log_url else output_path
+            self.database.insert_output_data(output_data, tags, run_alias, path_to_store, project_version, self.timezone)
 
             end = time()
             console += self._print_console(

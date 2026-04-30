@@ -61,12 +61,98 @@ class ArgumentParser:
             print("  ERROR: Mixing --projectversion and version_ tags not supported")
             exit(2)
 
+    def _check_argument_warnings(self, arguments, outputs, outputfolderpaths, use_logs, generate_dashboard, no_autoupdate, offline_dependencies):
+        """Checks for argument combinations that are valid but likely unintended and prints warnings"""
+        no_outputs = not outputs and not outputfolderpaths
+        if arguments.logurl and no_outputs:
+            print(
+                "  WARNING: '--logurl' was provided but no output files are being processed.\n"
+                "   The URL will not be stored. Add '-o' or '-f' to process output files."
+            )
+        if arguments.logurl and not use_logs:
+            print(
+                "  WARNING: '--logurl' was provided without '--uselogs'.\n"
+                "   The URL will be stored in the database but graph elements will not be clickable.\n"
+                "   Add '--uselogs' to enable log linking in the dashboard."
+            )
+        if no_autoupdate and not arguments.server:
+            print(
+                "  WARNING: '--noautoupdate' was provided without '--server'.\n"
+                "   This flag only has effect in server mode and will be ignored."
+            )
+        if arguments.project_version and no_outputs:
+            print(
+                "  WARNING: '--projectversion' was provided but no output files are being processed.\n"
+                "   The version will not be stored. Add '-o' or '-f' to process output files."
+            )
+        if arguments.timezone and no_outputs:
+            print(
+                "  WARNING: '--timezone' was provided but no output files are being processed.\n"
+                "   The timezone will not be applied. Add '-o' or '-f' to process output files."
+            )
+        if not generate_dashboard:
+            if offline_dependencies:
+                print(
+                    "  WARNING: '--offlinedependencies' was provided but dashboard generation is disabled.\n"
+                    "   This flag will have no effect. Remove '--generatedashboard false' to generate a dashboard."
+                )
+            if arguments.dashboardtitle:
+                print(
+                    "  WARNING: '--dashboardtitle' was provided but dashboard generation is disabled.\n"
+                    "   The title will have no effect. Remove '--generatedashboard false' to generate a dashboard."
+                )
+            if arguments.quantity:
+                print(
+                    "  WARNING: '--quantity' was provided but dashboard generation is disabled.\n"
+                    "   This flag will have no effect. Remove '--generatedashboard false' to generate a dashboard."
+                )
+
+    def _check_argument_errors(self, arguments, outputs, outputfolderpaths, force_json_config, database_class):
+        """Checks for invalid argument combinations and exits with an error message if found"""
+        if arguments.logurl and "{run_alias}" not in arguments.logurl:
+            is_multiple = outputfolderpaths or (outputs and len(outputs) > 1)
+            if is_multiple:
+                print(
+                    "  ERROR: '--logurl' was provided without a '{run_alias}' placeholder while processing multiple outputs.\n"
+                    "   Either add '{run_alias}' to the URL template or provide a single output file with '-o'."
+                )
+                exit(0)
+        if force_json_config and not arguments.jsonconfig:
+            print(
+                "  ERROR: The --forcejsonconfig argument was provided without a valid --jsonconfig path"
+            )
+            exit(0)
+        if database_class and not exists(database_class):
+            print(
+                f"  ERROR: the provided database class did not exist in the expected path: {database_class}"
+            )
+            exit(0)
+        if arguments.ssl_certfile and not arguments.ssl_keyfile:
+            print(
+                "  ERROR: --ssl-certfile was provided without --ssl-keyfile\n"
+                "   Both --ssl-certfile and --ssl-keyfile must be provided together"
+            )
+            exit(0)
+        if arguments.ssl_keyfile and not arguments.ssl_certfile:
+            print(
+                "  ERROR: --ssl-keyfile was provided without --ssl-certfile\n"
+                "   Both --ssl-certfile and --ssl-keyfile must be provided together"
+            )
+            exit(0)
+        if arguments.ssl_certfile and not exists(arguments.ssl_certfile):
+            print(f"  ERROR: --ssl-certfile path does not exist: {arguments.ssl_certfile}")
+            exit(0)
+        if arguments.ssl_keyfile and not exists(arguments.ssl_keyfile):
+            print(f"  ERROR: --ssl-keyfile path does not exist: {arguments.ssl_keyfile}")
+            exit(0)
+
     def _parse_arguments(self):
         """Parses the actual arguments"""
         parser = argparse.ArgumentParser(
             add_help=False,
             formatter_class=argparse.RawTextHelpFormatter,
-            epilog="For full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/",
+            description="Generate an interactive HTML dashboard from Robot Framework output.xml results.",
+            epilog="Boolean flags: omit the value to toggle the default (e.g. '--uselogs'); or pass 'true'/'false' explicitly.\nFor full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/",
         )
         parser.add_argument(
             "-v",
@@ -82,326 +168,279 @@ class ArgumentParser:
             action="help",
             default=argparse.SUPPRESS,
         )
-        parser.add_argument(
+
+        input_group = parser.add_argument_group("output files")
+        input_group.add_argument(
             "-o",
             "--outputpath",
+            metavar="PATH",
             help=(
-                "`path` Specifies one or more paths to output.xml.\n"
-                "Usage behavior:\n"
-                "  • Multiple XML files: repeat '-o' for each file\n"
-                "  • Accepts files or paths to files\n"
-                "  • Optional tags can be provided by appending ':tag1:tag2' to the path\n"
+                "Path to one or more output.xml files.\n"
+                "  • Repeat '-o' for multiple files\n"
+                "  • Append ':tag1:tag2' to add tags\n"
                 "Examples:\n"
-                "  • '-o path/to/output1.xml' -> add one output\n"
-                "  • '-o output2.xml:dev:nightly -o output3.xml:prod' -> add two outputs with tags\n"
+                "  • '-o path/to/output1.xml'\n"
+                "  • '-o output2.xml:dev:nightly -o output3.xml:prod'\n"
             ),
             action="append",
             nargs="*",
             default=None,
         )
-        parser.add_argument(
+        input_group.add_argument(
             "-f",
             "--outputfolderpath",
+            metavar="PATH",
             help=(
-                "`path` Specifies a directory path scanned recursively for *output*.xml files.\n"
-                "Usage behavior:\n"
-                "  • Provide a folder path\n"
-                "  • All matching *output*.xml files in all subfolders will be included\n"
-                "  • Optional tags can be provided by appending ':tag1:tag2' to the path\n"
+                "Directory scanned recursively for *output*.xml files.\n"
+                "  • All matching files in subfolders are included\n"
+                "  • Append ':tag1:tag2' to add tags\n"
                 "Examples:\n"
-                "  • '-f results/' -> scan folder for output files\n"
-                "  • '-f results/' -f path/to/more_results/:prod:regression -> multiple folders with tags\n"
+                "  • '-f results/'\n"
+                "  • '-f results/ -f path/to/more_results/:prod:regression'\n"
             ),
             action="append",
             nargs="*",
             default=None,
         )
-        parser.add_argument(
+        input_group.add_argument(
             "--projectversion",
             help=(
-                "`string` specifies project version associated with runs\n"
-                "Usage behaviour:\n"
-                "  • Provide text to set a project version for the supplied runs\n"
-                "  • Cannot be mixed with version_ tags\n"
+                "Project version associated with the processed runs.\n"
+                "  • Cannot be mixed with version_ output tags\n"
                 "Examples:\n"
-                "  . '--projectversion=1.1'\n"
+                "  • '--projectversion=1.1'\n"
             ),
             dest="project_version",
+            metavar="VERSION",
             type=str,
             default=None,
         )
-        parser.add_argument(
+        input_group.add_argument(
             "-z",
             "--timezone",
+            metavar="OFFSET",
             help=(
-                "`string` Specifies the timezone offset of the output.xml timestamps.\n"
-                "Usage behavior:\n"
-                "  • Default value: auto-detected from the machine's local timezone\n"
-                "  • Provide a UTC offset string like '+02:00' or '-05:00'\n"
-                "  • Used to store timezone info with run_start for timezone conversion in the dashboard\n"
+                "UTC offset of the output.xml timestamps (default: auto-detected).\n"
+                "  • Format: +HH:MM or -HH:MM\n"
+                "  • Use '--timezone=' form for negative offsets\n"
                 "Examples:\n"
-                "  • '-z +02:00' -> timestamps are from UTC+2\n"
-                "  • '--timezone=-05:00' -> timestamps are from UTC-5 (use --timezone= for negative offsets)\n"
-                "  • '-z +00:00' -> timestamps are UTC\n"
+                "  • '-z +02:00'  '--timezone=-05:00'  '-z +00:00'\n"
             ),
             default=None,
         )
-        parser.add_argument(
-            "-r",
-            "--removeruns",
-            help=(
-                "`string` Specifies indexes, run_starts, aliases, tags or limit to remove from the database.\n"
-                "Usage behavior:\n"
-                "  • Multiple values separated by commas (,)\n"
-                "  • Must specify data types: index, run_start, alias, tag or limit\n"
-                "  • Ranges supported using ':' and lists using ';'\n"
-                "Examples:\n"
-                "  • '-r index=0,index=1:4;9,index=10' -> remove index 0, 1, 2, 3, 9, 10\n"
-                "  • '-r run_start=2024-07-30 15:27:20.184407,index=20' -> remove specified run and index 20\n"
-                "  • '-r alias=some_alias,tag=prod,tag=dev' -> remove all runs with alias some_alias or tag prod or dev\n"
-                "  • '-r limit=10' -> remove all runs, leaving only the 10 most recent additions\n"
-            ),
-            action="append",
-            nargs="*",
-            default=None,
-        )
-        parser.add_argument(
+
+        db_group = parser.add_argument_group("database")
+        db_group.add_argument(
             "-d",
             "--databasepath",
+            metavar="PATH",
             help=(
-                "`path` Specifies the path to the database file.\n"
-                "Usage behavior:\n"
-                "  • Default value: robot_results.db\n"
-                "  • Provide a custom .db file to use instead of the default\n"
+                "Path to the database file (default: robot_results.db).\n"
                 "Examples:\n"
                 "  • '-d path/to/myresults.db'\n"
             ),
             default="robot_results.db",
         )
-        parser.add_argument(
-            "-n",
-            "--namedashboard",
+        db_group.add_argument(
+            "-r",
+            "--removeruns",
+            metavar="QUERY",
             help=(
-                "`string` Specifies a custom HTML dashboard file name.\n"
-                "Usage behavior:\n"
-                "  • Default value: robot_dashboard_yyyymmdd-hhssmm.html\n"
-                "  • Provide a filename to override\n"
+                "Remove runs by index, run_start, alias, tag, or limit.\n"
+                "  • Separate multiple values with commas; ranges use ':', lists use ';'\n"
                 "Examples:\n"
-                "  • '-n dashboard.html'\n"
+                "  • '-r index=0,index=1:4;9,index=10'\n"
+                "  • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run\n"
+                "  • '-r alias=some_alias,tag=prod'\n"
+                "  • '-r limit=10' -> keep only the 10 most recent runs\n"
             ),
-            default="",
-        )
-        parser.add_argument(
-            "-j",
-            "--jsonconfig",
-            help=(
-                "`path` Specifies a path to a dashboard JSON configuration.\n"
-                "Usage behavior:\n"
-                "  • Default value: None\n"
-                "  • File is used as the initial configuration if no config exists yet in user localstorage\n"
-                "Examples:\n"
-                "  • '-j settings.json'\n"
-            ),
+            action="append",
+            nargs="*",
             default=None,
         )
-        parser.add_argument(
-            "--forcejsonconfig",
-            help=(
-                "`boolean` Forces the provided --jsonconfig to override localstorage settings.\n"
-                "Usage behavior:\n"
-                "  • Default value: False\n"
-                "  • Using '--forcejsonconfig' with no value -> True (reverse default)\n"
-                "  • Using '--forcejsonconfig true'  -> True\n"
-                "  • Using '--forcejsonconfig false' -> False\n"
-            ),
-            nargs="?",
-            const=True,
-            default=False,
-        )
-        parser.add_argument(
-            "-t",
-            "--dashboardtitle",
-            help=(
-                "`string` Specifies the dashboard HTML title.\n"
-                "Usage behavior:\n"
-                "  • Default value: Robot Framework Dashboard - yyyy-mm-dd hh:mm:ss\n"
-                "  • Provide text to set a custom title\n"
-                "Examples:\n"
-                "  • '-t My_Test_Dashboard'\n"
-            ),
-            default="",
-        )
-        parser.add_argument(
-            "-m",
-            "--messageconfig",
-            help=(
-                "`path` Specifies a config file containing message templates.\n"
-                "Usage behavior:\n"
-                "  • Default value: None\n"
-                "  • File should contain lines with placeholders like ${value}\n"
-                "Examples:\n"
-                "  • 'The test has failed on date: ${date}' -> example line in messages.txt\n"
-                "  • 'Expected ${x} but received: ${y}' -> example line in messages.txt\n"
-                "  • '-m messages.txt'\n"
-            ),
-            default=None,
-        )
-        parser.add_argument(
-            "-q",
-            "--quantity",
-            help=(
-                "`integer` Specifies the number of runs shown on initial dashboard load.\n"
-                "Usage behavior:\n"
-                "  • Default value: 20\n"
-                "  • Provide an integer to override, the higher this number the slower initial load\n"
-                "Examples:\n"
-                "  • '-q 25'\n"
-            ),
-            default=None,
-        )
-        parser.add_argument(
-            "-u",
-            "--uselogs",
-            help=(
-                "`boolean` Enables clickable graphs linking to log.html.\n"
-                "Usage behavior:\n"
-                "  • Default value: False\n"
-                "  • Using '--uselogs' with no value -> True (reverse default)\n"
-                "  • Using '--uselogs true'  -> True\n"
-                "  • Using '--uselogs false' -> False\n"
-            ),
-            nargs="?",
-            const=True,
-            default=False,
-        )
-        parser.add_argument(
-            "-g",
-            "--generatedashboard",
-            help=(
-                "`boolean` Whether to generate the HTML dashboard.\n"
-                "Usage behavior:\n"
-                "  • Default value: True\n"
-                "  • Using '--generatedashboard' with no value -> False (reverse default)\n"
-                "  • Using '--generatedashboard true'  -> True\n"
-                "  • Using '--generatedashboard false' -> False\n"
-            ),
-            nargs="?",
-            const=False,
-            default=True,
-        )
-        parser.add_argument(
-            "-l",
-            "--listruns",
-            help=(
-                "`boolean` Whether runs should be listed in the dashboard.\n"
-                "Usage behavior:\n"
-                "  • Default value: True\n"
-                "  • Using '--listruns' with no value -> False (reverse default)\n"
-                "  • Using '--listruns true'  -> True\n"
-                "  • Using '--listruns false' -> False\n"
-            ),
-            nargs="?",
-            const=False,
-            default=True,
-        )
-        parser.add_argument(
-            "--offlinedependencies",
-            help=(
-                "`boolean` Use locally embedded JS/CSS instead of CDN.\n"
-                "Usage behavior:\n"
-                "  • Default value: False\n"
-                "  • Using '--offlinedependencies' with no value -> True (reverse default)\n"
-                "  • Using '--offlinedependencies true'  -> True\n"
-                "  • Using '--offlinedependencies false' -> False\n"
-            ),
-            nargs="?",
-            const=True,
-            default=False,
-        )
-        parser.add_argument(
-            "--novacuum",
-            help=(
-                "`boolean` Disables automatic database vacuuming.\n"
-                "Usage behavior:\n"
-                "  • Default value: False\n"
-                "  • Using '--novacuum' with no value -> True (reverse default)\n"
-                "  • Using '--novacuum true'  -> True\n"
-                "  • Using '--novacuum false' -> False\n"
-            ),
-            nargs="?",
-            const=True,
-            default=False,
-        )
-        parser.add_argument(
+        db_group.add_argument(
             "-c",
             "--databaseclass",
+            metavar="PATH",
             help=(
-                "`path` Specifies a custom database class to override SQLite.\n"
-                "Usage behavior:\n"
-                "  • Default value: None (built-in SQLite engine)\n"
-                "  • Provide a .py file implementing a compatible database handler\n"
-                "  • Detailed instructions can be found in the docs (url at the bottom of the help)\n"
+                "Path to a custom database class (.py) to override the built-in SQLite engine.\n"
+                "  • See docs for implementation details\n"
                 "Examples:\n"
                 "  • '-c customdb.py'\n"
             ),
             default=None,
         )
-        parser.add_argument(
-            "--noautoupdate",
+        db_group.add_argument(
+            "--novacuum",
+            metavar="BOOL",
+            help="`boolean` [default: False] Disable automatic database vacuuming.\n",
+            nargs="?",
+            const=True,
+            default=False,
+        )
+
+        dashboard_group = parser.add_argument_group("dashboard")
+        dashboard_group.add_argument(
+            "-g",
+            "--generatedashboard",
+            metavar="BOOL",
+            help="`boolean` [default: True] Generate the HTML dashboard file.\n",
+            nargs="?",
+            const=False,
+            default=True,
+        )
+        dashboard_group.add_argument(
+            "-l",
+            "--listruns",
+            metavar="BOOL",
+            help="`boolean` [default: True] List runs in the console output.\n",
+            nargs="?",
+            const=False,
+            default=True,
+        )
+        dashboard_group.add_argument(
+            "-n",
+            "--namedashboard",
+            metavar="NAME",
             help=(
-                "`boolean` Disables automatic dashboard regeneration on every upload/delete.\n"
-                "Usage behavior:\n"
-                "  • Default value: False (dashboard is regenerated automatically)\n"
-                "  • Using '--noautoupdate' with no value -> True (manual refresh only)\n"
-                "  • Using '--noautoupdate true'  -> True\n"
-                "  • Using '--noautoupdate false' -> False\n"
-                "  • When enabled, use the 'Refresh Dashboard' button on the admin page\n"
+                "Custom HTML dashboard file name (default: robot_dashboard_yyyymmdd-hhssmm.html).\n"
+                "Examples:\n"
+                "  • '-n dashboard.html'\n"
+            ),
+            default="",
+        )
+        dashboard_group.add_argument(
+            "-t",
+            "--dashboardtitle",
+            metavar="TITLE",
+            help=(
+                "Custom HTML title (default: Robot Framework Dashboard - yyyy-mm-dd hh:mm:ss).\n"
+                "Examples:\n"
+                "  • '-t My_Test_Dashboard'\n"
+            ),
+            default="",
+        )
+        dashboard_group.add_argument(
+            "-q",
+            "--quantity",
+            metavar="INT",
+            help=(
+                "Number of runs shown on initial dashboard load (default: 20).\n"
+                "  • Higher values slow initial load\n"
+                "Examples:\n"
+                "  • '-q 25'\n"
+            ),
+            default=None,
+        )
+        dashboard_group.add_argument(
+            "--offlinedependencies",
+            metavar="BOOL",
+            help="`boolean` [default: False] Embed JS/CSS locally instead of loading from CDN.\n",
+            nargs="?",
+            const=True,
+            default=False,
+        )
+
+        log_group = parser.add_argument_group("log linking")
+        log_group.add_argument(
+            "-u",
+            "--uselogs",
+            metavar="BOOL",
+            help="`boolean` [default: False] Enable clickable graphs that open the corresponding log.html.\n",
+            nargs="?",
+            const=True,
+            default=False,
+        )
+        log_group.add_argument(
+            "--logurl",
+            metavar="URL",
+            help=(
+                "URL to the log file for the processed run(s), stored in the database.\n"
+                "  • Overrides the path derived from the output.xml location\n"
+                "  • Use '{run_alias}' placeholder for multi-file processing\n"
+                "Examples:\n"
+                "  • '--logurl https://ci.example.com/build42/log.html'\n"
+                "  • '--logurl https://ci.example.com/build42/log_{run_alias}.html'\n"
+            ),
+            default=None,
+        )
+
+        config_group = parser.add_argument_group("dashboard configuration")
+        config_group.add_argument(
+            "-j",
+            "--jsonconfig",
+            metavar="PATH",
+            help=(
+                "Path to a JSON configuration file applied on first dashboard load.\n"
+                "Examples:\n"
+                "  • '-j settings.json'\n"
+            ),
+            default=None,
+        )
+        config_group.add_argument(
+            "--forcejsonconfig",
+            metavar="BOOL",
+            help="`boolean` [default: False] Force --jsonconfig to override existing localstorage settings.\n",
+            nargs="?",
+            const=True,
+            default=False,
+        )
+        config_group.add_argument(
+            "-m",
+            "--messageconfig",
+            metavar="PATH",
+            help=(
+                "Path to a file containing test message templates with ${placeholder} syntax.\n"
+                "Examples:\n"
+                "  • 'The test failed on: ${date}' -> example line\n"
+                "  • '-m messages.txt'\n"
+            ),
+            default=None,
+        )
+
+        server_group = parser.add_argument_group("server")
+        server_group.add_argument(
+            "-s",
+            "--server",
+            metavar="HOST:PORT:USERNAME:PASSWORD",
+            nargs="?",  # Makes the argument optional
+            const="default",  # Value to use if the flag is given without an argument
+            help=(
+                "Start the dashboard webserver.\n"
+                "  • Format: 'default' or 'host:port', optionally ':username:password'\n"
+                "Examples:\n"
+                "  • '--server'  '--server default'\n"
+                "  • '--server 0.0.0.0:8080'\n"
+                "  • '--server 0.0.0.0:8080:admin:secret'\n"
+            ),
+        )
+        server_group.add_argument(
+            "--noautoupdate",
+            metavar="BOOL",
+            help=(
+                "`boolean` [default: False] Disable automatic dashboard regeneration on upload/delete.\n"
+                "  • When enabled, use the 'Refresh' buttons to refresh the dashboard\n"
             ),
             nargs="?",
             const=True,
             default=False,
         )
-        parser.add_argument(
-            "-s",
-            "--server",
-            nargs="?",  # Makes the argument optional
-            const="default",  # Value to use if the flag is given without an argument
-            help=(
-                "Starts the dashboard webserver.\n"
-                "Usage behavior:\n"
-                "  • Default value: None (no webserver)\n"
-                "  • Provide 'default[:username:password]'\n"
-                "  • Or provide 'host:port[:username:password]'\n"
-                "  • Detailed instructions can be found in the docs (url at the bottom of the help)\n"
-                "Examples:\n"
-                "  • '--server' -> results in default behavior\n"
-                "  • '--server default' -> default behaviour\n"
-                "  • '--server 0.0.0.0:8080' -> custom host/port\n"
-                "  • '--server 0.0.0.0:8080:admin:secret' -> custom host/port and admin username/password\n"
-            ),
-        )
-        parser.add_argument(
+        server_group.add_argument(
             "--ssl-certfile",
+            metavar="PATH",
             help=(
-                "`path` Path to an SSL certificate file to enable HTTPS on the server.\n"
-                "Usage behavior:\n"
-                "  • Default value: None (HTTP only)\n"
-                "  • Must be combined with --ssl-keyfile\n"
-                "  • Enables HTTPS when both --ssl-certfile and --ssl-keyfile are provided\n"
+                "Path to SSL certificate file to enable HTTPS (requires --ssl-keyfile).\n"
                 "Examples:\n"
                 "  • '--ssl-certfile cert.pem --ssl-keyfile key.pem'\n"
             ),
             dest="ssl_certfile",
             default=None,
         )
-        parser.add_argument(
+        server_group.add_argument(
             "--ssl-keyfile",
+            metavar="PATH",
             help=(
-                "`path` Path to an SSL private key file to enable HTTPS on the server.\n"
-                "Usage behavior:\n"
-                "  • Default value: None (HTTP only)\n"
-                "  • Must be combined with --ssl-certfile\n"
-                "  • Enables HTTPS when both --ssl-certfile and --ssl-keyfile are provided\n"
+                "Path to SSL private key file to enable HTTPS (requires --ssl-certfile).\n"
                 "Examples:\n"
                 "  • '--ssl-certfile cert.pem --ssl-keyfile key.pem'\n"
             ),
@@ -486,13 +525,6 @@ class ArgumentParser:
             with open(arguments.jsonconfig) as file:
                 json_config = file.read()
 
-        # handles force_json_config if no json_config is provided
-        if force_json_config and not arguments.jsonconfig:
-            print(
-                f"  ERROR: The --forcejsonconfig argument was provided without a valid --jsonconfig path"
-            )
-            exit(0)
-
         # handles the custom dashboard name
         if arguments.namedashboard == "":
             dashboard_name = (
@@ -509,10 +541,6 @@ class ArgumentParser:
             database_class = join(getcwd(), arguments.databaseclass).replace(
                 "\\.\\", "\\"
             )
-            if not exists(database_class):
-                raise Exception(
-                    f"  ERROR: the provided database class did not exist in the expected path: {database_class}"
-                )
 
         # handles the server argument
         server_host = "127.0.0.1"
@@ -557,27 +585,12 @@ class ArgumentParser:
             minutes = remainder // 60
             timezone = f"{sign}{hours:02d}:{minutes:02d}"
 
-        # handles the ssl certfile/keyfile arguments
         ssl_certfile = arguments.ssl_certfile
         ssl_keyfile = arguments.ssl_keyfile
-        if ssl_certfile and not ssl_keyfile:
-            print(
-                "  ERROR: --ssl-certfile was provided without --ssl-keyfile\n"
-                "   Both --ssl-certfile and --ssl-keyfile must be provided together"
-            )
-            exit(0)
-        if ssl_keyfile and not ssl_certfile:
-            print(
-                "  ERROR: --ssl-keyfile was provided without --ssl-certfile\n"
-                "   Both --ssl-certfile and --ssl-keyfile must be provided together"
-            )
-            exit(0)
-        if ssl_certfile and not exists(ssl_certfile):
-            print(f"  ERROR: --ssl-certfile path does not exist: {ssl_certfile}")
-            exit(0)
-        if ssl_keyfile and not exists(ssl_keyfile):
-            print(f"  ERROR: --ssl-keyfile path does not exist: {ssl_keyfile}")
-            exit(0)
+
+        # validates argument combinations
+        self._check_argument_errors(arguments, outputs, outputfolderpaths, force_json_config, database_class)
+        self._check_argument_warnings(arguments, outputs, outputfolderpaths, use_logs, generate_dashboard, no_autoupdate, offline_dependencies)
 
         # return all provided arguments
         provided_args = {
@@ -608,5 +621,6 @@ class ArgumentParser:
             "no_autoupdate": no_autoupdate,
             "ssl_certfile": ssl_certfile,
             "ssl_keyfile": ssl_keyfile,
+            "log_url": arguments.logurl,
         }
         return dotdict(provided_args)

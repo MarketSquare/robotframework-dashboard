@@ -4,6 +4,7 @@ from .queries import *
 from .abstractdb import AbstractDatabaseProcessor
 from time import time
 from datetime import datetime, timezone
+from typing import Union
 
 # Explicit adapter for datetime -> ISO string, replacing the deprecated default
 # behaviour removed in Python 3.12+. Compatible with Python 3.8+.
@@ -137,7 +138,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         output_data: dict,
         tags: list,
         run_alias: str,
-        path: Path,
+        path: Union[Path, str],
         project_version: str,
         timezone: str = "",
     ):
@@ -153,7 +154,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             print(f"   ERROR: something went wrong with the database: {error}")
 
     def _insert_runs(
-        self, runs: list, tags: list, run_alias: str, path: Path, project_version, timezone: str = ""
+        self, runs: list, tags: list, run_alias: str, path: Union[Path, str], project_version, timezone: str = ""
     ):
         """Helper function to insert the run data with the run tags"""
         full_runs = []
