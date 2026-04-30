@@ -163,10 +163,15 @@ function merge_view_section_or_graph(local, defaults, page = null) {
             localHide.delete(val);
         }
     }
-    // 2. Add missing defaults: always added to SHOW
-    for (const val of allowed) {
+    // 2. Add missing defaults: add to SHOW if in defaults.show, else add to HIDE
+    for (const val of (defaults.show || [])) {
         if (!localShow.has(val) && !localHide.has(val)) {
             localShow.add(val);
+        }
+    }
+    for (const val of (defaults.hide || [])) {
+        if (!localShow.has(val) && !localHide.has(val)) {
+            localHide.add(val);
         }
     }
     // 3. Keep original placement of values already present

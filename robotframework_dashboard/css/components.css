@@ -147,6 +147,11 @@
   font-weight: 600;
 }
 
+.stat-widget-body {
+  justify-content: center;
+  align-items: center;
+}
+
 .fullscreen .stat-value {
   font-size: 4rem;
 }

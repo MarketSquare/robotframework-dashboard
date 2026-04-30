@@ -1,10 +1,12 @@
 import { settings } from "../variables/settings.js";
-import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
+import { inFullscreen, inFullscreenGraph, filteredKeywords } from "../variables/globals.js";
 import { get_statistics_graph_data } from "../graph_data/statistics.js";
 import { get_duration_graph_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
+import { format_duration } from "../common.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
+import { get_keyword_stats_data } from "../graph_data/stats.js";
 
 // build functions
 function _build_keyword_statistics_config() {
@@ -73,6 +75,18 @@ function update_keyword_most_failed_graph() { update_chart("keywordMostFailedGra
 function update_keyword_most_time_consuming_graph() { update_chart("keywordMostTimeConsumingGraph", _build_keyword_most_time_consuming_config); }
 function update_keyword_most_used_graph() { update_chart("keywordMostUsedGraph", _build_keyword_most_used_config); }
 
+function create_keyword_stat_widgets() {
+    const data = get_keyword_stats_data(filteredKeywords);
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+    setVal('keywordStatExecutionsValue', data.totalExecutions);
+    setVal('keywordStatUniqueValue',     data.uniqueKeywords);
+    setVal('keywordStatPassedValue',     data.passedKeywords);
+    setVal('keywordStatFailedValue',     data.failedKeywords);
+    setVal('keywordStatTotalTimeValue',  format_duration(data.totalTime));
+    setVal('keywordStatAvgTimeValue',    format_duration(data.avgTime));
+}
+function update_keyword_stat_widgets() { create_keyword_stat_widgets(); }
+
 export {
     create_keyword_statistics_graph,
     create_keyword_times_run_graph,
@@ -83,6 +97,7 @@ export {
     create_keyword_most_failed_graph,
     create_keyword_most_time_consuming_graph,
     create_keyword_most_used_graph,
+    create_keyword_stat_widgets,
     update_keyword_statistics_graph,
     update_keyword_times_run_graph,
     update_keyword_total_duration_graph,
@@ -91,5 +106,6 @@ export {
     update_keyword_max_duration_graph,
     update_keyword_most_failed_graph,
     update_keyword_most_time_consuming_graph,
-    update_keyword_most_used_graph
+    update_keyword_most_used_graph,
+    update_keyword_stat_widgets,
 };

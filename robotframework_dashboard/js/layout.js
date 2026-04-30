@@ -170,18 +170,18 @@ function setup_grid_graphs(section) {
     }
 
     const saved_layout = settings.layouts?.[grid] ? JSON.parse(settings.layouts[grid]) : null;
-    const default_size = { width: 4, height: 4 };
+    const default_size = { w: 4, h: 4 };
     const max_columns = 12;
     let current_x = 0;
     let current_y = 0;
 
     // Helper function to get next position for default layout
-    const get_next_position = () => {
+    const get_next_position = (w = default_size.w) => {
         const pos = { x: current_x, y: current_y };
-        current_x += default_size.width;
+        current_x += w;
         if (current_x >= max_columns) {
             current_x = 0;
-            current_y += default_size.height;
+            current_y += default_size.h;
         }
         return pos;
     };
@@ -191,12 +191,14 @@ function setup_grid_graphs(section) {
         graphs
             .filter(graph => graph.startsWith(section === "Unified" ? "" : section)) // Simple filter: all graphs for unified, section-specific otherwise
             .forEach(graph => {
+                const graphMeta = graphMetadata.find(g => g.label === graph);
+                const size = graphMeta?.defaultSize || default_size;
                 const layout = saved_layout?.find(g => g.id === graph);
                 if (saved_layout && layout) {
                     add_graph(layout.id, layout.x, layout.y, layout.w, layout.h, is_visible);
                 } else {
-                    const pos = get_next_position();
-                    add_graph(graph, pos.x, pos.y, default_size.width, default_size.height, is_visible);
+                    const pos = get_next_position(size.w);
+                    add_graph(graph, pos.x, pos.y, size.w, size.h, is_visible);
                 }
             });
     };
@@ -218,15 +220,17 @@ function setup_grid_graphs(section) {
         item.setAttribute("gs-x", x);
         item.setAttribute("gs-y", y);
         item.setAttribute("gs-w", w);
-        item.setAttribute("gs-min-w", 3);
+        const graphConfig = graphMetadata.find(g => g.label == id);
+        const minW = graphConfig?.minSize?.w ?? 3;
+        const minH = graphConfig?.minSize?.h ?? 3;
+        item.setAttribute("gs-min-w", minW);
         item.setAttribute("gs-max-w", 12);
         item.setAttribute("gs-h", h);
-        item.setAttribute("gs-min-h", 3);
+        item.setAttribute("gs-min-h", minH);
         item.setAttribute("gs-max-h", 12);
         item.setAttribute("data-gs-id", id);
 
         // showGraphHidden, hideGraphHidden
-        const graphConfig = graphMetadata.find(g => g.label == id);
         var html = `<div class="grid-stack-item-content">${graphConfig.html}</div>`;
         if (gridEditMode) {
             if (shown) {

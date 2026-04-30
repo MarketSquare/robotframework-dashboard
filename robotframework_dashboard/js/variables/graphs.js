@@ -19,7 +19,7 @@ graphMetadata.forEach(graph => {
 const excludeKeys = ["runDonutTotal", "suiteFolderFailDonut"];
 const graphChangeButtons = {};
 graphMetadata.forEach(graph => {
-    if (!excludeKeys.includes(graph.key) && graph.type !== "Table") {
+    if (!excludeKeys.includes(graph.key) && graph.type !== "Table" && graph.viewOptions.length > 1) {
         const snakeKey = camelcase_to_underscore(graph.key);
         graphChangeButtons[snakeKey] = graph.viewOptions.join(',');
     }
@@ -39,12 +39,21 @@ const dashboardSections = ["Run Statistics", "Suite Statistics", "Test Statistic
 const unifiedSections = ["Dashboard Statistics"]
 const compareSections = ["Compare Statistics"]
 const tableSections = ["Table Statistics"]
+
+const _isDashboardGraph = (graph) =>
+    !graph.label.startsWith("Compare") &&
+    !graph.label.startsWith("Table") &&
+    graph.label !== "Run Donut Total" &&
+    graph.label !== "Suite Folder Fail Donut";
+
 const dashboardGraphs = graphMetadata
-    .filter(graph => !graph.label.startsWith("Compare")
-        && !graph.label.startsWith("Table")
-        && graph.label !== "Run Donut Total"
-        && graph.label !== "Suite Folder Fail Donut")
+    .filter(graph => _isDashboardGraph(graph) && !graph.defaultHidden)
     .map(graph => graph.label);
+
+const defaultHiddenDashboardGraphs = graphMetadata
+    .filter(graph => _isDashboardGraph(graph) && graph.defaultHidden)
+    .map(graph => graph.label);
+
 const compareGraphs = graphMetadata
     .filter(graph => graph.label.startsWith("Compare"))
     .map(graph => graph.label)
@@ -66,6 +75,7 @@ export {
     compareSections,
     tableSections,
     dashboardGraphs,
+    defaultHiddenDashboardGraphs,
     compareGraphs,
     tableGraphs,
 };

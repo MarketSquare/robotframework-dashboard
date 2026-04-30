@@ -4,6 +4,7 @@ import {
     unifiedSections,
     dashboardSections,
     dashboardGraphs,
+    defaultHiddenDashboardGraphs,
     compareSections,
     compareGraphs,
     tableSections,
@@ -101,7 +102,7 @@ var settings = {
             },
             graphs: {
                 show: dashboardGraphs,
-                hide: [],
+                hide: defaultHiddenDashboardGraphs,
             }
         },
         dashboard: {
@@ -111,7 +112,7 @@ var settings = {
             },
             graphs: {
                 show: dashboardGraphs,
-                hide: [],
+                hide: defaultHiddenDashboardGraphs,
             },
         },
         compare: {

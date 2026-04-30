@@ -48,12 +48,6 @@ const informationMap = {
     "runDonutGraphDonut": `This graph contains two donut charts:
 - The first donut displays the percentage of passed, failed, and skipped tests for the most recent run..
 - The second donut displays the total percentage of passed, failed, and skipped tests across all runs`,
-    "runStatsGraphStats": `This section provides key statistics:
-- Executed: Total counts of Runs, Suites, Tests, and Keywords that have been executed.
-- Unique Tests: Displays the number of distinct test cases across all runs.
-- Outcomes: Total Passed, Failed, and Skipped tests, including their percentages relative to the full test set.
-- Duration: Displays the cumulative runtime of all runs, the average runtime per run, and the average duration of individual tests.
-- Pass Rate: Displays the average run-level pass rate, helping evaluate overall reliability over time.`,
     "runDurationGraphBar": "Bar: Displays total run durations represented as vertical bars",
     "runDurationGraphLine": "Displays the same data but over a time axis for clearer trend analysis",
     "runHeatmapGraphHeatmap": `This graph visualizes a heatmap of when tests are executed the most:
@@ -184,12 +178,21 @@ Tip: Don't use Status and Only Changes at the same time as it will result in an 
 
 // Generate standard control entries for all graphs
 const graphKeys = [
-    "runStatistics", "runDonut", "runStats", "runDuration", "runHeatmap",
+    "runStatistics", "runDonut", "runDuration", "runHeatmap",
+    "runStatExecutedRuns", "runStatExecutedSuites", "runStatExecutedTests", "runStatExecutedKeywords",
+    "runStatUniqueTests", "runStatPassed", "runStatFailed", "runStatSkipped",
+    "runStatTotalTime", "runStatAvgRunTime", "runStatAvgTestTime", "runStatAvgPassRate",
     "suiteFolderDonut", "suiteStatistics", "suiteDuration", "suiteMostFailed", "suiteMostTimeConsuming",
+    "suiteStatExecuted", "suiteStatUnique", "suiteStatPassed", "suiteStatFailed",
+    "suiteStatSkipped", "suiteStatPassRate", "suiteStatTotalTime", "suiteStatAvgTime",
     "testStatistics", "testDuration", "testDurationDeviation", "testMessages",
     "testMostFlaky", "testRecentMostFlaky", "testMostFailed", "testRecentMostFailed", "testMostTimeConsuming",
+    "testStatExecuted", "testStatUnique", "testStatPassed", "testStatFailed",
+    "testStatSkipped", "testStatPassRate", "testStatTotalTime", "testStatAvgTime",
     "keywordStatistics", "keywordTimesRun", "keywordTotalDuration", "keywordAverageDuration",
     "keywordMinDuration", "keywordMaxDuration", "keywordMostFailed", "keywordMostTimeConsuming", "keywordMostUsed",
+    "keywordStatExecutions", "keywordStatUnique", "keywordStatPassed", "keywordStatFailed",
+    "keywordStatTotalTime", "keywordStatAvgTime",
     "compareStatistics", "compareSuiteDuration", "compareTests",
 ];
 graphKeys.forEach(key => {

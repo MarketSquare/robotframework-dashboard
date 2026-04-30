@@ -121,21 +121,28 @@ function _build_run_heatmap_config() {
 function create_run_statistics_graph() { create_chart("runStatisticsGraph", _build_run_statistics_config); }
 function create_run_donut_graph() { create_chart("runDonutGraph", _build_run_donut_config, false); }
 function create_run_donut_total_graph() { create_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
-function create_run_stats_graph() {
-    const data = get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKeywords);
-    document.getElementById('totalRuns').innerText = data.totalRuns
-    document.getElementById('totalSuites').innerText = data.totalSuites
-    document.getElementById('totalTests').innerText = data.totalTests
-    document.getElementById('totalKeywords').innerText = data.totalKeywords
-    document.getElementById('totalUniqueTests').innerText = data.totalUniqueTests
-    document.getElementById('totalPassed').innerText = data.totalPassed
-    document.getElementById('totalFailed').innerText = data.totalFailed
-    document.getElementById('totalSkipped').innerText = data.totalSkipped
-    document.getElementById('totalRunTime').innerText = format_duration(data.totalRunTime)
-    document.getElementById('averageRunTime').innerText = format_duration(data.averageRunTime)
-    document.getElementById('averageTestTime').innerText = format_duration(data.averageTestTime)
-    document.getElementById('averagePassRate').innerText = data.averagePassRate
+
+function _update_run_stat_dom(data) {
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+    setVal('runStatExecutedRunsValue',     data.totalRuns);
+    setVal('runStatExecutedSuitesValue',   data.totalSuites);
+    setVal('runStatExecutedTestsValue',    data.totalTests);
+    setVal('runStatExecutedKeywordsValue', data.totalKeywords);
+    setVal('runStatUniqueTestsValue',      data.totalUniqueTests);
+    setVal('runStatPassedValue',           data.totalPassed);
+    setVal('runStatFailedValue',           data.totalFailed);
+    setVal('runStatSkippedValue',          data.totalSkipped);
+    setVal('runStatTotalTimeValue',        format_duration(data.totalRunTime));
+    setVal('runStatAvgRunTimeValue',       format_duration(data.averageRunTime));
+    setVal('runStatAvgTestTimeValue',      format_duration(data.averageTestTime));
+    setVal('runStatAvgPassRateValue',      data.averagePassRate);
 }
+
+function create_run_stat_widgets() {
+    const data = get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKeywords);
+    _update_run_stat_dom(data);
+}
+
 function create_run_duration_graph() { create_chart("runDurationGraph", _build_run_duration_config); }
 function create_run_heatmap_graph() { create_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
@@ -143,9 +150,7 @@ function create_run_heatmap_graph() { create_chart("runHeatmapGraph", _build_run
 function update_run_statistics_graph() { update_chart("runStatisticsGraph", _build_run_statistics_config); }
 function update_run_donut_graph() { update_chart("runDonutGraph", _build_run_donut_config, false); }
 function update_run_donut_total_graph() { update_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
-function update_run_stats_graph() {
-    create_run_stats_graph();
-}
+function update_run_stat_widgets() { create_run_stat_widgets(); }
 function update_run_duration_graph() { update_chart("runDurationGraph", _build_run_duration_config); }
 function update_run_heatmap_graph() { update_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
@@ -153,13 +158,13 @@ export {
     create_run_statistics_graph,
     create_run_donut_graph,
     create_run_donut_total_graph,
-    create_run_stats_graph,
+    create_run_stat_widgets,
     create_run_duration_graph,
     create_run_heatmap_graph,
     update_run_statistics_graph,
     update_run_donut_graph,
     update_run_donut_total_graph,
-    update_run_stats_graph,
+    update_run_stat_widgets,
     update_run_duration_graph,
     update_run_heatmap_graph
 };
