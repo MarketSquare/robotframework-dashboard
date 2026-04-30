@@ -96,10 +96,11 @@ function generate_overview_section_html(sectionId, prefix, filtersHtml = '') {
                         <div class="btn btn-sm collapse-icon" id="collapsegridOverview${prefix}"></div>
                     </div>
                     <div class="col-3">
-                        <span class="d-flex align-items-center information info-label" id="overview${prefix}Information">
-                            <h4 id="overview${prefix}Title" class="mb-0 me-1"></h4>
-                            <span class="info-icon-small"></span>
+                        <span class="information info-label" id="overview${prefix}Information">
+                            <h4 id="overview${prefix}Title" class="d-inline mb-0 me-1"></h4>
+                            <span class="info-icon-small ms-1"></span>
                         </span>
+                        <h6 id="overview${prefix}SubTitle" class="mb-0"></h6>
                     </div>
                     <div class="d-flex flex-wrap align-items-start col align-items-center">
                         ${filtersHtml}
@@ -279,11 +280,9 @@ function _update_overview_heading(containerId, titleId, titleText) {
     if (!overviewCardsContainer) return;
     const amountOfProjectsShown = overviewCardsContainer.querySelectorAll(".overview-card").length;
     const pluralPostFix = amountOfProjectsShown !== 1 ? 's' : '';
-    const headerContent = `<h6>showing ${amountOfProjectsShown} project${pluralPostFix}</h6>`;
-    document.getElementById(titleId).innerHTML = `
-            ${titleText}
-            ${headerContent}
-        `;
+    document.getElementById(titleId).innerHTML = titleText;
+    const subTitleEl = document.getElementById(titleId.replace('Title', 'SubTitle'));
+    if (subTitleEl) subTitleEl.innerHTML = `showing ${amountOfProjectsShown} project${pluralPostFix}`;
 }
 
 // create overview latest runs section dynamically
