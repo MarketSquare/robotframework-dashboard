@@ -104,7 +104,7 @@ class robotdashboardlistener:
                 self._print_listener(
                     f"ERROR could not find output.xml '{self.path}', skipped automatic processing"
                 )
-                exit(0)
+                exit(1)
             self._add_output_to_database(path=str(self.path))
             self._upload_log_file()
             self._remove_runs_over_limit()
@@ -148,12 +148,12 @@ class robotdashboardlistener:
             self._print_listener(
                 f"ERROR the server is not running or the url {self.protocol}://{self.host}:{self.port}/add-output-file is not correct!"
             )
-            exit(0)
+            exit(1)
         except Exception as e:
             self._print_listener(
                 f"ERROR something went wrong while compressing or sending '{path}': {e}"
             )
-            exit(0)
+            exit(1)
         if response.status_code == 200:
             self._print_console_message(response)
         else:
