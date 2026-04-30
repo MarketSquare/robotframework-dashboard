@@ -14,10 +14,10 @@ All tests are **Robot Framework acceptance tests** run with **pabot**. Tests liv
 
 ```bash
 # Windows
-pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\tests\robot\*.robot
+pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\tests\robot\testsuites\*.robot
 
 # Linux / macOS
-pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/*.robot
+pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/testsuites/*.robot
 ```
 
 Convenience scripts: `scripts/robot-tests.bat` and `scripts/robot-tests.sh`.

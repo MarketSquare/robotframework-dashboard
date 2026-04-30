@@ -109,11 +109,13 @@ The `.github/skills/` directory contains domain-specific knowledge files:
 | `conventions-and-gotchas.md` | Edge cases, run identity, offline mode, custom DBs, server auth model |
 | `coding-style.md` | Python/JS/CSS style conventions |
 | `workflows.md` | CLI usage, running tests, server mode, docs site |
-| `testing.md` | Test suite structure, pabot parallelism, how to add tests |
-| `unit-tests.md` | Python unit tests (pytest, coverage, test layout, fixtures) |
-| `js-unit-tests.md` | JavaScript unit tests (Vitest, mocking patterns, which modules are testable) |
+| `dev-workflow.md` | How to run the tool locally during development (no install required), dev loop for JS/CSS/template changes |
+| `robotframework-tests.md` | Test suite structure, pabot parallelism, how to add tests |
+| `python-unit-tests.md` | Python unit tests (pytest, coverage, test layout, fixtures) |
+| `javascript-unit-tests.md` | JavaScript unit tests (Vitest, mocking patterns, which modules are testable) |
 | `server-api.md` | All REST endpoints, authentication, log linking, auto-update behavior |
 | `filtering-and-settings.md` | Filter pipeline, settings object, localStorage persistence, layout/GridStack system, **filter profiles** (data structure, all profile functions, merge modal) |
+| `listener-integration.md` | Listener script (`robotdashboardlistener.py`), all listener arguments, pabot/RobotCode usage, server endpoints called |
 | `documentation.md` | All documentation locations (docs/, README.md, CONTRIBUTING.md, setup.py), page map, and checklist for keeping docs in sync when features change |
 
 ---
