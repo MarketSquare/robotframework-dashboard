@@ -44,7 +44,8 @@ const _isDashboardGraph = (graph) =>
     !graph.label.startsWith("Compare") &&
     !graph.label.startsWith("Table") &&
     graph.label !== "Run Donut Total" &&
-    graph.label !== "Suite Folder Fail Donut";
+    graph.label !== "Suite Folder Fail Donut" &&
+    !graph.isStatWidget; // stat widgets are managed via the Add Stat Widget modal
 
 const dashboardGraphs = graphMetadata
     .filter(graph => _isDashboardGraph(graph) && !graph.defaultHidden)

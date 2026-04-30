@@ -65,8 +65,8 @@ function merge_deep(local, defaults) {
     for (const key of new Set([...Object.keys(defaults), ...Object.keys(local)])) {
         const defaultVal = defaults[key];
         const localVal = local[key];
-        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, and filterProfiles (only in localstorage)
-        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && defaultVal === undefined && localVal !== undefined) {
+        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, filterProfiles, and statWidgets (only in localstorage)
+        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && defaultVal === undefined && localVal !== undefined) {
             continue;
         }
         // Added key: exists in defaults but not local: add defaults
@@ -201,7 +201,9 @@ function merge_layout(localLayout, mergedDefaults) {
             const arr = JSON.parse(result[key]);
             // keep only entries whose IDs still exist
             const filtered = arr.filter(item =>
-                allowedGraphs.has(item.id)
+                allowedGraphs.has(item.id) ||
+                // Preserve saved positions for user-created custom stat widgets
+                (typeof item.id === 'string' && item.id.startsWith('customStatWidget-'))
             );
             result[key] = JSON.stringify(filtered);
         } catch (e) {

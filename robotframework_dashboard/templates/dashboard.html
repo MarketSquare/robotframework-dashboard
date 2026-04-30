@@ -124,6 +124,9 @@
                                     data-bs-toggle="modal" data-bs-target="#sectionFiltersModal">Section
                                     Filters</button>
                             </div>
+                            <div class="col-auto" id="addStatWidgetUnifiedBar" hidden>
+                                <button class="btn btn-outline-light btn-sm mt-2" onclick="open_add_stat_widget_modal('unified')">+ Add Stat Widget</button>
+                            </div>
                             <div class="col-auto">
                                 <a type="button" class="information information-icon ms-2 mt-1"
                                     id="unifiedStatisticsInformation"></a>
@@ -1033,6 +1036,43 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Add Stat Widget Modal -->
+    <div class="modal fade" id="addStatWidgetModal" tabindex="-1" aria-labelledby="addStatWidgetModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addStatWidgetModalLabel">Add Stat Widget</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="addStatWidgetStat">Stat</label>
+                            <select id="addStatWidgetStat" class="form-select"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="addStatWidgetTitle">Title</label>
+                            <input type="text" id="addStatWidgetTitle" class="form-control"
+                                placeholder="Widget title" maxlength="40">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Text Color</label>
+                            <div class="d-flex flex-wrap gap-2" id="addStatWidgetColorPicker"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Background Color</label>
+                            <div class="d-flex flex-wrap gap-2" id="addStatWidgetBgColorPicker"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            id="addStatWidgetConfirm">Add Widget</button>
+                    </div>
+                </div>
+            </div>
     </div>
 
     <!-- placeholder_javascript -->

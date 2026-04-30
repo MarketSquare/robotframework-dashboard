@@ -152,6 +152,110 @@
   align-items: center;
 }
 
+/* Add Widget tile shown in customize-view mode */
+.add-stat-widget-tile {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--bs-border-color, rgba(128,128,128,0.4));
+  border-radius: 8px;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.add-stat-widget-tile:hover {
+  border-color: var(--color-text);
+  background-color: rgba(128,128,128,0.08);
+}
+
+.add-stat-widget-tile-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity 0.15s;
+  user-select: none;
+}
+
+.add-stat-widget-plus {
+  font-size: 2rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.add-stat-widget-tile-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Color picker buttons inside the Add Stat Widget modal */
+.stat-color-btn {
+  min-width: 60px;
+}
+
+/* Delete button on custom stat widgets */
+.delete-custom-stat-widget {
+  flex-shrink: 0;
+}
+
+/* Compact flex layout for custom stat widgets — works at any GridStack size */
+.stat-widget-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
+.stat-widget-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* When the item is very short (h=1 row ≈ 60px) switch to a side-by-side row */
+.grid-stack-item-content:has(.stat-widget-inner) {
+  padding: 8px 12px;
+}
+
+.grid-stack-item[gs-h="1"] .stat-widget-inner,
+.grid-stack-item[data-gs-h="1"] .stat-widget-inner {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid-stack-item[gs-h="1"] .stat-widget-title,
+.grid-stack-item[data-gs-h="1"] .stat-widget-title {
+  flex: 1 1 0;
+  text-align: left;
+}
+
+.grid-stack-item[gs-h="1"] .stat-value,
+.grid-stack-item[data-gs-h="1"] .stat-value {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.grid-stack-item[gs-h="1"] .delete-custom-stat-widget,
+.grid-stack-item[data-gs-h="1"] .delete-custom-stat-widget {
+  flex-shrink: 0;
+}
+
+.grid-stack-item-content.blue-bg   { background-color: rgba(13, 110, 253, 0.15); }
+.grid-stack-item-content.green-bg  { background-color: rgba(151, 189, 97, 0.2);  }
+.grid-stack-item-content.red-bg    { background-color: rgba(206, 62, 1, 0.2);    }
+.grid-stack-item-content.yellow-bg { background-color: rgba(254, 216, 79, 0.2);  }
+
 .fullscreen .stat-value {
   font-size: 4rem;
 }

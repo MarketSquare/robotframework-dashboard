@@ -12,6 +12,13 @@ import {
     gridCompare
 } from "./variables/globals.js"; // they are used in the window[grid] references
 import { setup_data_and_graphs } from "./menu.js";
+import {
+    render_custom_stat_widgets,
+    render_add_stat_widget_tile,
+    setup_add_stat_widget_modal,
+    wire_delete_buttons,
+    open_add_stat_widget_modal,
+} from "./statwidgets.js";
 
 // function to order the sections according to the config
 function setup_section_order() {
@@ -254,6 +261,22 @@ function setup_grid_graphs(section) {
     function add_hidden_graph(id) {
         sectionDataHidden.insertAdjacentHTML("beforeend", graphMetadata.find(g => g.label == id).html);
     }
+
+    // Render custom stat widgets for this section
+    if (section !== "Compare") {
+        const sectionKey = section.toLowerCase();
+        render_custom_stat_widgets(window[grid], sectionKey, gridEditMode);
+        if (gridEditMode) {
+            wire_delete_buttons(window[grid], sectionKey);
+            if (section !== "Unified") {
+                render_add_stat_widget_tile(window[grid], sectionKey);
+            }
+        }
+        if (section === "Unified") {
+            const addBar = document.getElementById('addStatWidgetUnifiedBar');
+            if (addBar) addBar.hidden = !gridEditMode;
+        }
+    }
 }
 
 function setup_tables() {
@@ -493,6 +516,9 @@ function setup_dashboard_section_layout_buttons() {
         setup_data_and_graphs();
     });
     attach_section_order_buttons("dashboard");
+
+    // Setup the add stat widget modal (populate dropdowns, wire confirm/cancel)
+    setup_add_stat_widget_modal();
 }
 
 // function to separately add the eventlisteners for overview section layout buttons
