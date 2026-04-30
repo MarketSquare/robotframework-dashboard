@@ -13,6 +13,182 @@ import {
 } from "./variables/globals.js"; // they are used in the window[grid] references
 import { setup_data_and_graphs } from "./menu.js";
 
+// Layout history state for undo/redo in edit mode
+let layoutHistory = [];
+let layoutHistoryIndex = -1;
+let applyingSnapshot = false;
+
+// Capture relevant layout settings as a deep-copy snapshot (from settings object)
+function capture_settings_snapshot() {
+    return {
+        layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
+        view: {
+            dashboard: {
+                graphs: {
+                    show: [...(settings.view.dashboard.graphs.show || [])],
+                    hide: [...(settings.view.dashboard.graphs.hide || [])],
+                },
+                sections: {
+                    show: [...(settings.view.dashboard.sections.show || [])],
+                    hide: [...(settings.view.dashboard.sections.hide || [])],
+                },
+            },
+            unified: {
+                graphs: {
+                    show: [...(settings.view.unified.graphs.show || [])],
+                    hide: [...(settings.view.unified.graphs.hide || [])],
+                },
+            },
+            compare: {
+                graphs: {
+                    show: [...(settings.view.compare.graphs.show || [])],
+                    hide: [...(settings.view.compare.graphs.hide || [])],
+                },
+            },
+            tables: {
+                graphs: {
+                    show: [...(settings.view.tables.graphs.show || [])],
+                    hide: [...(settings.view.tables.graphs.hide || [])],
+                },
+            },
+            overview: {
+                sections: {
+                    show: [...(settings.view.overview.sections.show || [])],
+                },
+            },
+        },
+    };
+}
+
+// Capture layout state from the live DOM during edit mode
+function capture_dom_snapshot() {
+    const snapshot = {
+        layouts: {},
+        view: {
+            dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
+            unified: { graphs: { show: [], hide: [] } },
+            compare: { graphs: { show: [], hide: [] } },
+            tables: { graphs: { show: [], hide: [] } },
+            overview: { sections: { show: [] } },
+        },
+    };
+
+    // GridStack graph positions and show/hide state
+    const grids = document.querySelectorAll(".grid-stack");
+    grids.forEach(grid => {
+        const nodes = window[grid.id]?.engine?.nodes;
+        if (nodes) {
+            const layout = nodes.map(w => {
+                const id = w.el?.getAttribute('data-gs-id');
+                return id ? { x: w.x, y: w.y, w: w.w, h: w.h, id } : null;
+            }).filter(Boolean);
+            if (layout.length > 0) {
+                snapshot.layouts[grid.id] = JSON.stringify(layout);
+            }
+        }
+        document.querySelectorAll(`#${grid.id} .shown-graph:not([hidden])`).forEach(btn => {
+            const label = graphMetadata.find(g => g.key === btn.id.replace("Shown", ""))?.label;
+            if (!label) return;
+            if (grid.id.includes("Compare")) snapshot.view.compare.graphs.show.push(label);
+            else if (grid.id.includes("Unified")) snapshot.view.unified.graphs.show.push(label);
+            else snapshot.view.dashboard.graphs.show.push(label);
+        });
+        document.querySelectorAll(`#${grid.id} .hidden-graph:not([hidden])`).forEach(btn => {
+            const label = graphMetadata.find(g => g.key === btn.id.replace("Hidden", ""))?.label;
+            if (!label) return;
+            if (grid.id.includes("Compare")) snapshot.view.compare.graphs.hide.push(label);
+            else if (grid.id.includes("Unified")) snapshot.view.unified.graphs.hide.push(label);
+            else snapshot.view.dashboard.graphs.hide.push(label);
+        });
+    });
+
+    // Table show/hide and order
+    const shownTables = [...document.querySelectorAll("#gridTable .shown-graph:not([hidden])")]
+        .map(el => graphMetadata.find(g => g.key === el.id.replace("Shown", ""))?.label).filter(Boolean);
+    const hiddenTables = [...document.querySelectorAll("#gridTable .hidden-graph:not([hidden])")]
+        .map(el => graphMetadata.find(g => g.key === el.id.replace("Hidden", ""))?.label).filter(Boolean);
+    if (shownTables.length + hiddenTables.length > 0) {
+        snapshot.view.tables.graphs.show = shownTables;
+        snapshot.view.tables.graphs.hide = hiddenTables;
+    }
+
+    // Dashboard section order and show/hide
+    const shownDashSections = [...document.querySelectorAll("#dashboard .shown-section:not([hidden])")]
+        .map(el => {
+            let key = el.id.replace("SectionShown", "");
+            key = key.charAt(0).toUpperCase() + key.slice(1);
+            return `${key} Statistics`;
+        });
+    const hiddenDashSections = [...document.querySelectorAll("#dashboard .hidden-section:not([hidden])")]
+        .map(el => {
+            let key = el.id.replace("SectionHidden", "");
+            key = key.charAt(0).toUpperCase() + key.slice(1);
+            return `${key} Statistics`;
+        });
+    if (shownDashSections.length + hiddenDashSections.length > 0) {
+        snapshot.view.dashboard.sections.show = shownDashSections;
+        snapshot.view.dashboard.sections.hide = hiddenDashSections;
+    }
+
+    // Overview section order
+    const shownOverviewSections = [...document.querySelectorAll("#overview .move-up-section")]
+        .map(el => el.id === "overviewSectionMoveUp" ? "Overview Statistics" : el.id.replace("SectionMoveUp", ""));
+    if (shownOverviewSections.length > 0) {
+        snapshot.view.overview.sections.show = shownOverviewSections;
+    }
+
+    return snapshot;
+}
+
+// Push a snapshot onto the history stack (truncates any redo branch)
+function push_layout_snapshot(snapshot) {
+    if (applyingSnapshot) return;
+    layoutHistory = layoutHistory.slice(0, layoutHistoryIndex + 1);
+    layoutHistory.push(snapshot);
+    layoutHistoryIndex = layoutHistory.length - 1;
+    update_history_buttons();
+}
+
+// Apply a snapshot to settings (without persisting) and re-render in edit mode
+function apply_layout_snapshot(snapshot) {
+    applyingSnapshot = true;
+    settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
+    settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
+    settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
+    settings.view.dashboard.sections.show = [...snapshot.view.dashboard.sections.show];
+    settings.view.dashboard.sections.hide = [...snapshot.view.dashboard.sections.hide];
+    settings.view.unified.graphs.show = [...snapshot.view.unified.graphs.show];
+    settings.view.unified.graphs.hide = [...snapshot.view.unified.graphs.hide];
+    settings.view.compare.graphs.show = [...snapshot.view.compare.graphs.show];
+    settings.view.compare.graphs.hide = [...snapshot.view.compare.graphs.hide];
+    settings.view.tables.graphs.show = [...snapshot.view.tables.graphs.show];
+    settings.view.tables.graphs.hide = [...snapshot.view.tables.graphs.hide];
+    settings.view.overview.sections.show = [...snapshot.view.overview.sections.show];
+    setup_data_and_graphs();
+    const on_finalized = () => {
+        applyingSnapshot = false;
+        document.removeEventListener("graphs-finalized", on_finalized);
+    };
+    document.addEventListener("graphs-finalized", on_finalized);
+}
+
+// Update the enabled/disabled visual state of undo and redo buttons
+function update_history_buttons() {
+    const undoBtn = document.getElementById("undoLayout");
+    const redoBtn = document.getElementById("redoLayout");
+    if (!undoBtn || !redoBtn) return;
+    const canUndo = layoutHistoryIndex > 0;
+    const canRedo = layoutHistoryIndex < layoutHistory.length - 1;
+    undoBtn.classList.toggle("layout-history-disabled", !canUndo);
+    redoBtn.classList.toggle("layout-history-disabled", !canRedo);
+}
+
+// Capture current DOM state and push to history (no-op when applying a snapshot)
+function capture_dom_snapshot_and_push() {
+    if (applyingSnapshot) return;
+    push_layout_snapshot(capture_dom_snapshot());
+}
+
 // function to order the sections according to the config
 function setup_section_order() {
     // Show unified when dashboard menu is active AND unified mode is on
@@ -140,6 +316,8 @@ function setup_grid_graphs(section) {
     // Disable grid if not in edit mode
     if (!gridEditMode) {
         window[grid].disable();
+    } else {
+        window[grid].on('dragstop resizestop', () => capture_dom_snapshot_and_push());
     }
 
     // Clear hidden section data
@@ -295,12 +473,19 @@ function setup_tables() {
 function customize_layout() {
     document.getElementById("customizeLayout").hidden = true;
     document.getElementById("saveLayout").hidden = false;
+    document.getElementById("layoutHistoryNavItems").hidden = false;
+    layoutHistory = [capture_settings_snapshot()];
+    layoutHistoryIndex = 0;
+    update_history_buttons();
     add_alert("You can now change your layout. Don't forget to save!", "info")
 }
 
 function save_layout() {
     document.getElementById("customizeLayout").hidden = false;
     document.getElementById("saveLayout").hidden = true;
+    document.getElementById("layoutHistoryNavItems").hidden = true;
+    layoutHistory = [];
+    layoutHistoryIndex = -1;
     const shownDashboardItems = [];
     const hiddenDashboardItems = [];
     const shownUnifiedItems = [];
@@ -439,6 +624,7 @@ function attach_section_order_buttons(containerId) {
             btn.hidden = true;
             const target = document.getElementById(`${btn.id.replace("Shown", "Hidden")}`);
             if (target) target.hidden = false;
+            capture_dom_snapshot_and_push();
         });
     });
     document.querySelectorAll(`${root} .hidden-section`).forEach(btn => {
@@ -446,6 +632,7 @@ function attach_section_order_buttons(containerId) {
             btn.hidden = true;
             const target = document.getElementById(`${btn.id.replace("Hidden", "Shown")}`);
             if (target) target.hidden = false;
+            capture_dom_snapshot_and_push();
         });
     });
     // Move cards up/down within the container
@@ -455,6 +642,7 @@ function attach_section_order_buttons(containerId) {
             const previousCard = card?.previousElementSibling;
             if (previousCard && !previousCard.hidden && previousCard.classList.contains("card")) {
                 card.parentNode.insertBefore(card, previousCard);
+                capture_dom_snapshot_and_push();
             }
         });
     });
@@ -464,6 +652,7 @@ function attach_section_order_buttons(containerId) {
             const nextCard = card?.nextElementSibling;
             if (nextCard && !nextCard.hidden && nextCard.classList.contains("card")) {
                 card.parentNode.insertBefore(nextCard, card);
+                capture_dom_snapshot_and_push();
             }
         });
     });
@@ -488,6 +677,22 @@ function setup_dashboard_section_layout_buttons() {
         save_layout()
         setup_data_and_graphs();
     });
+    document.getElementById("undoLayout").addEventListener("click", () => {
+        if (layoutHistoryIndex > 0) {
+            layoutHistoryIndex--;
+            apply_layout_snapshot(layoutHistory[layoutHistoryIndex]);
+            update_history_buttons();
+        }
+    });
+    document.getElementById("redoLayout").addEventListener("click", () => {
+        if (layoutHistoryIndex < layoutHistory.length - 1) {
+            layoutHistoryIndex++;
+            apply_layout_snapshot(layoutHistory[layoutHistoryIndex]);
+            update_history_buttons();
+        }
+    });
+    // Capture DOM snapshot when graph show/hide buttons are toggled (dispatched from eventlisteners.js)
+    document.addEventListener("layout-user-action", () => capture_dom_snapshot_and_push());
     attach_section_order_buttons("dashboard");
 }
 

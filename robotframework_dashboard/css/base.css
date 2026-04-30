@@ -84,6 +84,8 @@ body {
 #filters:hover,
 #customizeLayout:hover,
 #saveLayout:hover,
+#undoLayout:not(.layout-history-disabled):hover,
+#redoLayout:not(.layout-history-disabled):hover,
 #settings:hover,
 #themeDark:hover,
 #themeLight:hover,
@@ -132,6 +134,8 @@ body {
 #filters:hover svg,
 #customizeLayout:hover svg,
 #saveLayout:hover svg,
+#undoLayout:not(.layout-history-disabled):hover svg,
+#redoLayout:not(.layout-history-disabled):hover svg,
 #settings:hover svg,
 #themeDark:hover svg,
 #themeLight:hover svg,
@@ -196,6 +200,17 @@ body.lock-scroll {
 .navbar-disabled {
   opacity: 0.5;
   user-select: none;
+}
+
+.layout-history-disabled {
+  opacity: 0.3;
+}
+
+#layoutHistoryNavItems {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
 }
 
 .navbar-disabled a {
