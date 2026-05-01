@@ -40,7 +40,7 @@ const unifiedSections = ["Dashboard Statistics"]
 const compareSections = ["Compare Statistics"]
 const tableSections = ["Table Statistics"]
 
-const _isDashboardGraph = (graph) =>
+const is_dashboard_graph = (graph) =>
     !graph.label.startsWith("Compare") &&
     !graph.label.startsWith("Table") &&
     graph.label !== "Run Donut Total" &&
@@ -48,11 +48,11 @@ const _isDashboardGraph = (graph) =>
     !graph.isStatWidget; // stat widgets are managed via the Add Stat Widget modal
 
 const dashboardGraphs = graphMetadata
-    .filter(graph => _isDashboardGraph(graph) && !graph.defaultHidden)
+    .filter(graph => is_dashboard_graph(graph) && !graph.defaultHidden)
     .map(graph => graph.label);
 
 const defaultHiddenDashboardGraphs = graphMetadata
-    .filter(graph => _isDashboardGraph(graph) && graph.defaultHidden)
+    .filter(graph => is_dashboard_graph(graph) && graph.defaultHidden)
     .map(graph => graph.label);
 
 const compareGraphs = graphMetadata

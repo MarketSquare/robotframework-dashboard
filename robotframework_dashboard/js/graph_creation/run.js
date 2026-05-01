@@ -122,7 +122,7 @@ function create_run_statistics_graph() { create_chart("runStatisticsGraph", _bui
 function create_run_donut_graph() { create_chart("runDonutGraph", _build_run_donut_config, false); }
 function create_run_donut_total_graph() { create_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
 
-function _update_run_stat_dom(data) {
+function update_run_stat_dom(data) {
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
     setVal('runStatExecutedRunsValue',     data.totalRuns);
     setVal('runStatExecutedSuitesValue',   data.totalSuites);
@@ -140,7 +140,7 @@ function _update_run_stat_dom(data) {
 
 function create_run_stat_widgets() {
     const data = get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKeywords);
-    _update_run_stat_dom(data);
+    update_run_stat_dom(data);
 }
 
 function create_run_duration_graph() { create_chart("runDurationGraph", _build_run_duration_config); }

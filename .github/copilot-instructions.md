@@ -115,6 +115,8 @@ The `.github/skills/` directory contains domain-specific knowledge files:
 | `server-api.md` | All REST endpoints, authentication, log linking, auto-update behavior |
 | `filtering-and-settings.md` | Filter pipeline, settings object, localStorage persistence, layout/GridStack system, **filter profiles** (data structure, all profile functions, merge modal) |
 | `documentation.md` | All documentation locations (docs/, README.md, CONTRIBUTING.md, setup.py), page map, and checklist for keeping docs in sync when features change |
+| `js-patterns.md` | How JavaScript code is currently structured in this project: module layout, variable placement, naming patterns, GridStack/Chart.js usage |
+| `js-coding-standards.md` | Rules for writing JavaScript: naming conventions, where to put variables, function patterns, scope, localStorage, DOM access |
 
 ---
 

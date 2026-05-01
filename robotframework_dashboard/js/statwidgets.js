@@ -13,16 +13,10 @@ import {
     get_test_stats_data,
     get_keyword_stats_data,
 } from './graph_data/stats.js';
-import { STAT_WIDGET_DEFS, STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
-
-// Stat properties that return raw seconds and need format_duration
-const TIME_PROPS = new Set([
-    'totalRunTime', 'averageRunTime', 'averageTestTime', // run scope
-    'totalTime', 'avgTime',                               // suite / test / keyword scope
-]);
+import { STAT_WIDGET_DEFS, STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS, TIME_PROPS } from './variables/statwidgetdefs.js';
 
 // Generates a short random ID (safe across all modern browsers)
-function _generate_id() {
+function generate_id() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
     }
@@ -30,7 +24,7 @@ function _generate_id() {
 }
 
 // Computes the display value for a given statKey (e.g. "run.totalRuns")
-function _get_stat_value(statKey) {
+function get_stat_value(statKey) {
     const dot = statKey.indexOf('.');
     const scope = statKey.slice(0, dot);
     const prop  = statKey.slice(dot + 1);
@@ -52,7 +46,7 @@ function _get_stat_value(statKey) {
 }
 
 // Builds the inner HTML for one custom stat widget card slot
-function _build_widget_html(widget, editMode) {
+function build_widget_html(widget, editMode) {
     const deleteBtn = editMode
         ? `<button type="button" class="btn-close btn-close-sm delete-custom-stat-widget" aria-label="Remove widget" data-widget-id="${widget.id}"></button>`
         : '';
@@ -64,7 +58,7 @@ function _build_widget_html(widget, editMode) {
 }
 
 // Applies (or updates) the bg class on the grid-stack-item-content of a widget item el
-function _apply_bg_class(itemEl, bgColor) {
+function apply_bg_class(itemEl, bgColor) {
     const content = itemEl.querySelector('.grid-stack-item-content');
     if (!content) return;
     content.classList.remove('blue-bg', 'green-bg', 'red-bg', 'yellow-bg');
@@ -96,32 +90,32 @@ function render_custom_stat_widgets(gridStack, sectionKey, editMode) {
         item.setAttribute('gs-max-w', 12);
         item.setAttribute('gs-max-h', 12);
         item.setAttribute('data-gs-id', `customStatWidget-${widget.id}`);
-        item.innerHTML = `<div class="grid-stack-item-content">${_build_widget_html(widget, editMode)}</div>`;
+        item.innerHTML = `<div class="grid-stack-item-content">${build_widget_html(widget, editMode)}</div>`;
         gridStack.makeWidget(item);
-        _apply_bg_class(item, widget.bgColor);
+        apply_bg_class(item, widget.bgColor);
     }
-    _update_values_for_section(sectionKey);
+    update_values_for_section(sectionKey);
 }
 
 // Updates the displayed values of all rendered custom stat widgets for one section
-function _update_values_for_section(sectionKey) {
+function update_values_for_section(sectionKey) {
     const widgets = (settings.statWidgets || []).filter(w => w.section === sectionKey);
     for (const widget of widgets) {
         const el = document.getElementById(`customStatWidget-${widget.id}-value`);
-        if (el) el.innerText = _get_stat_value(widget.statKey);
+        if (el) el.innerText = get_stat_value(widget.statKey);
     }
 }
 
 // Updates the displayed values of ALL rendered custom stat widgets (all sections)
 function update_custom_stat_widgets() {
     for (const section of ['run', 'suite', 'test', 'keyword', 'unified']) {
-        _update_values_for_section(section);
+        update_values_for_section(section);
     }
 }
 
 // Saves a new custom stat widget to localStorage and returns it
 function add_custom_stat_widget(section, statKey, title, color, bgColor) {
-    const id     = _generate_id();
+    const id     = generate_id();
     const widget = { id, section, statKey, title, color, bgColor };
     const list   = settings.statWidgets ? [...settings.statWidgets] : [];
     list.push(widget);
@@ -156,7 +150,7 @@ function populate_stat_widget_select() {
 }
 
 // Populates a color picker container with the given color definitions
-function _fill_color_picker(picker, colors, defaultValue) {
+function fill_color_picker(picker, colors, defaultValue) {
     picker.innerHTML = '';
     for (const c of colors) {
         const btn = document.createElement('button');
@@ -177,14 +171,14 @@ function _fill_color_picker(picker, colors, defaultValue) {
 function populate_stat_widget_colors() {
     const picker = document.getElementById('addStatWidgetColorPicker');
     if (!picker) return;
-    _fill_color_picker(picker, STAT_WIDGET_COLORS, 'white-text');
+    fill_color_picker(picker, STAT_WIDGET_COLORS, 'white-text');
 }
 
 // Populates the background color picker buttons in the Add Stat Widget modal
 function populate_stat_widget_bg_colors() {
     const picker = document.getElementById('addStatWidgetBgColorPicker');
     if (!picker) return;
-    _fill_color_picker(picker, STAT_WIDGET_BG_COLORS, '');
+    fill_color_picker(picker, STAT_WIDGET_BG_COLORS, '');
 }
 
 // Pre-selects a stat by section key (lowercase) and updates title / color accordingly
@@ -195,12 +189,12 @@ function preselectStatSection(sectionKey) {
     const opt = select.querySelector(`option[data-section="${sectionKey}"]`) || select.options[0];
     if (opt) {
         select.value = opt.value;
-        _sync_modal_defaults_from_stat(opt);
+        sync_modal_defaults_from_stat(opt);
     }
 }
 
 // Reads the selected option and updates the title default only (color is not auto-changed)
-function _sync_modal_defaults_from_stat(opt) {
+function sync_modal_defaults_from_stat(opt) {
     const titleEl = document.getElementById('addStatWidgetTitle');
     if (titleEl && !titleEl.dataset.userEdited) titleEl.value = opt.textContent;
 }
@@ -245,7 +239,7 @@ function setup_add_stat_widget_modal() {
     statSelect?.addEventListener('change', () => {
         const opt = statSelect.options[statSelect.selectedIndex];
         if (titleInput) titleInput.dataset.userEdited = '';
-        _sync_modal_defaults_from_stat(opt);
+        sync_modal_defaults_from_stat(opt);
     });
 
     // Mark title as user-edited once typed
@@ -286,16 +280,16 @@ function setup_add_stat_widget_modal() {
             item.setAttribute('gs-max-w', 12);
             item.setAttribute('gs-max-h', 12);
             item.setAttribute('data-gs-id', `customStatWidget-${widget.id}`);
-            item.innerHTML = `<div class="grid-stack-item-content">${_build_widget_html(widget, true)}</div>`;
+            item.innerHTML = `<div class="grid-stack-item-content">${build_widget_html(widget, true)}</div>`;
             grid.makeWidget(item);
-            _apply_bg_class(item, widget.bgColor);
+            apply_bg_class(item, widget.bgColor);
             // Wire delete on the newly created widget
             const deleteBtn = item.querySelector(`.delete-custom-stat-widget[data-widget-id="${widget.id}"]`);
             if (deleteBtn) {
-                deleteBtn.addEventListener('click', () => _handle_delete_widget(widget.id, grid));
+                deleteBtn.addEventListener('click', () => handle_delete_widget(widget.id, grid));
             }
         }
-        _update_values_for_section(section);
+        update_values_for_section(section);
 
         // Reset title user-edited flag and close modal
         if (titleInput) {
@@ -328,12 +322,12 @@ function wire_delete_buttons(gridStack, sectionKey) {
     for (const widget of widgets) {
         const btn = document.querySelector(`.delete-custom-stat-widget[data-widget-id="${widget.id}"]`);
         if (btn) {
-            btn.addEventListener('click', () => _handle_delete_widget(widget.id, gridStack));
+            btn.addEventListener('click', () => handle_delete_widget(widget.id, gridStack));
         }
     }
 }
 
-function _handle_delete_widget(id, gridStack) {
+function handle_delete_widget(id, gridStack) {
     // Remove from GridStack DOM
     const el = gridStack?.el?.querySelector(`[data-gs-id="customStatWidget-${id}"]`);
     if (el && gridStack) {

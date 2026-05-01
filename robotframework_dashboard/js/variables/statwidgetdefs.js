@@ -55,4 +55,10 @@ const STAT_WIDGET_BG_COLORS = [
     { value: "yellow-bg", label: "Yellow"  },
 ];
 
-export { STAT_WIDGET_DEFS, STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS };
+// Stat-widget property names whose values are raw seconds and must be passed through format_duration
+const TIME_PROPS = new Set([
+    'totalRunTime', 'averageRunTime', 'averageTestTime', // run scope
+    'totalTime', 'avgTime',                               // suite / test / keyword scope
+]);
+
+export { STAT_WIDGET_DEFS, STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS, TIME_PROPS };
