@@ -146,10 +146,9 @@ function populate_stat_widget_select() {
         group.label = section;
         for (const def of STAT_WIDGET_DEFS.filter(d => d.section === section)) {
             const opt = document.createElement('option');
-            opt.value              = def.key;
-            opt.textContent        = def.label;
-            opt.dataset.section    = section.toLowerCase();
-            opt.dataset.color      = def.defaultColor;
+            opt.value           = def.key;
+            opt.textContent     = def.label;
+            opt.dataset.section = section.toLowerCase();
             group.appendChild(opt);
         }
         select.appendChild(group);
@@ -192,7 +191,8 @@ function populate_stat_widget_bg_colors() {
 function preselectStatSection(sectionKey) {
     const select = document.getElementById('addStatWidgetStat');
     if (!select) return;
-    const opt = select.querySelector(`option[data-section="${sectionKey}"]`);
+    // For 'unified', no options have data-section="unified", so fall back to the first available option
+    const opt = select.querySelector(`option[data-section="${sectionKey}"]`) || select.options[0];
     if (opt) {
         select.value = opt.value;
         _sync_modal_defaults_from_stat(opt);

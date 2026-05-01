@@ -268,13 +268,7 @@ function setup_grid_graphs(section) {
         render_custom_stat_widgets(window[grid], sectionKey, gridEditMode);
         if (gridEditMode) {
             wire_delete_buttons(window[grid], sectionKey);
-            if (section !== "Unified") {
-                render_add_stat_widget_tile(window[grid], sectionKey);
-            }
-        }
-        if (section === "Unified") {
-            const addBar = document.getElementById('addStatWidgetUnifiedBar');
-            if (addBar) addBar.hidden = !gridEditMode;
+            render_add_stat_widget_tile(window[grid], sectionKey);
         }
     }
 }
@@ -322,12 +316,18 @@ function setup_tables() {
 function customize_layout() {
     document.getElementById("customizeLayout").hidden = true;
     document.getElementById("saveLayout").hidden = false;
+    document.getElementById("mainNavItems").classList.add("navbar-disabled");
+    document.querySelectorAll("#iconNavItems > li").forEach(li => {
+        if (!li.querySelector("#saveLayout")) li.classList.add("navbar-disabled");
+    });
     add_alert("You can now change your layout. Don't forget to save!", "info")
 }
 
 function save_layout() {
     document.getElementById("customizeLayout").hidden = false;
     document.getElementById("saveLayout").hidden = true;
+    document.getElementById("mainNavItems").classList.remove("navbar-disabled");
+    document.querySelectorAll("#iconNavItems > li").forEach(li => li.classList.remove("navbar-disabled"));
     const shownDashboardItems = [];
     const hiddenDashboardItems = [];
     const shownUnifiedItems = [];

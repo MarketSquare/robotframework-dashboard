@@ -193,13 +193,17 @@
   min-width: 60px;
 }
 
-/* Delete button on custom stat widgets */
+/* Delete button on custom stat widgets — pinned to top-right, out of flex flow */
 .delete-custom-stat-widget {
-  flex-shrink: 0;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
 }
 
 /* Compact flex layout for custom stat widgets — works at any GridStack size */
 .stat-widget-inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -218,7 +222,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
+  max-width: calc(100% - 20px); /* leave room so text doesn't run under the delete button */
 }
 
 /* When the item is very short (h=1 row ≈ 60px) switch to a side-by-side row */
@@ -238,17 +242,14 @@
 .grid-stack-item[data-gs-h="1"] .stat-widget-title {
   flex: 1 1 0;
   text-align: left;
+  max-width: calc(100% - 40px); /* value + delete button */
 }
 
 .grid-stack-item[gs-h="1"] .stat-value,
 .grid-stack-item[data-gs-h="1"] .stat-value {
   flex-shrink: 0;
   font-size: 1.1rem;
-}
-
-.grid-stack-item[gs-h="1"] .delete-custom-stat-widget,
-.grid-stack-item[data-gs-h="1"] .delete-custom-stat-widget {
-  flex-shrink: 0;
+  margin-right: 20px; /* keep clear of the absolute delete button */
 }
 
 .grid-stack-item-content.blue-bg   { background-color: rgba(13, 110, 253, 0.15); }
