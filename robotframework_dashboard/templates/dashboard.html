@@ -626,9 +626,19 @@
                     <div class="modal-body">
                         <ul class="nav nav-tabs" id="settingsTab" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="general-tab" data-bs-toggle="tab"
-                                    data-bs-target="#general" type="button" role="tab" aria-controls="general"
-                                    aria-selected="true">Graphs</button>
+                                <button class="nav-link active" id="appearance-tab" data-bs-toggle="tab"
+                                    data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance"
+                                    aria-selected="true">Appearance</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="labels-time-tab" data-bs-toggle="tab"
+                                    data-bs-target="#labels-time" type="button" role="tab" aria-controls="labels-time"
+                                    aria-selected="false">Labels &amp; Time</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="defaults-tab" data-bs-toggle="tab"
+                                    data-bs-target="#defaults" type="button" role="tab" aria-controls="defaults"
+                                    aria-selected="false">Defaults</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="keywords-tab" data-bs-toggle="tab"
@@ -651,17 +661,10 @@
                         </ul>
 
                         <div class="tab-content pt-3" id="settingsTabContent">
-                            <div class="tab-pane fade show active" id="general" role="tabpanel"
-                                aria-labelledíby="general-tab">
-                                <p><i>Configure graph display settings and dashboard behavior.</i></p>
+                            <div class="tab-pane fade show active" id="appearance" role="tabpanel"
+                                aria-labelledby="appearance-tab">
+                                <p><i>Configure chart visual appearance.</i></p>
                                 <div class="list-group">
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Unified Dashboard Sections</span>
-                                        <div class="form-check form-switch mb-0">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                id="toggleUnified">
-                                        </div>
-                                    </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>Display Legends</span>
                                         <div class="form-check form-switch mb-0">
@@ -674,28 +677,6 @@
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleAxisTitles">
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Run Start/Alias Labels On Axes</span>
-                                        <div class="form-check form-switch mb-0">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                id="toggleLabels">
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Run Label Display</span>
-                                        <select class="form-select form-select-sm" id="toggleAliases" style="width: 120px;">
-                                            <option value="run_start">Run Start</option>
-                                            <option value="alias">Alias</option>
-                                            <option value="run_name">Run Name</option>
-                                        </select>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Milliseconds Run Start Labels</span>
-                                        <div class="form-check form-switch mb-0">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                id="toggleMilliseconds">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -725,6 +706,34 @@
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="labels-time" role="tabpanel"
+                                aria-labelledby="labels-time-tab">
+                                <p><i>Configure run labels and timestamp display.</i></p>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Display Run Start/Alias Labels On Axes</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleLabels">
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Run Label Display</span>
+                                        <select class="form-select form-select-sm" id="toggleAliases" style="width: 120px;">
+                                            <option value="run_start">Run Start</option>
+                                            <option value="alias">Alias</option>
+                                            <option value="run_name">Run Name</option>
+                                        </select>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Display Milliseconds Run Start Labels</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleMilliseconds">
+                                        </div>
+                                    </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>Display Timezone Offsets</span>
                                         <div class="form-check form-switch mb-0">
@@ -737,6 +746,19 @@
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleTimezone">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="defaults" role="tabpanel"
+                                aria-labelledby="defaults-tab">
+                                <p><i>Configure default dashboard behavior and initial selections.</i></p>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Unified Dashboard Sections</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleUnified">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
