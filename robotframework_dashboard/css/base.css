@@ -84,6 +84,8 @@ body {
 #filters:hover,
 #customizeLayout:hover,
 #saveLayout:hover,
+#undoLayout:not(.layout-history-disabled):hover,
+#redoLayout:not(.layout-history-disabled):hover,
 #settings:hover,
 #themeDark:hover,
 #themeLight:hover,
@@ -132,6 +134,8 @@ body {
 #filters:hover svg,
 #customizeLayout:hover svg,
 #saveLayout:hover svg,
+#undoLayout:not(.layout-history-disabled):hover svg,
+#redoLayout:not(.layout-history-disabled):hover svg,
 #settings:hover svg,
 #themeDark:hover svg,
 #themeLight:hover svg,
@@ -193,9 +197,43 @@ body.lock-scroll {
   cursor: pointer;
 }
 
+/* ── Info label + small icon (tooltip on label hover) ── */
+.info-label {
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.info-icon-small {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.info-label:hover .info-icon-small {
+  opacity: 1;
+}
+
+.info-label:hover .info-icon-small svg {
+  stroke: var(--color-highlight) !important;
+}
+
 .navbar-disabled {
   opacity: 0.5;
   user-select: none;
+}
+
+.layout-history-disabled {
+  opacity: 0.3;
+}
+
+#layoutHistoryNavItems {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
 }
 
 .navbar-disabled a {

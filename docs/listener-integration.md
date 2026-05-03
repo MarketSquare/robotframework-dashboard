@@ -186,3 +186,77 @@ Place both `robot.toml` and `robotdashboardlistener.py` in your project root (or
 [listeners]  
 "robotdashboardlistener.py" = ["tags=dev1,dev2", "version=v2.0", "uploadlog=true", "limit=100"]  
 ```
+
+## Pushing output.xml Without a Test Run (robotdashboardscript.py)
+
+For situations where you already have an `output.xml` on disk and want to push it to a running dashboard server — without executing a Robot Framework test run — use the standalone script.
+
+The script can be found here: [robotdashboardscript.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/script/robotdashboardscript.py)
+
+> Important: make sure the server is running before executing the script!
+
+### Basic Usage
+
+**Push a single output.xml**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml
+```
+
+**With tags and a version label**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --tags smoke,regression --version v1.2.3
+```
+
+**With a log file**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --log path/to/log.html
+```
+
+**With custom host/port**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --host 10.0.0.5 --port 8543
+```
+
+**With HTTPS and SSL verification disabled (for self-signed certificates)**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --protocol https --sslverify false
+```
+
+**With HTTPS and a custom CA bundle**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --protocol https --sslverify /path/to/ca-bundle.pem
+```
+
+**Keep only the 100 most recent runs**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --limit 100
+```
+
+### Full Pusher Options
+
+The arguments mirror those of `robotdashboardlistener.py`:
+
+| Argument | Description |
+|---|---|
+| `--output` | **(Required)** Path to the `output.xml` file to push to the server |
+| `--log` | Path to a `log.html` file to upload to the server (optional) |
+| `--tags` | Comma-separated list of tags attached to the run in the Dashboard |
+| `--version` | Version label for the run (e.g., software version, release tag) |
+| `--host` | Dashboard server hostname (default: `127.0.0.1`) |
+| `--port` | Dashboard server port (default: `8543`) |
+| `--protocol` | Protocol to use when connecting to the server: `http` or `https` (default: `http`) |
+| `--sslverify` | SSL certificate verification for HTTPS: `true` (default), `false` (skip verification for self-signed certs), or a path to a CA bundle file |
+| `--limit` | Maximum number of runs stored in the database (older runs will be auto-deleted) |
+
+**Example with all options**
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --log path/to/log.html --tags dev1,dev2 --version v2.0 --host 127.0.0.2 --port 8888 --protocol https --sslverify false --limit 100
+```

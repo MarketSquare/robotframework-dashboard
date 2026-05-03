@@ -9,8 +9,9 @@ description: Use when running the CLI, starting the server, or building/previewi
 
 ## Running Tests
 
-All tests are Robot Framework acceptance tests run with **pabot** (parallel executor). There are no pytest/unittest files.
+There are three test tiers: Robot Framework acceptance tests, Python unit tests, and JavaScript unit tests.
 
+### Robot Framework acceptance tests (pabot)
 ```bash
 # Windows
 pabot --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\tests\robot\testsuites\*.robot
@@ -23,7 +24,23 @@ Convenience scripts: `scripts/robot-tests.bat` and `scripts/robot-tests.sh`.
 
 Key flags: `--pabotlib` starts the shared lock server; `--testlevelsplit` runs each test case in parallel (not suite-level); `-d results` captures output in `results/`.
 
-See `.github/skills/testing.md` for full details on the three test tiers and how to add tests.
+See `.github/skills/robotframework-tests.md` for full details on the acceptance test suite and how to add tests.
+
+### Python unit tests (pytest)
+```bash
+scripts\unittests.bat   # Windows
+bash scripts/unittests.sh   # Linux / macOS
+```
+
+See `.github/skills/python-unit-tests.md` for test layout, fixtures, and failure analysis.
+
+### JavaScript unit tests (Vitest)
+```bash
+scripts\jstests.bat   # Windows
+bash scripts/jstests.sh   # Linux / macOS
+```
+
+See `.github/skills/javascript-unit-tests.md` for test layout, mocking patterns, and which modules are testable.
 
 ## Server Mode
 - Start with `robotdashboard --server` or `-s host:port:user:pass`.

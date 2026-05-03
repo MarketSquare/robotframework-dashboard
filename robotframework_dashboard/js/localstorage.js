@@ -258,20 +258,37 @@ function update_graph_type(graph, type) {
 
 // function to setup the overview sections that are dynamically created
 function setup_overview_localstorage() {
+    const staticSections = ["overviewLatestRuns", "overviewTotalStats"];
+    const projectNames = [];
     if (Object.keys(projects_by_name).length > 0) {
         Object.keys(projects_by_name).forEach(projectName => {
-            overviewSections.push(projectName)
+            projectNames.push(projectName);
         });
     }
     if (Object.keys(projects_by_tag).length > 0) {
         Object.keys(projects_by_tag).forEach(tagName => {
-            overviewSections.push(tagName)
+            projectNames.push(tagName);
         });
     }
-    // on first load without localstorage only overview sections is present
-    // if more items are available, set them in localstorage, previous order is lost
-    if (settings.view.overview.sections.show.length < overviewSections.length) {
-        set_local_storage_item("view.overview.sections.show", overviewSections)
+    // Populate overviewSections used elsewhere)(
+    projectNames.forEach(name => overviewSections.push(name));
+
+    const isSameRef = settings.view.overview.sections.show === overviewSections;
+    const currentShow = isSameRef ? [...staticSections] : settings.view.overview.sections.show;
+
+    // Dynamic sections currently stored (non-static), preserving the user's saved order
+    const storedDynamic = currentShow.filter(s => !staticSections.includes(s));
+    const storedDynamicSet = new Set(storedDynamic);
+
+    // Update localStorage only when new projects have appeared since the last save
+    const newProjects = projectNames.filter(n => !storedDynamicSet.has(n));
+    if (newProjects.length > 0) {
+        const sortedNew = [...newProjects].sort((a, b) => a.localeCompare(b));
+        const newList = [
+            ...currentShow,   // preserve existing order (including any user reordering)
+            ...sortedNew,     // append new projects alphabetically
+        ];
+        set_local_storage_item("view.overview.sections.show", newList);
     }
 }
 

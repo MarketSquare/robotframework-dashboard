@@ -47,6 +47,14 @@
                     id="refreshDashboardSpinner" hidden></span>
             </button>
         </div>
+        <ul class="navbar-nav flex-row flex-nowrap" id="layoutHistoryNavItems" hidden>
+            <li class="nav-item">
+                <a class="nav-link information" id="undoLayout"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" id="redoLayout"></a>
+            </li>
+        </ul>
         <ul class="navbar-nav flex-row flex-nowrap ms-md-auto me-4" id="iconNavItems">
             <li class="nav-item">
                 <a class="nav-link information" id="filters" data-bs-toggle="modal" data-bs-target="#filtersModal"></a>
@@ -173,7 +181,7 @@
                         <div class="col d-flex align-items-center" id="suiteSectionFiltersContainer">
                             <div class="section-filters" id="suiteSectionFilters">
                                 <div class="filter-group">
-                                    <label class="form-label mb-0" for="suiteFolder">Folder:</label>
+                                    <label class="form-label mb-0 information info-label" id="suiteSectionFolderFilter">Folder <span class="info-icon-small ms-1"></span></label>
                                     <p class="form-label mb-0" id="suiteFolder">All</p>
                                 </div>
                                 <div class="filter-group">
@@ -181,21 +189,15 @@
                                         Folder</button>
                                 </div>
                                 <div class="filter-group">
-                                    <label class="form-label mb-0" for="suiteSelectSuites">Suite:</label>
+                                    <label class="form-label mb-0 information info-label" for="suiteSelectSuites" id="suiteSectionSuiteFilter">Suite <span class="info-icon-small ms-1"></span></label>
                                     <select class="form-select form-select-sm" id="suiteSelectSuites"></select>
                                 </div>
                                 <div class="filter-group">
-                                    <label class="form-check-label mb-0" for="switchSuitePathsSuiteSection">Use
-                                        Suite
-                                        Paths</label>
+                                    <label class="form-check-label mb-0 information info-label" for="switchSuitePathsSuiteSection" id="suiteSectionPathsFilter">Use Suite Paths <span class="info-icon-small ms-1"></span></label>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch"
                                             id="switchSuitePathsSuiteSection" />
                                     </div>
-                                </div>
-                                <div class="filter-group">
-                                    <a type="button" class="information information-icon"
-                                        id="suiteStatisticsInformation"></a>
                                 </div>
                             </div>
                             <div class="col-auto ms-auto">
@@ -224,29 +226,23 @@
                         <div class="col d-flex align-items-center" id="testSectionFiltersContainer">
                             <div class="section-filters" id="testSectionFilters">
                                 <div class="filter-group">
-                                    <label class="form-label mb-0" for="suiteSelectTests">Suite:</label>
+                                    <label class="form-label mb-0 information info-label" for="suiteSelectTests" id="testSectionSuiteFilter">Suite <span class="info-icon-small ms-1"></span></label>
                                     <select class="form-select form-select-sm" id="suiteSelectTests"></select>
                                 </div>
                                 <div class="filter-group">
-                                    <label class="form-check-label mb-0" for="switchSuitePathsTestSection">Use
-                                        Suite
-                                        Paths</label>
+                                    <label class="form-check-label mb-0 information info-label" for="switchSuitePathsTestSection" id="testSectionPathsFilter">Use Suite Paths <span class="info-icon-small ms-1"></span></label>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch"
                                             id="switchSuitePathsTestSection" />
                                     </div>
                                 </div>
                                 <div class="filter-group">
-                                    <label class="form-label mb-0" for="testSelect">Test:</label>
+                                    <label class="form-label mb-0 information info-label" for="testSelect" id="testSectionTestFilter">Test <span class="info-icon-small ms-1"></span></label>
                                     <select class="form-select form-select-sm" id="testSelect"></select>
                                 </div>
                                 <div class="filter-group flex-nowrap">
-                                    <label class="form-label mb-0 text-nowrap" for="testTagsSelect">Test Tags:</label>
+                                    <label class="form-label mb-0 text-nowrap information info-label" for="testTagsSelect" id="testSectionTagFilter">Test Tags <span class="info-icon-small ms-1"></span></label>
                                     <select class="form-select form-select-sm w-auto" id="testTagsSelect"></select>
-                                </div>
-                                <div class="filter-group">
-                                    <a type="button" class="information information-icon"
-                                        id="testStatisticsInformation"></a>
                                 </div>
                             </div>
                             <div class="col-auto ms-auto">
@@ -275,20 +271,15 @@
                         <div class="col d-flex align-items-center" id="keywordSectionFiltersContainer">
                             <div class="section-filters" id="keywordSectionFilters">
                                 <div class="filter-group">
-                                    <label class="form-label mb-0" for="keywordSelect">Keyword:</label>
+                                    <label class="form-label mb-0 information info-label" for="keywordSelect" id="keywordSectionKeywordFilter">Keyword <span class="info-icon-small ms-1"></span></label>
                                     <select class="form-select form-select-sm" id="keywordSelect"></select>
                                 </div>
                                 <div class="filter-group">
-                                    <label class="form-check-label mb-0" for="switchUseLibraryNames">Use Library
-                                        Names</label>
+                                    <label class="form-check-label mb-0 information info-label" for="switchUseLibraryNames" id="keywordSectionLibNamesFilter">Use Library Names <span class="info-icon-small ms-1"></span></label>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch"
                                             id="switchUseLibraryNames" />
                                     </div>
-                                </div>
-                                <div class="filter-group">
-                                    <a type="button" class="information information-icon"
-                                        id="keywordStatisticsInformation"></a>
                                 </div>
                             </div>
                         </div>
@@ -397,8 +388,6 @@
                     <div class="modal-header">
                         <h1 class="modal-title" id="filtersModalLabel">Filters</h1>
                         <div>
-                            <a type="button" class="information information-icon ms-1 me-1 align-middle"
-                                id="filterProfileInformation"></a>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
                                 id="addFilterProfile">Add Profile</button>
                             <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-3"
@@ -412,6 +401,11 @@
                         </div>
                     </div>
                     <div class="filter-profile-bar d-flex align-items-center justify-content-between px-3 py-2">
+                        <div class="d-flex align-items-center">
+                            <span class="d-flex align-items-center information info-label me-3" id="filterProfileInformation">
+                                Filter Profiles <span class="info-icon-small ms-1"></span>
+                            </span>
+                        </div>
                         <div id="filterProfileEditorInline" class="d-flex align-items-center"
                             style="display: none !important;">
                             <input class="form-control form-control-sm me-2" type="text" id="filterProfileName"
@@ -443,10 +437,9 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckRuns" checked style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterRunsInformation">
                                     Runs
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterRunsInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="runs" style="width: 200px;"></select>
@@ -456,10 +449,9 @@
                                 <div class="d-flex justify-content-between align-items-start">
                                     <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
                                         id="profileCheckRunTags" checked style="display: none;" />
-                                    <span class="d-flex align-items-center">
+                                    <span class="d-flex align-items-center information info-label" id="filterRunTagsInformation">
                                         Run Tags
-                                        <a type="button" class="information information-icon ms-2"
-                                            id="filterRunTagsInformation"></a>
+                                        <span class="info-icon-small ms-1"></span>
                                         <span id="filterRunTagSelectedIndicator" class="version-selected-dot ms-2 mt-1"
                                             style="display: none;"></span>
                                     </span>
@@ -483,10 +475,9 @@
                                 <div class="d-flex justify-content-between align-items-start">
                                     <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
                                         id="profileCheckVersions" checked style="display: none;" />
-                                    <span class="d-flex align-items-center">
+                                    <span class="d-flex align-items-center information info-label" id="filterVersionsInformation">
                                         Versions
-                                        <a type="button" class="information information-icon ms-2"
-                                            id="filterVersionsInformation"></a>
+                                        <span class="info-icon-small ms-1"></span>
                                         <span id="filterVersionSelectedIndicator" class="version-selected-dot ms-2 mt-1"
                                             style="display: none;"></span>
                                     </span>
@@ -511,10 +502,9 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckFromDate" style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterFromDateInformation">
                                     From Date
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterFromDateInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromDate" type="date"
@@ -524,10 +514,9 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckFromTime" style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterFromTimeInformation">
                                     From Time
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterFromTimeInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="fromTime" type="time"
@@ -537,10 +526,9 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckToDate" style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterToDateInformation">
                                     To Date
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterToDateInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toDate" type="date"
@@ -550,10 +538,9 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckToTime" style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterToTimeInformation">
                                     To Time
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterToTimeInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm" id="toTime" type="time"
@@ -564,10 +551,9 @@
                                 id="metadataFilter" hidden>
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckMetadata" checked style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterMetadataInformation">
                                     Metadata
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterMetadataInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="metadata"
@@ -577,10 +563,9 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <input class="form-check-input filter-profile-check me-2" type="checkbox"
                                     id="profileCheckAmount" checked style="display: none;" />
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center information info-label" id="filterAmountInformation">
                                     Amount
-                                    <a type="button" class="information information-icon ms-2"
-                                        id="filterAmountInformation"></a>
+                                    <span class="info-icon-small ms-1"></span>
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <input class="form-control form-control-sm information" type="number" min="0"
@@ -666,35 +651,35 @@
                                 <p><i>Configure chart visual appearance.</i></p>
                                 <div class="list-group">
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Legends</span>
+                                        <span class="information info-label" id="settingLegends">Display Legends <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleLegends">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Axis Titles</span>
+                                        <span class="information info-label" id="settingAxisTitles">Display Axis Titles <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleAxisTitles">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Drawing Animations</span>
+                                        <span class="information info-label" id="settingAnimations">Display Drawing Animations <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleAnimations">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Animation Duration (Milliseconds)</span>
+                                        <span class="information info-label" id="settingAnimationDuration">Animation Duration (Milliseconds) <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center">
                                             <input class="form-control form-control-sm" type="number"
                                                 id="toggleAnimationDuration" style="width: 80px;">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Bar Graph Edge Rounding (Pixels)</span>
+                                        <span class="information info-label" id="settingBarRounding">Bar Graph Edge Rounding (Pixels) <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center">
                                             <select class="form-select form-select-sm" id="toggleBarRounding"
                                                 style="width: 80px;">
@@ -735,14 +720,14 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Timezone Offsets</span>
+                                        <span class="information info-label" id="settingTimezones">Display Timezone Offsets <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleTimezones">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Convert Timestamps to Local Timezone</span>
+                                        <span class="information info-label" id="settingConvertTimezone">Convert Timestamps to Local Timezone <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="toggleTimezone">
@@ -762,7 +747,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Suite Statistics - Default suite selection</span>
+                                        <span class="information info-label" id="settingSuiteStatsDefault">Suite Statistics - Default suite selection <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center">
                                             <select class="form-select form-select-sm"
                                                 id="toggleSuitesSelectionInSuiteStats" style="width: 200px;">
@@ -773,7 +758,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Test Statistics - Default suite selection</span>
+                                        <span class="information info-label" id="settingTestStatsDefault">Test Statistics - Default suite selection <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center">
                                             <select class="form-select form-select-sm"
                                                 id="toggleSuitesSelectionInTestStats" style="width: 200px;">
@@ -789,56 +774,56 @@
                                 <p><i>Configure overview page display options.</i></p>
                                 <div class="list-group">
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display bar with Latest Runs</span>
+                                        <span class="information info-label" id="settingLatestRuns">Display bar with Latest Runs <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchLatestRuns" />
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display bar with Total Stats</span>
+                                        <span class="information info-label" id="settingTotalStats">Display bar with Total Stats <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchTotalStats" />
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display bars with projects by Name</span>
+                                        <span class="information info-label" id="settingProjectsByName">Display bars with projects by Name <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchRunName" />
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display bars with projects by Tag</span>
+                                        <span class="information info-label" id="settingProjectsByTag">Display bars with projects by Tag <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchRunTags" />
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display "project_" prefix in tags on the overview page</span>
+                                        <span class="information info-label" id="settingPrefixes">Display "project_" prefix in tags on the overview page <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="togglePrefixes">
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Percentage Filters</span>
+                                        <span class="information info-label" id="settingPercentageFilters">Display Percentage Filters <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchPercentageFilters" />
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Version Filters</span>
+                                        <span class="information info-label" id="settingVersionFilters">Display Version Filters <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchVersionFilters" />
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Display Sort Filters</span>
+                                        <span class="information info-label" id="settingSortFilters">Display Sort Filters <span class="info-icon-small ms-1"></span></span>
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchSortFilters" />
@@ -881,7 +866,7 @@
                                 <p><i>Customize the dashboard colors to your preference.</i></p>
                                 <div class="list-group">
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Background Color</span>
+                                        <span class="information info-label" id="settingBackgroundColor">Background Color <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="color"
                                                 id="themeBackgroundColor" style="width: 80px;">
@@ -890,7 +875,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Card Color</span>
+                                        <span class="information info-label" id="settingCardColor">Card Color <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="color" id="themeCardColor"
                                                 style="width: 80px;">
@@ -899,7 +884,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Highlight Color</span>
+                                        <span class="information info-label" id="settingHighlightColor">Highlight Color <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="color"
                                                 id="themeHighlightColor" style="width: 80px;">
@@ -908,7 +893,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Text Color</span>
+                                        <span class="information info-label" id="settingTextColor">Text Color <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="color" id="themeTextColor"
                                                 style="width: 80px;">
@@ -917,7 +902,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Custom Title</span>
+                                        <span class="information info-label" id="settingCustomTitle">Custom Title <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="text"
                                                 id="customBrandingTitle" placeholder="Enter title..."
@@ -927,7 +912,7 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Custom Logo <small class="text-muted">(PNG)</small></span>
+                                        <span class="information info-label" id="settingCustomLogo">Custom Logo <small class="text-muted">(PNG)</small> <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center gap-2">
                                             <input class="form-control form-control-sm" type="file"
                                                 id="customLogoUpload" accept=".png,image/png" style="max-width: 200px;">
