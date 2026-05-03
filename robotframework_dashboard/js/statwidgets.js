@@ -291,6 +291,9 @@ function setup_add_stat_widget_modal() {
         }
         update_values_for_section(section);
 
+        // Push a history snapshot so undo/redo can reverse the add
+        document.dispatchEvent(new CustomEvent("layout-user-action"));
+
         // Reset title user-edited flag and close modal
         if (titleInput) {
             titleInput.value = '';
@@ -334,6 +337,8 @@ function handle_delete_widget(id, gridStack) {
         gridStack.removeWidget(el);
     }
     remove_custom_stat_widget(id);
+    // Push a history snapshot so undo/redo can reverse the delete
+    document.dispatchEvent(new CustomEvent("layout-user-action"));
 }
 
 // Opens the Add Stat Widget modal, pre-selecting the given section (lowercase)

@@ -29,6 +29,7 @@ let applyingSnapshot = false;
 function capture_settings_snapshot() {
     return {
         layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
+        statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         view: {
             dashboard: {
                 graphs: {
@@ -71,6 +72,7 @@ function capture_settings_snapshot() {
 function capture_dom_snapshot() {
     const snapshot = {
         layouts: {},
+        statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         view: {
             dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
             unified: { graphs: { show: [], hide: [] } },
@@ -160,6 +162,7 @@ function push_layout_snapshot(snapshot) {
 function apply_layout_snapshot(snapshot) {
     applyingSnapshot = true;
     settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
+    set_local_storage_item('statWidgets', JSON.parse(JSON.stringify(snapshot.statWidgets || [])));
     settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
     settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
     settings.view.dashboard.sections.show = [...snapshot.view.dashboard.sections.show];
