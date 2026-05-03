@@ -15,6 +15,8 @@ import {
     bugSVG,
     customizeViewSVG,
     saveSVG,
+    undoSVG,
+    redoSVG,
     percentageSVG,
     barSVG,
     lineSVG,
@@ -97,6 +99,8 @@ function setup_theme() {
                 "bug": bugSVG(color),
                 "customizeLayout": customizeViewSVG(color),
                 "saveLayout": saveSVG(color),
+                "undoLayout": undoSVG(color),
+                "redoLayout": redoSVG(color),
                 "navHamburger": menuSVG(color),
             },
             classes: {

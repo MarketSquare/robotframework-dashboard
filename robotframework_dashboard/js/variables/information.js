@@ -3,6 +3,8 @@ const informationMap = {
     "filters": "Filters",
     "customizeLayout": "Customize Layout",
     "saveLayout": "Save Layout",
+    "undoLayout": "Undo Layout Change",
+    "redoLayout": "Redo Layout Change",
     "settings": "Settings",
     "themeLight": "Theme",
     "themeDark": "Theme",
