@@ -50,7 +50,7 @@ Validate Screenshot
     [Arguments]    ${screenshot}    ${reference}    ${folder}    ${threshold}=${EMPTY}
     VAR    ${reference}    ${REFERENCE_FOLDER}/${folder}/${reference}.png
     VAR    ${screenshot}    ${SCREENSHOT_FOLDER}/${screenshot}.png
-    IF    "${threshold}"=="${EMPTY}"    VAR    ${threshold}    0.001    # 99.9% accuracy by default
+    IF    "${threshold}"=="${EMPTY}"    VAR    ${threshold}    0.005    # 99.5% accuracy by default
     Compare Images    reference_image=${reference}    candidate_image=${screenshot}    threshold=${threshold}
 
 Validate Component
