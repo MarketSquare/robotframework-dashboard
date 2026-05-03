@@ -1196,12 +1196,14 @@ function setup_graph_view_buttons() {
         btn.addEventListener("click", () => {
             btn.hidden = true;
             document.getElementById(`${btn.id.replace("Shown", "Hidden")}`).hidden = false;
+            document.dispatchEvent(new CustomEvent("layout-user-action"));
         })
     });
     document.querySelectorAll(".hidden-graph").forEach(btn => {
         btn.addEventListener("click", () => {
             btn.hidden = true;
             document.getElementById(`${btn.id.replace("Hidden", "Shown")}`).hidden = false;
+            document.dispatchEvent(new CustomEvent("layout-user-action"));
         })
     });
     // table layout changes
@@ -1211,6 +1213,7 @@ function setup_graph_view_buttons() {
             const previous = section.previousElementSibling;
             if (previous && previous.classList.contains("table-section")) {
                 section.parentElement.insertBefore(section, previous);
+                document.dispatchEvent(new CustomEvent("layout-user-action"));
             }
         });
     });
@@ -1220,6 +1223,7 @@ function setup_graph_view_buttons() {
             const next = section.nextElementSibling;
             if (next && next.classList.contains("table-section")) {
                 section.parentElement.insertBefore(next, section);
+                document.dispatchEvent(new CustomEvent("layout-user-action"));
             }
         });
     });
