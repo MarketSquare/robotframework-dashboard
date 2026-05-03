@@ -82,7 +82,7 @@ For detailed usage instructions, advanced examples, and full documentation, visi
 - 🗄️ [**Custom Database Class**](https://marketsquare.github.io/robotframework-dashboard/custom-database-class.html) - Extend or replace the default database backend to suit your storage needs, including SQLite, MySQL, or custom implementations.
 - 🔔 [**Listener Integration**](https://marketsquare.github.io/robotframework-dashboard/listener-integration.html) - Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
 - 📂 [**Log Linking**](https://marketsquare.github.io/robotframework-dashboard/log-linking.html) - Enable clickable log navigation from dashboard graphs, covering file naming conventions, local and server usage, and remote log uploads.
-- 📈 [**Performance**](https://marketsquare.github.io/robotframework-dashboard/performance.html) - Benchmark results across different workload sizes, guidance on scaling to hundreds of runs, and tips for large result sets.
+- 📈 [**Performance**](https://marketsquare.github.io/robotframework-dashboard/performance.html) - Performance results across different workload sizes, guidance on scaling to hundreds of runs, and tips for large result sets.
 
 
 ## 📈 Performance
@@ -93,13 +93,9 @@ robotframework-dashboard is designed to stay fast even as your result set grows.
 - **Dashboard generation** is nearly always **under 1 second** regardless of scale — data is already aggregated in the database, so re-generating HTML after adding new runs is essentially free.
 - **Incremental processing** — output files already in the database are automatically skipped, so you can safely re-run against a folder of XMLs without re-processing old results.
 - **HTML size** stays modest (~500 KB–1 MB for typical workloads) thanks to zlib compression of the embedded data.
+- **Dashboard rendering** (Chart.js in the browser) depends on how many runs are displayed. The default limit is **20 runs** (near-instant). Raising it to **50 runs** takes a few seconds as Chart.js renders all graphs. At **100+ runs**, initial rendering can approach **~10 seconds or more!**. This is also affected by your suite and test size — selecting **"All Suites"** or **"All Tests"** in their respective sections amplifies render time significantly, since each unique name becomes a separate data series. Use the quantity filter to keep the displayed run count manageable.
 
-| Scale | Runs | Tests/run | XML/run | Processing | HTML size |
-|---|---|---|---|---|---|
-| Small | 10 | 30 | 242 KB | 0.9s total | 497 KB |
-| Medium | 50 | 150 | 2.8 MB | 38s total | 654 KB |
-
-For detailed results, scaling guidance, and a runnable benchmark script, see the [Performance docs](https://marketsquare.github.io/robotframework-dashboard/performance.html).
+For detailed results and scaling guidance, see the [Performance docs](https://marketsquare.github.io/robotframework-dashboard/performance.html).
 
 
 ## 🛠️ Contributions

@@ -8,43 +8,15 @@ This page documents the performance characteristics of robotframework-dashboard 
 
 ## How Performance Is Measured
 
-The pipeline has three distinct stages — each with its own time and size cost:
+The process has three distinct stages — each with its own time and size cost:
 
 | Stage | What happens |
 |---|---|
 | **XML processing** | `OutputProcessor` uses `robot.api.ExecutionResult` to parse each `output.xml` and insert its data into the SQLite database. |
 | **Dashboard generation** | `DashboardGenerator` reads all data from the database, compresses it (JSON → zlib → base64), inlines all JS/CSS, and writes a single self-contained `.html` file. |
-| **Browser rendering** | The browser decompresses the embedded data and renders charts. This is bounded by browser memory, not by disk or CPU. |
-
-## Running the Benchmark Yourself
-
-A benchmark script is included in the `scripts/` directory. It generates synthetic `output.xml` files with realistic keyword structures (flat calls, nested helper keywords, and FOR loops with iterations), runs them through the full pipeline, and reports sizes and timings.
-
-```bash
-# Run all four scenarios (may take 10–20 minutes for large/stress)
-python scripts/benchmark.py
-
-# Run only specific scenarios
-python scripts/benchmark.py --scenarios small medium
-
-# See all options
-python scripts/benchmark.py --help
-```
-
-### Scenario definitions
-
-| Scenario | Runs | Tests/run | ~kw/test | Keyword structure |
-|---|---|---|---|---|
-| `small` | 10 | 30 | ~40 | 5 flat + 1 helper + 1 FOR(8 iter × 2 kw) |
-| `medium` | 50 | 150 | ~93 | 12 flat + 2 helpers + 1 FOR(15 iter × 3 kw) |
-| `large` | 100 | 400 | ~140 | 18 flat + 3 helpers + 2 FOR(20 iter × 4 kw) |
-| `stress` | 50 | 100 | ~880 | 20 flat + 5 helpers + 4 FOR(30 iter × 5 kw) — deep nesting (depth 3) |
-
-The `stress` scenario specifically stresses keyword depth: helpers nest 3 levels deep, and each FOR loop iteration also contains a nested validation call. This simulates real Robot Framework suites where page-object and utility keywords stack 3–4 call levels.
+| **Browser rendering** | The browser decompresses the embedded data and renders charts using Chart.js. Render time scales with the number of displayed runs and active data views. |
 
 ## Baseline Results
-
-Measured on Windows 11, Python 3.8, Intel Core i7, SSD.
 
 ### Small (10 runs × 30 tests × ~40 kw/test)
 
@@ -68,7 +40,7 @@ Measured on Windows 11, Python 3.8, Intel Core i7, SSD.
 | Dashboard generation | 0.14s |
 | HTML output size | 654 KB |
 
-### Stress (50 runs × 100 tests × ~880 kw/test — deeply nested)
+### Large (50 runs × 100 tests × ~880 kw/test — deeply nested)
 
 | Metric | Value |
 |---|---|
@@ -79,7 +51,7 @@ Measured on Windows 11, Python 3.8, Intel Core i7, SSD.
 | Dashboard generation | 0.13s |
 | HTML output size | 612 KB |
 
-::: info Stress scenario note
+::: info Large scenario note
 At this scale the `robot.api` XML parser is loading ~17 MB files entirely into memory per run — this is an extreme edge case representing suites with hundreds of FOR loop iterations and 3-level deep keyword nesting. In practice, most Robot Framework suites produce 0.5–5 MB per output file. Notice that despite the extreme XML size, the **database remains tiny (1.1 MB) and HTML generation stays under 0.2s** — keyword aggregation ensures the stored data stays compact regardless of call depth.
 :::
 
@@ -111,15 +83,23 @@ HTML size grows with **number of runs** and **number of unique tests/keywords**,
 
 Very large dashboards (500+ runs with many unique tests) may reach 5–10 MB. This is still trivially small to serve or share, but the browser will use proportionally more memory to decompress and render it.
 
-### Browser Memory (Practical Ceiling)
+### Chart.js Rendering (Dashboard Load Time)
 
-The self-contained HTML decompresses all data in the browser on page load. Modern browsers handle dashboards with:
+The time it takes for the dashboard to finish drawing after the page opens is driven by Chart.js — not by data size or HTML file size. Key factors:
 
-- **Up to ~500 runs** with typical test suites: no issues on any modern device
-- **500–2000 runs**: works but initial load may take 2–5 seconds on lower-end hardware
-- **2000+ runs**: consider using the `--quantity` flag to limit the dashboard to the most recent N runs, or using [Server Mode](/dashboard-server.md) to serve a dynamically filtered view
+- **Default quantity is 20 runs** — renders near-instantly on any hardware.
+- **50 runs** — expect a couple of seconds while Chart.js draws all graphs.
+- **100+ runs** — rendering can approach **~10 seconds or more!**. The exact time depends on:
+  - The **size of your test suite** — more tests and suites mean more data points per chart.
+  - Whether **"All Suites"** or **"All Tests"** is selected in their respective sections — these views render one data series per unique suite/test name, which scales with the breadth of your suite.
+
+Use the quantity filter or the `--quantity` CLI flag to keep the displayed run count at a level that renders comfortably. Note that this is just the default amount (quantity) of runs that are shown when opening the dashboard. If you want to look at more data you can always manually change this in the filters whilst the dashboard is open.
 
 ```bash
-# Keep only the 200 most recent runs in the dashboard
-robotdashboard -f ./results/ -q 200
+# Show only the 20 most recent runs (the default)
+robotdashboard -f ./results/ -q 20
 ```
+
+::: tip
+If rendering feels slow, reducing the quantity limit is the most effective lever. Switching away from "All Suites" / "All Tests" views also helps significantly on large suites.
+:::
