@@ -23,7 +23,9 @@ Validate Dashboard Run Tags Filter
     Should Show 7 Of 7 Runs
 
     Set Run Tags Filter    prod
-    Validate Component    id=runStatisticsSection    name=runTagsFilterDevProd    folder=run
+    # the validation of the screenshot below should be 1% because there is no data which makes the dates
+    # in the duration graph change to "current date" which causes unwanted issues
+    Validate Component    id=runStatisticsSection    name=runTagsFilterDevProd    folder=run    threshold=0.01
     Should Show 0 Of 0 Runs
 
     Set Run Tags Filter    prod    strict=True
