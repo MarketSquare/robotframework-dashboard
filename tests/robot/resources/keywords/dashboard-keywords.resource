@@ -119,8 +119,9 @@ Change Settings
     Click    selector=id=settings
     Click    selector=id=toggleLegends
     Click    selector=id=toggleAxisTitles
-    Click    selector=id=toggleLabels
     Select Options By    id=toggleBarRounding    value    0
+    Click    selector=id=labels-time-tab
+    Click    selector=id=toggleLabels
     Click    selector=id=closeSettings
 
 Add Filter Profile For

@@ -189,12 +189,21 @@ Tip: avoid using Status and Only Changes together — the result will be empty.`
 
 // Generate standard control entries for all graphs
 const graphKeys = [
-    "runStatistics", "runDonut", "runStats", "runDuration", "runHeatmap",
+    "runStatistics", "runDonut", "runDuration", "runHeatmap",
+    "runStatExecutedRuns", "runStatExecutedSuites", "runStatExecutedTests", "runStatExecutedKeywords",
+    "runStatUniqueTests", "runStatPassed", "runStatFailed", "runStatSkipped",
+    "runStatTotalTime", "runStatAvgRunTime", "runStatAvgTestTime", "runStatAvgPassRate",
     "suiteFolderDonut", "suiteStatistics", "suiteDuration", "suiteMostFailed", "suiteMostTimeConsuming",
+    "suiteStatExecuted", "suiteStatUnique", "suiteStatPassed", "suiteStatFailed",
+    "suiteStatSkipped", "suiteStatPassRate", "suiteStatTotalTime", "suiteStatAvgTime",
     "testStatistics", "testDuration", "testDurationDeviation", "testMessages",
     "testMostFlaky", "testRecentMostFlaky", "testMostFailed", "testRecentMostFailed", "testMostTimeConsuming",
+    "testStatExecuted", "testStatUnique", "testStatPassed", "testStatFailed",
+    "testStatSkipped", "testStatPassRate", "testStatTotalTime", "testStatAvgTime",
     "keywordStatistics", "keywordTimesRun", "keywordTotalDuration", "keywordAverageDuration",
     "keywordMinDuration", "keywordMaxDuration", "keywordMostFailed", "keywordMostTimeConsuming", "keywordMostUsed",
+    "keywordStatExecutions", "keywordStatUnique", "keywordStatPassed", "keywordStatFailed",
+    "keywordStatTotalTime", "keywordStatAvgTime",
     "compareStatistics", "compareSuiteDuration", "compareTests",
 ];
 graphKeys.forEach(key => {

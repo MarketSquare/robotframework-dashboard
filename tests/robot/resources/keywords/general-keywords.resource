@@ -40,7 +40,7 @@ Generate Dashboard
     ...    -o ${CURDIR}/../outputs/output-20250313-002739.xml:dev:project_1:version_1.2
     ...    -o ${CURDIR}/../outputs/output-20250313-002915.xml:dev:project_1:version_1.2
     ...    -o ${CURDIR}/../outputs/output-20250313-003006.xml:dev:project_2:amount:version_1.2
-    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db ${files} -n robotdashboard_${DASHBOARD_INDEX}.html
+    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db ${files} -n robotdashboard_${DASHBOARD_INDEX}.html -j ${CURDIR}/../test_config.json
     Log    ${output}
 
 Remove Database And Dashboard

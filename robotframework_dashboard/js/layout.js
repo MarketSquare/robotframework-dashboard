@@ -12,6 +12,13 @@ import {
     gridCompare
 } from "./variables/globals.js"; // they are used in the window[grid] references
 import { setup_data_and_graphs } from "./menu.js";
+import {
+    render_custom_stat_widgets,
+    render_add_stat_widget_tile,
+    setup_add_stat_widget_modal,
+    wire_delete_buttons,
+    open_add_stat_widget_modal,
+} from "./statwidgets.js";
 
 // Layout history state for undo/redo in edit mode
 let layoutHistory = [];
@@ -22,6 +29,7 @@ let applyingSnapshot = false;
 function capture_settings_snapshot() {
     return {
         layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
+        statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         view: {
             dashboard: {
                 graphs: {
@@ -64,6 +72,7 @@ function capture_settings_snapshot() {
 function capture_dom_snapshot() {
     const snapshot = {
         layouts: {},
+        statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         view: {
             dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
             unified: { graphs: { show: [], hide: [] } },
@@ -153,6 +162,7 @@ function push_layout_snapshot(snapshot) {
 function apply_layout_snapshot(snapshot) {
     applyingSnapshot = true;
     settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
+    set_local_storage_item('statWidgets', JSON.parse(JSON.stringify(snapshot.statWidgets || [])));
     settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
     settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
     settings.view.dashboard.sections.show = [...snapshot.view.dashboard.sections.show];
@@ -348,18 +358,18 @@ function setup_grid_graphs(section) {
     }
 
     const saved_layout = settings.layouts?.[grid] ? JSON.parse(settings.layouts[grid]) : null;
-    const default_size = { width: 4, height: 4 };
+    const default_size = { w: 4, h: 4 };
     const max_columns = 12;
     let current_x = 0;
     let current_y = 0;
 
     // Helper function to get next position for default layout
-    const get_next_position = () => {
+    const get_next_position = (w = default_size.w) => {
         const pos = { x: current_x, y: current_y };
-        current_x += default_size.width;
+        current_x += w;
         if (current_x >= max_columns) {
             current_x = 0;
-            current_y += default_size.height;
+            current_y += default_size.h;
         }
         return pos;
     };
@@ -369,12 +379,14 @@ function setup_grid_graphs(section) {
         graphs
             .filter(graph => graph.startsWith(section === "Unified" ? "" : section)) // Simple filter: all graphs for unified, section-specific otherwise
             .forEach(graph => {
+                const graphMeta = graphMetadata.find(g => g.label === graph);
+                const size = graphMeta?.defaultSize || default_size;
                 const layout = saved_layout?.find(g => g.id === graph);
                 if (saved_layout && layout) {
                     add_graph(layout.id, layout.x, layout.y, layout.w, layout.h, is_visible);
                 } else {
-                    const pos = get_next_position();
-                    add_graph(graph, pos.x, pos.y, default_size.width, default_size.height, is_visible);
+                    const pos = get_next_position(size.w);
+                    add_graph(graph, pos.x, pos.y, size.w, size.h, is_visible);
                 }
             });
     };
@@ -396,15 +408,17 @@ function setup_grid_graphs(section) {
         item.setAttribute("gs-x", x);
         item.setAttribute("gs-y", y);
         item.setAttribute("gs-w", w);
-        item.setAttribute("gs-min-w", 3);
+        const graphConfig = graphMetadata.find(g => g.label == id);
+        const minW = graphConfig?.minSize?.w ?? 3;
+        const minH = graphConfig?.minSize?.h ?? 3;
+        item.setAttribute("gs-min-w", minW);
         item.setAttribute("gs-max-w", 12);
         item.setAttribute("gs-h", h);
-        item.setAttribute("gs-min-h", 3);
+        item.setAttribute("gs-min-h", minH);
         item.setAttribute("gs-max-h", 12);
         item.setAttribute("data-gs-id", id);
 
         // showGraphHidden, hideGraphHidden
-        const graphConfig = graphMetadata.find(g => g.label == id);
         var html = `<div class="grid-stack-item-content">${graphConfig.html}</div>`;
         if (gridEditMode) {
             if (shown) {
@@ -427,6 +441,16 @@ function setup_grid_graphs(section) {
 
     function add_hidden_graph(id) {
         sectionDataHidden.insertAdjacentHTML("beforeend", graphMetadata.find(g => g.label == id).html);
+    }
+
+    // Render custom stat widgets for this section
+    if (section !== "Compare") {
+        const sectionKey = section.toLowerCase();
+        render_custom_stat_widgets(window[grid], sectionKey, gridEditMode);
+        if (gridEditMode) {
+            wire_delete_buttons(window[grid], sectionKey);
+            render_add_stat_widget_tile(window[grid], sectionKey);
+        }
     }
 }
 
@@ -473,6 +497,10 @@ function setup_tables() {
 function customize_layout() {
     document.getElementById("customizeLayout").hidden = true;
     document.getElementById("saveLayout").hidden = false;
+    document.getElementById("mainNavItems").classList.add("navbar-disabled");
+    document.querySelectorAll("#iconNavItems > li").forEach(li => {
+        if (!li.querySelector("#saveLayout")) li.classList.add("navbar-disabled");
+    });
     document.getElementById("layoutHistoryNavItems").hidden = false;
     layoutHistory = [capture_settings_snapshot()];
     layoutHistoryIndex = 0;
@@ -483,6 +511,8 @@ function customize_layout() {
 function save_layout() {
     document.getElementById("customizeLayout").hidden = false;
     document.getElementById("saveLayout").hidden = true;
+    document.getElementById("mainNavItems").classList.remove("navbar-disabled");
+    document.querySelectorAll("#iconNavItems > li").forEach(li => li.classList.remove("navbar-disabled"));
     document.getElementById("layoutHistoryNavItems").hidden = true;
     layoutHistory = [];
     layoutHistoryIndex = -1;
@@ -694,6 +724,9 @@ function setup_dashboard_section_layout_buttons() {
     // Capture DOM snapshot when graph show/hide buttons are toggled (dispatched from eventlisteners.js)
     document.addEventListener("layout-user-action", () => capture_dom_snapshot_and_push());
     attach_section_order_buttons("dashboard");
+
+    // Setup the add stat widget modal (populate dropdowns, wire confirm/cancel)
+    setup_add_stat_widget_modal();
 }
 
 // function to separately add the eventlisteners for overview section layout buttons
