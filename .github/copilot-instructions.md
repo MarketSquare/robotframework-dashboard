@@ -111,6 +111,7 @@ The `.github/skills/` directory contains domain-specific knowledge files:
 | `workflows.md` | CLI usage, running tests, server mode, docs site |
 | `dev-workflow.md` | How to run the tool locally during development (no install required), dev loop for JS/CSS/template changes |
 | `robotframework-tests.md` | Test suite structure, pabot parallelism, how to add tests |
+| `fix-robot-tests.md` | **Step-by-step workflow for fixing failing robot tests** — parsing output.xml, updating stale screenshots, fixing tab-navigation timeouts, using Docker to regenerate references |
 | `python-unit-tests.md` | Python unit tests (pytest, coverage, test layout, fixtures) |
 | `javascript-unit-tests.md` | JavaScript unit tests (Vitest, mocking patterns, which modules are testable) |
 | `server-api.md` | All REST endpoints, authentication, log linking, auto-update behavior |
