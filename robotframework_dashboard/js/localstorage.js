@@ -65,8 +65,8 @@ function merge_deep(local, defaults) {
     for (const key of new Set([...Object.keys(defaults), ...Object.keys(local)])) {
         const defaultVal = defaults[key];
         const localVal = local[key];
-        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, and filterProfiles (only in localstorage)
-        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && defaultVal === undefined && localVal !== undefined) {
+        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, filterProfiles, and statWidgets (only in localstorage)
+        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && defaultVal === undefined && localVal !== undefined) {
             continue;
         }
         // Added key: exists in defaults but not local: add defaults
@@ -163,10 +163,15 @@ function merge_view_section_or_graph(local, defaults, page = null) {
             localHide.delete(val);
         }
     }
-    // 2. Add missing defaults: always added to SHOW
-    for (const val of allowed) {
+    // 2. Add missing defaults: add to SHOW if in defaults.show, else add to HIDE
+    for (const val of (defaults.show || [])) {
         if (!localShow.has(val) && !localHide.has(val)) {
             localShow.add(val);
+        }
+    }
+    for (const val of (defaults.hide || [])) {
+        if (!localShow.has(val) && !localHide.has(val)) {
+            localHide.add(val);
         }
     }
     // 3. Keep original placement of values already present
@@ -196,7 +201,9 @@ function merge_layout(localLayout, mergedDefaults) {
             const arr = JSON.parse(result[key]);
             // keep only entries whose IDs still exist
             const filtered = arr.filter(item =>
-                allowedGraphs.has(item.id)
+                allowedGraphs.has(item.id) ||
+                // Preserve saved positions for user-created custom stat widgets
+                (typeof item.id === 'string' && item.id.startsWith('customStatWidget-'))
             );
             result[key] = JSON.stringify(filtered);
         } catch (e) {
@@ -251,20 +258,37 @@ function update_graph_type(graph, type) {
 
 // function to setup the overview sections that are dynamically created
 function setup_overview_localstorage() {
+    const staticSections = ["overviewLatestRuns", "overviewTotalStats"];
+    const projectNames = [];
     if (Object.keys(projects_by_name).length > 0) {
         Object.keys(projects_by_name).forEach(projectName => {
-            overviewSections.push(projectName)
+            projectNames.push(projectName);
         });
     }
     if (Object.keys(projects_by_tag).length > 0) {
         Object.keys(projects_by_tag).forEach(tagName => {
-            overviewSections.push(tagName)
+            projectNames.push(tagName);
         });
     }
-    // on first load without localstorage only overview sections is present
-    // if more items are available, set them in localstorage, previous order is lost
-    if (settings.view.overview.sections.show.length < overviewSections.length) {
-        set_local_storage_item("view.overview.sections.show", overviewSections)
+    // Populate overviewSections used elsewhere)(
+    projectNames.forEach(name => overviewSections.push(name));
+
+    const isSameRef = settings.view.overview.sections.show === overviewSections;
+    const currentShow = isSameRef ? [...staticSections] : settings.view.overview.sections.show;
+
+    // Dynamic sections currently stored (non-static), preserving the user's saved order
+    const storedDynamic = currentShow.filter(s => !staticSections.includes(s));
+    const storedDynamicSet = new Set(storedDynamic);
+
+    // Update localStorage only when new projects have appeared since the last save
+    const newProjects = projectNames.filter(n => !storedDynamicSet.has(n));
+    if (newProjects.length > 0) {
+        const sortedNew = [...newProjects].sort((a, b) => a.localeCompare(b));
+        const newList = [
+            ...currentShow,   // preserve existing order (including any user reordering)
+            ...sortedNew,     // append new projects alphabetically
+        ];
+        set_local_storage_item("view.overview.sections.show", newList);
     }
 }
 

@@ -12,6 +12,7 @@ import { inFullscreen, inFullscreenGraph, filteredSuites } from '../variables/gl
 import { create_chart, update_chart } from './chart_factory.js';
 import { build_most_failed_config, build_most_time_consuming_config } from './config_helpers.js';
 import { update_graphs_with_loading } from '../common.js';
+import { get_suite_stats_data } from '../graph_data/stats.js';
 
 // build functions
 function _build_suite_folder_donut_config(folder) {
@@ -245,6 +246,20 @@ function update_suite_duration_graph() { update_chart("suiteDurationGraph", _bui
 function update_suite_most_failed_graph() { update_chart("suiteMostFailedGraph", _build_suite_most_failed_config); }
 function update_suite_most_time_consuming_graph() { update_chart("suiteMostTimeConsumingGraph", _build_suite_most_time_consuming_config); }
 
+function create_suite_stat_widgets() {
+    const data = get_suite_stats_data(filteredSuites);
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+    setVal('suiteStatExecutedValue',  data.totalSuites);
+    setVal('suiteStatUniqueValue',    data.uniqueSuites);
+    setVal('suiteStatPassedValue',    data.passedSuites);
+    setVal('suiteStatFailedValue',    data.failedSuites);
+    setVal('suiteStatSkippedValue',   data.skippedSuites);
+    setVal('suiteStatPassRateValue',  data.passRate);
+    setVal('suiteStatTotalTimeValue', format_duration(data.totalTime));
+    setVal('suiteStatAvgTimeValue',   format_duration(data.avgTime));
+}
+function update_suite_stat_widgets() { create_suite_stat_widgets(); }
+
 
 export {
     create_suite_statistics_graph,
@@ -253,10 +268,12 @@ export {
     create_suite_duration_graph,
     create_suite_most_failed_graph,
     create_suite_most_time_consuming_graph,
+    create_suite_stat_widgets,
     update_suite_statistics_graph,
     update_suite_folder_donut_graph,
     update_suite_folder_fail_donut_graph,
     update_suite_duration_graph,
     update_suite_most_failed_graph,
-    update_suite_most_time_consuming_graph
+    update_suite_most_time_consuming_graph,
+    update_suite_stat_widgets,
 };
