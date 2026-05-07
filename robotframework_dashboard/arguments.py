@@ -267,6 +267,8 @@ class ArgumentParser:
                 "  • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run\n"
                 "  • '-r alias=some_alias,tag=prod'\n"
                 "  • '-r limit=10' -> keep only the 10 most recent runs\n"
+                "  • '-r age=10d' -> remove runs older than 10 days\n"
+                "  • '-r age=-10d' -> remove runs younger than 10 days\n"
             ),
             action="append",
             nargs="*",

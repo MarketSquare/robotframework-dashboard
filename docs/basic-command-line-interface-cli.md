@@ -120,13 +120,17 @@ robotdashboard -r index=0,index=1:4;9,index=10
 robotdashboard --removeruns 'run_start=2024-07-30 15:27:20.184407,index=20'  
 robotdashboard -r alias=some_cool_alias,tag=prod,tag=dev -r alias=alias12345  
 robotdashboard -r limit=10
+robotdashboard -r age=10d # (y)ear/(d)ay/(m)inutes/(s)econds supported
+robotdashboard -r age=-10d
 ```
 - Optional: `-r` or `--removeruns` specifies one or more runs to remove.  
 - Multiple values are separated by commas (,).  
 - Must specify data types: index, run_start, alias, tag or limit.  
 - Index ranges use `:` for ranges and `;` for lists.  
-- Quotation marks are required when spaces exist in identifiers.
-- With limit=10 only the 10 most recent runs will be kept, all others will be removed.
+- Quotation marks are required when spaces exist in identifiers.  
+- With limit=10 only the 10 most recent runs will be kept, all others will be removed.  
+- With age=10d only runs _**older**_ than 10 days will be removed  
+- With age=-10d only runs _**younger**_ than 10 days will be removed  
 
 ## Customizing the Dashboard
 
