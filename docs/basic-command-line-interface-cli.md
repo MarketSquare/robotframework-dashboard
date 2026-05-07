@@ -116,6 +116,8 @@ robotdashboard -r alias=some_cool_alias,tag=prod,tag=dev -r alias=alias12345
 robotdashboard -r limit=10
 robotdashboard -r age=10d # (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
 robotdashboard -r age=-10d
+# Log data of removed runs in jsonl  
+robotdashboard -r limit=10 --log-removed-runs "/myLogDir/removedRuns.jsonl"
 ```
 - Optional: `-r` or `--removeruns` specifies one or more runs to remove.  
 - Multiple values are separated by commas (,).  

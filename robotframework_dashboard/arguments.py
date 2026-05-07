@@ -276,6 +276,20 @@ class ArgumentParser:
             default=None,
         )
         db_group.add_argument(
+            "--log-removed-runs",
+            metavar="PATH",
+            help=(
+                "Log (append) run data to jsonl before removing from the db\n"
+                "  • Supply a path to the desired .jsonl\n"
+                "Examples:\n"
+                "  • '--log-removed-runs /tmp/removed_runs.jsonl'\n"
+            ),
+            action="store",
+            type=str,
+            default=None,
+            dest="run_rm_log_path",
+        )
+        db_group.add_argument(
             "-c",
             "--databaseclass",
             metavar="PATH",
@@ -640,5 +654,6 @@ class ArgumentParser:
             "ssl_certfile": ssl_certfile,
             "ssl_keyfile": ssl_keyfile,
             "log_url": arguments.logurl,
+            "run_rm_log_path": arguments.run_rm_log_path,
         }
         return dotdict(provided_args)

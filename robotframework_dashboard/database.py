@@ -6,6 +6,7 @@ from .abstractdb import AbstractDatabaseProcessor
 from time import time
 from datetime import datetime, timezone, timedelta
 from typing import Union
+import json
 
 # Explicit adapter for datetime -> ISO string, replacing the deprecated default
 # behaviour removed in Python 3.12+. Compatible with Python 3.8+.
@@ -14,7 +15,7 @@ sqlite3.register_adapter(datetime, lambda val: val.isoformat(sep=" "))
 
 
 class DatabaseProcessor(AbstractDatabaseProcessor):
-    def __init__(self, database_path: Path):
+    def __init__(self, database_path: Path, run_rm_log_path=None):
         """This function should handle the connection to the database
         And if required the creation of the tables"""
         self.database_path = database_path
@@ -22,6 +23,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         path = Path(self.database_path)
         path.parent.mkdir(exist_ok=True, parents=True)
         self.connection: sqlite3.Connection
+        self.run_rm_log_path = run_rm_log_path
         # create tables if required
         self.open_database()
         self._create_tables()
@@ -384,6 +386,23 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             run_paths[entry["run_start"]] = entry.get("path") or ""
         return run_paths
 
+    def _get_run_data(self, run_start):
+        """Helper function to get dict of a run """
+        cursor = self.connection.cursor()
+        cursor.execute(GET_RUN_INFO_BY_RUN_START, (run_start,))
+
+        row = cursor.fetchone()
+        if not row:
+            return None
+
+        columns = [col[0] for col in cursor.description]
+        return dict(zip(columns, row))
+
+    def _log_run_jsonl(self, logpath, run_data):
+        """ Logs json of a run row to logpath """
+        with Path(logpath).open("a", encoding="utf-8") as f:
+            _ = f.write(json.dumps(run_data, default=str) + "\n")
+
     def remove_runs(self, remove_runs: list):
         """This function removes all provided runs and all their corresponding data"""
         run_starts, run_names, run_aliases, run_tags, _ = self._get_runs()
@@ -526,13 +545,19 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
 
     def _remove_run(self, run_start: str):
         """Helper function to remove the data from all tables"""
-        self.connection.cursor().execute(DELETE_FROM_RUNS.format(run_start=run_start))
-        self.connection.cursor().execute(DELETE_FROM_SUITES.format(run_start=run_start))
-        self.connection.cursor().execute(DELETE_FROM_TESTS.format(run_start=run_start))
-        self.connection.cursor().execute(
-            DELETE_FROM_KEYWORDS.format(run_start=run_start)
-        )
-        self.connection.commit()
+        # grab data of the run for later to log in jsonl if flag set
+        run_data = self._get_run_data(run_start) if self.run_rm_log_path else None
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(DELETE_FROM_RUNS.format(run_start=run_start))
+            if cursor.rowcount > 0: # only cleanup related tables if a run would be deleted
+                cursor.execute(DELETE_FROM_SUITES.format(run_start=run_start))
+                cursor.execute(DELETE_FROM_TESTS.format(run_start=run_start))
+                cursor.execute(DELETE_FROM_KEYWORDS.format(run_start=run_start))
+                # Log inside the transaction: if the write fails, the transaction
+                # rolls back and the run is not deleted.
+                if self.run_rm_log_path and run_data:
+                    self._log_run_jsonl(self.run_rm_log_path, run_data)
 
     def vacuum_database(self):
         """This function vacuums the database to reduce the size after removing runs"""

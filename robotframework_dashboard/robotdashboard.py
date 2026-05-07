@@ -34,6 +34,7 @@ class RobotDashboard:
         timezone: str = "",
         log_url: Optional[str] = None,
         custom_filters: str = "",
+        run_rm_log_path: Optional[str] = None,
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -57,6 +58,7 @@ class RobotDashboard:
         self.timezone = timezone
         self.log_url = log_url
         self.custom_filters = custom_filters
+        self.run_rm_log_path = run_rm_log_path
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
@@ -66,7 +68,7 @@ class RobotDashboard:
         if not suppress:
             console += self._print_console(f" 1. Database preparation")
         if not self.database_class:
-            self.database = DatabaseProcessor(self.database_path)
+            self.database = DatabaseProcessor(self.database_path, run_rm_log_path=self.run_rm_log_path)
         else:
             if not suppress:
                 console += self._print_console(
@@ -80,6 +82,13 @@ class RobotDashboard:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self.database = module.DatabaseProcessor(self.database_path)
+            is_rm_log_unsupported = not hasattr(self.database, "run_rm_log_path")
+            setattr(self.database, "run_rm_log_path", self.run_rm_log_path)
+            if is_rm_log_unsupported and self.run_rm_log_path and not suppress:
+                console += self._print_console(
+                    "  WARNING The custom database class does not explicitly support '--log-removed-runs'. "
+                    "Logging might be skipped if the custom class overrides the deletion logic."
+                )
         if not suppress:
             console += self._print_console(
                 f"  created database: '{self.database_path}'"

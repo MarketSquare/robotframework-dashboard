@@ -40,6 +40,7 @@ def main():
         arguments.timezone,
         arguments.log_url,
         arguments.custom_filters,
+        arguments.run_rm_log_path,
     )
     # If arguments.start_server is provided override some required args
     if arguments.start_server:
