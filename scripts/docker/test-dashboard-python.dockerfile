@@ -1,5 +1,5 @@
 # Base of the image is the latest ubuntu like 24.04 LTS
-FROM ubuntu:latest
+FROM ubuntu:24.04
 
 RUN << FOE
     # install python
