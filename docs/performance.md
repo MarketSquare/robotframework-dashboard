@@ -103,3 +103,56 @@ robotdashboard -f ./results/ -q 20
 ::: tip
 If rendering feels slow, reducing the quantity limit is the most effective lever. Switching away from "All Suites" / "All Tests" views also helps significantly on large suites.
 :::
+
+## Server Mode (`--server`)
+
+When running in server mode, HTTP response time depends on which endpoint is called. Each endpoint has a different performance profile.
+
+### `GET /` — Serving the dashboard page
+
+The dashboard is served by reading the pre-built `robot_dashboard.html` file from disk and returning its contents. **No database query is performed.** Response time is therefore determined entirely by disk read speed and the size of the HTML file:
+
+| HTML file size | Expected response time |
+|---|---|
+| ~500 KB (10 runs) | Near-instant |
+| ~650 KB (50 runs) | Near-instant |
+| ~900 KB (100 runs) | Near-instant |
+| 5–10 MB (500+ runs) | A few hundred milliseconds over a local network; longer over slow or remote connections |
+
+At typical scales the dashboard page loads fast. The more significant delay at scale is the **browser rendering time** described in the Chart.js section above, not the transfer itself.
+
+### `POST /add-outputs`, `POST /add-output-file`, `DELETE /remove-outputs`
+
+These endpoints perform two sequential operations before returning:
+
+1. **XML processing** — parses the `output.xml` and inserts data into the database. This is the bottleneck already described in the [XML Processing](#xml-processing-python-robot-api) section above. For a 2.8 MB file (~150 tests, ~93 kw/test) this takes roughly 0.77 seconds; for a 17.7 MB file (~880 kw/test) it takes roughly 4.8 seconds.
+
+2. **Dashboard regeneration** — after processing, the server automatically rebuilds `robot_dashboard.html` by reading all data from the database, re-compressing it, and re-inlining all JS/CSS. This step takes under 0.2 seconds for typical datasets but scales with the number of stored runs and unique test/keyword names.
+
+The HTTP response is only returned **after both steps complete**. Callers should expect the request to block for the full duration of XML processing plus dashboard generation.
+
+### `GET /get-outputs`
+
+Queries only the lightweight `runs` table (one row per run). Fast regardless of database size.
+
+### `POST /refresh-dashboard`
+
+Triggers only the dashboard regeneration step — no XML processing. Expected to complete in under 0.2 seconds for most datasets.
+
+### Using `--noautoupdate` to reduce upload response times
+
+By default, every upload and delete operation triggers an automatic dashboard regeneration. With a large database (many runs or a slow custom database backend), this regeneration adds measurable latency to every upload request.
+
+The `--noautoupdate` flag disables this automatic regeneration:
+
+```bash
+robotdashboard --server --noautoupdate
+```
+
+With this flag active, upload and delete endpoints return **immediately after XML processing**, skipping the dashboard regeneration step entirely. The dashboard is only rebuilt when `/refresh-dashboard` is explicitly called — either manually via the **Refresh Dashboard** button in the navbar, or programmatically via the API.
+
+::: tip When to use `--noautoupdate`
+- You are uploading many results in quick succession (e.g., via the listener integration) and want uploads to return fast.
+- Your database queries are slow due to large datasets or a remote custom database.
+- You prefer to control exactly when the dashboard reflects new data.
+:::
