@@ -63,6 +63,9 @@ features:
   - title: 📂 Log Linking
     details: Enable clickable log navigation from dashboard graphs. Covers file naming conventions, local and server usage, and remote log uploads.
     link: /log-linking.md
+  - title: 📈 Performance
+    details: Performance results across different workload sizes, guidance on scaling to hundreds of runs, server response time characteristics, and tips for large result sets.
+    link: /performance.md
 
 ---
 
