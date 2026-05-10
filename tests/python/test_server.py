@@ -36,7 +36,7 @@ def _make_server(
         no_autoupdate=no_autoupdate,
     )
     mock_rd = MagicMock()
-    mock_rd.get_runs.return_value = ([], [], [], [])
+    mock_rd.get_runs.return_value = ([], [], [], [], [])
     mock_rd.get_run_paths.return_value = {}
     mock_rd.remove_outputs.return_value = "  removed output\n"
     mock_rd.process_outputs.return_value = "  processed\n"
@@ -195,6 +195,7 @@ def test_get_outputs_with_data():
         ["MySuite"],
         ["alias1"],
         ["dev,prod"],
+        ["ComponentA=1.0"],
     )
     client = _client(server)
     response = client.get("/get-outputs")
@@ -205,6 +206,7 @@ def test_get_outputs_with_data():
     assert data[0]["name"] == "MySuite"
     assert data[0]["alias"] == "alias1"
     assert data[0]["tags"] == "dev,prod"
+    assert data[0]["custom_filters"] == "ComponentA=1.0"
 
 
 # ---------------------------------------------------------------------------
@@ -439,6 +441,7 @@ def test_remove_outputs_all_flag():
         ["Suite1", "Suite2"],
         ["a1", "a2"],
         ["", ""],
+        ["", ""],
     )
     client = _client(server)
     response = client.request("DELETE", "/remove-outputs", json={"all": True})
@@ -452,7 +455,7 @@ def test_remove_outputs_all_flag():
 def test_remove_outputs_all_empty_database():
     """When all=True and database is empty, remove_outputs is called with an empty list."""
     server = _make_server()
-    server.robotdashboard.get_runs.return_value = ([], [], [], [])
+    server.robotdashboard.get_runs.return_value = ([], [], [], [], [])
     client = _client(server)
     response = client.request("DELETE", "/remove-outputs", json={"all": True})
     assert response.status_code == 200

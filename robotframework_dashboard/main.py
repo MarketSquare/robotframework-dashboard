@@ -39,6 +39,7 @@ def main():
         arguments.no_autoupdate,
         arguments.timezone,
         arguments.log_url,
+        arguments.custom_filters,
     )
     # If arguments.start_server is provided override some required args
     if arguments.start_server:

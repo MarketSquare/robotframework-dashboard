@@ -46,6 +46,7 @@ function setup_filtered_data_and_filters() {
     filteredRuns = filter_amount(filteredRuns);
     filteredRuns = filter_metadata(filteredRuns);
     filteredRuns = filter_project_versions(filteredRuns);
+    filteredRuns = filter_custom_filters(filteredRuns);
     // filter suites and tests based on filtered runs
     filteredSuites = filter_data(filteredSuites);
     filteredTests = filter_data(filteredTests);
@@ -203,9 +204,58 @@ function filter_runtags(runs) {
     });
 }
 
+// filter run data based on active custom filters (one dropdown per dimension)
+function filter_custom_filters(filteredRuns) {
+    const dimensions = collect_custom_filter_dimensions();
+    for (const dimName of Object.keys(dimensions)) {
+        const listEl = document.getElementById(`customFilter_${dimName}_List`);
+        if (!listEl) continue;
+        const checkedValues = new Set(
+            Array.from(listEl.querySelectorAll("input:checked")).map(el => el.value)
+        );
+        if (!checkedValues.size) { filteredRuns = []; continue; }
+        if (checkedValues.has("All")) continue;
+        filteredRuns = filteredRuns.filter(run => {
+            const parsed = parse_custom_filters(run.custom_filters);
+            const runValue = parsed[dimName];
+            if (runValue === undefined) {
+                return checkedValues.has("None");
+            }
+            return checkedValues.has(runValue);
+        });
+    }
+    return filteredRuns;
+}
+
+// Parse "key=value:key2=value2" string → { key: value, key2: value2 }
+function parse_custom_filters(cfStr) {
+    if (!cfStr) return {};
+    const result = {};
+    cfStr.split(":").forEach(part => {
+        const eq = part.indexOf("=");
+        if (eq > 0) {
+            result[part.slice(0, eq).trim()] = part.slice(eq + 1).trim();
+        }
+    });
+    return result;
+}
+
+// Collect all unique custom filter dimensions and their values from all runs
+function collect_custom_filter_dimensions() {
+    const dimensions = {};
+    for (const run of runs) {
+        if (!run.custom_filters) continue;
+        const parsed = parse_custom_filters(run.custom_filters);
+        for (const [key, value] of Object.entries(parsed)) {
+            if (!dimensions[key]) dimensions[key] = new Set();
+            dimensions[key].add(value);
+        }
+    }
+    return dimensions;
+}
+
 // filter run data based on the project version filter
-function filter_project_versions(runs) {
-    const selectedProjectVersions = new Set(
+function filter_project_versions(runs) {    const selectedProjectVersions = new Set(
         Array.from(
             document.querySelectorAll('#projectVersionList input[type="checkbox"]:checked')
         ).map(el => el.value)
@@ -647,6 +697,79 @@ function setup_project_versions_in_select_filter_buttons() {
     setup_filter_checkbox_handler_listeners(projectVersionList, allVersionsCheckBox, filterVersionSelectedIndicatorId);
 }
 
+// create custom filter dropdowns dynamically for each dimension found in run data
+function setup_custom_filters_in_select_filter_buttons() {
+    const container = document.getElementById("customFiltersList");
+    container.innerHTML = '';
+    const dimensions = collect_custom_filter_dimensions();
+    const dimNames = Object.keys(dimensions).sort();
+    for (const dimName of dimNames) {
+        const values = [...dimensions[dimName]].sort();
+        const allId = `customFilter_${dimName}_All`;
+        const listId = `customFilter_${dimName}_List`;
+        const checkBoxesId = `customFilter_${dimName}_CheckBoxes`;
+        const selectId = `selectCustomFilter_${dimName}`;
+        const indicatorId = `filterCustomFilter_${dimName}_Indicator`;
+        const profileCheckId = `profileCheckCustomFilter_${dimName}`;
+        const filterInputId = `customFilter_${dimName}_FilterInput`;
+
+        const itemsHtml = ["All", "None", ...values].map(v => `
+            <li class="list-group-item list-group-item-action d-flex small">
+                <input class="form-check-input me-1" type="checkbox" value="${v}" id="${listId}_${v}">
+                <label class="form-check-label ms-2" for="${listId}_${v}">${v}</label>
+            </li>
+        `).join('');
+
+        const rowHtml = `
+            <div class="list-group-item" id="customFilter_${dimName}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
+                        id="${profileCheckId}" checked style="display: none;" />
+                    <span class="d-flex align-items-center information info-label">
+                        ${dimName}
+                        <span id="${indicatorId}" class="version-selected-dot ms-2 mt-1" style="display: none;"></span>
+                    </span>
+                    <div style="width: 200px;">
+                        <div class="selectBox" id="${selectId}">
+                            <select class="form-select form-select-sm">
+                                <option>Select Values</option>
+                            </select>
+                            <div class="overSelect"></div>
+                        </div>
+                        <div id="${checkBoxesId}" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto;">
+                            <input id="${filterInputId}" class="form-control form-control-sm" type="text" placeholder="Filter...">
+                            <ul class="list-group" id="${listId}">
+                                ${itemsHtml}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', rowHtml);
+
+        // wire up checkbox behaviour
+        const listEl = document.getElementById(listId);
+        const allCheckBox = document.getElementById(`${listId}_All`);
+        allCheckBox.checked = true;
+        setup_filter_active_indicator(allCheckBox, indicatorId);
+        setup_filter_checkbox_subfilter(checkBoxesId);
+        setup_filter_checkbox_handler_listeners(listEl, allCheckBox, indicatorId);
+
+        // wire up click-outside behaviour for the dropdown
+        const selectEl = document.getElementById(selectId);
+        const checkBoxesEl = document.getElementById(checkBoxesId);
+        let showing = false;
+        function toggle() { showing = !showing; checkBoxesEl.style.display = showing ? "block" : "none"; }
+        selectEl.addEventListener("pointerdown", toggle);
+        document.body.addEventListener("pointerdown", function (event) {
+            if (showing && !checkBoxesEl.contains(event.target) && !selectEl.contains(event.target)) {
+                toggle();
+            }
+        });
+    }
+}
+
 // show filter active indicator if checkBoxElement unchecked
 function setup_filter_active_indicator(checkBoxElement, filterActiveIndicatorId) {
     checkBoxElement.addEventListener("change", () => {
@@ -803,9 +926,27 @@ function generate_version_filter_list_item_html(version, projectName, checked, a
 function clear_all_filters() {
     clear_project_filter();
     clear_version_filter();
+    clear_custom_filters();
     document.getElementById("amount").value = filteredAmountDefault;
     document.getElementById("metadata").value = "All";
     setup_lowest_highest_dates();
+}
+
+function clear_custom_filters() {
+    const dimensions = collect_custom_filter_dimensions();
+    for (const dimName of Object.keys(dimensions)) {
+        const listEl = document.getElementById(`customFilter_${dimName}_List`);
+        if (!listEl) continue;
+        const filterInput = document.getElementById(`customFilter_${dimName}_FilterInput`);
+        if (filterInput) filterInput.value = "";
+        const inputs = listEl.querySelectorAll("input.form-check-input");
+        for (const input of inputs) {
+            input.checked = false;
+            input.closest("li")?.classList.remove("d-none");
+            if (input.value === "All") input.checked = true;
+        }
+        update_filter_active_indicator(`customFilter_${dimName}_List_All`, `filterCustomFilter_${dimName}_Indicator`);
+    }
 }
 
 function clear_version_filter() {
@@ -904,6 +1045,17 @@ function capture_current_filters() {
     profile.metadata = document.getElementById("metadata").value;
     // Amount
     profile.amount = document.getElementById("amount").value;
+    // Custom filters (one entry per dimension)
+    const dimensions = collect_custom_filter_dimensions();
+    if (Object.keys(dimensions).length > 0) {
+        profile.customFilters = {};
+        for (const dimName of Object.keys(dimensions)) {
+            const listEl = document.getElementById(`customFilter_${dimName}_List`);
+            if (!listEl) continue;
+            const inputs = listEl.querySelectorAll("input.form-check-input");
+            profile.customFilters[dimName] = Array.from(inputs).map(el => ({ value: el.value, checked: el.checked }));
+        }
+    }
     return profile;
 }
 
@@ -931,6 +1083,18 @@ function build_profile_from_checks() {
                 profile[keys] = full[keys];
             }
         }
+    }
+    // Handle dynamic custom filter dimensions
+    const dimensions = collect_custom_filter_dimensions();
+    const customFiltersResult = {};
+    for (const dimName of Object.keys(dimensions)) {
+        const checkEl = document.getElementById(`profileCheckCustomFilter_${dimName}`);
+        if (checkEl && checkEl.checked && full.customFilters && full.customFilters[dimName]) {
+            customFiltersResult[dimName] = full.customFilters[dimName];
+        }
+    }
+    if (Object.keys(customFiltersResult).length > 0) {
+        profile.customFilters = customFiltersResult;
     }
     return profile;
 }
@@ -1054,6 +1218,18 @@ function apply_filter_profile(profile, name) {
     }
     if (profile.amount !== undefined) {
         document.getElementById("amount").value = profile.amount;
+    }
+    if (profile.customFilters !== undefined) {
+        for (const [dimName, items] of Object.entries(profile.customFilters)) {
+            const listEl = document.getElementById(`customFilter_${dimName}_List`);
+            if (!listEl) continue;
+            const valueMap = {};
+            items.forEach(v => { valueMap[v.value] = v.checked; });
+            listEl.querySelectorAll("input.form-check-input").forEach(el => {
+                if (valueMap[el.value] !== undefined) el.checked = valueMap[el.value];
+            });
+            update_filter_active_indicator(`customFilter_${dimName}_List_All`, `filterCustomFilter_${dimName}_Indicator`);
+        }
     }
 }
 
@@ -1217,6 +1393,23 @@ function merge_two_profiles(profileA, profileB) {
         result.amount = profileB.amount;
     }
 
+    // customFilters: per-dimension union of checked states
+    if (profileA.customFilters !== undefined || profileB.customFilters !== undefined) {
+        const cfA = profileA.customFilters || {};
+        const cfB = profileB.customFilters || {};
+        const allDims = new Set([...Object.keys(cfA), ...Object.keys(cfB)]);
+        const mergedCF = {};
+        for (const dim of allDims) {
+            const vA = cfA[dim] || [];
+            const vB = cfB[dim] || [];
+            const merged = {};
+            vA.forEach(v => { merged[v.value] = v.checked; });
+            vB.forEach(v => { merged[v.value] = merged[v.value] || v.checked; });
+            mergedCF[dim] = Object.entries(merged).map(([value, checked]) => ({ value, checked }));
+        }
+        result.customFilters = mergedCF;
+    }
+
     return result;
 }
 
@@ -1233,6 +1426,7 @@ export {
     setup_testtags_in_select,
     setup_keywords_in_select,
     setup_project_versions_in_select_filter_buttons,
+    setup_custom_filters_in_select_filter_buttons,
     setup_filter_checkbox_handler_listeners,
     update_overview_version_select_list,
     clear_all_filters,
@@ -1250,4 +1444,6 @@ export {
     clear_active_profile,
     capture_default_filters,
     merge_two_profiles,
+    collect_custom_filter_dimensions,
+    parse_custom_filters,
 };

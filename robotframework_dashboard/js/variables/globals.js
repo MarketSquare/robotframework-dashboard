@@ -110,6 +110,19 @@ const filterRows = [
         present: p => p.amount !== undefined,
         valueHtml: p => escape_html_for_merge(String(p.amount)),
     },
+    {
+        key: 'customFilters',
+        label: 'Custom Filters',
+        fields: ['customFilters'],
+        present: p => p.customFilters !== undefined && Object.keys(p.customFilters || {}).length > 0,
+        valueHtml: p => {
+            const parts = Object.entries(p.customFilters || {}).map(([dim, items]) => {
+                const checked = (items || []).filter(v => v.checked).map(v => escape_html_for_merge(v.value));
+                return `${escape_html_for_merge(dim)}: ${checked.length ? checked.join('|') : '<em>none</em>'}`;
+            });
+            return parts.length ? parts.join(', ') : '<em>none</em>';
+        },
+    },
 ];
 
 // Track overview nav listeners so we can cleanly remove them when leaving Overview

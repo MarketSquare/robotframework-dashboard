@@ -33,6 +33,7 @@ class RobotDashboard:
         no_autoupdate: bool,
         timezone: str = "",
         log_url: Optional[str] = None,
+        custom_filters: str = "",
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -55,6 +56,7 @@ class RobotDashboard:
         self.no_autoupdate = no_autoupdate
         self.timezone = timezone
         self.log_url = log_url
+        self.custom_filters = custom_filters
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
@@ -161,7 +163,7 @@ class RobotDashboard:
         if not self.database.run_start_exists(run_start):
             output_data = outputProcessor.get_output_data()
             path_to_store = self.log_url.replace("{run_alias}", run_alias or "") if self.log_url else output_path
-            self.database.insert_output_data(output_data, tags, run_alias, path_to_store, project_version, self.timezone)
+            self.database.insert_output_data(output_data, tags, run_alias, path_to_store, project_version, self.custom_filters, self.timezone)
 
             end = time()
             console += self._print_console(
@@ -196,9 +198,9 @@ class RobotDashboard:
     def get_runs(self):
         """Function that gets the runs and corresponding names from the database"""
         self.database.open_database()
-        runs, names, aliases, tags = self.database._get_runs()
+        runs, names, aliases, tags, custom_filters = self.database._get_runs()
         self.database.close_database()
-        return runs, names, aliases, tags
+        return runs, names, aliases, tags, custom_filters
 
     def get_run_paths(self):
         """Function that gets a mapping of run_start to path for all runs"""

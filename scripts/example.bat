@@ -1,15 +1,15 @@
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002134.xml:prod:project_1 --projectversion 0.1 --timezone=+07:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002151.xml:dev:project_2 --projectversion 0.1 --timezone=+05:30
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002222.xml:prod:project_1 --projectversion 0.1 --timezone=+05:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002257.xml:dev:project_2 --projectversion 0.1 -z +02:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002338.xml:prod:project_1 --projectversion 1.1 --timezone=+02:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002400.xml:dev:project_2 --projectversion 1.2 --timezone=+00:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002431.xml:prod:project_1 --projectversion 1.2
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002457.xml:dev:project_2 --projectversion 1.2
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002528.xml:prod:project_1 --projectversion 2.0 --timezone=-03:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002549.xml:dev:project_2 --projectversion 2.3 --timezone=-05:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002636.xml:prod:project_1 --projectversion 2.3 --timezone=-05:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002703.xml:dev:project_2 --projectversion 2.3 --timezone=-07:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002739.xml:prod:project_1 --timezone=-07:00
-robotdashboard -g -l -o .\tests\robot\resources\outputs\output-20250313-002915.xml:prod:project_1 --projectversion 2.0 --timezone=-08:00
-robotdashboard -n robot_dashboard -o .\tests\robot\resources\outputs\output-20250313-003006.xml:prod:project_1 --uselogs --timezone=-09:00
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002134.xml:prod:project_1 --projectversion 0.1 --timezone=+07:00 --customfilters "ComponentA=1.1:Environment=staging"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002151.xml:dev:project_2 --projectversion 0.1 --timezone=+05:30 --customfilters "ComponentA=1.1:Environment=prod"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002222.xml:prod:project_1 --projectversion 0.1 --timezone=+05:00 --customfilters "ComponentA=1.2:Environment=staging"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002257.xml:dev:project_2 --projectversion 0.1 -z +02:00 --customfilters "ComponentA=1.2:Environment=prod"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002338.xml:prod:project_1 --projectversion 1.1 --timezone=+02:00 --customfilters "ComponentA=2.0:Environment=staging:TestRelease=10.6"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002400.xml:dev:project_2 --projectversion 1.2 --timezone=+00:00 --customfilters "ComponentA=2.0:Environment=prod:TestRelease=10.6"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002431.xml:prod:project_1 --projectversion 1.2 --customfilters "ComponentA=2.1:Environment=staging:TestRelease=10.7"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002457.xml:dev:project_2 --projectversion 1.2 --customfilters "ComponentA=2.1:Environment=prod:TestRelease=10.7"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002528.xml:prod:project_1 --projectversion 2.0 --timezone=-03:00 --customfilters "ComponentA=3.0:Environment=staging:TestRelease=11.0"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002549.xml:dev:project_2 --projectversion 2.3 --timezone=-05:00 --customfilters "ComponentA=3.0:Environment=prod:TestRelease=11.0"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002636.xml:prod:project_1 --projectversion 2.3 --timezone=-05:00 --customfilters "ComponentA=3.1:Environment=staging:TestRelease=11.1"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002703.xml:dev:project_2 --projectversion 2.3 --timezone=-07:00 --customfilters "ComponentA=3.1:Environment=prod:TestRelease=11.1"
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002739.xml:prod:project_1 --timezone=-07:00
+python -m robotframework_dashboard.main -g -l -o .\tests\robot\resources\outputs\output-20250313-002915.xml:prod:project_1 --projectversion 2.0 --timezone=-08:00
+python -m robotframework_dashboard.main -n robot_dashboard -o .\tests\robot\resources\outputs\output-20250313-003006.xml:prod:project_1 --uselogs --timezone=-09:00 --customfilters "ComponentA=3.2:Environment=staging:TestRelease=11.2"

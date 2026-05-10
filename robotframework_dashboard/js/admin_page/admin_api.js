@@ -38,6 +38,7 @@ function add_output_file() {
     formData.append("file", file)
     formData.append("tags", document.getElementById("outputFileTags").value)
     formData.append("version", document.getElementById("outputFileVersion").value)
+    formData.append("custom_filters", document.getElementById("outputFileCustomFilters").value)
 
     send_request("POST", "/add-output-file", formData, "addFileSpinner")
 }
@@ -151,6 +152,7 @@ function get_outputs() {
                 run.name ?? "",
                 run.alias ?? "",
                 Array.isArray(run.tags) ? run.tags.join(", ") : (run.tags ?? ""),
+                run.custom_filters ?? "",
             ])
 
             if (runTable) {
@@ -165,6 +167,7 @@ function get_outputs() {
                         { title: "Run Name" },
                         { title: "Run Alias" },
                         { title: "Run Tags" },
+                        { title: "Custom Filters" },
                     ],
                     data: data,
                 });

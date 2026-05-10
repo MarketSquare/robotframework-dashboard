@@ -87,6 +87,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             if run_table_length == 13:  # -> column project_version not present
                 self.connection.cursor().execute(RUN_TABLE_UPDATE_PROJECT_VERSION)
                 self.connection.commit()
+                run_table_length = get_runs_length()
+            if run_table_length == 14:  # -> column custom_filters not present
+                self.connection.cursor().execute(RUN_TABLE_UPDATE_CUSTOM_FILTERS)
+                self.connection.commit()
 
             suite_table_length = get_suites_length()
             if suite_table_length == 9:
@@ -140,12 +144,13 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         run_alias: str,
         path: Union[Path, str],
         project_version: str,
+        custom_filters: str = "",
         timezone: str = "",
     ):
         """This function inserts the data of an output file into the database"""
         try:
             self._insert_runs(
-                output_data["runs"], tags, run_alias, path, project_version, timezone
+                output_data["runs"], tags, run_alias, path, project_version, custom_filters, timezone
             )
             self._insert_suites(output_data["suites"], run_alias, timezone)
             self._insert_tests(output_data["tests"], run_alias, timezone)
@@ -154,7 +159,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             print(f"   ERROR: something went wrong with the database: {error}")
 
     def _insert_runs(
-        self, runs: list, tags: list, run_alias: str, path: Union[Path, str], project_version, timezone: str = ""
+        self, runs: list, tags: list, run_alias: str, path: Union[Path, str], project_version, custom_filters, timezone
     ):
         """Helper function to insert the run data with the run tags"""
         full_runs = []
@@ -170,6 +175,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 str(path),
                 metadata,
                 project_version,
+                custom_filters,
             )
             full_runs.append(new_run)
         self.connection.executemany(INSERT_INTO_RUNS, full_runs)
@@ -348,18 +354,19 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
     def _get_runs(self):
         """Helper function to get the run data"""
         data = self.connection.cursor().execute(SELECT_RUN_DATA).fetchall()
-        runs, names, aliases, tags = [], [], [], []
+        runs, names, aliases, tags, custom_filters = [], [], [], [], []
         for entry in data:
             entry = self._dict_from_row(entry)
             runs.append(entry["run_start"])
             names.append(entry["name"])
             aliases.append(entry["run_alias"])
             tags.append(entry["tags"])
-        return runs, names, aliases, tags
+            custom_filters.append(entry.get("custom_filters") or "")
+        return runs, names, aliases, tags, custom_filters
 
     def list_runs(self):
         """This function gets all available runs and prints them to the console"""
-        run_starts, run_names, run_aliases, run_tags = self._get_runs()
+        run_starts, run_names, run_aliases, run_tags, _ = self._get_runs()
         for index, run_start in enumerate(run_starts):
             print(
                 f"  Run {str(index).ljust(3, ' ')} | {run_start} | {run_names[index]}"
@@ -378,7 +385,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
 
     def remove_runs(self, remove_runs: list):
         """This function removes all provided runs and all their corresponding data"""
-        run_starts, run_names, run_aliases, run_tags = self._get_runs()
+        run_starts, run_names, run_aliases, run_tags, _ = self._get_runs()
         console = ""
         for run in remove_runs:
             try:
