@@ -66,10 +66,10 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-2 d-flex">
+                    <div class="col-1 d-flex">
                         <p class="mt-auto">output.xml</p>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <label class="form-label form-label-sm" for="outputPath">Absolute Path (E.g.
                             "C:/users/your_user/output.xml")</label>
                         <input class="form-control form-control-sm" id="outputPath"></input>
@@ -82,6 +82,10 @@
                         <label class="form-label form-label-sm" for="outputVersion">Version Label</label>
                         <input class="form-control form-control-sm" id="outputVersion"></input>
                     </div>
+                    <div class="col-2">
+                        <label class="form-label form-label-sm" for="outputCustomFilters">Custom Filters (key=val:key=val)</label>
+                        <input class="form-control form-control-sm" id="outputCustomFilters"></input>
+                    </div>
                     <div class="col-2 d-flex">
                         <button class="btn btn-success btn-sm btn-success mt-auto" id="addOutputPath">Add&nbsp;
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
@@ -91,10 +95,10 @@
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-2 d-flex">
+                    <div class="col-1 d-flex">
                         <p class="mt-auto">output.xml</p>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <label class="form-label form-label-sm mt-1" for="outputData">XML Data (copy paste the
                             output.xml
                             here)</label>
@@ -112,6 +116,10 @@
                         <input class="form-control form-control-sm" id="outputDataVersion"></input>
                     </div>
                     <div class="col-2">
+                        <label class="form-label form-label-sm" for="outputDataCustomFilters">Custom Filters (key=val:key=val)</label>
+                        <input class="form-control form-control-sm" id="outputDataCustomFilters"></input>
+                    </div>
+                    <div class="col-2">
                         <button class="btn btn-success btn-sm" style="margin-top:36px" id="addOutputData">Add&nbsp;
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
                                 id="addDataSpinner" hidden></span>
@@ -120,10 +128,10 @@
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-2 d-flex">
+                    <div class="col-1 d-flex">
                         <p class="mt-auto">output folder</p>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <label class="form-label form-label-sm mt-1" for="outputFolderPath">Absolute Path (E.g.
                             "C:/some_folder/your_output_folder")</label>
                         <input class="form-control form-control-sm" id="outputFolderPath"></input>
@@ -137,6 +145,10 @@
                         <label class="form-label form-label-sm" for="outputFolderVersion">Version Label</label>
                         <input class="form-control form-control-sm" id="outputFolderVersion"></input>
                     </div>
+                    <div class="col-2">
+                        <label class="form-label form-label-sm" for="outputFolderCustomFilters">Custom Filters (key=val:key=val)</label>
+                        <input class="form-control form-control-sm" id="outputFolderCustomFilters"></input>
+                    </div>
                     <div class="col-2 d-flex">
                         <button class="btn btn-success btn-sm mt-auto" id="addOutputFolderPath">Add&nbsp;
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
@@ -146,10 +158,10 @@
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-2 d-flex">
+                    <div class="col-1 d-flex">
                         <p class="mt-auto">output.xml (file)</p>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <label class="form-label form-label-sm" for="outputFile">Select output.xml file</label>
                         <input class="form-control form-control-sm" type="file" id="outputFile">
                     </div>

@@ -17,17 +17,19 @@ from requests.exceptions import ConnectionError
 #   python robotdashboardscript.py --output path/to/output.xml --protocol https --sslverify false
 #   python robotdashboardscript.py --output path/to/output.xml --protocol https --sslverify /path/to/ca-bundle.pem
 #   python robotdashboardscript.py --output path/to/output.xml --limit 100
+#   python robotdashboardscript.py --output path/to/output.xml --customfilters "key=val:key=val"
 #
 # Arguments (mirror those of robotdashboardlistener.py):
-#   --output path/to/output.xml     Path to the output.xml file to push (required)
-#   --log    path/to/log.html       Path to the log.html file to upload (optional)
-#   --tags   tag1,tag2              Comma-separated tags for the run (default: none)
-#   --version v1.2.3                Version label for the run (default: none)
-#   --host   127.0.0.1              Server hostname (default: 127.0.0.1)
-#   --port   8543                   Server port (default: 8543)
-#   --protocol http                 Protocol: 'http' or 'https' (default: http)
-#   --sslverify true                SSL verification: 'true', 'false', or path to CA bundle (default: true)
-#   --limit  100                    Keep only the N most recent runs; auto-delete the rest (default: 0 = unlimited)
+#   --output        path/to/output.xml     Path to the output.xml file to push (required)
+#   --log           path/to/log.html       Path to the log.html file to upload (optional)
+#   --tags          tag1,tag2              Comma-separated tags for the run (default: none)
+#   --version       v1.2.3                 Version label for the run (default: none)
+#   --host          127.0.0.1              Server hostname (default: 127.0.0.1)
+#   --port          8543                   Server port (default: 8543)
+#   --protocol      http                   Protocol: 'http' or 'https' (default: http)
+#   --sslverify     true                   SSL verification: 'true', 'false', or path to CA bundle (default: true)
+#   --limit         100                    Keep only the N most recent runs; auto-delete the rest (default: 0 = unlimited)
+#   --customfilters key=val:key=val        Custom filter key=value pairs, colon-separated (default: none)
 
 
 def _parse_args():
@@ -80,6 +82,11 @@ def _parse_args():
         default="0",
         help="Keep only the N most recent runs in the database; older runs are auto-deleted (default: 0 = unlimited).",
     )
+    parser.add_argument(
+        "--customfilters",
+        default=None,
+        help="Custom filter key=value pairs, colon-separated (e.g. 'key=val:key=val').",
+    )
     return parser.parse_args()
 
 
@@ -105,13 +112,15 @@ def _print_console_message(response):
         _print_pusher(f"{message_line}")
 
 
-def _add_output_to_server(output_path: str, tags, version, host, port, protocol, ssl_verify):
+def _add_output_to_server(output_path: str, tags, version, customfilters, host, port, protocol, ssl_verify):
     _print_pusher(f"starting processing output.xml '{output_path}'")
     tags_list = tags.split(",") if tags else []
     tags_str = ":".join(filter(None, tags_list)) if tags_list else ""
     form_data = {"tags": tags_str}
     if version:
         form_data["version"] = version
+    if customfilters:
+        form_data["custom_filters"] = customfilters
     try:
         with open(output_path, "rb") as output_file:
             compressed_output = compress(output_file.read())
@@ -218,6 +227,7 @@ def main():
         output_path=args.output,
         tags=args.tags,
         version=args.version,
+        customfilters=args.customfilters,
         host=args.host,
         port=args.port,
         protocol=args.protocol,

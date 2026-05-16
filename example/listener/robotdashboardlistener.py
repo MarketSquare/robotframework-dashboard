@@ -19,15 +19,16 @@ from pathlib import Path
 #   pabot --testlevelsplit --listener robotdashboardlistener.py:output=custom_output.xml -o custom_output.xml tests.robot
 #
 # Parameters:
-#   tags=tag1,tag2       - Comma-separated tags for the run
-#   version=v1.2.3       - Version label (e.g., software version)
-#   uploadlog=true       - Upload log file to server (default: false)
-#   host=127.0.0.1       - Server hostname (default: 127.0.0.1)
-#   port=8543            - Server port (default: 8543)
-#   protocol=http        - Protocol to use: 'http' or 'https' (default: http)
-#   sslverify=true       - Verify SSL certificates for HTTPS: 'true', 'false', or path to CA bundle (default: true)
-#   limit=100            - Max runs in database; auto-delete oldest (default: 0 = unlimited)
-#   output=custom.xml    - Custom output filename (required for pabot with custom -o)
+#   tags=tag1,tag2                         - Comma-separated tags for the run
+#   version=v1.2.3                         - Version label (e.g., software version)
+#   uploadlog=true                         - Upload log file to server (default: false)
+#   host=127.0.0.1                         - Server hostname (default: 127.0.0.1)
+#   port=8543                              - Server port (default: 8543)
+#   protocol=http                          - Protocol to use: 'http' or 'https' (default: http)
+#   sslverify=true                         - Verify SSL certificates for HTTPS: 'true', 'false', or path to CA bundle (default: true)
+#   limit=100                              - Max runs in database; auto-delete oldest (default: 0 = unlimited)
+#   output=custom.xml                      - Custom output filename (required for pabot with custom -o)
+#   customfilters=key=val:key=val          - Custom filter key=value pairs (colon-separated)
 #
 # Features:
 #   - Output files are gzip-compressed and sent to /add-output-file
@@ -48,6 +49,7 @@ class robotdashboardlistener:
         version: str = None,
         uploadlog: bool = False,
         output: str = None,  # this option is only required when using pabot and a custom output.xml name!
+        customfilters: str = None,  # custom filter key=value pairs (colon-separated, e.g. key=val:key=val)
     ):
         self.host = host
         self.port = port
@@ -58,6 +60,7 @@ class robotdashboardlistener:
         self.version = version
         self.uploadlog = str(uploadlog).lower() == "true"
         self.output = output if output != None else "output.xml"
+        self.customfilters = customfilters
         self.path: str
         self.log_path: str
         self.last_execution: str
@@ -128,6 +131,8 @@ class robotdashboardlistener:
         form_data = {"tags": tags}
         if self.version:
             form_data["version"] = self.version
+        if self.customfilters:
+            form_data["custom_filters"] = self.customfilters
         try:
             with open(path, "rb") as output_file:
                 compressed_output = compress(output_file.read())

@@ -10,14 +10,17 @@ function add_output_path() {
     const outputPath = document.getElementById("outputPath").value
     const outputTags = document.getElementById("outputTags").value.split(":")
     const outputVersion = document.getElementById("outputVersion").value
+    const outputCustomFilters = document.getElementById("outputCustomFilters").value
     document.getElementById("outputPath").value = ""
     document.getElementById("outputTags").value = ""
     document.getElementById("outputVersion").value = ""
+    document.getElementById("outputCustomFilters").value = ""
 
     const body = JSON.stringify({
         output_path: outputPath,
         output_tags: outputTags,
         output_version: outputVersion,
+        output_custom_filters: outputCustomFilters,
     });
     send_request("POST", "/add-outputs", body, "addPathSpinner")
 }
@@ -50,16 +53,19 @@ function add_output_data() {
     const outputDataTags = document.getElementById("outputDataTags").value.split(":")
     const outputAlias = document.getElementById("outputDataAlias").value
     const outputDataVersion = document.getElementById("outputDataVersion").value
+    const outputDataCustomFilters = document.getElementById("outputDataCustomFilters").value
     document.getElementById("outputData").value = ""
     document.getElementById("outputDataTags").value = ""
     document.getElementById("outputDataAlias").value = ""
     document.getElementById("outputDataVersion").value = ""
+    document.getElementById("outputDataCustomFilters").value = ""
 
     const body = JSON.stringify({
         output_data: outputData,
         output_tags: outputDataTags,
         output_alias: outputAlias,
         output_version: outputDataVersion,
+        output_custom_filters: outputDataCustomFilters,
     });
     send_request("POST", "/add-outputs", body, "addDataSpinner")
 }
@@ -70,14 +76,17 @@ function add_output_folder_path() {
     const outputFolderPath = document.getElementById("outputFolderPath").value
     const outputFolderTags = document.getElementById("outputFolderTags").value.split(":")
     const outputFolderVersion = document.getElementById("outputFolderVersion").value
+    const outputFolderCustomFilters = document.getElementById("outputFolderCustomFilters").value
     document.getElementById("outputFolderPath").value = ""
     document.getElementById("outputFolderTags").value = ""
     document.getElementById("outputFolderVersion").value = ""
+    document.getElementById("outputFolderCustomFilters").value = ""
 
     const body = JSON.stringify({
         output_folder_path: outputFolderPath,
         output_tags: outputFolderTags,
         output_version: outputFolderVersion,
+        output_custom_filters: outputFolderCustomFilters,
     });
     send_request("POST", "/add-outputs", body, "addFolderSpinner")
 }
