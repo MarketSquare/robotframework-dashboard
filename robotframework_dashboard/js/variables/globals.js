@@ -64,12 +64,12 @@ const filterRows = [
     {
         key: 'runTags',
         label: 'Run Tags',
-        fields: ['runTags', 'useOrTags'],
+        fields: ['runTags', 'tagMode'],
         present: p => p.runTags !== undefined,
         valueHtml: p => {
             const checked = (p.runTags || []).filter(t => t.checked).map(t => escape_html_for_merge(t.id));
-            const mode = p.useOrTags ? ' <em>(OR)</em>' : ' <em>(AND)</em>';
-            return (checked.length ? checked.join(', ') : '<em>none</em>') + mode;
+            const mode = p.tagMode ?? (p.useOrTags ? 'OR' : 'AND');
+            return (checked.length ? checked.join(', ') : '<em>none</em>') + ` <em>(${mode})</em>`;
         },
     },
     {

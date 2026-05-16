@@ -171,7 +171,8 @@ function filter_runs(runs) {
 // function to filter run data based on the run tags filter
 function filter_runtags(runs) {
     const tagElements = document.getElementById("runTag").getElementsByTagName("input");
-    const useOrTags = document.getElementById("useOrTags").checked;
+    const tagModeEl = document.getElementById("tagMode");
+    const tagMode = tagModeEl ? tagModeEl.value : "AND";
 
     if (selectedTagSetting != '') {
         for (const input of tagElements) {
@@ -180,14 +181,14 @@ function filter_runtags(runs) {
                 input.checked = true;
             }
         }
-        useOrTags.checked = false;
+        if (tagModeEl) tagModeEl.value = "AND";
         selectedTagSetting = ''
     }
 
     const selectedTags = Array.from(tagElements)
         .filter(tagElement => tagElement.checked)
         .map(tagElement => tagElement.id.replace(/^runTagCheckBox/, ""));
-    if (selectedTags.includes("All")) { // If "All" is selected, return all runs
+    if (selectedTags.includes("All")) { // If "All" is selected, return all runs (no filter)
         return runs;
     }
     if (selectedTags.length === 0) { // If no tags are selected, return an empty list
@@ -195,11 +196,14 @@ function filter_runtags(runs) {
     }
     return runs.filter(run => {
         const runTags = run.tags.split(",");
-        if (!useOrTags) { // Use AND logic: the run must contain all selected tags
-            return selectedTags.every(selectedTag => runTags.includes(selectedTag));
+        if (tagMode === "OR") { // Use OR logic: the run must contain at least one selected tag
+            return selectedTags.some(selectedTag => runTags.includes(selectedTag));
         }
-        // Use OR logic: the run must contain at least one selected tag
-        return selectedTags.some(selectedTag => runTags.includes(selectedTag));
+        if (tagMode === "NOT") { // Use NOT logic: the run must not contain any selected tag
+            return !selectedTags.some(selectedTag => runTags.includes(selectedTag));
+        }
+        // Default AND logic: the run must contain all selected tags
+        return selectedTags.every(selectedTag => runTags.includes(selectedTag));
     });
 }
 
@@ -583,13 +587,13 @@ function setup_runtags_in_select_filter_buttons() {
         });
     });
     const andOrTags = `
-        <li class="list-group-item d-flex small">
-            <div class="btn-group form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="useOrTags" />
-            </div>
-            <div class="btn-group">
-                <label class="form-check-label" for="useOrTags">Use OR (default AND)</label>
-            </div>
+        <li class="list-group-item d-flex small align-items-center">
+            <label class="form-check-label me-2" for="tagMode">Tag Mode:</label>
+            <select class="form-select form-select-sm" id="tagMode" style="width: auto;">
+                <option value="AND">AND</option>
+                <option value="OR">OR</option>
+                <option value="NOT">NOT</option>
+            </select>
         </li>
     `;
     const listItemTemplate = (value) => `
@@ -867,7 +871,7 @@ function filter_key_differs_from_default(key) {
 function compute_profile_check_states() {
     const checkKeyMap = {
         profileCheckRuns: ['runs'],
-        profileCheckRunTags: ['runTags', 'useOrTags'],
+        profileCheckRunTags: ['runTags', 'tagMode'],
         profileCheckVersions: ['projectVersions'],
         profileCheckFromDate: ['fromDate'],
         profileCheckFromTime: ['fromTime'],
@@ -891,7 +895,7 @@ function capture_current_filters() {
     // Run tags checkboxes
     const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
     profile.runTags = Array.from(tagInputs).map(el => ({ id: el.id.replace(/^runTagCheckBox/, ""), checked: el.checked }));
-    profile.useOrTags = document.getElementById("useOrTags")?.checked ?? false;
+    profile.tagMode = document.getElementById("tagMode")?.value ?? "AND";
     // Project version checkboxes
     const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
     profile.projectVersions = Array.from(versionInputs).map(el => ({ value: el.value, checked: el.checked }));
@@ -913,7 +917,7 @@ function build_profile_from_checks() {
     const profile = {};
     const checkMap = {
         profileCheckRuns: 'runs',
-        profileCheckRunTags: 'runTags',
+        profileCheckRunTags: ['runTags', 'tagMode'],
         profileCheckVersions: 'projectVersions',
         profileCheckFromDate: 'fromDate',
         profileCheckFromTime: 'fromTime',
@@ -1028,6 +1032,14 @@ function apply_filter_profile(profile, name) {
         });
         update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
     }
+    if (profile.tagMode !== undefined) {
+        const tagModeEl = document.getElementById("tagMode");
+        if (tagModeEl) tagModeEl.value = profile.tagMode;
+    } else if (profile.useOrTags !== undefined) {
+        // Backward compatibility: convert old useOrTags boolean to tagMode
+        const tagModeEl = document.getElementById("tagMode");
+        if (tagModeEl) tagModeEl.value = profile.useOrTags ? "OR" : "AND";
+    }
     if (profile.projectVersions !== undefined) {
         const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
         const versionMap = {};
@@ -1127,7 +1139,7 @@ function exit_profile_edit_mode() {
 
 // Merge two profile objects according to the "largest horizon" rules:
 //   runTags / projectVersions : union of checked entries
-//   useOrTags                 : OR wins (more permissive)
+//   tagMode                   : most permissive wins (OR > AND > NOT)
 //   fromDate / fromTime       : take the earlier value  (widest start)
 //   toDate   / toTime         : take the later  value  (widest end)
 //   amount                   : take the larger value
@@ -1154,9 +1166,14 @@ function merge_two_profiles(profileA, profileB) {
         result.runTags = Object.entries(merged).map(([id, checked]) => ({ id, checked }));
     }
 
-    // useOrTags: OR wins (more permissive)
-    if (profileA.useOrTags !== undefined || profileB.useOrTags !== undefined) {
-        result.useOrTags = !!(profileA.useOrTags || profileB.useOrTags);
+    // tagMode: most permissive wins (OR > AND > NOT)
+    if (profileA.tagMode !== undefined || profileB.tagMode !== undefined ||
+        profileA.useOrTags !== undefined || profileB.useOrTags !== undefined) {
+        const permissiveness = { "OR": 2, "AND": 1, "NOT": 0 };
+        // Convert legacy useOrTags boolean to tagMode string if needed
+        const modeA = profileA.tagMode ?? (profileA.useOrTags ? "OR" : "AND");
+        const modeB = profileB.tagMode ?? (profileB.useOrTags ? "OR" : "AND");
+        result.tagMode = (permissiveness[modeA] ?? 1) >= (permissiveness[modeB] ?? 1) ? modeA : modeB;
     }
 
     // projectVersions: union of checked states

@@ -142,6 +142,7 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "filterRunTagsInformation": `Filter by run tags. 'All' disables the filter.
 - AND mode (default): run must have all selected tags.
 - OR mode: run needs at least one selected tag.
+- NOT mode: run must not have any selected tag.
 - A dot indicates the filter is active.`,
     "filterVersionsInformation": `Filter by project version. 'All' disables the filter.
 - 'None' covers runs without a version label.
