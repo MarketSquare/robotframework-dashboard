@@ -85,25 +85,26 @@ The built-in server exposes several HTTP endpoints to manage and serve dashboard
 | `/` | Serves the HTML dashboard (reflects current database), not callable through scripts |
 | `/admin` | Admin page for manual management of runs and logs, not callable through scripts |
 | `/get-outputs` | Returns a JSON list of stored runs (`run_start`, `alias`, `tags`), callable |
-| `/add-outputs` | Accepts new output data via JSON (file path, raw XML or folder), callable |
-| `/add-output-file` | Accepts new output data via file input, callable |
-| `/remove-outputs` | Deletes runs by index, alias, `run_start`, tags, limit or 'all=true' for all outputs. Automatically deletes the associated log file from `robot_logs/` if one exists, callable |
+| `/add-outputs` | Accepts new output data via JSON (file path, raw XML or folder), callable, **requires auth** |
+| `/add-output-file` | Accepts new output data via file input, callable, **requires auth** |
+| `/remove-outputs` | Deletes runs by index, alias, `run_start`, tags, limit or 'all=true' for all outputs. Automatically deletes the associated log file from `robot_logs/` if one exists, callable, **requires auth** |
 | `/get-logs` | Returns a JSON list of stored logs on the server (`log_name`), callable |
-| `/add-log` | Upload HTML a log file and associate them with runs (for [Log Linking](/log-linking.md)), callable |
-| `/add-log-file` | Upload a HTML log file (for [Log Linking](/log-linking.md)), callable |
-| `/remove-log` | Remove previously uploaded log files or provide 'all=true' for all logs, callable |
-| `/refresh-dashboard` | Manually trigger regeneration of the dashboard HTML. Only needed when `--noautoupdate` is active, callable |
+| `/add-log` | Upload HTML a log file and associate them with runs (for [Log Linking](/log-linking.md)), callable, **requires auth** |
+| `/add-log-file` | Upload a HTML log file (for [Log Linking](/log-linking.md)), callable, **requires auth** |
+| `/remove-log` | Remove previously uploaded log files or provide 'all=true' for all logs, callable, **requires auth** |
+| `/refresh-dashboard` | Manually trigger regeneration of the dashboard HTML. Only needed when `--noautoupdate` is active, callable, **requires auth** |
 
 All API endpoints are documented and described in the server’s own OpenAPI schema, accessible via the admin interface under “Swagger API Docs” or "Redoc API Docs", after starting the server.
 
 ## Security: Basic Auth (Optional)
 
-If you start the server with a username and password, the admin page will be protected. Only someone providing the correct credentials can:
+If you start the server with a username and password, the admin page **and all mutation endpoints** will be protected. Only someone providing the correct credentials can:
 
 - Add or remove outputs manually  
 - Add or remove logs manually  
+- Trigger a dashboard refresh  
 
-The dashboard itself (the HTML) does **not** require authentication. API calls as of now do also **not** require authentication.
+The dashboard itself (the HTML) does **not** require authentication. Read-only endpoints (`/get-outputs`, `/get-logs`) also do **not** require authentication.
 
 ## Security: HTTPS (Optional)
 

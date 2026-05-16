@@ -290,7 +290,7 @@ class ApiServer:
         self.app = FastAPIOffline(
             title="Robot Framework Dashboard Server", version=__version__
         )
-        self.security = HTTPBasic()
+        self.security = HTTPBasic(auto_error=False)
         self.robotdashboard: RobotDashboard
         self.server_host = server_host
         self.server_port = server_port
@@ -339,9 +339,15 @@ class ApiServer:
             openapi_examples = extra.get("openapi_examples")
             return openapi_examples
 
-        def authenticate(credentials: HTTPBasicCredentials = Depends(self.security)):
-            if not self.server_user or not self.server_pass:  # pragma: no cover
-                return "anonymous"  # pragma: no cover
+        def authenticate(credentials: Optional[HTTPBasicCredentials] = Depends(self.security)):
+            if not self.server_user or not self.server_pass:
+                return "anonymous"
+            if credentials is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Basic"},
+                )
             correct_username = compare_digest(credentials.username, self.server_user)
             correct_password = compare_digest(credentials.password, self.server_pass)
             if not (correct_username and correct_password):
@@ -376,7 +382,7 @@ class ApiServer:
             return robot_dashboard_html
 
         @self.app.post("/refresh-dashboard")
-        async def refresh_dashboard() -> ResponseMessage:
+        async def refresh_dashboard(username: str = Depends(authenticate)) -> ResponseMessage:
             """Manually trigger regeneration of the dashboard HTML"""
             console = "no console output"
             try:
@@ -435,6 +441,7 @@ class ApiServer:
                 ...,
                 openapi_examples=model_examples(AddOutput),
             ),
+            username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Add output to database endpoint function
             The following combinations of parameters are valid:
@@ -523,6 +530,7 @@ class ApiServer:
             tags: str = Form(default=""),
             version: str = Form(default=""),
             custom_filters: str = Form(default=""),
+            username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Add output file to database endpoint function
             The tags parameter should be provided as colon-separated values (e.g., 'tag1:tag2:tag3')
@@ -579,6 +587,7 @@ class ApiServer:
                 ...,
                 openapi_examples=model_examples(RemoveOutputs),
             ),
+            username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Remove outputs from database endpoint function
             Can be either indexes or run_starts that are known in the database
@@ -651,6 +660,7 @@ class ApiServer:
                 ...,
                 openapi_examples=model_examples(AddLog),
             ),
+            username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Adds the log file to a folder and updates the database for the required output
             IMPORTANT! The log_name that is provided should be similar to the output.xml that has been uploaded
@@ -695,6 +705,7 @@ class ApiServer:
         @self.app.post("/add-log-file")
         async def add_log_file(
             file: UploadFile = File(...),
+            username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Add log file to server endpoint function
             The log file name should match the output.xml alias (e.g., 'log-alias.html' for 'output-alias.xml')
@@ -750,7 +761,8 @@ class ApiServer:
             remove_log: RemoveLog = Body(
                 ...,
                 openapi_examples=model_examples(RemoveLog),
-            )
+            ),
+            username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Removes the log file from the folder on the server"""
             console = ""

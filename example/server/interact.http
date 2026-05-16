@@ -1,33 +1,125 @@
-# usage: use the vscode REST CLIENT plugin to easily run these requests
+# usage: use the VS Code REST Client extension to run these requests
+#
+# Server credentials — update to match your --server argument.
+# When the server has no auth configured, the Authorization header is ignored. 
+# And can be completely left out of the requests below.
+# The base64 value below encodes "user:pass" — regenerate it when credentials change:
+#   node -e "console.log(Buffer.from('user:pass').toString('base64'))"
+#   python -c "import base64; print(base64.b64encode(b'user:pass').decode())"
 
-# get the outputs in the database in a list of dicts
-GET http://127.0.0.1:8543/get-outputs HTTP/1.1
+@host = 127.0.0.1
+@port = 8543
+@base64credentials = dXNlcjpwYXNz
+
+
+### get the outputs currently in the database (no auth required)
+GET http://{{host}}:{{port}}/get-outputs HTTP/1.1
 
 ###
 
-# add an output to the database
-POST http://127.0.0.1:8543/add-outputs HTTP/1.1
+### get the log files currently on the server (no auth required)
+GET http://{{host}}:{{port}}/get-logs HTTP/1.1
+
+###
+
+### add an output by absolute path with tags, version, alias, and custom filters (auth required)
+POST http://{{host}}:{{port}}/add-outputs HTTP/1.1
+Authorization: Basic {{base64credentials}}
 content-type: application/json
 
 {
   "output_path": "C:\\users\\docs\\output.xml",
-  "output_tags": [
-    "tag1",
-    "cool-tag2",
-    "production_tag"
-  ]
+  "output_tags": ["tag1", "cool-tag2", "production_tag"],
+  "output_alias": "nightly_run",
+  "output_version": "v1.2.3",
+  "output_custom_filters": "env=prod:team=backend"
 }
 
 ###
 
-# remove some outputs from the database
-DELETE http://127.0.0.1:8543/remove-outputs HTTP/1.1
+### add an output by folder path — all *output*.xml files are picked up recursively (auth required)
+POST http://{{host}}:{{port}}/add-outputs HTTP/1.1
+Authorization: Basic {{base64credentials}}
 content-type: application/json
 
 {
-  "runs": [
-    "0",
-    "-1",
-    "2025-03-13 00:22:22.304104"
-  ]
+  "output_folder_path": "C:\\users\\docs\\prod-outputs",
+  "output_tags": ["production-run"],
+  "output_version": "v1.2.3"
 }
+
+###
+
+### remove outputs by index, run_start, alias, and tag in one call (auth required)
+DELETE http://{{host}}:{{port}}/remove-outputs HTTP/1.1
+Authorization: Basic {{base64credentials}}
+content-type: application/json
+
+{
+  "indexes": ["0", "-1"],
+  "run_starts": ["2025-03-13 00:22:22.304104"],
+  "aliases": ["nightly_run"],
+  "tags": ["old-tag"]
+}
+
+###
+
+### keep only the 100 most recent runs, auto-delete the rest (auth required)
+DELETE http://{{host}}:{{port}}/remove-outputs HTTP/1.1
+Authorization: Basic {{base64credentials}}
+content-type: application/json
+
+{
+  "limit": 100
+}
+
+###
+
+### remove all outputs from the database (auth required)
+DELETE http://{{host}}:{{port}}/remove-outputs HTTP/1.1
+Authorization: Basic {{base64credentials}}
+content-type: application/json
+
+{
+  "all": true
+}
+
+###
+
+### add a log file by HTML content and associate it with the matching run (auth required)
+POST http://{{host}}:{{port}}/add-log HTTP/1.1
+Authorization: Basic {{base64credentials}}
+content-type: application/json
+
+{
+  "log_name": "log-20250219-172527.html",
+  "log_data": "<!DOCTYPE html><html lang=\"en\"><head><title>Log</title></head><body>...</body></html>"
+}
+
+###
+
+### remove a specific log file from the server (auth required)
+DELETE http://{{host}}:{{port}}/remove-log HTTP/1.1
+Authorization: Basic {{base64credentials}}
+content-type: application/json
+
+{
+  "log_name": "log-20250219-172527.html"
+}
+
+###
+
+### remove all log files from the server (auth required)
+DELETE http://{{host}}:{{port}}/remove-log HTTP/1.1
+Authorization: Basic {{base64credentials}}
+content-type: application/json
+
+{
+  "all": true
+}
+
+###
+
+### manually trigger a dashboard HTML regeneration — useful when --noautoupdate is active (auth required)
+POST http://{{host}}:{{port}}/refresh-dashboard HTTP/1.1
+Authorization: Basic {{base64credentials}}

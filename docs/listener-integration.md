@@ -78,6 +78,12 @@ robot --listener robotdashboardlistener.py:protocol=https:sslverify=false tests.
 robot --listener robotdashboardlistener.py:protocol=https:sslverify=/path/to/ca-bundle.pem tests.robot  
 ```
 
+**With basic authentication**
+
+```bash
+robot --listener robotdashboardlistener.py:user=admin:password=secret tests.robot  
+```
+
 ## Full Listener Options
 
 The listener supports the following arguments:
@@ -93,11 +99,13 @@ The listener supports the following arguments:
 | `sslverify` | SSL certificate verification for HTTPS: `true` (default), `false` (skip verification for self-signed certs), or a path to a CA bundle file |
 | `limit` | Maximum number of runs stored in the database (older runs will be auto-deleted, based on the order in the database) |
 | `output` | Required only when using Pabot **with a custom output.xml name** |
+| `user` | Username for basic authentication (optional) |
+| `password` | Password for basic authentication (optional) |
 
 **Example with all options**
 
 ```bash
-robot --listener robotdashboardlistener.py:tags=dev1,dev2:version=v2.0:host=127.0.0.2:port=8888:protocol=https:sslverify=false:limit=100:uploadlog=true tests.robot  
+robot --listener robotdashboardlistener.py:tags=dev1,dev2:version=v2.0:host=127.0.0.2:port=8888:protocol=https:sslverify=false:limit=100:uploadlog=true:user=admin:password=secret tests.robot  
 ```
 
 ## Using the Listener with Pabot
@@ -254,9 +262,11 @@ The arguments mirror those of `robotdashboardlistener.py`:
 | `--protocol` | Protocol to use when connecting to the server: `http` or `https` (default: `http`) |
 | `--sslverify` | SSL certificate verification for HTTPS: `true` (default), `false` (skip verification for self-signed certs), or a path to a CA bundle file |
 | `--limit` | Maximum number of runs stored in the database (older runs will be auto-deleted) |
+| `--user` | Username for basic authentication (optional) |
+| `--password` | Password for basic authentication (optional) |
 
 **Example with all options**
 
 ```bash
-python robotdashboardscript.py --output path/to/output.xml --log path/to/log.html --tags dev1,dev2 --version v2.0 --host 127.0.0.2 --port 8888 --protocol https --sslverify false --limit 100
+python robotdashboardscript.py --output path/to/output.xml --log path/to/log.html --tags dev1,dev2 --version v2.0 --host 127.0.0.2 --port 8888 --protocol https --sslverify false --limit 100 --user admin --password secret
 ```
