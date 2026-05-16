@@ -216,6 +216,20 @@ class ArgumentParser:
             default=None,
         )
         input_group.add_argument(
+            "--customfilters",
+            help=(
+                "Custom filter key=value pairs for the processed runs.\n"
+                "  • Format: 'key1=value1:key2=value2'\n"
+                "  • Each key becomes a separate filter dropdown in the dashboard\n"
+                "Examples:\n"
+                "  • '--customfilters ComponentARelease=1.1:ComponentBRelease=2.5'\n"
+            ),
+            dest="custom_filters",
+            metavar="FILTERS",
+            type=str,
+            default=None,
+        )
+        input_group.add_argument(
             "-z",
             "--timezone",
             metavar="OFFSET",
@@ -616,6 +630,7 @@ class ArgumentParser:
             "offline_dependencies": offline_dependencies,
             "force_json_config": force_json_config,
             "project_version": arguments.project_version,
+            "custom_filters": arguments.custom_filters,
             "no_vacuum": no_vacuum,
             "timezone": timezone,
             "no_autoupdate": no_autoupdate,

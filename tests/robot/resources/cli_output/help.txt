@@ -7,12 +7,13 @@
 
 ======================================================================================
 usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]PATH ...[]][]] [[]-f [[]PATH ...[]][]]
-                      [[]--projectversion VERSION[]] [[]-z OFFSET[]] [[]-d PATH[]]
-                      [[]-r [[]QUERY ...[]][]] [[]-c PATH[]] [[]--novacuum [[]BOOL[]][]]
-                      [[]-g [[]BOOL[]][]] [[]-l [[]BOOL[]][]] [[]-n NAME[]] [[]-t TITLE[]] [[]-q INT[]]
-                      [[]--offlinedependencies [[]BOOL[]][]] [[]-u [[]BOOL[]][]]
-                      [[]--logurl URL[]] [[]-j PATH[]] [[]--forcejsonconfig [[]BOOL[]][]]
-                      [[]-m PATH[]] [[]-s [[]HOST:PORT:USERNAME:PASSWORD[]][]]
+                      [[]--projectversion VERSION[]] [[]--customfilters FILTERS[]]
+                      [[]-z OFFSET[]] [[]-d PATH[]] [[]-r [[]QUERY ...[]][]] [[]-c PATH[]]
+                      [[]--novacuum [[]BOOL[]][]] [[]-g [[]BOOL[]][]] [[]-l [[]BOOL[]][]] [[]-n NAME[]]
+                      [[]-t TITLE[]] [[]-q INT[]] [[]--offlinedependencies [[]BOOL[]][]]
+                      [[]-u [[]BOOL[]][]] [[]--logurl URL[]] [[]-j PATH[]]
+                      [[]--forcejsonconfig [[]BOOL[]][]] [[]-m PATH[]]
+                      [[]-s [[]HOST:PORT:USERNAME:PASSWORD[]][]]
                       [[]--noautoupdate [[]BOOL[]][]] [[]--ssl-certfile PATH[]]
                       [[]--ssl-keyfile PATH[]]
 
@@ -42,6 +43,12 @@ output files:
                           • Cannot be mixed with version_ output tags
                         Examples:
                           • '--projectversion=1.1'
+  --customfilters FILTERS
+                        Custom filter key=value pairs for the processed runs.
+                          • Format: 'key1=value1:key2=value2'
+                          • Each key becomes a separate filter dropdown in the dashboard
+                        Examples:
+                          • '--customfilters ComponentARelease=1.1:ComponentBRelease=2.5'
   -z OFFSET, --timezone OFFSET
                         UTC offset of the output.xml timestamps (default: auto-detected).
                           • Format: +HH:MM or -HH:MM

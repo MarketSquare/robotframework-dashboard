@@ -179,7 +179,7 @@ def test_get_runs_returns_expected_counts(tmp_path):
     rd = _make_rd(tmp_path)
     rd.initialize_database()
     rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), ["dev"])])
-    runs, names, aliases, tags = rd.get_runs()
+    runs, names, aliases, tags, custom_filters = rd.get_runs()
     assert len(runs) == 1
     assert len(names) == 1
 

@@ -5,6 +5,7 @@ function _get_run_table_data() {
     return filteredRuns.map(run => [
         run.run_start, run.full_name, run.name, run.total, run.passed, run.failed,
         run.skipped, run.elapsed_s, run.start_time, run.project_version, run.tags, run.run_alias, run.metadata,
+        run.custom_filters ?? "",
     ]);
 }
 
@@ -35,6 +36,7 @@ const runColumns = [
     { title: "run" }, { title: "full_name" }, { title: "name" }, { title: "total" },
     { title: "passed" }, { title: "failed" }, { title: "skipped" }, { title: "elapsed_s" },
     { title: "start_time" }, { title: "version" }, { title: "tags" }, { title: "alias" }, { title: "metadata" },
+    { title: "custom_filters" },
 ];
 const suiteColumns = [
     { title: "run" }, { title: "full_name" }, { title: "name" }, { title: "total" },

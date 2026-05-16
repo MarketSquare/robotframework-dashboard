@@ -1,6 +1,6 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
-import { format_duration, add_alert } from './common.js';
+import { format_duration } from './common.js';
 import {
     filteredRuns,
     filteredSuites,
@@ -306,17 +306,6 @@ function setup_add_stat_widget_modal() {
     document.getElementById('addStatWidgetModal')?.addEventListener('show.bs.modal', () => {
         if (titleInput) titleInput.dataset.userEdited = '';
     });
-
-    // One-time notice about the new stat widget system (shown until 2026-09-01 or dismissed)
-    const NOTICE_EXPIRY = new Date('2026-09-01');
-    if (new Date() < NOTICE_EXPIRY && !settings.notices.statWidgets) {
-        const customizeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>`;
-        const msg = `Stat widgets have a new look! Enter <b>Customize mode</b> ${customizeIcon} in any section to add your own stat widgets with custom colors and titles. `
-                  + '<a href="#" onclick="event.preventDefault(); '
-                  + 'window.set_local_storage_item(\'notices.statWidgets\', true); '
-                  + 'document.getElementById(\'alertContainer\').innerHTML=\'\'">Don\'t show again</a>';
-        add_alert(msg, 'info', 30000);
-    }
 }
 
 // Wires delete buttons on all currently rendered custom stat widgets in a grid

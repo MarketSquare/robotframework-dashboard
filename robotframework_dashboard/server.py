@@ -220,6 +220,7 @@ class GetOutput(BaseModel):
     name: str
     alias: str
     tags: str
+    custom_filters: str
     model_config = get_output_model_config
 
 
@@ -232,6 +233,7 @@ class AddOutput(BaseModel):
     output_tags: Optional[List[str]] = None
     output_alias: Optional[str] = None
     output_version: Optional[str] = None
+    output_custom_filters: Optional[str] = None
     model_config = add_output_model_config
 
 
@@ -413,15 +415,16 @@ class ApiServer:
         async def get_outputs() -> List[GetOutput]:
             """Get a list of dictionaries containting the runs (run_starts) and names of the runs
             currently available in the database"""
-            runs, names, aliases, tags = self.robotdashboard.get_runs()
+            runs, names, aliases, tags, custom_filters = self.robotdashboard.get_runs()
             outputs = []
-            for run, name, alias, tag in zip(runs, names, aliases, tags):
+            for run, name, alias, tag, cf in zip(runs, names, aliases, tags, custom_filters):
                 outputs.append(
                     {
                         "run_start": str(run),
                         "name": str(name),
                         "alias": str(alias),
                         "tags": str(tag),
+                        "custom_filters": str(cf),
                     }
                 )
             return outputs
@@ -467,6 +470,7 @@ class ApiServer:
                     self.robotdashboard.project_version = add_output.output_version
                 else:
                     self.robotdashboard.project_version = None
+                self.robotdashboard.custom_filters = add_output.output_custom_filters
                 if add_output.output_path != None:
                     input = add_output.output_path
                     outputs = [[add_output.output_path, output_tags]]
@@ -518,6 +522,7 @@ class ApiServer:
             file: UploadFile = File(...),
             tags: str = Form(default=""),
             version: str = Form(default=""),
+            custom_filters: str = Form(default=""),
         ) -> ResponseMessage:
             """Add output file to database endpoint function
             The tags parameter should be provided as colon-separated values (e.g., 'tag1:tag2:tag3')
@@ -547,6 +552,8 @@ class ApiServer:
                     self.robotdashboard.project_version = version
                 else:
                     self.robotdashboard.project_version = None
+
+                self.robotdashboard.custom_filters = custom_filters
 
                 outputs = [[output_path, output_tags]]
                 console = self.robotdashboard.process_outputs(
@@ -583,7 +590,7 @@ class ApiServer:
                 remove_runs = []
                 # Handle 'all' flag: when True, delete all outputs; when False, do nothing special
                 if remove_output.all:
-                    runs, _, _, _ = self.robotdashboard.get_runs()
+                    runs, _, _, _, _ = self.robotdashboard.get_runs()
                     if len(runs) > 0:
                         # Use index range to remove all runs efficiently
                         remove_runs = [f"index=0:{len(runs) - 1}"]

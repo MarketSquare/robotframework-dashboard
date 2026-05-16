@@ -26,6 +26,7 @@ import {
     setup_lowest_highest_dates,
     clear_all_filters,
     setup_project_versions_in_select_filter_buttons,
+    setup_custom_filters_in_select_filter_buttons,
     update_overview_version_select_list,
     setup_metadata_filter,
     build_profile_from_checks,
@@ -250,6 +251,7 @@ function setup_filter_modal() {
     setup_runs_in_select_filter_buttons();
     setup_runtags_in_select_filter_buttons();
     setup_project_versions_in_select_filter_buttons();
+    setup_custom_filters_in_select_filter_buttons();
     // snapshot the default/initial filter state so profile checkboxes can reflect changes
     capture_default_filters();
     // filter profiles setup

@@ -84,9 +84,6 @@ var settings = {
         tables: false,
     },
     graphTypes: defaultGraphTypes,
-    notices: {
-        statWidgets: false,
-    },
     view: {
         overview: {
             sections: {

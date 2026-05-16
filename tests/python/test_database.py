@@ -43,7 +43,7 @@ def test_runs_table_column_count(db):
     db.open_database()
     cols = db.connection.cursor().execute("PRAGMA table_info(runs)").fetchall()
     db.close_database()
-    assert len(cols) == 14
+    assert len(cols) == 15
 
 
 def test_suites_table_column_count(db):
@@ -359,7 +359,7 @@ def test_dict_from_row():
 # --- schema migration ---
 
 def test_schema_migration_runs_table_from_10_to_14(tmp_path):
-    """A legacy runs table with 10 columns should be migrated to 14 columns."""
+    """A legacy runs table with 10 columns should be migrated to 15 columns."""
     db_path = tmp_path / "legacy.db"
     conn = sqlite3.connect(str(db_path))
     conn.execute("""
@@ -403,7 +403,7 @@ def test_schema_migration_runs_table_from_10_to_14(tmp_path):
     keywords_cols = db.connection.cursor().execute("PRAGMA table_info(keywords)").fetchall()
     db.close_database()
 
-    assert len(runs_cols) == 14
+    assert len(runs_cols) == 15
     assert len(suites_cols) == 11
     assert len(tests_cols) == 12
     assert len(keywords_cols) == 12
@@ -429,9 +429,9 @@ def test_get_data_null_run_alias_generates_auto_alias(db):
     """get_data() assigns 'Alias 1' when run_alias is NULL (pre-0.6.0 compat)."""
     db.open_database()
     db.connection.execute(
-        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         ("2020-01-01 00:00:00+00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0",
-         "2020-01-01", "tag", None, "/some/path.xml", "{}", None),
+         "2020-01-01", "tag", None, "/some/path.xml", "{}", None, None),
     )
     db.connection.commit()
     data = db.get_data()
@@ -443,9 +443,9 @@ def test_get_data_empty_run_alias_generates_auto_alias(db):
     """get_data() assigns 'Alias 1' when run_alias is '' (pre-0.6.0 compat)."""
     db.open_database()
     db.connection.execute(
-        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         ("2020-01-01 00:00:00+00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0",
-         "2020-01-01", "tag", "", "/some/path.xml", "{}", None),
+         "2020-01-01", "tag", "", "/some/path.xml", "{}", None, None),
     )
     db.connection.commit()
     data = db.get_data()
@@ -457,9 +457,9 @@ def test_get_data_null_path_becomes_empty_string(db):
     """get_data() replaces NULL path with '' (pre-0.8.1 compat)."""
     db.open_database()
     db.connection.execute(
-        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         ("2020-01-01 00:00:00+00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0",
-         "2020-01-01", "tag", "alias_np", None, "{}", None),
+         "2020-01-01", "tag", "alias_np", None, "{}", None, None),
     )
     db.connection.commit()
     data = db.get_data()
@@ -471,9 +471,9 @@ def test_get_data_null_suite_id(db):
     """get_data() handles NULL suite id (pre-0.8.4 compat)."""
     db.open_database()
     db.connection.execute(
-        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         ("2020-01-01 00:00:00+00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0",
-         "2020-01-01", "tag", "alias_si", "/path.xml", "{}", None),
+         "2020-01-01", "tag", "alias_si", "/path.xml", "{}", None, None),
     )
     db.connection.execute(
         "INSERT INTO suites VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -490,9 +490,9 @@ def test_get_data_null_test_tags_and_id(db):
     """get_data() handles NULL test tags and NULL test id (pre-0.8.4 compat)."""
     db.open_database()
     db.connection.execute(
-        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         ("2020-01-01 00:00:00+00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0",
-         "2020-01-01", "tag", "alias_ti", "/path.xml", "{}", None),
+         "2020-01-01", "tag", "alias_ti", "/path.xml", "{}", None, None),
     )
     db.connection.execute(
         "INSERT INTO tests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
