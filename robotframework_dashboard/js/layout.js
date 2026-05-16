@@ -637,9 +637,12 @@ function setup_edit_mode_icons(hidden) {
             el.setAttribute("data-title", "Save your layout changes first! (Save Icon)");
         });
     } else {
-        document.querySelectorAll('.navbar-disabled').forEach(el => {
-            el.classList.remove("information")
-            el.removeAttribute("data-title")
+        const mainNav = document.getElementById("mainNavItems");
+        mainNav.classList.remove("information");
+        mainNav.removeAttribute("data-title");
+        document.querySelectorAll("#iconNavItems > li").forEach(el => {
+            el.classList.remove("information");
+            el.removeAttribute("data-title");
         });
         document.querySelector('.navbar-nav').classList.remove('navbar-disabled');
     }
