@@ -85,6 +85,17 @@ Global filters are applied to the entire dashboard, affecting all sections and g
 - Use **All Runs** to set the value to the total number of runs currently matching the other filters.
 - Useful for focusing on recent history without changing the date filters.
 
+#### 8. Suite Path
+
+- Filters the dashboard to only include runs that contain at least one suite whose path matches the selected path (or any sub-path beneath it).
+- **All** (default) disables the path filter — all runs are shown.
+- The filter displays a **breadcrumb navigator**: the current path is shown as a breadcrumb trail, and the immediate children are shown as clickable buttons below it.
+  - Click a **child button** to drill down into that sub-folder or suite.
+  - Click any **breadcrumb segment** to jump back up to that level.
+- After the run filter is applied, suites and tests are also narrowed to only those matching the selected path prefix — so all graphs and tables reflect only the chosen path.
+- A dot next to the label indicates the filter is active.
+- The Suite Path filter is applied after all other run-level filters but before the Amount limit, so "most recent X runs" always refers to runs that contain the selected path.
+
 ### Filter Profiles
 
 Filter Profiles let you save, name, and reapply a combination of filter settings in one click.
