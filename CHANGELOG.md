@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.0.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.0.0) - 2026-05-16
+
+### Added
+- Statistical widgets for runs, suites, tests, and keywords — summary cards shown across dashboard sections
+- Information icon (SVG) added to dashboard labels for contextual hints
+- Log URL support — log file links can now be passed and displayed alongside run results
+- Standalone script to push existing `output.xml` files to a running dashboard server
+- Custom filters in output data processing — pass arbitrary key=value filters at import time
+- NOT tag filter — negate tag conditions in the filter dialog
+- Undo/redo functionality for layout changes — revert or reapply GridStack layout modifications
+- Statistical benchmarking support for performance tracking across runs
+
+### Fixed
+- Exit code changed to `1` in `robotdashboardlistener` on error, enabling correct CI failure detection
+- Docker Python-test image now hardcodes Ubuntu tag for reproducible builds
+
+### Changed
+- Horizontal scrolling enabled for all data tables, improving usability on smaller screens
+- Overview bars now ordered correctly across all project sections
+- Additional acceptance tests added for the overview page
+
+---
+
 ## [1.9.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.9.0) - 2026-04-15
 
 ### Added
