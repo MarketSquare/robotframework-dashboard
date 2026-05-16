@@ -35,11 +35,13 @@ Global filters are applied to the entire dashboard, affecting all sections and g
 
 #### 2. Run Tags
 
-- Filters runs by their assigned tags. Only runs that have at least one matching tag are included.
+- Filters runs by their assigned tags. Only runs matching the selected tag mode are included.
 - Click **Select Tags** to open the tag list; tick one or more tags to activate the filter.
 - **All** (ticked by default) means no tag filter is applied — all runs are shown.
-- **AND mode** (default): a run must have **all** selected tags to be included.
-- **OR mode** (toggle *Use OR*): a run needs at least **one** of the selected tags.
+- Use the **Tag Mode** dropdown to control how selected tags are matched:
+  - **AND** (default): a run must have **all** selected tags to be included.
+  - **OR**: a run needs at least **one** of the selected tags.
+  - **NOT**: a run must **not** have any of the selected tags (useful for excluding specific tags from a large set).
 - A dot next to the label indicates the filter is active (i.e. *All* is not selected).
 - Use the search box inside the dropdown to quickly find a tag by name.
 
