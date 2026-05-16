@@ -219,13 +219,17 @@ function filter_custom_filters(filteredRuns) {
         );
         if (!checkedValues.size) { filteredRuns = []; continue; }
         if (checkedValues.has("All")) continue;
+        const modeEl = document.getElementById(`customFilter_${dimName}_Mode`);
+        const mode = modeEl ? modeEl.value : "OR";
         filteredRuns = filteredRuns.filter(run => {
             const parsed = parse_custom_filters(run.custom_filters);
             const runValue = parsed[dimName];
-            if (runValue === undefined) {
-                return checkedValues.has("None");
+            const effectiveValue = runValue === undefined ? "None" : runValue;
+            if (mode === "NOT") { // Use NOT logic: the run must not have any of the selected values
+                return !checkedValues.has(effectiveValue);
             }
-            return checkedValues.has(runValue);
+            // Default OR/AND logic: the run must have one of the selected values
+            return checkedValues.has(effectiveValue);
         });
     }
     return filteredRuns;
@@ -716,8 +720,20 @@ function setup_custom_filters_in_select_filter_buttons() {
         const indicatorId = `filterCustomFilter_${dimName}_Indicator`;
         const profileCheckId = `profileCheckCustomFilter_${dimName}`;
         const filterInputId = `customFilter_${dimName}_FilterInput`;
+        const modeId = `customFilter_${dimName}_Mode`;
 
-        const itemsHtml = ["All", "None", ...values].map(v => `
+        const modeHtml = `
+            <li class="list-group-item d-flex small align-items-center">
+                <label class="form-check-label me-2" for="${modeId}">Mode:</label>
+                <select class="form-select form-select-sm" id="${modeId}" style="width: auto;">
+                    <option value="OR">OR</option>
+                    <option value="AND">AND</option>
+                    <option value="NOT">NOT</option>
+                </select>
+            </li>
+        `;
+
+        const itemsHtml = modeHtml + ["All", "None", ...values].map(v => `
             <li class="list-group-item list-group-item-action d-flex small">
                 <input class="form-check-input me-1" type="checkbox" value="${v}" id="${listId}_${v}">
                 <label class="form-check-label ms-2" for="${listId}_${v}">${v}</label>
@@ -1053,11 +1069,14 @@ function capture_current_filters() {
     const dimensions = collect_custom_filter_dimensions();
     if (Object.keys(dimensions).length > 0) {
         profile.customFilters = {};
+        profile.customFilterModes = {};
         for (const dimName of Object.keys(dimensions)) {
             const listEl = document.getElementById(`customFilter_${dimName}_List`);
             if (!listEl) continue;
             const inputs = listEl.querySelectorAll("input.form-check-input");
             profile.customFilters[dimName] = Array.from(inputs).map(el => ({ value: el.value, checked: el.checked }));
+            const modeEl = document.getElementById(`customFilter_${dimName}_Mode`);
+            profile.customFilterModes[dimName] = modeEl ? modeEl.value : "OR";
         }
     }
     return profile;
@@ -1099,6 +1118,12 @@ function build_profile_from_checks() {
     }
     if (Object.keys(customFiltersResult).length > 0) {
         profile.customFilters = customFiltersResult;
+        const customFilterModesResult = {};
+        for (const dimName of Object.keys(customFiltersResult)) {
+            const modeEl = document.getElementById(`customFilter_${dimName}_Mode`);
+            customFilterModesResult[dimName] = modeEl ? modeEl.value : "OR";
+        }
+        profile.customFilterModes = customFilterModesResult;
     }
     return profile;
 }
@@ -1241,6 +1266,12 @@ function apply_filter_profile(profile, name) {
                 if (valueMap[el.value] !== undefined) el.checked = valueMap[el.value];
             });
             update_filter_active_indicator(`customFilter_${dimName}_List_All`, `filterCustomFilter_${dimName}_Indicator`);
+        }
+    }
+    if (profile.customFilterModes !== undefined) {
+        for (const [dimName, mode] of Object.entries(profile.customFilterModes)) {
+            const modeEl = document.getElementById(`customFilter_${dimName}_Mode`);
+            if (modeEl) modeEl.value = mode;
         }
     }
 }
@@ -1425,6 +1456,21 @@ function merge_two_profiles(profileA, profileB) {
             mergedCF[dim] = Object.entries(merged).map(([value, checked]) => ({ value, checked }));
         }
         result.customFilters = mergedCF;
+    }
+
+    // customFilterModes: per-dimension mode — most permissive wins (OR > AND > NOT)
+    if (profileA.customFilterModes !== undefined || profileB.customFilterModes !== undefined) {
+        const modesA = profileA.customFilterModes || {};
+        const modesB = profileB.customFilterModes || {};
+        const allDims = new Set([...Object.keys(modesA), ...Object.keys(modesB)]);
+        const permissiveness = { "OR": 2, "AND": 1, "NOT": 0 };
+        const mergedModes = {};
+        for (const dim of allDims) {
+            const mA = modesA[dim] ?? "OR";
+            const mB = modesB[dim] ?? "OR";
+            mergedModes[dim] = (permissiveness[mA] ?? 2) >= (permissiveness[mB] ?? 2) ? mA : mB;
+        }
+        result.customFilterModes = mergedModes;
     }
 
     return result;

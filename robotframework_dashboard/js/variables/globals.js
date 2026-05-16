@@ -113,12 +113,14 @@ const filterRows = [
     {
         key: 'customFilters',
         label: 'Custom Filters',
-        fields: ['customFilters'],
+        fields: ['customFilters', 'customFilterModes'],
         present: p => p.customFilters !== undefined && Object.keys(p.customFilters || {}).length > 0,
         valueHtml: p => {
+            const modes = p.customFilterModes || {};
             const parts = Object.entries(p.customFilters || {}).map(([dim, items]) => {
                 const checked = (items || []).filter(v => v.checked).map(v => escape_html_for_merge(v.value));
-                return `${escape_html_for_merge(dim)}: ${checked.length ? checked.join('|') : '<em>none</em>'}`;
+                const mode = modes[dim] || 'OR';
+                return `${escape_html_for_merge(dim)}: ${checked.length ? checked.join('|') : '<em>none</em>'} <em>(${mode})</em>`;
             });
             return parts.length ? parts.join(', ') : '<em>none</em>';
         },
