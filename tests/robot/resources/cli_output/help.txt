@@ -71,6 +71,7 @@ database:
                           • '-r limit=10' -> keep only the 10 most recent runs
                           • '-r age=10d' -> remove runs older than 10 days
                           • '-r age=-10d' -> remove runs younger than 10 days
+                          • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
   -c PATH, --databaseclass PATH
                         Path to a custom database class (.py) to override the built-in SQLite engine.
                           • See docs for implementation details
@@ -142,3 +143,4 @@ server:
 
 Boolean flags: omit the value to toggle the default (e.g. '--uselogs'); or pass 'true'/'false' explicitly.
 For full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/
+
