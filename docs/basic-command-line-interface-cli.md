@@ -120,7 +120,7 @@ robotdashboard -r index=0,index=1:4;9,index=10
 robotdashboard --removeruns 'run_start=2024-07-30 15:27:20.184407,index=20'  
 robotdashboard -r alias=some_cool_alias,tag=prod,tag=dev -r alias=alias12345  
 robotdashboard -r limit=10
-robotdashboard -r age=10d # (y)ear/(d)ay/(m)inutes/(s)econds supported
+robotdashboard -r age=10d # (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
 robotdashboard -r age=-10d
 ```
 - Optional: `-r` or `--removeruns` specifies one or more runs to remove.  
