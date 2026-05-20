@@ -15,7 +15,7 @@ sqlite3.register_adapter(datetime, lambda val: val.isoformat(sep=" "))
 
 
 class DatabaseProcessor(AbstractDatabaseProcessor):
-    def __init__(self, database_path: Path, run_rm_log_path=None):
+    def __init__(self, database_path: Path, log_removed=None):
         """This function should handle the connection to the database
         And if required the creation of the tables"""
         self.database_path = database_path
@@ -23,7 +23,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         path = Path(self.database_path)
         path.parent.mkdir(exist_ok=True, parents=True)
         self.connection: sqlite3.Connection
-        self.run_rm_log_path = run_rm_log_path
+        self.log_removed_path = log_removed.path if log_removed else None
+        self.log_removed_types = log_removed.types if log_removed else []
         # create tables if required
         self.open_database()
         self._create_tables()
@@ -387,21 +388,38 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         return run_paths
 
     def _get_run_data(self, run_start):
-        """Helper function to get dict of a run """
         cursor = self.connection.cursor()
         cursor.execute(GET_RUN_INFO_BY_RUN_START, (run_start,))
-
         row = cursor.fetchone()
         if not row:
             return None
-
         columns = [col[0] for col in cursor.description]
         return dict(zip(columns, row))
 
-    def _log_run_jsonl(self, logpath, run_data):
-        """ Logs json of a run row to logpath """
+    def _get_rows_for_run_start(self, table, run_start):
+        cursor = self.connection.cursor()
+        cursor.execute(f"SELECT * FROM {table} WHERE run_start = ?", (run_start,))
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in rows]
+
+    def _collect_log_entry(self, run_start):
+        entry = {}
+        types = self.log_removed_types
+        include_all = "all" in types
+        if include_all or "run" in types:
+            entry["run"] = self._get_run_data(run_start)
+        if include_all or "suite" in types:
+            entry["suites"] = self._get_rows_for_run_start("suites", run_start)
+        if include_all or "test" in types:
+            entry["tests"] = self._get_rows_for_run_start("tests", run_start)
+        if include_all or "keyword" in types:
+            entry["keywords"] = self._get_rows_for_run_start("keywords", run_start)
+        return entry
+
+    def _log_run_jsonl(self, logpath, entry):
         with Path(logpath).open("a", encoding="utf-8") as f:
-            _ = f.write(json.dumps(run_data, default=str) + "\n")
+            _ = f.write(json.dumps(entry, default=str) + "\n")
 
     def remove_runs(self, remove_runs: list):
         """This function removes all provided runs and all their corresponding data"""
@@ -545,19 +563,18 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
 
     def _remove_run(self, run_start: str):
         """Helper function to remove the data from all tables"""
-        # grab data of the run for later to log in jsonl if flag set
-        run_data = self._get_run_data(run_start) if self.run_rm_log_path else None
+        entry = self._collect_log_entry(run_start) if self.log_removed_path else None
         with self.connection:
             cursor = self.connection.cursor()
             cursor.execute(DELETE_FROM_RUNS.format(run_start=run_start))
-            if cursor.rowcount > 0: # only cleanup related tables if a run would be deleted
+            if cursor.rowcount > 0:
                 cursor.execute(DELETE_FROM_SUITES.format(run_start=run_start))
                 cursor.execute(DELETE_FROM_TESTS.format(run_start=run_start))
                 cursor.execute(DELETE_FROM_KEYWORDS.format(run_start=run_start))
                 # Log inside the transaction: if the write fails, the transaction
                 # rolls back and the run is not deleted.
-                if self.run_rm_log_path and run_data:
-                    self._log_run_jsonl(self.run_rm_log_path, run_data)
+                if self.log_removed_path and entry:
+                    self._log_run_jsonl(self.log_removed_path, entry)
 
     def vacuum_database(self):
         """This function vacuums the database to reduce the size after removing runs"""
