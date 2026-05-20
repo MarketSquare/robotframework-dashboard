@@ -269,6 +269,7 @@ class ArgumentParser:
                 "  • '-r limit=10' -> keep only the 10 most recent runs\n"
                 "  • '-r age=10d' -> remove runs older than 10 days\n"
                 "  • '-r age=-10d' -> remove runs younger than 10 days\n"
+                "  • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported\n"
             ),
             action="append",
             nargs="*",
