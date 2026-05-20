@@ -143,4 +143,3 @@ server:
 
 Boolean flags: omit the value to toggle the default (e.g. '--uselogs'); or pass 'true'/'false' explicitly.
 For full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/
-
