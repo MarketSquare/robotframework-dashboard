@@ -43,7 +43,7 @@ class OutputProcessor:
         self.execution_result.visit(
             KeywordProcessor(self.generation_time, keyword_list)
         )
-        average_keyword_list = self.calculate_keyword_averages(keyword_list)
+        average_keyword_list = self.calculate_keyword_averages(keyword_list) if keyword_list else []
         run_list, suite_list = self.merge_run_and_suite_metadata(run_list, suite_list)
         return {
             "runs": run_list,
