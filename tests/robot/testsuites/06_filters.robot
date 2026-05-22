@@ -59,7 +59,6 @@ Add Filter Profile With Versions Filter
     Add Filter Profile PrfVersions For    Versions
     Filter Profile PrfVersions Should Be    {'projectVersions': [{'value': 'All', 'checked': False}, {'value': 'None', 'checked': True}, {'value': '1.2', 'checked': False}, {'value': '1.1', 'checked': False}, {'value': '1.0', 'checked': False}]}
 
-# A little flaky
 Add Filter Profile With Date Filters
     Set Date Filter    fromDate=03132025    fromTime=1225am    toDate=04012025    toTime=1159pm
 
