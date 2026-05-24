@@ -193,6 +193,68 @@
   min-width: 60px;
 }
 
+/* Add custom section horizontal tile — shown in customize-view mode (unified grid only) */
+.add-section-tile {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--bs-border-color, rgba(128,128,128,0.4));
+  border-radius: 8px;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.add-section-tile:hover {
+  border-color: var(--color-text);
+  background-color: rgba(128,128,128,0.08);
+}
+
+.add-section-tile-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.add-section-plus {
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.add-section-tile-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Custom section divider bar rendered inside the unified GridStack */
+.custom-section-divider {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-radius: 6px;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.custom-section-title {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  user-select: none;
+}
+
+/* Delete button on custom section dividers — pinned to top-right */
+.delete-custom-section {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+}
+
 /* Delete button on custom stat widgets — pinned to top-right, out of flex flow */
 .delete-custom-stat-widget {
   position: absolute;

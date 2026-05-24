@@ -19,6 +19,12 @@ import {
     wire_delete_buttons,
     open_add_stat_widget_modal,
 } from "./statwidgets.js";
+import {
+    render_custom_sections,
+    render_add_section_tile,
+    setup_add_custom_section_modal,
+    wire_delete_section_buttons,
+} from "./customsections.js";
 
 // Layout history state for undo/redo in edit mode
 let layoutHistory = [];
@@ -30,6 +36,7 @@ function capture_settings_snapshot() {
     return {
         layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
+        customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
         view: {
             dashboard: {
                 graphs: {
@@ -73,6 +80,7 @@ function capture_dom_snapshot() {
     const snapshot = {
         layouts: {},
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
+        customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
         view: {
             dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
             unified: { graphs: { show: [], hide: [] } },
@@ -121,6 +129,19 @@ function capture_dom_snapshot() {
         snapshot.view.tables.graphs.hide = hiddenTables;
     }
 
+    // Inactive mode's grids are empty in the DOM, so the scan above leaves their show/hide
+    // arrays as []. Preserve the current settings for whichever mode is not active so that
+    // undo/redo in one mode doesn't wipe the graph visibility of the other mode.
+    if (settings.show.unified) {
+        // Unified is active: dashboard section grids are empty, preserve their graph settings
+        snapshot.view.dashboard.graphs.show = JSON.parse(JSON.stringify(settings.view.dashboard.graphs.show || []));
+        snapshot.view.dashboard.graphs.hide = JSON.parse(JSON.stringify(settings.view.dashboard.graphs.hide || []));
+    } else {
+        // Dashboard is active: unified grid is empty, preserve its graph settings
+        snapshot.view.unified.graphs.show = JSON.parse(JSON.stringify(settings.view.unified.graphs.show || []));
+        snapshot.view.unified.graphs.hide = JSON.parse(JSON.stringify(settings.view.unified.graphs.hide || []));
+    }
+
     // Dashboard section order and show/hide
     const shownDashSections = [...document.querySelectorAll("#dashboard .shown-section:not([hidden])")]
         .map(el => {
@@ -163,6 +184,7 @@ function apply_layout_snapshot(snapshot) {
     applyingSnapshot = true;
     settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
     set_local_storage_item('statWidgets', JSON.parse(JSON.stringify(snapshot.statWidgets || [])));
+    set_local_storage_item('customSections', JSON.parse(JSON.stringify(snapshot.customSections || [])));
     settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
     settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
     settings.view.dashboard.sections.show = [...snapshot.view.dashboard.sections.show];
@@ -452,6 +474,15 @@ function setup_grid_graphs(section) {
             render_add_stat_widget_tile(window[grid], sectionKey);
         }
     }
+
+    // Render custom section dividers (unified grid only)
+    if (section === "Unified") {
+        render_custom_sections(window[grid], gridEditMode);
+        if (gridEditMode) {
+            wire_delete_section_buttons(window[grid]);
+            render_add_section_tile(window[grid]);
+        }
+    }
 }
 
 function setup_tables() {
@@ -730,6 +761,8 @@ function setup_dashboard_section_layout_buttons() {
 
     // Setup the add stat widget modal (populate dropdowns, wire confirm/cancel)
     setup_add_stat_widget_modal();
+    // Setup the add custom section modal (populate color pickers, wire confirm/cancel)
+    setup_add_custom_section_modal();
 }
 
 // function to separately add the eventlisteners for overview section layout buttons
