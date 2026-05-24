@@ -272,6 +272,19 @@ class RemoveLog(BaseModel):
     model_config = remove_log_model_config
 
 
+class HubRunData(BaseModel):
+    """Run stats returned by the /hub-data endpoint for hub aggregation."""
+
+    run_start: str
+    name: str
+    total: int
+    passed: int
+    failed: int
+    skipped: int
+    elapsed_s: str
+    start_time: str
+
+
 class ApiServer:
     """Robot Dashboard server implementation, this class handles the admin page and all functions related to the server"""
 
@@ -428,6 +441,29 @@ class ApiServer:
                     }
                 )
             return outputs
+
+        @self.app.get("/hub-data")
+        async def hub_data() -> List[HubRunData]:
+            """Return run stats for all runs — consumed by the hub generator when aggregating projects."""
+            self.robotdashboard.database.open_database()
+            cursor = self.robotdashboard.database.connection.cursor()
+            rows = cursor.execute(
+                "SELECT run_start, name, total, passed, failed, skipped, elapsed_s, start_time FROM runs ORDER BY start_time ASC"
+            ).fetchall()
+            self.robotdashboard.database.close_database()
+            result = []
+            for row in rows:
+                result.append({
+                    "run_start": str(row[0] or ""),
+                    "name": str(row[1] or ""),
+                    "total": int(row[2] or 0),
+                    "passed": int(row[3] or 0),
+                    "failed": int(row[4] or 0),
+                    "skipped": int(row[5] or 0),
+                    "elapsed_s": str(row[6] or "0"),
+                    "start_time": str(row[7] or ""),
+                })
+            return result
 
         @self.app.post("/add-outputs")
         async def add_output_to_database(

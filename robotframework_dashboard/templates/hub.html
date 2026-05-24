@@ -1,0 +1,265 @@
+<html data-bs-theme="dark" class="dark-mode">
+
+<head>
+    <title>RobotDashboard Hub</title>
+    <!-- JS/CSS Dependencies -->
+    <!-- placeholder_dependencies -->
+
+    <!-- Custom CSS -->
+    <!-- placeholder_css -->
+
+    <style>
+        /* Use RF dashboard color scheme */
+        body { background-color: var(--color-bg); color: var(--color-text); }
+        .border-bottom { border-color: var(--color-border) !important; }
+
+        /* Override Bootstrap cards with dashboard card style */
+        .card {
+            background-color: var(--color-section-card-bg) !important;
+            border-color: var(--color-section-card-border) !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px var(--color-shadow-strong);
+        }
+        .card-header {
+            background-color: var(--color-section-card-bg) !important;
+            border-bottom-color: var(--color-section-card-border) !important;
+            color: var(--color-text) !important;
+            font-weight: 600;
+        }
+        .card-body { color: var(--color-text) !important; }
+
+        /* Section wrapper cards use the page background, not the card background */
+        .hub-section-card {
+            background-color: var(--color-bg) !important;
+            border-color: var(--color-border) !important;
+            box-shadow: none !important;
+        }
+        .hub-section-card > .card-header {
+            background-color: var(--color-bg) !important;
+            border-bottom-color: var(--color-border) !important;
+        }
+
+
+    </style>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon"
+        href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKcAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAqAAAAAAAAAAAAAAAAAAAALIAAAD/AAAA4AAAANwAAADcAAAA3AAAANwAAADcAAAA3AAAANwAAADcAAAA4AAAAP8AAACxAAAAAAAAAKYAAAD/AAAAuwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC/AAAA/wAAAKkAAAD6AAAAzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN8AAAD/AAAA+gAAAMMAAAAAAAAAAgAAAGsAAABrAAAAawAAAGsAAABrAAAAawAAAGsAAABrAAAADAAAAAAAAADaAAAA/wAAAPoAAADDAAAAAAAAAIsAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAANEAAAAAAAAA2gAAAP8AAAD6AAAAwwAAAAAAAAAAAAAAMgAAADIAAAAyAAAAMgAAADIAAAAyAAAAMgAAADIAAAAFAAAAAAAAANoAAAD/AAAA+gAAAMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADaAAAA/wAAAPoAAADDAAAAAAAAADwAAAB8AAAAAAAAAGAAAABcAAAAAAAAAH8AAABKAAAAAAAAAAAAAAAAAAAA2gAAAP8AAAD6AAAAwwAAAAAAAADCAAAA/wAAACkAAADqAAAA4QAAAAAAAAD7AAAA/wAAALAAAAAGAAAAAAAAANoAAAD/AAAA+gAAAMMAAAAAAAAAIwAAAP4AAAD/AAAA/wAAAGAAAAAAAAAAAAAAAMkAAAD/AAAAigAAAAAAAADaAAAA/wAAAPoAAADDAAAAAAAAAAAAAAAIAAAAcAAAABkAAAAAAAAAAAAAAAAAAAAAAAAAEgAAAAAAAAAAAAAA2gAAAP8AAAD7AAAAywAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN4AAAD/AAAAqwAAAP8AAACvAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALIAAAD/AAAAsgAAAAAAAAC5AAAA/wAAAMoAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMkAAAD/AAAAvAAAAAAAAAAAAAAAAAAAAKwAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAArQAAAAAAAAAAwAMAAIABAAAf+AAAP/wAAD/8AAAgBAAAP/wAAD/8AAA//AAAJIwAADHEAAA//AAAP/wAAB/4AACAAQAAwAMAAA==" />
+</head>
+
+<body data-hub-is-server="placeholder_hub_is_server">
+    <div class="position-relative alert-container">
+        <div class="position-fixed top-20 start-50 translate-middle" id="alertContainer"></div>
+    </div>
+    <nav class="navbar navbar-expand-sm sticky-top navbar-dark ps-4 pe-4 border-bottom pb-1" id="navigation">
+        <!-- Left: logo + title -->
+        <div class="d-flex align-items-center me-4">
+            <a class="nav-link information p-0 me-2" id="rflogo" href="https://robotframework.org/" target="_blank"></a>
+            <span class="fw-semibold" id="hubTitleDisplay"></span>
+        </div>
+        <!-- Page tabs -->
+        <ul class="navbar-nav flex-row me-auto">
+            <li class="nav-item">
+                <a class="nav-link active" id="tabOverview" href="#">Overview</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tabDashboard" href="#">Dashboard</a>
+            </li>
+        </ul>
+        <!-- Right: icon buttons -->
+        <ul class="navbar-nav flex-row flex-wrap ms-md-auto me-4">
+            <li class="nav-item" id="hubAdminGearItem" hidden>
+                <a class="nav-link information" id="hubAdminGear" role="button" title="Manage data sources"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" id="themeDark"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" id="themeLight" hidden></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" id="versionInformation"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" target="_blank" id="bug"
+                    href="https://github.com/marketsquare/robotframework-dashboard/issues"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" target="_blank" id="github"
+                    href="https://github.com/marketsquare/robotframework-dashboard"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link information" target="_blank" id="docs"
+                    href="https://marketsquare.github.io/robotframework-dashboard/"></a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid mt-3 px-4">
+
+        <!-- Overview Page -->
+        <div id="hubOverviewPage">
+
+        <!-- Section: Project Summary -->
+        <div class="card hub-section-card mb-4" id="hubSummarySection">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="btn btn-sm collapse-icon" id="collapseHubSummaryBody"></div>
+                    </div>
+                    <div class="col">
+                        <h4 class="mb-0">Project Summary</h4>
+                    </div>
+                </div>
+            </div>
+            <div id="HubSummaryBody" class="p-3">
+                <div id="hubStatWidgets" class="row g-3"></div>
+            </div>
+        </div>
+
+        <!-- Section: Charts -->
+        <div class="card hub-section-card mb-4" id="hubChartsSection">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="btn btn-sm collapse-icon" id="collapseHubChartsBody"></div>
+                    </div>
+                    <div class="col">
+                        <h4 class="mb-0">Charts</h4>
+                    </div>
+                </div>
+            </div>
+            <div id="HubChartsBody" class="p-3">
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-xl-6">
+                        <div class="grid-stack-item-content">
+                            <div class="graph-header"><h6>Global Pass Rate Trend</h6></div>
+                            <div class="graph-body" style="min-height:260px;">
+                                <canvas id="globalTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="grid-stack-item-content">
+                            <div class="graph-header"><h6>Pass / Fail Per Project (Latest Runs)</h6></div>
+                            <div class="graph-body" style="min-height:260px;">
+                                <canvas id="projectBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="grid-stack-item-content">
+                            <div class="graph-header"><h6>Execution Duration Per Project</h6></div>
+                            <div class="graph-body" style="min-height:260px;">
+                                <canvas id="durationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Project Health -->
+        <div class="card hub-section-card mb-4" id="hubHealthSection">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="btn btn-sm collapse-icon" id="collapseHubHealthBody"></div>
+                    </div>
+                    <div class="col">
+                        <h4 class="mb-0">Project Health</h4>
+                    </div>
+                </div>
+            </div>
+            <div id="HubHealthBody" class="p-3">
+                <div class="grid-stack-item-content">
+                    <table id="projectHealthTable" class="table table-striped table-hover w-100">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Total Runs</th>
+                                <th>Last Run</th>
+                                <th>Pass Rate</th>
+                                <th>Avg Duration (s)</th>
+                                <th>Status</th>
+                                <th>Link</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- end #hubOverviewPage -->
+
+        <!-- Dashboard Page (placeholder) -->
+        <div id="hubDashboardPage" hidden>
+            <p class="text-muted mt-4 ps-2">Dashboard content coming soon.</p>
+        </div>
+
+    </div>
+
+    <!-- Hub Sources Management Modal -->
+    <div class="modal fade" id="hubSourcesModal" tabindex="-1" aria-labelledby="hubSourcesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hubSourcesModalLabel">Manage Data Sources</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Add source form -->
+                    <div class="card mb-3">
+                        <div class="card-header fw-semibold">Add Source</div>
+                        <div class="card-body">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-12 col-md-5">
+                                    <label class="form-label small mb-1" for="hubSourceInput">Path or URL</label>
+                                    <input type="text" class="form-control form-control-sm" id="hubSourceInput"
+                                        placeholder="e.g. path/to/db.db or http://host:8543">
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" for="hubSourceLabelInput">Display name (optional)</label>
+                                    <input type="text" class="form-control form-control-sm" id="hubSourceLabelInput"
+                                        placeholder="e.g. Project A">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <button class="btn btn-sm btn-primary w-100" id="hubAddSourceBtn">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Current sources list -->
+                    <div class="card">
+                        <div class="card-header fw-semibold">Configured Sources</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0" id="hubSourcesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Label</th>
+                                        <th>Source</th>
+                                        <th>Type</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hubSourcesTableBody">
+                                    <tr><td colspan="4" class="text-muted text-center p-3">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- placeholder_javascript -->
+</body>
+
+</html>

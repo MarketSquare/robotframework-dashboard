@@ -8,79 +8,92 @@ DEPENDENCIES = {
         "cdn": "https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js",
         "local": "dependencies/chart.js",
         "admin_page": False,
+        "hub_page": True,
     },
     "datalabels": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0",
         "local": "dependencies/chartjs-plugin-datalabels.js",
         "admin_page": False,
+        "hub_page": True,
     },
     "adapter_date_fns": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js",
         "local": "dependencies/chartjs-adapter-date-fns.js",
         "admin_page": False,
+        "hub_page": True,
     },
     "boxplot": {
         "type": "js",
         "cdn": "https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js",
         "local": "dependencies/chartjs-chart-boxplot.js",
         "admin_page": False,
+        "hub_page": False,
     },
     "matrix": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js",
         "local": "dependencies/chartjs-chart-matrix.js",
         "admin_page": False,
+        "hub_page": False,
     },
     "gridstack_css": {
         "type": "css",
         "cdn": "https://cdn.jsdelivr.net/npm/gridstack@12.2.1/dist/gridstack.min.css",
         "local": "dependencies/gridstack.css",
         "admin_page": False,
+        "hub_page": False,
     },
     "gridstack_js": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/gridstack@12.2.1/dist/gridstack-all.min.js",
         "local": "dependencies/gridstack.js",
         "admin_page": False,
+        "hub_page": False,
     },
     "bootstrap_css": {
         "type": "css",
         "cdn": "https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css",
         "local": "dependencies/bootstrap.css",
         "admin_page": True,
+        "hub_page": True,
     },
     "datatables_css": {
         "type": "css",
         "cdn": "https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.8/datatables.min.css",
         "local": "dependencies/datatables.css",
         "admin_page": True,
+        "hub_page": True,
     },
     "bootstrap_js": {
         "type": "js",
         "cdn": "https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js",
         "local": "dependencies/bootstrap.js",
         "admin_page": True,
+        "hub_page": True,
     },
     "datatables_js": {
         "type": "js",
         "cdn": "https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.8/datatables.min.js",
         "local": "dependencies/datatables.js",
         "admin_page": True,
+        "hub_page": True,
     },
     "pako": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js",
         "local": "dependencies/pako.js",
         "admin_page": False,
+        "hub_page": True,
     },
 }
 
 
 class DependencyProcessor():
-    def __init__(self, admin_page: bool = False):
+    def __init__(self, admin_page: bool = False, hub_page: bool = False):
         self.admin_page = admin_page
+        self.hub_page = hub_page
 
     def get_js_block(self):
         return self._inline_js_modules(self._gather_files("js"))
@@ -99,6 +112,8 @@ class DependencyProcessor():
 
         for dep_name, dep in DEPENDENCIES.items():
             if self.admin_page and dep.get("admin_page") is False:
+                continue
+            if self.hub_page and dep.get("hub_page") is False:
                 continue
             if not offline:
                 if dep["type"] == "js":
@@ -188,16 +203,19 @@ class DependencyProcessor():
 
     def _gather_files(self, folder: str):
         """
-        Recursively collect all JS/CSS files for dashboard or admin.
+        Recursively collect all JS/CSS files for dashboard, admin, or hub.
 
         If admin_page == True:
             Only include files from js/admin_page/
-        If admin_page == False:
-            Only include all files from js/ except js/admin_page/
+        If hub_page == True:
+            Only include files from js/hub_page/
+        If admin_page == False and hub_page == False:
+            Include all files from js/ except js/admin_page/ and js/hub_page/
         """
         base = Path(__file__).parent
         root = base / folder
         admin_dir = root / "admin_page"
+        hub_dir = root / "hub_page"
 
         files = []
 
@@ -208,14 +226,27 @@ class DependencyProcessor():
                     files.append(str(relpath(p, base)))
             return files
 
-        # --- CASE 2: Everything EXCEPT admin files ---
+        # --- CASE 2: Only hub files ---
+        if self.hub_page and folder == "js":
+            if hub_dir.exists():
+                for p in sorted(hub_dir.rglob(f"*.{folder}")):
+                    files.append(str(relpath(p, base)))
+            return files
+
+        # --- CASE 3: Everything EXCEPT admin and hub files ---
         for p in sorted(root.rglob(f"*.{folder}")):
             # Skip admin_page subtree
             try:
                 p.relative_to(admin_dir)
-                continue  # If relative_to succeeds → inside admin → skip
+                continue  # inside admin_page → skip
             except ValueError:
-                pass  # Not in admin_page → keep
+                pass
+            # Skip hub_page subtree
+            try:
+                p.relative_to(hub_dir)
+                continue  # inside hub_page → skip
+            except ValueError:
+                pass
 
             files.append(str(relpath(p, base)))
 

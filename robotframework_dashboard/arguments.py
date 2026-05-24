@@ -1,7 +1,7 @@
 import argparse
 from datetime import datetime
 from sys import exit
-from re import split
+from re import split, match as re_match
 from os import getcwd
 from os.path import join, exists
 from .version import __version__
@@ -461,6 +461,63 @@ class ArgumentParser:
             dest="ssl_keyfile",
             default=None,
         )
+
+        hub_group = parser.add_argument_group("hub")
+        hub_group.add_argument(
+            "--hub",
+            metavar="[HOST:PORT[:USER:PASS]] [SOURCES]",
+            nargs="*",
+            default=None,
+            dest="hub",
+            help=(
+                "Start the hub server that aggregates multiple project dashboards.\n"
+                "  • Optionally provide host:port[:user:pass] as first token\n"
+                "  • SOURCES: semicolon-separated .db paths or server URLs\n"
+                "  • Append ':<Label>' to a DB path to override its display name\n"
+                "Examples:\n"
+                "  • '--hub'\n"
+                "  • '--hub 0.0.0.0:8544'\n"
+                "  • '--hub 0.0.0.0:8544:admin:secret'\n"
+                "  • '--hub projectA.db;projectB.db'\n"
+                "  • '--hub 0.0.0.0:8544 projectA.db:ProjectA;http://localhost:8543'\n"
+            ),
+        )
+        hub_group.add_argument(
+            "--offlinehub",
+            metavar="SOURCES",
+            default=None,
+            dest="offlinehub",
+            help=(
+                "Generate a static robot_hub.html from one or more sources.\n"
+                "  • SOURCES: semicolon-separated .db paths or server URLs\n"
+                "  • Append ':<Label>' to a DB path to override its display name\n"
+                "Examples:\n"
+                "  • '--offlinehub projectA.db;projectB.db:ProjectB'\n"
+                "  • '--offlinehub http://localhost:8543'\n"
+            ),
+        )
+        hub_group.add_argument(
+            "--hubname",
+            metavar="NAME",
+            default="robot_hub.html",
+            dest="hubname",
+            help=(
+                "Output filename for the hub HTML file (default: robot_hub.html).\n"
+                "Examples:\n"
+                "  • '--hubname my_hub.html'\n"
+            ),
+        )
+        hub_group.add_argument(
+            "--hubtitle",
+            metavar="TITLE",
+            default="Robot Framework Dashboard Hub",
+            dest="hubtitle",
+            help=(
+                "Title shown in the hub navbar (default: Robot Framework Dashboard Hub).\n"
+                "Examples:\n"
+                "  • '--hubtitle My Projects Hub'\n"
+            ),
+        )
         return parser.parse_args()
 
     def _process_arguments(self, arguments):
@@ -602,6 +659,52 @@ class ArgumentParser:
         ssl_certfile = arguments.ssl_certfile
         ssl_keyfile = arguments.ssl_keyfile
 
+        # handles the hub argument
+        hub_host = "127.0.0.1"
+        hub_port = 8544
+        hub_user = ""
+        hub_pass = ""
+        hub_sources = []
+        start_hub = False
+
+        if arguments.hub is not None:
+            start_hub = True
+            tokens = list(arguments.hub)
+            # if first token looks like host:port[:user:pass], parse it
+            if tokens:
+                first = tokens[0]
+                # host:port pattern — not a file path or URL
+                first_parts = first.split(":")
+                try:
+                    if (
+                        len(first_parts) >= 2
+                        and not first.startswith("http")
+                        and not first.endswith(".db")
+                        and int(first_parts[1])
+                    ):
+                        hub_host = first_parts[0]
+                        hub_port = int(first_parts[1])
+                        if len(first_parts) == 4:
+                            hub_user = first_parts[2]
+                            hub_pass = first_parts[3]
+                        tokens = tokens[1:]
+                except (ValueError, IndexError):
+                    pass
+            source_str = ";".join(tokens)
+            hub_sources = self._parse_hub_sources(source_str)
+
+        offline_hub = False
+        offline_hub_sources = []
+        if arguments.offlinehub:
+            offline_hub = True
+            offline_hub_sources = self._parse_hub_sources(arguments.offlinehub)
+
+        hub_name = arguments.hubname
+        if not hub_name.endswith(".html"):
+            hub_name = f"{hub_name}.html"
+
+        hub_title = arguments.hubtitle
+
         # validates argument combinations
         self._check_argument_errors(arguments, outputs, outputfolderpaths, force_json_config, database_class)
         self._check_argument_warnings(arguments, outputs, outputfolderpaths, use_logs, generate_dashboard, no_autoupdate, offline_dependencies)
@@ -637,5 +740,56 @@ class ArgumentParser:
             "ssl_certfile": ssl_certfile,
             "ssl_keyfile": ssl_keyfile,
             "log_url": arguments.logurl,
+            "start_hub": start_hub,
+            "hub_host": hub_host,
+            "hub_port": hub_port,
+            "hub_user": hub_user,
+            "hub_pass": hub_pass,
+            "hub_sources": hub_sources,
+            "hub_name": hub_name,
+            "hub_title": hub_title,
+            "offline_hub": offline_hub,
+            "offline_hub_sources": offline_hub_sources,
         }
         return dotdict(provided_args)
+
+    def _parse_hub_sources(self, sources_str: str) -> list:
+        """
+        Parse a semicolon-separated hub sources string.
+
+        Each entry may be:
+          - a .db file path (optionally with a :<Label> suffix)
+          - a URL (http/https)
+        """
+        if not sources_str:
+            return []
+        sources = []
+        for entry in sources_str.split(";"):
+            entry = entry.strip()
+            if not entry:
+                continue
+            if entry.startswith("http://") or entry.startswith("https://"):
+                # Support optional :<Label> after the URL (port digits end the URL part)
+                m = re_match(r"(https?://[^:;]+(?::\d+)?(?:/[^:;]*)?)(?::(.+))?$", entry)
+                if m:
+                    url, label = m.group(1), m.group(2) or m.group(1)
+                else:
+                    url, label = entry, entry
+                sources.append({
+                    "label": label,
+                    "source": url,
+                    "source_type": "url",
+                })
+            else:
+                # Split on colons that are not followed by / or \ (drive-letter safe)
+                parts = split(r":(?!(\/|\\))", entry)
+                while None in parts:
+                    parts.remove(None)
+                path = parts[0]
+                label = parts[1] if len(parts) > 1 else path
+                sources.append({
+                    "label": label,
+                    "source": path,
+                    "source_type": "db",
+                })
+        return sources
