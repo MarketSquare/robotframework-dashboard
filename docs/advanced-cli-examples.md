@@ -63,6 +63,23 @@ When using `project_` tags:
 - The `project_` prefix text can be shown or hidden using the **Prefixes** toggle in Settings
 - Multiple `project_` tags on different outputs allow comparing different projects side by side on the Overview page
 
+## Custom Filters
+
+Custom filters let you attach arbitrary key=value metadata to runs and filter on them in the Dashboard's **Filters** modal. Each unique key becomes its own filter dropdown, independent of Run Tags.
+
+```bash
+robotdashboard -o output.xml --customfilters "Environment=staging:ComponentA=2.0"
+robotdashboard -f ./results --customfilters "ProductVersion=1.1:Region=EU"
+```
+
+- The argument takes a **colon-separated** list of `key=value` pairs.
+- Each run can carry a different set of values.
+- In the Dashboard, each key produces a dropdown with checkboxes for all unique values observed across runs, plus **All** (default) and **None** (runs with no value for that key).
+- A **Mode** dropdown per dimension lets you switch between **OR** (default), **AND**, and **NOT** logic.
+- Custom filter dropdowns are hidden when no runs in the database have custom filter data.
+
+> When using the [Listener](/listener-integration) or [Server Admin](/dashboard-server#adding-outputs) to push results, pass the same `key=value:key=value` string via the `customfilters` listener argument or the Custom Filters field in the admin page.
+
 ## Aliases for Clean Dashboard Identification
 
 Aliases help replace long timestamps with clean, readable names. They also significantly improve clarity in comparison views and general dashboard readability.

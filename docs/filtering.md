@@ -79,7 +79,17 @@ Global filters are applied to the entire dashboard, affecting all sections and g
   Metadata    Environment    Staging
   ```
 
-#### 7. Amount
+#### 7. Custom Filters
+
+- Only visible when at least one run has custom filter data attached (added via `--customfilters` at import time or via the server/listener).
+- Each unique **key** from the `key=value` pairs becomes its own filter dropdown.
+- **All** (ticked by default) means no filter is applied for that dimension.
+- **None** covers runs that have no value stored for that key.
+- Use the **Mode** dropdown to control matching: **OR** (default), **AND**, or **NOT**.
+- A dot next to the label indicates the filter is active.
+- See [Advanced CLI & Examples](/advanced-cli-examples#custom-filters) for how to attach custom filter data to runs.
+
+#### 8. Amount
 
 - After all other filters have been applied, limits the dashboard to the **most recent X runs**.
 - Use **All Runs** to set the value to the total number of runs currently matching the other filters.
@@ -131,6 +141,7 @@ The **Merge Profiles** button (in the Filters modal header) opens a dedicated mo
 |---|---|
 | **Run Tags** / **Versions** | Union of all checked entries (OR) |
 | **Use OR Tags** | OR wins (more permissive) |
+| **Custom Filters** | Union of all checked entries per dimension (OR) |
 | **From Date / Time** | The earlier value is kept (widest horizon) |
 | **To Date / Time** | The later value is kept (widest horizon) |
 | **Amount** | The larger value is kept |
@@ -180,6 +191,7 @@ The **Tables** page allows for detailed inspection of raw test data and uses the
 - Versions
 - From / To Date & Time
 - Metadata
+- Custom Filters
 - Amount
 
 > These filters let you zoom into specific runs, suites, tests, or keywords for precise analysis of raw data in the tables.

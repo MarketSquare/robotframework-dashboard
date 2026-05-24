@@ -15,7 +15,7 @@ Learn how to customize the look, behavior, and configuration of the generated da
 
 The video above walks through three examples of how you can tailor the dashboard to match your reporting needs:
 
-### 1. The Dashboard Page
+## 1. The Dashboard Page
 
 See how you can reshape the main dashboard layout by:
 
@@ -23,17 +23,17 @@ See how you can reshape the main dashboard layout by:
 - reordering graphs within their sections  
 - hiding graphs you don’t want to display  
 - rearranging entire sections to match your preferred workflow  
-- it is also possible to combine all sections into a single unified view, see [Settings - General Settings (Graphs Tab)](/settings#general-settings-graphs-tab), for the details
+- it is also possible to combine all sections into a single unified view, see [Settings - Defaults Tab](/settings#defaults-settings-defaults-tab), for the details
 - the unified title will be the same as the `-t, --dashboardtitle` [CLI argument](/basic-command-line-interface-cli.html#set-a-custom-html-title) if provided, otherwise it defaults to "Dashboard Statistics"
 
-### 2. The Compare Page
+## 2. The Compare Page
 
 Watch how the Compare page can be adjusted by:
 
 - resizing comparison charts  
 - reorganizing the visual layout to highlight the most relevant comparisons  
 
-### 3. The Tables Page
+## 3. The Tables Page
 
 The demo also shows how to adapt the Tables view by:
 
@@ -42,12 +42,12 @@ The demo also shows how to adapt the Tables view by:
 
 These examples illustrate how flexible the configuration system is, letting you build a dashboard experience that fits your team and your use cases.
 
-### 4. Resetting the Configuration
+## 4. Resetting the Configuration
 
 At the end of the video, you’ll see how you can easily **reset all customizations** by going to the **Settings** page and restoring the defaults.  
 This quickly brings the dashboard back to its original configuration.
 
-### 5. Theme Colors
+## 5. Theme Colors
 
 The dashboard supports custom color overrides for both light and dark modes. In the Settings modal's **Theme** tab, you can customize:
 
@@ -62,7 +62,7 @@ Each color has a **Reset** button to restore its default value. Light and dark m
 
 See [Settings - Theme Tab](/settings#theme-settings-theme-tab) for more details.
 
-### 6. Custom Branding (Title and Logo)
+## 6. Custom Branding (Title and Logo)
 
 The **Theme** tab also lets you personalize the navigation bar with your own branding:
 
@@ -72,7 +72,7 @@ The **Theme** tab also lets you personalize the navigation bar with your own bra
 
 Both settings take effect immediately and persist across page reloads.
 
-### 7. Responsive Menu Bar
+## 7. Responsive Menu Bar
 
 The navigation bar automatically adapts to any screen width — no manual configuration required:
 
@@ -83,7 +83,7 @@ The navigation bar automatically adapts to any screen width — no manual config
 
 This behavior is fully automatic and requires no action from the user.
 
-### 6. Viewing (and Editing) the JSON Configuration
+## 8. Viewing (and Editing) the JSON Configuration
 
 You can directly inspect the full configuration—exactly as the UI generates it—by opening the `view` key in the JSON output.  
 This layout metadata is produced using **[GridStack](https://www.npmjs.com/package/gridstack/v/12.2.1)**.
@@ -92,3 +92,35 @@ This layout metadata is produced using **[GridStack](https://www.npmjs.com/packa
 > It’s recommended to adjust your layout through the UI unless you know the GridStack format well.
 
 These examples illustrate how flexible the configuration system is, letting you build a dashboard experience that fits your team and your use cases.
+
+## 9. Stat Widgets
+
+Stat widgets display a single KPI value (executed runs, failed tests, etc.) as a compact tile you can add to any dashboard section grid — both in regular dashboard mode and in [Unified View](/settings#defaults-settings-defaults-tab).
+
+To add a stat widget:
+
+1. Enter **Customize view** mode.
+2. Click the **"+ Add stat widget"** tile that appears at the bottom of the target grid.
+3. In the popup, choose the **statistic** to display and optionally pick a **text color** and **background color**.
+4. Click **Add** — the widget is placed in the grid and can be dragged or resized like any other graph.
+5. Click **Save** to persist the layout to localStorage.
+
+To remove a stat widget, enter Customize view mode and click the **✕** button in its top-right corner.
+
+Stat widgets are stored in localStorage and survive page reloads.
+
+## 10. Custom Section Dividers
+
+Custom section dividers are full-width horizontal bars you can place anywhere in the **Unified View** grid as visual separators or group headers. They are only available when [Unified View](/settings#defaults-settings-defaults-tab) is active.
+
+To add a section divider:
+
+1. Enter **Customize view** mode.
+2. Click the **"+ Add custom section"** tile at the bottom of the unified grid.
+3. In the popup, enter a **title** (up to 60 characters) and optionally choose a **text color** and **background color**.
+4. Click **Add** — the divider spans the full grid width and can be dragged to any row.
+5. Click **Save** to persist the layout to localStorage.
+
+To remove a divider, enter Customize view mode and click the **✕** button on the right side of the bar.
+
+Section dividers are stored in localStorage and survive page reloads.

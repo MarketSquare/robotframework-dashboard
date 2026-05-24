@@ -19,7 +19,7 @@ For a more in depth explanation, hover over the "i" icons in the Overview Statis
 The Dashboard page offers rich, interactive visualizations for a detailed analysis of test results. Graphs are available at four levels—runs, suites, tests, and keywords—allowing teams to track performance, detect flaky tests, and monitor trends over time. The layout is fully customizable (see [Customization](customization.md)). You can drag and drop graphs and sections to create your preferred view. Most graphs support multiple display modes, including timeline, percentage, bar, donut, and advanced types like boxplots and heatmaps. Each graph also provides detailed popups to explain what the view represents and how the data is calculated (see [Graphs & Tables](graphs-tables.md)).
 
 ### Unified Mode
-The Dashboard supports a **Unified Mode** that combines all four sections (run, suite, test, keyword) into a single scrollable view instead of separate tabbed sections. This can be enabled via [Settings - Graphs Tab](/settings#general-settings-graphs-tab) using the **Unified Dashboard Sections** toggle.
+The Dashboard supports a **Unified Mode** that combines all four sections (run, suite, test, keyword) into a single scrollable view instead of separate tabbed sections. This can be enabled via [Settings - Defaults Tab](/settings#defaults-settings-defaults-tab) using the **Unified Dashboard Sections** toggle.
 
 In Unified Mode:
 - All graphs from all sections are shown on one page

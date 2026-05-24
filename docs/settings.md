@@ -8,13 +8,15 @@ RobotFramework Dashboard includes a fully customizable configuration system that
 
 ## General
 
-The settings modal is divided into **five tabs**:
+The settings modal is divided into **seven tabs**:
 
-1. **Graphs** – general dashboard and chart behavior  
-2. **Keywords** – which keyword libraries appear in keyword graphs  
-3. **Overview** – controls for the Overview page layout and toggles  
-4. **Theme** – custom color overrides for light and dark mode, plus custom title and logo branding  
-5. **JSON** – direct editing of the full JSON config for advanced users  
+1. **Appearance** – chart visual appearance (legends, axes, animations, bar style)
+2. **Labels & Time** – run label format and timestamp display
+3. **Defaults** – default dashboard behavior and initial selections
+4. **Keywords** – which keyword libraries appear in keyword graphs
+5. **Overview** – controls for the Overview page layout and toggles
+6. **Theme** – custom color overrides for light and dark mode, plus custom title and logo branding
+7. **JSON** – direct editing of the full JSON config for advanced users
 
 ## Theme Toggle
 
@@ -22,34 +24,57 @@ The dashboard can be displayed in **light mode** or **dark mode**.
 This setting is applied globally across all dashboard pages and graphs.
 This can be set through the sun/moon icon in the menu bar.
 
-## General Settings (Graphs Tab)
+## Appearance Settings (Appearance Tab)
 
-The **Graphs** tab contains the core configuration options for all charts in the dashboard. These settings influence how the dashboard is generated and how graphs are rendered.
+The **Appearance** tab controls the visual style of charts across the dashboard.
 
 ### Details
 
 | Setting | Description |
 |--------|-------------|
-| **Unified Dashboard Sections** | Show all dashboard sections in a single unified view. (Instead of run/suite/test/keyword separate) |
 | **Display Legends** | Show or hide graph legends. Useful to disable this when graphs contain many series. |
 | **Display Axis Titles** | Shows axis labels (e.g., *Run Time*, *Pass/Fail Count*). Disable for a cleaner look. |
-| **Display Run Start/Alias Labels On Axes** | Enables labels directly on graph axes. Disable for a cleaner look. |
-| **Run Label Display** | Controls which label is used to identify runs across graphs, tooltips, axes, and comparison selects. Three options are available: **Run Start** (default) — uses the raw `run_start` timestamp; **Alias** — uses the alias derived from the output filename (see [Aliases](/advanced-cli-examples#aliases-for-clean-dashboard-identification)); **Run Name** — uses the Robot Framework suite name recorded in the output file. When multiple runs share the same name, a numeric suffix is appended automatically (e.g. *Tests*, *Tests 2*, *Tests 3*). |
-| **Display Prefixes** | Shows or hides the `project_` prefix text on Overview page tags. |
-| **Display Milliseconds Run Start Labels** | Adds millisecond precision to run_start timestamps. |
 | **Display Drawing Animations** | Enables animated graph rendering. |
 | **Animation Duration (Milliseconds)** | Length of animation, e.g. `1500` ms. |
 | **Bar Graph Edge Rounding (Pixels)** | Controls rounding of bar edges (e.g., `0` = square, `8` = softer). |
-| **Display Timezone Offsets** | Show or hide the timezone offset suffix (e.g. `+02:00`) appended to `run_start` timestamps in graphs and tables. Only has a visible effect on runs that have a stored timezone offset. Runs without an offset are unchanged. |
-| **Convert Timestamps to Local Timezone** | Converts stored `run_start` timestamps from their recorded timezone to the **viewer's browser timezone**. Only applies to runs that have a stored timezone offset — runs without an offset are left unchanged. Useful when runs were recorded in a different timezone than the person viewing the dashboard. |
-| **Suite Statistics – Default suite selection (dropdown)** | Selects which suite(s) are shown by default in the Suite Statistics tab. Options: `All Suites Separate`, `All Suites Combined`, or any individual suite. If the selected suite is removed from the data, the first available suite is used automatically. |
-| **Test Statistics – Default suite selection (dropdown)** | Selects which suite is shown by default in the Test Statistics tab. Options: `All` or any individual suite. If the selected suite is removed from the data, the first available suite is used automatically. |
-| **Test Statistics – Load all suites by default** | When enabled (disabled by default) then the figures in the *Test Statistics* tab are generated from all suites, otherwise from the selected one only. This can impact the response time depending on the number of suites within the dashboard. |
 
 ### Saving Settings
 
 - Press **Close** or click outside the modal -> **settings are saved automatically**
-- No need to manually apply changes for the **Graphs** tab
+
+## Labels & Time Settings (Labels & Time Tab)
+
+The **Labels & Time** tab controls how runs are labelled across the dashboard and how timestamps are displayed.
+
+### Details
+
+| Setting | Description |
+|--------|-------------|
+| **Display Run Start/Alias Labels On Axes** | Enables labels directly on graph axes. Disable for a cleaner look. |
+| **Run Label Display** | Controls which label is used to identify runs across graphs, tooltips, axes, and comparison selects. Three options are available: **Run Start** (default) — uses the raw `run_start` timestamp; **Alias** — uses the alias derived from the output filename (see [Aliases](/advanced-cli-examples#aliases-for-clean-dashboard-identification)); **Run Name** — uses the Robot Framework suite name recorded in the output file. When multiple runs share the same name, a numeric suffix is appended automatically (e.g. *Tests*, *Tests 2*, *Tests 3*). |
+| **Display Milliseconds Run Start Labels** | Adds millisecond precision to run_start timestamps. |
+| **Display Timezone Offsets** | Show or hide the timezone offset suffix (e.g. `+02:00`) appended to `run_start` timestamps in graphs and tables. Only has a visible effect on runs that have a stored timezone offset. Runs without an offset are unchanged. |
+| **Convert Timestamps to Local Timezone** | Converts stored `run_start` timestamps from their recorded timezone to the **viewer's browser timezone**. Only applies to runs that have a stored timezone offset — runs without an offset are left unchanged. Useful when runs were recorded in a different timezone than the person viewing the dashboard. |
+
+### Saving Settings
+
+- Press **Close** or click outside the modal -> **settings are saved automatically**
+
+## Defaults Settings (Defaults Tab)
+
+The **Defaults** tab controls initial dashboard behavior and default graph selections.
+
+### Details
+
+| Setting | Description |
+|--------|-------------|
+| **Unified Dashboard Sections** | Show all dashboard sections in a single unified view (instead of separate run/suite/test/keyword sections). |
+| **Suite Statistics – Default suite selection (dropdown)** | Selects which suite(s) are shown by default in the Suite Statistics tab. Options: `All Suites Separate`, `All Suites Combined`, or any individual suite. If the selected suite is removed from the data, the first available suite is used automatically. |
+| **Test Statistics – Default suite selection (dropdown)** | Selects which suite is shown by default in the Test Statistics tab. Options: `All` or any individual suite. If the selected suite is removed from the data, the first available suite is used automatically. |
+
+### Saving Settings
+
+- Press **Close** or click outside the modal -> **settings are saved automatically**
 
 ## Keyword Settings (Keywords Tab)
 
