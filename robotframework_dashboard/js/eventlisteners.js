@@ -822,9 +822,16 @@ function setup_sections_filters() {
         update_overview_filter_visibility();
     });
     document.getElementById("suiteSelectSuites").addEventListener("change", () => {
-        update_graphs_with_loading(["suiteStatisticsGraph", "suiteDurationGraph"], () => {
+        const mostGraphIds = settings.switch.sectionFiltersApplySuite
+            ? ["suiteMostFailedGraph", "suiteMostTimeConsumingGraph"]
+            : [];
+        update_graphs_with_loading(["suiteStatisticsGraph", "suiteDurationGraph", ...mostGraphIds], () => {
             update_suite_duration_graph();
             update_suite_statistics_graph();
+            if (settings.switch.sectionFiltersApplySuite) {
+                update_suite_most_failed_graph();
+                update_suite_most_time_consuming_graph();
+            }
         });
     });
     update_switch_local_storage("switch.suitePathsSuiteSection", settings.switch.suitePathsSuiteSection, true);
@@ -842,20 +849,44 @@ function setup_sections_filters() {
             }
         );
     });
+    update_switch_local_storage("switch.sectionFiltersApplySuite", settings.switch.sectionFiltersApplySuite, true);
+    document.getElementById("switchSectionFiltersApplySuite").addEventListener("change", () => {
+        settings.switch.sectionFiltersApplySuite = !settings.switch.sectionFiltersApplySuite;
+        update_switch_local_storage("switch.sectionFiltersApplySuite", settings.switch.sectionFiltersApplySuite);
+        update_graphs_with_loading(
+            ["suiteMostFailedGraph", "suiteMostTimeConsumingGraph"],
+            () => {
+                update_suite_most_failed_graph();
+                update_suite_most_time_consuming_graph();
+            }
+        );
+    });
     document.getElementById("resetSuiteFolder").addEventListener("click", () => {
         update_graphs_with_loading(["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"], () => {
             update_suite_folder_donut_graph("");
         });
     });
     document.getElementById("suiteSelectTests").addEventListener("change", () => {
+        const mostGraphIds = settings.switch.sectionFiltersApplyTest
+            ? ["testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
+               "testMostFailedGraph", "testRecentMostFailedGraph", "testMostTimeConsumingGraph"]
+            : [];
         update_graphs_with_loading(
-            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph"],
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph", ...mostGraphIds],
             () => {
                 setup_testtags_in_select();
                 setup_tests_in_select();
                 update_test_statistics_graph();
                 update_test_duration_graph();
                 update_test_duration_deviation_graph();
+                if (settings.switch.sectionFiltersApplyTest) {
+                    update_test_messages_graph();
+                    update_test_most_flaky_graph();
+                    update_test_recent_most_flaky_graph();
+                    update_test_most_failed_graph();
+                    update_test_recent_most_failed_graph();
+                    update_test_most_time_consuming_graph();
+                }
             }
         );
     });
@@ -881,31 +912,75 @@ function setup_sections_filters() {
             }
         );
     });
-    document.getElementById("testTagsSelect").addEventListener("change", () => {
+    update_switch_local_storage("switch.sectionFiltersApplyTest", settings.switch.sectionFiltersApplyTest, true);
+    document.getElementById("switchSectionFiltersApplyTest").addEventListener("change", () => {
+        settings.switch.sectionFiltersApplyTest = !settings.switch.sectionFiltersApplyTest;
+        update_switch_local_storage("switch.sectionFiltersApplyTest", settings.switch.sectionFiltersApplyTest);
         update_graphs_with_loading(
-            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph"],
+            ["testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
+             "testMostFailedGraph", "testRecentMostFailedGraph", "testMostTimeConsumingGraph"],
+            () => {
+                update_test_messages_graph();
+                update_test_most_flaky_graph();
+                update_test_recent_most_flaky_graph();
+                update_test_most_failed_graph();
+                update_test_recent_most_failed_graph();
+                update_test_most_time_consuming_graph();
+            }
+        );
+    });
+    document.getElementById("testTagsSelect").addEventListener("change", () => {
+        const mostGraphIds = settings.switch.sectionFiltersApplyTest
+            ? ["testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
+               "testMostFailedGraph", "testRecentMostFailedGraph", "testMostTimeConsumingGraph"]
+            : [];
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph", ...mostGraphIds],
             () => {
                 setup_tests_in_select();
                 update_test_statistics_graph();
                 update_test_duration_graph();
                 update_test_duration_deviation_graph();
+                if (settings.switch.sectionFiltersApplyTest) {
+                    update_test_messages_graph();
+                    update_test_most_flaky_graph();
+                    update_test_recent_most_flaky_graph();
+                    update_test_most_failed_graph();
+                    update_test_recent_most_failed_graph();
+                    update_test_most_time_consuming_graph();
+                }
             }
         );
     });
     document.getElementById("testSelect").addEventListener("change", () => {
+        const mostGraphIds = settings.switch.sectionFiltersApplyTest
+            ? ["testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
+               "testMostFailedGraph", "testRecentMostFailedGraph", "testMostTimeConsumingGraph"]
+            : [];
         update_graphs_with_loading(
-            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph"],
+            ["testStatisticsGraph", "testDurationGraph", "testDurationDeviationGraph", ...mostGraphIds],
             () => {
                 update_test_statistics_graph();
                 update_test_duration_graph();
                 update_test_duration_deviation_graph();
+                if (settings.switch.sectionFiltersApplyTest) {
+                    update_test_messages_graph();
+                    update_test_most_flaky_graph();
+                    update_test_recent_most_flaky_graph();
+                    update_test_most_failed_graph();
+                    update_test_recent_most_failed_graph();
+                    update_test_most_time_consuming_graph();
+                }
             }
         );
     });
     document.getElementById("keywordSelect").addEventListener("change", () => {
+        const mostGraphIds = settings.switch.sectionFiltersApplyKeyword
+            ? ["keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"]
+            : [];
         update_graphs_with_loading(
             ["keywordStatisticsGraph", "keywordTimesRunGraph", "keywordTotalDurationGraph",
-                "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph"],
+                "keywordAverageDurationGraph", "keywordMinDurationGraph", "keywordMaxDurationGraph", ...mostGraphIds],
             () => {
                 update_keyword_statistics_graph();
                 update_keyword_times_run_graph();
@@ -913,6 +988,24 @@ function setup_sections_filters() {
                 update_keyword_average_duration_graph();
                 update_keyword_min_duration_graph();
                 update_keyword_max_duration_graph();
+                if (settings.switch.sectionFiltersApplyKeyword) {
+                    update_keyword_most_failed_graph();
+                    update_keyword_most_time_consuming_graph();
+                    update_keyword_most_used_graph();
+                }
+            }
+        );
+    });
+    update_switch_local_storage("switch.sectionFiltersApplyKeyword", settings.switch.sectionFiltersApplyKeyword, true);
+    document.getElementById("switchSectionFiltersApplyKeyword").addEventListener("change", () => {
+        settings.switch.sectionFiltersApplyKeyword = !settings.switch.sectionFiltersApplyKeyword;
+        update_switch_local_storage("switch.sectionFiltersApplyKeyword", settings.switch.sectionFiltersApplyKeyword);
+        update_graphs_with_loading(
+            ["keywordMostFailedGraph", "keywordMostTimeConsumingGraph", "keywordMostUsedGraph"],
+            () => {
+                update_keyword_most_failed_graph();
+                update_keyword_most_time_consuming_graph();
+                update_keyword_most_used_graph();
             }
         );
     });

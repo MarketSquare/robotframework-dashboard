@@ -151,16 +151,19 @@ The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each
 - **Folder Filter (Donut Chart)** – Click on folder donuts to "zoom in" on specific suites. Affects the Suite Statistics and Suite Duration graphs.
 - **Suite Selection Dropdown** – Choose a specific suite or all suites.
 - **Full Suite Paths Toggle** – When enabled, shows the full suite path instead of only the suite name. Useful when duplicate suite names exist in different folders.
+- **Filters affect top graphs Toggle** – When enabled, the active suite and folder filters also apply to the Most Failed and Most Time Consuming graphs. When disabled, those graphs always show data across all suites regardless of the selection.
 
 #### Test Section
 - **Suite Filter** – Select one or multiple suites from a dropdown.
 - **Suite Paths Toggle** – Same logic as the Suite section; allows distinguishing duplicate suite names.
 - **Test Selection Dropdown** – Zoom in on a specific test.
 - **Test Tag Dropdown** – Filter tests by tags.
+- **Filters affect top graphs Toggle** – When enabled, the active suite, test, and tag filters also apply to the Most Failed, Most Flaky, Most Time Consuming, and Error Messages graphs. When disabled, those graphs always show data across all tests regardless of the selection.
 
 #### Keyword Section
 - **Keyword Dropdown** – Select a specific keyword to zoom in on.
 - **Library Names Toggle** – Include library names in the keyword selection dropdown.
+- **Filters affect top graphs Toggle** – When enabled, the active keyword filter also applies to the Most Failed, Most Time Consuming, and Most Used graphs. When disabled, those graphs always show data across all keywords regardless of the selection.
 
 ## Compare Page
 

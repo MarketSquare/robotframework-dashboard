@@ -203,8 +203,30 @@ function _build_test_duration_config() {
     return config;
 }
 
+function _get_test_most_filtered_data() {
+    if (!settings.switch.sectionFiltersApplyTest) return filteredTests;
+    const suiteSelectTests = document.getElementById("suiteSelectTests").value;
+    const testSelectVal = document.getElementById("testSelect").value;
+    const testTagsSelect = document.getElementById("testTagsSelect").value;
+    return filteredTests.filter(test => {
+        if (suiteSelectTests !== "All") {
+            const expectedFull = `${suiteSelectTests}.${test.name}`;
+            const isMatch = settings.switch.suitePathsTestSection
+                ? test.full_name === expectedFull
+                : test.full_name.includes(`.${suiteSelectTests}.${test.name}`) || test.full_name === expectedFull;
+            if (!isMatch) return false;
+        }
+        if (testSelectVal !== "All" && test.name !== testSelectVal) return false;
+        if (testTagsSelect !== "All") {
+            const tagList = test.tags.replace(/\[|\]/g, "").split(",").map(t => t.trim());
+            if (!tagList.includes(testTagsSelect)) return false;
+        }
+        return true;
+    });
+}
+
 function _build_test_messages_config() {
-    const data = get_messages_data("test", settings.graphTypes.testMessagesGraphType, filteredTests);
+    const data = get_messages_data("test", settings.graphTypes.testMessagesGraphType, _get_test_most_filtered_data());
     const graphData = data[0];
     const callbackData = data[1];
     const pointMeta = data[2] || null;
@@ -297,19 +319,19 @@ function _build_test_duration_deviation_config() {
 }
 
 function _build_test_most_flaky_config() {
-    return build_most_flaky_config("testMostFlaky", "test", filteredTests, ignoreSkips, false);
+    return build_most_flaky_config("testMostFlaky", "test", _get_test_most_filtered_data(), ignoreSkips, false);
 }
 function _build_test_recent_most_flaky_config() {
-    return build_most_flaky_config("testRecentMostFlaky", "test", filteredTests, ignoreSkipsRecent, true);
+    return build_most_flaky_config("testRecentMostFlaky", "test", _get_test_most_filtered_data(), ignoreSkipsRecent, true);
 }
 function _build_test_most_failed_config() {
-    return build_most_failed_config("testMostFailed", "test", "Test", filteredTests, false);
+    return build_most_failed_config("testMostFailed", "test", "Test", _get_test_most_filtered_data(), false);
 }
 function _build_test_recent_most_failed_config() {
-    return build_most_failed_config("testRecentMostFailed", "test", "Test", filteredTests, true);
+    return build_most_failed_config("testRecentMostFailed", "test", "Test", _get_test_most_filtered_data(), true);
 }
 function _build_test_most_time_consuming_config() {
-    return build_most_time_consuming_config("testMostTimeConsuming", "test", "Test", filteredTests, "onlyLastRunTest");
+    return build_most_time_consuming_config("testMostTimeConsuming", "test", "Test", _get_test_most_filtered_data(), "onlyLastRunTest");
 }
 
 // create functions

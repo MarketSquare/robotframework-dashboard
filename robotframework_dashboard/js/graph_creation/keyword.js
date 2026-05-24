@@ -43,14 +43,26 @@ function _build_keyword_average_duration_config() { return _build_keyword_durati
 function _build_keyword_min_duration_config() { return _build_keyword_duration_config("keywordMinDuration", "min_time_s", "Duration"); }
 function _build_keyword_max_duration_config() { return _build_keyword_duration_config("keywordMaxDuration", "max_time_s", "Duration"); }
 
+function _get_keyword_most_filtered_data() {
+    if (!settings.switch.sectionFiltersApplyKeyword) return filteredKeywords;
+    const keywordSelectValue = document.getElementById("keywordSelect").value;
+    const useLibraryNames = settings?.switch?.useLibraryNames === true;
+    return filteredKeywords.filter(keyword => {
+        const keywordKey = useLibraryNames && keyword.owner
+            ? `${keyword.owner}.${keyword.name}`
+            : keyword.name;
+        return keywordKey === keywordSelectValue;
+    });
+}
+
 function _build_keyword_most_failed_config() {
-    return build_most_failed_config("keywordMostFailed", "keyword", "Keyword", filteredKeywords, false);
+    return build_most_failed_config("keywordMostFailed", "keyword", "Keyword", _get_keyword_most_filtered_data(), false);
 }
 function _build_keyword_most_time_consuming_config() {
-    return build_most_time_consuming_config("keywordMostTimeConsuming", "keyword", "Keyword", filteredKeywords, "onlyLastRunKeyword");
+    return build_most_time_consuming_config("keywordMostTimeConsuming", "keyword", "Keyword", _get_keyword_most_filtered_data(), "onlyLastRunKeyword");
 }
 function _build_keyword_most_used_config() {
-    return build_most_time_consuming_config("keywordMostUsed", "keyword", "Keyword", filteredKeywords, "onlyLastRunKeywordMostUsed", "Most Used", true, (info, name) => `${name}: ran ${info.timesRun} times`);
+    return build_most_time_consuming_config("keywordMostUsed", "keyword", "Keyword", _get_keyword_most_filtered_data(), "onlyLastRunKeywordMostUsed", "Most Used", true, (info, name) => `${name}: ran ${info.timesRun} times`);
 }
 
 // create functions
