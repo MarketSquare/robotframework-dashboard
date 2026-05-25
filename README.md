@@ -123,3 +123,54 @@ This project is licensed under the MIT License.
 See also my 2025 [RoboCon](https://robocon.io) talk, where I explain robotdashboard and its use cases. Note that the UI has improved significantly since then.
 
 [![Robocon 2025 talk](https://img.youtube.com/vi/olf1_pd9YfM/0.jpg)](https://www.youtube.com/watch?v=olf1_pd9YfM)
+
+
+## 📐 Architecture
+
+```mermaid
+flowchart LR
+    CLI(["robotdashboard CLI"]) --> ARGS["Parse CLI arguments"]
+    ARGS --> SRVQ{"--server flag?"}
+    SRVQ -->|"No"| REG(["Regular Mode"])
+    SRVQ -->|"Yes"| SRV(["Server Mode"])
+```
+
+### Regular Mode
+
+```mermaid
+flowchart LR
+    INIT["Init Database\nSQLite or custom class"] --> XML{"output.xml\nprovided?"}
+    XML -->|"Yes"| PROC["Store runs data"]
+    PROC --> DB[("Database")]
+    XML -->|"No"| DB
+    DB --> GENQ{"Generate\ndashboard?"}
+    GENQ -->|"Yes"| GEN["Generate self-contained HTML dashboard"]
+    GEN --> OUTPUT(["robot_dashboard.html"])
+    OUTPUT --> BROWSER["Open in any browser"]
+    GENQ -->|"No"| DONE(["Done"])
+```
+
+### Server Mode
+
+```mermaid
+flowchart LR
+    INST["FastAPI server · Persistent RobotDashboard instance"] --> DASH["GET / — Dashboard"]
+    INST --> ADMIN["GET /admin — Admin UI\nBasic Auth optional"]
+
+    subgraph OUT_MGMT["Output management"]
+        EP_ADD["POST /add-outputs · /add-output-file"]
+        EP_REM["DELETE /remove-outputs"]
+        EP_REF["POST /refresh-dashboard"]
+    end
+
+    subgraph LOG_MGMT["Log management"]
+        EP_LOGS["POST /add-log · DELETE /remove-log\nGET /get-logs · /log"]
+    end
+
+    INST --> EP_ADD & EP_REM & EP_REF & EP_LOGS
+
+    LISTENER(["Robot Framework test run\nrobotdashboardlistener.py"]) -->|"POST /add-output-file"| EP_ADD
+    ADMIN -->|"calls"| EP_ADD & EP_REM & EP_REF & EP_LOGS
+
+    EP_ADD & EP_REM & EP_REF & EP_LOGS --> REGEN["Regenerate\ndashboard HTML"]
+```
