@@ -10,14 +10,14 @@ Get Dashboard Index
     Acquire Lock    name=dashboard_index
     ${exists}    Run Keyword And Return Status    Should Exist    path=index.txt
     IF    not ${exists}
-        Create File    path=index.txt    content=1:${TEST_NAME}
+        Create File    path=index.txt    content=1:${SUITE_NAME}
         RETURN   ${1}
     END
     ${index}    Get File    path=index.txt
     ${index}    Split String    string=${index}    separator=:
     ${index}    Convert To Integer    ${index}[0]
     ${index}    Evaluate    ${index} + 1
-    Create File    path=index.txt    content=${index}:${TEST_NAME}
+    Create File    path=index.txt    content=${index}:${SUITE_NAME}
     RETURN    ${index}
 
 Generate Dashboard
