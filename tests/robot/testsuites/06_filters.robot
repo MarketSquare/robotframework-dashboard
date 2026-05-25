@@ -4,10 +4,10 @@ Documentation    This testsuite covers the generated HTML dashboard of robotdash
 Resource    ../resources/keywords/dashboard-keywords.resource
 Resource    ../resources/keywords/general-keywords.resource
 
-Suite Setup    Start Browser
-Suite Teardown    Close Browser
-Test Setup    Run Keywords    Generate Dashboard    Open Dashboard
-Test Teardown    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+Suite Setup    Run Keywords    Start Browser    Generate Dashboard
+Suite Teardown    Run Keywords    Close Browser    Remove Database And Dashboard With Index
+Test Setup    Open Dashboard
+Test Teardown    Close Dashboard
 
 
 *** Test Cases ***

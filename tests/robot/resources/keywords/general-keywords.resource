@@ -23,7 +23,7 @@ Get Dashboard Index
 Generate Dashboard
     ${index}    Get Dashboard Index
     Release Lock    name=dashboard_index
-    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
+    VAR    ${DASHBOARD_INDEX}    ${index}    scope=SUITE
     ${files}    Catenate  SEPARATOR=${SPACE}  
     ...    -o ${CURDIR}/../outputs/output-20250313-002134.xml:prod:project_1:version_1.0
     ...    -o ${CURDIR}/../outputs/output-20250313-002151.xml:dev:project_1:version_1.0
