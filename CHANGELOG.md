@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.1.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.1.0) - 2026-05-25
+
+### Added
+- Age-based run removal — configure a maximum run age so that old runs are automatically pruned from the database on import
+- Basic authentication for server endpoints — protect the dashboard server with a username and password
+- Suite path filtering with breadcrumb navigation — filter the dashboard to a specific suite path and navigate the hierarchy with a breadcrumb trail
+- Toggle filters for top graphs in the Suite, Test, and Keyword sections — show or hide individual series directly from the graph area
+- Custom sections — add, rename, and delete custom dashboard sections via a modal dialog
+
+---
+
 ## [2.0.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.0.0) - 2026-05-16
 
 ### Added
