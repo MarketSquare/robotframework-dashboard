@@ -69,6 +69,9 @@ database:
                           • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run
                           • '-r alias=some_alias,tag=prod'
                           • '-r limit=10' -> keep only the 10 most recent runs
+                          • '-r age=10d' -> remove runs older than 10 days
+                          • '-r age=-10d' -> remove runs younger than 10 days
+                          • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
   -c PATH, --databaseclass PATH
                         Path to a custom database class (.py) to override the built-in SQLite engine.
                           • See docs for implementation details

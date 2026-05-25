@@ -113,6 +113,8 @@ remove_outputs_model_config = {
                 "tags": ["tag1", "tag2", "tag3"],
             },
             {"limit": 10},
+            {"age": "10d"},
+            {"age": "-10d"},
             {"all": True},
         ],
         "openapi_examples": {
@@ -139,6 +141,11 @@ remove_outputs_model_config = {
                     "indexes": ["0", "-1"],
                     "tags": ["tag1", "tag2", "tag3"],
                 },
+            },
+            "age": {
+                "summary": "Remove runs based on age threshold",
+                "description": "Remove runs older than a threshold (e.g., '10d') or younger than a threshold (e.g., '-10d'). Supports (y)ear/(d)ay/(h)our/(m)inute/(s)econd.",
+                "value": {"age": "10d"},
             },
             "limit": {
                 "summary": "Remove all but the N most recent runs",
@@ -246,6 +253,7 @@ class RemoveOutputs(BaseModel):
     tags: Optional[List[str]] = None
     all: Optional[bool] = False
     limit: Optional[int] = None
+    age: Optional[str] = None
     model_config = remove_outputs_model_config
 
 
@@ -607,6 +615,8 @@ class ApiServer:
                     if remove_output.tags != None:
                         for run in remove_output.tags:
                             remove_runs.append(f"tag={run}")
+                    if remove_output.age != None:
+                        remove_runs.append(f"age={remove_output.age}")
                     if remove_output.limit != None:
                         remove_runs.append(f"limit={remove_output.limit}")
                 paths_before = self.robotdashboard.get_run_paths()

@@ -1,9 +1,10 @@
 import sqlite3
+import re
 from pathlib import Path
 from .queries import *
 from .abstractdb import AbstractDatabaseProcessor
 from time import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Union
 
 # Explicit adapter for datetime -> ISO string, replacing the deprecated default
@@ -399,6 +400,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                     console += self._remove_by_tag(run, run_starts, run_tags)
                 elif "limit=" in run:
                     console += self._remove_by_limit(run, run_starts)
+                elif "age=" in run:
+                    console += self._remove_by_age(run, run_starts)
                 else:
                     print(
                         f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions"
@@ -490,6 +493,37 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
         return console
 
+    def _remove_by_age(self, run_query: str, run_starts: list):
+        console = ""
+        try:
+            clean_query = run_query.replace("age=", "")
+            mod, delta = self.parse_time_range(clean_query)
+        except ValueError as e:
+            return f" ERROR: {e}"
+        cutoff = datetime.now(timezone.utc)-delta
+        targets = []
+        for r in run_starts:
+            try:
+                run_dt = datetime.fromisoformat(r)
+                if run_dt.tzinfo is None:
+                    run_dt = run_dt.replace(tzinfo=timezone.utc)
+                if mod == "+":
+                    if run_dt < cutoff:
+                        targets.append(r)
+                elif mod == "-":
+                    if run_dt > cutoff:
+                        targets.append(r)
+            except ValueError as e:
+                print(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
+        if not targets:
+            console += f"  WARNING: no runs were removed as no runs were within range {clean_query}"
+            return console
+        for run_to_remove in targets:
+            self._remove_run(run_to_remove)
+            print(f"  Removed run from the database: run_start={run_to_remove}")
+            console += f"  Removed run from the database: run_start={run_to_remove}\n"
+        return console
+
     def _remove_run(self, run_start: str):
         """Helper function to remove the data from all tables"""
         self.connection.cursor().execute(DELETE_FROM_RUNS.format(run_start=run_start))
@@ -509,6 +543,25 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         console = f"  Vacuumed the database in {round(end - start, 2)} seconds\n"
         print(f"  Vacuumed the database in {round(end - start, 2)} seconds")
         return console
+
+    def parse_time_range(self, range_str: str):
+        # Regex groups : [modifier] [value] [unit]
+        # e.g., +10d, -4h, 1y
+        match = re.match(r"([+-])?(\d+)([smhdy])", range_str)
+        if not match:
+            raise ValueError("Invalid format. Use e.g., 10d, +5h, -1y")
+        modifier, value, unit = match.groups()
+        value = int(value)
+        units = {
+            's': 'seconds',
+            'm': 'minutes',
+            'h': 'hours',
+            'd': 'days',
+            'y': 'days'
+        }
+        # assume year is 365 days
+        delta_kwargs = {units[unit]: value * (365 if unit == 'y' else 1)}
+        return modifier or '+', timedelta(**delta_kwargs)
 
     def update_output_path(self, log_path: str):
         """Function to update the output_path using the log path that the server has used"""
