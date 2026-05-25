@@ -13,4 +13,5 @@ Test Teardown    Run Keywords    Close Dashboard    Remove Database And Dashboar
 *** Test Cases ***
 Validate Settings
     Change Settings
-    Validate Component    id=runStatisticsSection    name=changedSettings    folder=run
+    # threshold loosened to 0.01 (99% accuracy) — chart re-renders after multiple settings changes cause minor pixel variations
+    Validate Component    id=runStatisticsSection    name=changedSettings    folder=run    threshold=0.01

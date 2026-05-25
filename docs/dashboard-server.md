@@ -147,10 +147,10 @@ The admin page supports four methods for adding test results:
 
 | Method | Description |
 |--------|-------------|
-| **By Absolute Path** | Provide the full path to an `output.xml` on the server filesystem. Optionally add run tags and a version label. |
-| **By XML Data** | Paste raw `output.xml` content directly into a text area. Supports run tags, alias, and version label. |
-| **By Folder Path** | Provide a folder path; the server recursively scans for `*output*.xml` files. Supports run tags and version label. |
-| **By File Upload** | Upload an `output.xml` file directly. Supports run tags and version label. Gzip-compressed files (`.gz`/`.gzip`) are automatically decompressed. |
+| **By Absolute Path** | Provide the full path to an `output.xml` on the server filesystem. Optionally add run tags, a version label, and custom filters. |
+| **By XML Data** | Paste raw `output.xml` content directly into a text area. Supports run tags, alias, version label, and custom filters. |
+| **By Folder Path** | Provide a folder path; the server recursively scans for `*output*.xml` files. Supports run tags, version label, and custom filters. |
+| **By File Upload** | Upload an `output.xml` file directly. Supports run tags, version label, and custom filters. Gzip-compressed files (`.gz`/`.gzip`) are automatically decompressed. |
 
 ### Removing Outputs
 

@@ -1120,6 +1120,39 @@
             </div>
     </div>
 
+    <!-- Add Custom Section Modal -->
+    <div class="modal fade" id="addCustomSectionModal" tabindex="-1" aria-labelledby="addCustomSectionModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCustomSectionModalLabel">Add Custom Section</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="addCustomSectionTitle">Section Name</label>
+                            <input type="text" id="addCustomSectionTitle" class="form-control"
+                                placeholder="Section name" maxlength="60">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Text Color</label>
+                            <div class="d-flex flex-wrap gap-2" id="addCustomSectionTextColorPicker"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Background Color</label>
+                            <div class="d-flex flex-wrap gap-2" id="addCustomSectionBgColorPicker"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            id="addCustomSectionConfirm">Add Section</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
     <!-- placeholder_javascript -->
 </body>
 

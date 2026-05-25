@@ -22,7 +22,7 @@ robotdashboard --help
 ```
 - Optional: `-h` or `--help` provides detailed information about all CLI options.
 
-## Adding Output XML Files
+## Output Files
 
 ### Add one or multiple output XML files
 ```bash
@@ -42,31 +42,6 @@ robotdashboard -f C:/nightly_runs:tag1:tag2:tag3 -f some/other/path/results
 - Optional: `-f` or `--outputfolderpath` specifies a folder; the CLI will process all `*output*.xml` files it finds.  
 - Tags can be added to group or categorize runs. 
 - See [Advanced CLI & Examples](/advanced-cli-examples#advanced-tagging-strategies) for more information on Tags!
-
-## Controlling Database and Dashboard Behavior
-
-### Custom database path
-```bash
-robotdashboard -d result_data/robot_result_database.db  
-```
-- Optional: `-d` or `--databasepath` specifies a custom database file to store results.
-- Default: database path is the **current folder** with **robot_results.db**.
-
-### Custom dashboard HTML file name
-```bash
-robotdashboard -n results/result_robot_dashboard.html  
-```
-- Optional: `-n` or `--namedashboard` specifies the file name and path for the generated dashboard HTML.
-- Default: dashboard name is **robot_dashboard_YYYYMMDD-HHMMSS.html**.
-
-### Skip listing runs and/or skip generating dashboard
-```bash
-robotdashboard -l false -g false  
-```
-- Optional: `-l` or `--listruns` disables listing runs in the console. 
-- Default: true, valid values are True, TRUE, T (similar for False).
-- Optional: `-g` or `--generatedashboard` disables generating the HTML dashboard.
-- Default: true, valid values are True, TRUE, T (similar for False).
 
 ### Project Version
 You can pass version associated with a test run.  
@@ -89,6 +64,18 @@ robotdashboard -f ./results:version_1.1 ./results2:version_2.3.4
 > Added in RobotDashboard v1.3.0  
 > version_ tag support added in v1.4.0
 
+### Custom Filters
+You can attach arbitrary key=value metadata to runs as filterable dimensions.
+```bash
+robotdashboard -o output.xml --customfilters "ProductVersion=1.1:Environment=staging"
+robotdashboard -f ./results --customfilters "ComponentA=2.0:Environment=prod"
+```
+- Optional: `--customfilters` specifies one or more custom filter dimensions, as a colon-separated `key=value` string.
+- Each unique key creates its own filter dropdown in the Dashboard's Filters modal.
+- See [Advanced CLI & Examples](/advanced-cli-examples#custom-filters) for more details and the [Filtering](/filtering#global-filters) page for how custom filter dropdowns work.
+
+> Added in RobotDashboard v1.7.0
+
 ### Timezone
 The dashboard stores a timezone offset alongside `run_start` timestamps so the dashboard can display times correctly for your local timezone.  
 By default the offset is **auto-detected** from the machine running `robotdashboard`. Override it when your `output.xml` files were produced in a different timezone:
@@ -107,14 +94,21 @@ robotdashboard -o output.xml -z +00:00
 ::: info Timezone and existing runs
 Runs processed **before** this feature was introduced have no timezone offset stored in their `run_start`. **This does not break anything** — those runs display exactly as they did before and are unaffected by both timezone settings in the dashboard.
 
-You only need to re-add those `output.xml` files (with the correct `-z`/`--timezone` flag) if you want the **Convert Timestamps to Local Timezone** feature to work for them. If you never intend to use timezone conversion, no action is required. See [Upgrading & Database Migration](/installation-version-info#upgrading-database-migration) and [Settings – Display Timezone Offsets & Conversion](/settings#general-settings-graphs-tab) for details.
+You only need to re-add those `output.xml` files (with the correct `-z`/`--timezone` flag) if you want the **Convert Timestamps to Local Timezone** feature to work for them. If you never intend to use timezone conversion, no action is required. See [Upgrading & Database Migration](/installation-version-info#upgrading-database-migration) and [Settings – Display Timezone Offsets & Conversion](/settings#labels-time-settings-labels-time-tab) for details.
 :::
 
 > Added in RobotDashboard v1.8.0
 
-## Removing Runs from the Database
+## Database
 
-### Remove runs by index, run start, alias, tag, or limit
+### Custom database path
+```bash
+robotdashboard -d result_data/robot_result_database.db  
+```
+- Optional: `-d` or `--databasepath` specifies a custom database file to store results.
+- Default: database path is the **current folder** with **robot_results.db**.
+
+### Remove runs from the database
 ```bash
 robotdashboard -r index=0,index=1:4;9,index=10  
 robotdashboard --removeruns 'run_start=2024-07-30 15:27:20.184407,index=20'  
@@ -132,7 +126,41 @@ robotdashboard -r age=-10d
 - With age=10d only runs _**older**_ than 10 days will be removed  
 - With age=-10d only runs _**younger**_ than 10 days will be removed  
 
-## Customizing the Dashboard
+### Use a custom database class
+```bash
+robotdashboard -c ./path/to/custom_class.py  
+robotdashboard --databaseclass mysql.py  
+```
+- Optional: `-c` or `--databaseclass` specifies a custom database class implementation.  
+- By default, Sqlite3 is used. See [Custom Database Class](/custom-database-class.md) for more information.
+
+### Disable automatic database vacuuming
+```bash
+robotdashboard --novacuum
+robotdashboard --novacuum True
+```
+- Optional: `--novacuum` disables automatic database vacuuming.
+- Default: False. Using `--novacuum` with no value sets it to True.
+
+## Dashboard
+
+### Generate dashboard and list runs
+```bash
+robotdashboard -g false  
+robotdashboard -l false  
+robotdashboard -l false -g false  
+```
+- Optional: `-g` or `--generatedashboard` disables generating the HTML dashboard.
+- Default: true, valid values are True, TRUE, T (similar for False).
+- Optional: `-l` or `--listruns` disables listing runs in the console.
+- Default: true, valid values are True, TRUE, T (similar for False).
+
+### Custom dashboard HTML file name
+```bash
+robotdashboard -n results/result_robot_dashboard.html  
+```
+- Optional: `-n` or `--namedashboard` specifies the file name and path for the generated dashboard HTML.
+- Default: dashboard name is **robot_dashboard_YYYYMMDD-HHMMSS.html**.
 
 ### Set a custom HTML title
 ```bash
@@ -141,24 +169,8 @@ robotdashboard -t "My Cool Title"
 - Optional: `-t` or `--dashboardtitle` sets a custom HTML title for the dashboard.
 - Default: title is **Robot Framework Dashboard - YYYY-MM-DD HH:MM:SS**.
 - The title also appears in the navigation bar of the dashboard, overriding any *Custom Title* value set in the Theme settings.
-- It is also possible to combine all sections into a single unified view, see [Settings - General Settings (Graphs Tab)](/settings#general-settings-graphs-tab), for the details
+- It is also possible to combine all sections into a single unified view, see [Settings - Defaults Tab](/settings#defaults-settings-defaults-tab), for the details
 - The unified title will be the same as the `-t, --dashboardtitle` argument if provided, otherwise it defaults to "Dashboard Statistics"
-
-### Use a JSON dashboard configuration file to set default settings
-```bash
-robotdashboard -j ./path/to/config.json  
-robotdashboard --jsonconfig default_settings.json  
-```
-- Optional: `-j` or `--jsonconfig` sets a JSON dashboard configuration file used on first load.
-- See [Advanced CLI & Examples](/advanced-cli-examples#using-a-custom-dashboard-config-json) for more information on customized loading behaviour!
-
-### Force the JSON config even if local storage exists
-```bash
-robotdashboard -j ./path/to/config.json --forcejsonconfig  
-robotdashboard --jsonconfig default_settings.json --forcejsonconfig  
-```
-- Optional: `--forcejsonconfig` forces the use of the JSON dashboard configuration file even if local storage exists.
-- See [Advanced CLI & Examples](/advanced-cli-examples#using-a-custom-dashboard-config-json) for more information on customized loading behaviour!
 
 ### Control number of runs displayed by default
 ```bash
@@ -168,7 +180,16 @@ robotdashboard --quantity 50
 - Optional: `-q` or `--quantity` sets the default number of runs shown in the dashboard on first load.
 - Default: value in the dashboard is 20. This can be changed in the filters.
 
-## Advanced Options
+### Use local JS and CSS dependencies
+```bash
+robotdashboard --offlinedependencies  
+robotdashboard --offlinedependencies True  
+```
+- Optional: `--offlinedependencies` specifies to use locally downloaded js/css files and embed them directly into the dashboard.  
+- By default, urls to the actual JS and CSS CDN are used. 
+- See [Advanced CLI & Examples](/advanced-cli-examples#offline-dependencies) for more information.
+
+## Log Linking
 
 ### Enable Log Linking in the dashboard
 ```bash
@@ -190,6 +211,24 @@ robotdashboard -u true -f ./results --logurl "https://ci.example.com/build/42/lo
 - If `--logurl` is provided without `{run_alias}` and multiple outputs are being processed, the command will produce an error.
 - See [Log Linking — CI Pipelines and Hosted Logs](/log-linking.md#ci-pipelines-and-hosted-logs) for full details and examples.
 
+## Dashboard Configuration
+
+### Use a JSON dashboard configuration file to set default settings
+```bash
+robotdashboard -j ./path/to/config.json  
+robotdashboard --jsonconfig default_settings.json  
+```
+- Optional: `-j` or `--jsonconfig` sets a JSON dashboard configuration file used on first load.
+- See [Advanced CLI & Examples](/advanced-cli-examples#using-a-custom-dashboard-config-json) for more information on customized loading behaviour!
+
+### Force the JSON config even if local storage exists
+```bash
+robotdashboard -j ./path/to/config.json --forcejsonconfig  
+robotdashboard --jsonconfig default_settings.json --forcejsonconfig  
+```
+- Optional: `--forcejsonconfig` forces the use of the JSON dashboard configuration file even if local storage exists.
+- See [Advanced CLI & Examples](/advanced-cli-examples#using-a-custom-dashboard-config-json) for more information on customized loading behaviour!
+
 ### Add messages config for bundling test messages
 ```bash
 robotdashboard -m message_config.txt  
@@ -198,22 +237,17 @@ robotdashboard --messageconfig path/to/message_config.txt
 - Optional: `-m` or `--messageconfig` specifies a file containing custom messages with placeholders like `${x}` or `${y}`.
 - See [Advanced CLI & Examples](/advanced-cli-examples#message-config-details) for more details regarding the message config!
 
-### Use local JS and CSS dependencies
-```bash
-robotdashboard --offlinedependencies  
-robotdashboard --offlinedependencies True  
-```
-- Optional: `--offlinedependencies` specifies to use locally downloaded js/css files and embed them directly into the dashboard.  
-- By default, urls to the actual JS and CSS CDN are used. 
-- See [Advanced CLI & Examples](/advanced-cli-examples#offline-dependencies) for more information.
+## Server
 
-### Disable automatic database vacuuming
+### Start the dashboard server
 ```bash
-robotdashboard --novacuum
-robotdashboard --novacuum True
+robotdashboard --server  
+robotdashboard --server default  
+robotdashboard -s 0.0.0.0:8543  
 ```
-- Optional: `--novacuum` disables automatic database vacuuming.
-- Default: False. Using `--novacuum` with no value sets it to True.
+- Optional: `-s` or `--server` starts the dashboard web server.  
+- See [Dashboard Server](/dashboard-server.md) for advanced usage.  
+- Docker users can bind to a specific host and port as shown.
 
 ### Disable automatic dashboard regeneration on upload/delete
 ```bash
@@ -227,23 +261,15 @@ robotdashboard --server --noautoupdate True
 - Only relevant when used together with `--server`.
 - See [Dashboard Server](/dashboard-server.md#manual-refresh-mode-noautoupdate) for more details.
 
-### Use a custom database class
+### Enable HTTPS
 ```bash
-robotdashboard -c ./path/to/custom_class.py  
-robotdashboard --databaseclass mysql.py  
+robotdashboard --server --ssl-certfile cert.pem --ssl-keyfile key.pem
+robotdashboard -s 0.0.0.0:8543 --ssl-certfile /path/to/cert.pem --ssl-keyfile /path/to/key.pem
 ```
-- Optional: `-c` or `--databaseclass` specifies a custom database class implementation.  
-- By default, Sqlite3 is used. See [Custom Database Class](/custom-database-class.md) for more information.
-
-## Starting the Dashboard Server
-```bash
-robotdashboard --server  
-robotdashboard --server default  
-robotdashboard -s 0.0.0.0:8543  
-```
-- Optional: `-s` or `--server` starts the dashboard web server.  
-- See [Dashboard Server](/dashboard-server.md) for advanced usage.  
-- Docker users can bind to a specific host and port as shown.
+- Optional: `--ssl-certfile` and `--ssl-keyfile` enable HTTPS by providing paths to an SSL certificate and its matching private key.
+- Both flags must be provided together; neither has any effect without the other.
+- Only relevant when used together with `--server`.
+- See [Dashboard Server](/dashboard-server.md) for more details.
 
 ### Deprecated options
 
