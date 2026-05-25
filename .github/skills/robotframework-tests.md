@@ -14,17 +14,17 @@ All tests are **Robot Framework acceptance tests** run with **pabot**. Tests liv
 
 ```bash
 # Windows
-pabot --pabotlib --suitelevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\tests\robot\testsuites\*.robot
+pabot --pabotlib --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results .\tests\robot\testsuites\*.robot
 
 # Linux / macOS
-pabot --pabotlib --suitelevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/testsuites/*.robot
+pabot --pabotlib --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results tests/robot/testsuites/*.robot
 ```
 
 Convenience scripts: `scripts/robot-tests.bat` and `scripts/robot-tests.sh`.
 
 Key pabot flags:
 - `--pabotlib` — starts the pabot shared library server (required for cross-process locks used by the index counter)
-- `--suitelevelsplit` — each suite runs as one unit in parallel; all tests within a suite run sequentially in the same process
+- no `--testlevelsplit` to make sure each suite runs as one unit in parallel; all tests within a suite run sequentially in the same process
 - `--artifacts png,jpg --artifactsinsubfolders` — collects screenshots from each pabot worker's output dir
 - `-d results` — all output goes to `results/`
 
