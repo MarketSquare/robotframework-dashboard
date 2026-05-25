@@ -198,11 +198,16 @@ function _build_suite_duration_config() {
     return config;
 }
 
+function _get_suite_most_filtered_data() {
+    if (!settings.switch.sectionFiltersApplySuite) return filteredSuites;
+    return filteredSuites.filter(s => !exclude_from_suite_data("suite", s));
+}
+
 function _build_suite_most_failed_config() {
-    return build_most_failed_config("suiteMostFailed", "suite", "Suite", filteredSuites, false);
+    return build_most_failed_config("suiteMostFailed", "suite", "Suite", _get_suite_most_filtered_data(), false);
 }
 function _build_suite_most_time_consuming_config() {
-    return build_most_time_consuming_config("suiteMostTimeConsuming", "suite", "Suite", filteredSuites, "onlyLastRunSuite");
+    return build_most_time_consuming_config("suiteMostTimeConsuming", "suite", "Suite", _get_suite_most_filtered_data(), "onlyLastRunSuite");
 }
 
 // create functions
@@ -214,6 +219,10 @@ function create_suite_folder_donut_graph(folder) {
         update_suite_folder_fail_donut_graph();
         update_suite_statistics_graph();
         update_suite_duration_graph();
+        if (settings.switch.sectionFiltersApplySuite) {
+            update_suite_most_failed_graph();
+            update_suite_most_time_consuming_graph();
+        }
     }
     if (suiteFolderDonutGraph) { suiteFolderDonutGraph.destroy(); }
     suiteFolderDonutGraph = new Chart("suiteFolderDonutGraph", _build_suite_folder_donut_config(folder));
@@ -233,6 +242,10 @@ function update_suite_folder_donut_graph(folder) {
         update_suite_folder_fail_donut_graph();
         update_suite_statistics_graph();
         update_suite_duration_graph();
+        if (settings.switch.sectionFiltersApplySuite) {
+            update_suite_most_failed_graph();
+            update_suite_most_time_consuming_graph();
+        }
     }
     if (!suiteFolderDonutGraph) { create_suite_folder_donut_graph(folder); return; }
     const config = _build_suite_folder_donut_config(folder);

@@ -95,6 +95,17 @@ Global filters are applied to the entire dashboard, affecting all sections and g
 - Use **All Runs** to set the value to the total number of runs currently matching the other filters.
 - Useful for focusing on recent history without changing the date filters.
 
+#### 8. Suite Path
+
+- Filters the dashboard to only include runs that contain at least one suite whose path matches the selected path (or any sub-path beneath it).
+- **All** (default) disables the path filter — all runs are shown.
+- The filter displays a **breadcrumb navigator**: the current path is shown as a breadcrumb trail, and the immediate children are shown as clickable buttons below it.
+  - Click a **child button** to drill down into that sub-folder or suite.
+  - Click any **breadcrumb segment** to jump back up to that level.
+- After the run filter is applied, suites and tests are also narrowed to only those matching the selected path prefix — so all graphs and tables reflect only the chosen path.
+- A dot next to the label indicates the filter is active.
+- The Suite Path filter is applied after all other run-level filters but before the Amount limit, so "most recent X runs" always refers to runs that contain the selected path.
+
 ### Filter Profiles
 
 Filter Profiles let you save, name, and reapply a combination of filter settings in one click.
@@ -162,16 +173,19 @@ The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each
 - **Folder Filter (Donut Chart)** – Click on folder donuts to "zoom in" on specific suites. Affects the Suite Statistics and Suite Duration graphs.
 - **Suite Selection Dropdown** – Choose a specific suite or all suites.
 - **Full Suite Paths Toggle** – When enabled, shows the full suite path instead of only the suite name. Useful when duplicate suite names exist in different folders.
+- **Filters affect top graphs Toggle** – When enabled, the active suite and folder filters also apply to the Most Failed and Most Time Consuming graphs. When disabled, those graphs always show data across all suites regardless of the selection.
 
 #### Test Section
 - **Suite Filter** – Select one or multiple suites from a dropdown.
 - **Suite Paths Toggle** – Same logic as the Suite section; allows distinguishing duplicate suite names.
 - **Test Selection Dropdown** – Zoom in on a specific test.
 - **Test Tag Dropdown** – Filter tests by tags.
+- **Filters affect top graphs Toggle** – When enabled, the active suite, test, and tag filters also apply to the Most Failed, Most Flaky, Most Time Consuming, and Error Messages graphs. When disabled, those graphs always show data across all tests regardless of the selection.
 
 #### Keyword Section
 - **Keyword Dropdown** – Select a specific keyword to zoom in on.
 - **Library Names Toggle** – Include library names in the keyword selection dropdown.
+- **Filters affect top graphs Toggle** – When enabled, the active keyword filter also applies to the Most Failed, Most Time Consuming, and Most Used graphs. When disabled, those graphs always show data across all keywords regardless of the selection.
 
 ## Compare Page
 

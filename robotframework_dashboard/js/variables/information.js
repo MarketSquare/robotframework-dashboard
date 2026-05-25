@@ -32,14 +32,17 @@ See Settings > Overview for display options.`,
     "suiteSectionFolderFilter": "Click any row in the folder chart to drill down into that folder. Shows the active folder filter.",
     "suiteSectionSuiteFilter": "Select a specific suite to focus the statistics and duration graphs. 'All' shows all suites.",
     "suiteSectionPathsFilter": "Show full suite paths instead of just suite names — useful when duplicate names exist across different folders.",
+    "suiteSectionFiltersApplyFilter": "When on, the suite filters apply to the Most Failed and Most Time Consuming graphs. When off, those graphs always show results across all suites in the current data.",
     "testStatisticsInformation": `Test section: statistics, duration and deviation charts per test.`,
     "testSectionSuiteFilter": "Filter tests to those in the selected suite. Applies to Statistics, Duration and Duration Deviation graphs.",
     "testSectionPathsFilter": "Show full suite paths instead of just suite names — useful when duplicate names exist across different folders.",
     "testSectionTestFilter": "Zoom in on a specific test. Applies to Statistics, Duration and Duration Deviation graphs.",
     "testSectionTagFilter": "Filter tests by tag. Applies to Statistics, Duration and Duration Deviation graphs.",
+    "testSectionFiltersApplyFilter": "When on, the test filters apply to the Most Failed, Most Flaky, Most Time Consuming, and Error Messages graphs. When off, those graphs always show results across all tests in the current data.",
     "keywordStatisticsInformation": `Keyword section: statistics and duration charts per keyword.`,
     "keywordSectionKeywordFilter": "Zoom in on a specific keyword. Applies to Statistics, Times Run, and all Duration graphs.",
     "keywordSectionLibNamesFilter": "Include the library name as a prefix in the keyword dropdown.",
+    "keywordSectionFiltersApplyFilter": "When on, the keyword filters apply to the Most Failed, Most Time Consuming, and Most Used graphs. When off, those graphs always show results across all keywords in the current data.",
     "runStatisticsGraphPercentages": "Percentages: Displays the distribution of passed, failed, skipped tests per run, where 100% equals all tests combined",
     "runStatisticsGraphAmount": "Amount: Displays the actual number of passed, failed, skipped tests per run",
     "runStatisticsGraphLine": "Line: Displays the same data but over a time axis, useful for spotting failure patterns on specific dates or times",
@@ -153,6 +156,12 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "filterToTimeInformation": "Show only runs that started at or before this time (combined with To Date).",
     "filterMetadataInformation": "Filter by a metadata value attached to the run. Only shown when runs have metadata.",
     "filterAmountInformation": "Limit to the most recent X runs after all other filters are applied. 'All Runs' sets this to the total matching count.",
+    "filterSuitePathsInformation": `Filter runs by suite path. Only runs that contain at least one suite matching the selected path (or any of its sub-paths) are shown.
+- Navigate into sub-folders by clicking a child button.
+- Use the breadcrumb links to jump back to a parent level.
+- 'All' (the default) disables the path filter.
+- Suites and tests are also narrowed to the selected path after the run filter is applied.
+- A dot next to the label indicates the filter is active.`,
     "compareStatisticsGraphBar": "This graph displays the overall statistics of the selected runs",
     "compareSuiteDurationGraphRadar": "This graph displays the duration per suite in a radar format",
     "compareTestsGraphTimeline": `Timeline of test statuses across the selected runs.

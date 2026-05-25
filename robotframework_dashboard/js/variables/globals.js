@@ -111,6 +111,13 @@ const filterRows = [
         valueHtml: p => escape_html_for_merge(String(p.amount)),
     },
     {
+        key: 'suitePath',
+        label: 'Suite Path',
+        fields: ['suitePath'],
+        present: p => p.suitePath !== undefined,
+        valueHtml: p => escape_html_for_merge(String(p.suitePath || 'All')),
+    },
+    {
         key: 'customFilters',
         label: 'Custom Filters',
         fields: ['customFilters', 'customFilterModes'],

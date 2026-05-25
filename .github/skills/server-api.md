@@ -24,9 +24,9 @@ Served with **uvicorn** via `fastapi_offline.FastAPIOffline`.
 ## Authentication
 
 - HTTP Basic Auth is implemented using `HTTPBasic` + `secrets.compare_digest` (constant-time comparison)
-- **Only `/admin` requires credentials** when `server_user` and `server_pass` are set
-- All other endpoints (`/add-outputs`, `/remove-outputs`, etc.) are **unauthenticated by design**
-- If no credentials are configured, `/admin` is also open
+- **`/admin` and all mutation endpoints require credentials** when `server_user` and `server_pass` are set
+- Read-only endpoints (`/`, `/get-outputs`, `/get-logs`, `/log`, `/{full_path}`) are **unauthenticated**
+- If no credentials are configured, all endpoints are open (the `authenticate` dependency returns `"anonymous"`)
 
 ---
 
@@ -36,15 +36,15 @@ Served with **uvicorn** via `fastapi_offline.FastAPIOffline`.
 |---|---|---|---|
 | `GET` | `/` | None | Serves `robot_dashboard.html` from the working directory |
 | `GET` | `/admin` | Basic (if configured) | Serves the admin page HTML (generated from `templates/admin.html`) |
-| `POST` | `/refresh-dashboard` | None | Manually triggers `robotdashboard.create_dashboard()` without adding data |
+| `POST` | `/refresh-dashboard` | Basic (if configured) | Manually triggers `robotdashboard.create_dashboard()` without adding data |
 | `GET` | `/get-outputs` | None | Returns list of `{run_start, name, alias, tags}` for all stored runs |
-| `POST` | `/add-outputs` | None | Add output(s) from a path, raw XML string, or folder. See body fields below. |
-| `POST` | `/add-output-file` | None | Multipart upload of `output.xml` (or `.gz`/`.gzip`). Form fields: `tags` (colon-separated), `version`. |
-| `DELETE` | `/remove-outputs` | None | Remove runs by various selectors. See body fields below. |
+| `POST` | `/add-outputs` | Basic (if configured) | Add output(s) from a path, raw XML string, or folder. See body fields below. |
+| `POST` | `/add-output-file` | Basic (if configured) | Multipart upload of `output.xml` (or `.gz`/`.gzip`). Form fields: `tags` (colon-separated), `version`. |
+| `DELETE` | `/remove-outputs` | Basic (if configured) | Remove runs by various selectors. See body fields below. |
 | `GET` | `/get-logs` | None | Lists filenames in `robot_logs/` |
-| `POST` | `/add-log` | None | Saves HTML log content to `robot_logs/<log_name>` and links it to the matching run in the DB |
-| `POST` | `/add-log-file` | None | Same as `/add-log` but via multipart file upload (supports `.gz`/`.gzip`) |
-| `DELETE` | `/remove-log` | None | Removes one log by `log_name`, or all logs with `all: True` |
+| `POST` | `/add-log` | Basic (if configured) | Saves HTML log content to `robot_logs/<log_name>` and links it to the matching run in the DB |
+| `POST` | `/add-log-file` | Basic (if configured) | Same as `/add-log` but via multipart file upload (supports `.gz`/`.gzip`) |
+| `DELETE` | `/remove-log` | Basic (if configured) | Removes one log by `log_name`, or all logs with `all: True` |
 | `GET` | `/log` | None | Serves a log HTML file by `?path=` query param; stores parent dir for subsequent resource requests |
 | `GET` | `/{full_path:path}` | None | Catch-all: serves static resources (screenshots, etc.) relative to the last served log's directory. Path-traversal protected. |
 
