@@ -29,6 +29,8 @@ from pathlib import Path
 #   limit=100                              - Max runs in database; auto-delete oldest (default: 0 = unlimited)
 #   output=custom.xml                      - Custom output filename (required for pabot with custom -o)
 #   customfilters=key=val:key=val          - Custom filter key=value pairs (colon-separated)
+#   user=admin                             - Username for basic authentication (default: none)
+#   password=secret                        - Password for basic authentication (default: none)
 #
 # Features:
 #   - Output files are gzip-compressed and sent to /add-output-file
@@ -50,6 +52,8 @@ class robotdashboardlistener:
         uploadlog: bool = False,
         output: str = None,  # this option is only required when using pabot and a custom output.xml name!
         customfilters: str = None,  # custom filter key=value pairs (colon-separated, e.g. key=val:key=val)
+        user: str = None,
+        password: str = None,
     ):
         self.host = host
         self.port = port
@@ -61,6 +65,7 @@ class robotdashboardlistener:
         self.uploadlog = str(uploadlog).lower() == "true"
         self.output = output if output != None else "output.xml"
         self.customfilters = customfilters
+        self.auth = (user, password) if user and password else None
         self.path: str
         self.log_path: str
         self.last_execution: str
@@ -147,6 +152,7 @@ class robotdashboardlistener:
                 f"{self.protocol}://{self.host}:{self.port}/add-output-file",
                 data=form_data,
                 files=files,
+                auth=self.auth,
                 verify=self.ssl_verify,
             )
         except ConnectionError as e:
@@ -192,6 +198,7 @@ class robotdashboardlistener:
             response = post(
                 f"{self.protocol}://{self.host}:{self.port}/add-log-file",
                 files=files,
+                auth=self.auth,
                 verify=self.ssl_verify,
             )
         except ConnectionError:
@@ -217,6 +224,7 @@ class robotdashboardlistener:
             response = delete(
                 f"{self.protocol}://{self.host}:{self.port}/remove-outputs",
                 json=body,
+                auth=self.auth,
                 verify=self.ssl_verify,
             )
             if response.status_code == 200:

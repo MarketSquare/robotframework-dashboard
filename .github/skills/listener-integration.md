@@ -33,6 +33,8 @@ Key behaviours:
 | `sslverify` | `true` | SSL verification: `true`, `false`, or path to CA bundle |
 | `limit` | — | Keep only the N most recent runs; older ones auto-deleted |
 | `output` | — | Required when using pabot with a custom `-o` output filename |
+| `user` | — | Username for basic authentication |
+| `password` | — | Password for basic authentication |
 
 ---
 

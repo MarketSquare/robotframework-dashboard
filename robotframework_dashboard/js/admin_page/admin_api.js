@@ -116,6 +116,8 @@ function remove_outputs() {
     const removeTags = document.getElementById("removeTags").value.split(",")
     const removeLimit = document.getElementById("removeLimit").value
     if (removeLimit != "") { data["limit"] = removeLimit }
+    const removeAge = document.getElementById("removeAge").value
+    if (removeAge != "") { data["age"] = removeAge }
     for (const removeTag of removeTags) {
         if (removeTag == "") { continue }
         tags.push(removeTag)
@@ -126,6 +128,7 @@ function remove_outputs() {
     document.getElementById("removeAliases").value = ""
     document.getElementById("removeTags").value = ""
     document.getElementById("removeLimit").value = ""
+    document.getElementById("removeAge").value = ""
     const body = JSON.stringify(data)
     send_request("DELETE", "/remove-outputs", body, "removeSpinner")
 }

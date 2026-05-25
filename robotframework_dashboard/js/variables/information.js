@@ -156,6 +156,12 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "filterToTimeInformation": "Show only runs that started at or before this time (combined with To Date).",
     "filterMetadataInformation": "Filter by a metadata value attached to the run. Only shown when runs have metadata.",
     "filterAmountInformation": "Limit to the most recent X runs after all other filters are applied. 'All Runs' sets this to the total matching count.",
+    "filterSuitePathsInformation": `Filter runs by suite path. Only runs that contain at least one suite matching the selected path (or any of its sub-paths) are shown.
+- Navigate into sub-folders by clicking a child button.
+- Use the breadcrumb links to jump back to a parent level.
+- 'All' (the default) disables the path filter.
+- Suites and tests are also narrowed to the selected path after the run filter is applied.
+- A dot next to the label indicates the filter is active.`,
     "compareStatisticsGraphBar": "This graph displays the overall statistics of the selected runs",
     "compareSuiteDurationGraphRadar": "This graph displays the duration per suite in a radar format",
     "compareTestsGraphTimeline": `Timeline of test statuses across the selected runs.

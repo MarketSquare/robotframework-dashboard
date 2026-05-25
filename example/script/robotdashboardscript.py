@@ -30,6 +30,8 @@ from requests.exceptions import ConnectionError
 #   --sslverify     true                   SSL verification: 'true', 'false', or path to CA bundle (default: true)
 #   --limit         100                    Keep only the N most recent runs; auto-delete the rest (default: 0 = unlimited)
 #   --customfilters key=val:key=val        Custom filter key=value pairs, colon-separated (default: none)
+#   --user          admin                  Username for basic authentication (default: none)
+#   --password      secret                 Password for basic authentication (default: none)
 
 
 def _parse_args():
@@ -87,6 +89,16 @@ def _parse_args():
         default=None,
         help="Custom filter key=value pairs, colon-separated (e.g. 'key=val:key=val').",
     )
+    parser.add_argument(
+        "--user",
+        default=None,
+        help="Username for basic authentication (optional).",
+    )
+    parser.add_argument(
+        "--password",
+        default=None,
+        help="Password for basic authentication (optional).",
+    )
     return parser.parse_args()
 
 
@@ -112,7 +124,7 @@ def _print_console_message(response):
         _print_pusher(f"{message_line}")
 
 
-def _add_output_to_server(output_path: str, tags, version, customfilters, host, port, protocol, ssl_verify):
+def _add_output_to_server(output_path: str, tags, version, customfilters, host, port, protocol, ssl_verify, auth):
     _print_pusher(f"starting processing output.xml '{output_path}'")
     tags_list = tags.split(",") if tags else []
     tags_str = ":".join(filter(None, tags_list)) if tags_list else ""
@@ -135,6 +147,7 @@ def _add_output_to_server(output_path: str, tags, version, customfilters, host, 
             f"{protocol}://{host}:{port}/add-output-file",
             data=form_data,
             files=files,
+            auth=auth,
             verify=ssl_verify,
         )
     except ConnectionError:
@@ -156,7 +169,7 @@ def _add_output_to_server(output_path: str, tags, version, customfilters, host, 
         exit(1)
 
 
-def _upload_log_file(log_path: str, host, port, protocol, ssl_verify):
+def _upload_log_file(log_path: str, host, port, protocol, ssl_verify, auth):
     if not exists(log_path):
         _print_pusher(f"WARNING log file '{log_path}' not found, skipping log upload")
         return
@@ -173,6 +186,7 @@ def _upload_log_file(log_path: str, host, port, protocol, ssl_verify):
         response = post(
             f"{protocol}://{host}:{port}/add-log-file",
             files=files,
+            auth=auth,
             verify=ssl_verify,
         )
     except ConnectionError:
@@ -193,12 +207,13 @@ def _upload_log_file(log_path: str, host, port, protocol, ssl_verify):
         )
 
 
-def _remove_runs_over_limit(limit: int, host, port, protocol, ssl_verify):
+def _remove_runs_over_limit(limit: int, host, port, protocol, ssl_verify, auth):
     body = {"limit": limit}
     try:
         response = delete(
             f"{protocol}://{host}:{port}/remove-outputs",
             json=body,
+            auth=auth,
             verify=ssl_verify,
         )
     except ConnectionError:
@@ -218,6 +233,7 @@ def main():
     args = _parse_args()
     ssl_verify = _parse_ssl_verify(args.sslverify)
     limit = int(args.limit)
+    auth = (args.user, args.password) if args.user and args.password else None
 
     if not exists(args.output):
         _print_pusher(f"ERROR output file '{args.output}' not found")
@@ -232,6 +248,7 @@ def main():
         port=args.port,
         protocol=args.protocol,
         ssl_verify=ssl_verify,
+        auth=auth,
     )
 
     if args.log:
@@ -241,6 +258,7 @@ def main():
             port=args.port,
             protocol=args.protocol,
             ssl_verify=ssl_verify,
+            auth=auth,
         )
 
     if limit > 0:
@@ -250,6 +268,7 @@ def main():
             port=args.port,
             protocol=args.protocol,
             ssl_verify=ssl_verify,
+            auth=auth,
         )
 
 

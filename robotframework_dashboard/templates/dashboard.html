@@ -595,6 +595,25 @@
                                         id="allRuns">All Runs</button>
                                 </div>
                             </div>
+                            <div class="list-group-item" id="suitePathFilter">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
+                                        id="profileCheckSuitePaths" checked style="display: none;" />
+                                    <span class="d-flex align-items-center information info-label" id="filterSuitePathsInformation">
+                                        Suite Path
+                                        <span class="info-icon-small ms-1"></span>
+                                        <span id="filterSuitePathSelectedIndicator" class="version-selected-dot ms-2 mt-1"
+                                            style="display: none;"></span>
+                                    </span>
+                                    <div style="width: 50%;">
+                                        <input type="hidden" id="suitePathValue" value="All" />
+                                        <div id="suitePathBreadcrumb" class="d-flex align-items-center flex-wrap gap-1 mb-1"
+                                            style="min-height: 1.5rem;"></div>
+                                        <div id="suitePathChildren" class="d-flex flex-wrap gap-1"
+                                            style="max-height: 150px; overflow-y: auto;"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <div id="customFiltersList"></div>
                         </div>
                     </div>
