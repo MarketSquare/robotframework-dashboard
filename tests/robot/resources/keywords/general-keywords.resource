@@ -10,20 +10,20 @@ Get Dashboard Index
     Acquire Lock    name=dashboard_index
     ${exists}    Run Keyword And Return Status    Should Exist    path=index.txt
     IF    not ${exists}
-        Create File    path=index.txt    content=1:${SUITE_NAME}
+        Create File    path=index.txt    content=1:${TEST_NAME}
         RETURN   ${1}
     END
     ${index}    Get File    path=index.txt
     ${index}    Split String    string=${index}    separator=:
     ${index}    Convert To Integer    ${index}[0]
     ${index}    Evaluate    ${index} + 1
-    Create File    path=index.txt    content=${index}:${SUITE_NAME}
+    Create File    path=index.txt    content=${index}:${TEST_NAME}
     RETURN    ${index}
 
 Generate Dashboard
     ${index}    Get Dashboard Index
     Release Lock    name=dashboard_index
-    VAR    ${DASHBOARD_INDEX}    ${index}    scope=SUITE
+    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
     ${files}    Catenate  SEPARATOR=${SPACE}  
     ...    -o ${CURDIR}/../outputs/output-20250313-002134.xml:prod:project_1:version_1.0
     ...    -o ${CURDIR}/../outputs/output-20250313-002151.xml:dev:project_1:version_1.0

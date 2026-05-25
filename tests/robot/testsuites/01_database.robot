@@ -4,10 +4,8 @@ Documentation    This testsuite covers the generated database of robotdashboard
 Resource    ../resources/keywords/database-keywords.resource
 Resource    ../resources/keywords/general-keywords.resource
 
-Suite Setup    Generate Dashboard
-Suite Teardown    Remove Database And Dashboard With Index
-Test Setup    Create Database Connection
-Test Teardown    Close Database Connection
+Test Setup    Run Keywords    Generate Dashboard    Create Database Connection
+Test Teardown    Run Keywords    Close Database Connection    Remove Database And Dashboard With Index
 
 
 *** Test Cases ***
