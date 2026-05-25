@@ -8,19 +8,50 @@ argument-hint: 'Optional: path to the output.xml or results folder containing th
 
 ## Step 1 — Parse failures from output.xml
 
-Identify the failure types by parsing the output.xml (usually in `results/` or `robot-results*/`):
+Locate the `output.xml` — it is usually in `results/` or in an alternate folder such as `robot-results (4)/` when the run came from a downloaded CI artifact.
 
-```python
-import xml.etree.ElementTree as ET
-tree = ET.parse('results/output.xml')
+To diagnose failures, write the script below to a temp file and run it (writing to a file avoids PowerShell quote-escaping issues with inline `python -c`):
+
+```powershell
+@'
+import glob, os, xml.etree.ElementTree as ET
+
+candidates = glob.glob("results/output.xml") + glob.glob("robot-results*/output.xml")
+if not candidates:
+    raise FileNotFoundError("No output.xml found")
+xml_path = max(candidates, key=os.path.getmtime)   # most recently modified
+print("Parsing: " + xml_path + "\n")
+
+tree = ET.parse(xml_path)
 root = tree.getroot()
-for test in root.iter('test'):
-    status = test.find('status')
-    if status is not None and status.get('status') == 'FAIL':
-        name = test.get('name')
-        for msg in test.iter('msg'):
-            if msg.get('level') in ('FAIL', 'ERROR'):
-                print(f'FAIL [{name}]: {(msg.text or "")[:400]}')
+for test in root.iter("test"):
+    status = test.find("status")
+    if status is None or status.get("status") != "FAIL":
+        continue
+    name = test.get("name")
+    all_msgs  = [msg.text or "" for msg in test.iter("msg")]
+    fail_msgs = [msg.text or "" for msg in test.iter("msg") if msg.get("level") in ("FAIL", "ERROR")]
+    fail_text    = next((m for m in all_msgs if "compared images are different" in m.lower()), None)
+    timeout_text = next((m for m in all_msgs if "timeouterror" in m.lower() or "element is not visible" in m.lower()), None)
+    if fail_text:
+        screenshot_msg = next((m for m in all_msgs if "browser/screenshot/" in m), "")
+        reference_msg  = next((m for m in all_msgs if "dashboard_output" in m), "")
+        screenshot_file = screenshot_msg.split("browser/screenshot/")[-1].split('"')[0].split("'")[0].strip() if screenshot_msg else "?"
+        ref_path   = reference_msg.split("dashboard_output/")[-1].strip() if reference_msg else "?"
+        ref_folder = ref_path.split("/")[0] if "/" in ref_path else "?"
+        print("STALE SCREENSHOT [" + name + "]")
+        print("  screenshot : " + screenshot_file)
+        print("  ref folder : tests/robot/resources/dashboard_output/" + ref_folder + "/")
+    elif timeout_text:
+        element_msg = next((m for m in all_msgs if "locator" in m.lower() or "click" in m.lower()), timeout_text)
+        print("TIMEOUT / NOT VISIBLE [" + name + "]")
+        print("  " + element_msg[:300])
+    else:
+        other = next((m for m in fail_msgs if m.strip()), "")
+        print("OTHER FAILURE [" + name + "]: " + other[:300])
+    print()
+'@ | Out-File -Encoding utf8 "$env:TEMP\rf_diag.py"
+python "$env:TEMP\rf_diag.py"
 ```
 
 Two root causes appear in this project:
@@ -45,15 +76,20 @@ The `Generate Dashboard` keyword (in `general-keywords.resource`) calls `robotda
 
 ## Step 3 — Update stale reference screenshots
 
-### Option A — Copy from a previous Docker run
-If `results/browser/screenshot/<name>.png` was captured inside Docker (e.g. from a previous `docker run` test run) and the new UI is correct, copy it straight to the reference folder:
+### Option A — Copy from a Docker run (local or CI artifact)
+If the screenshots came from a Docker run — either a local `docker run` or a downloaded CI artifact folder such as `robot-results (4)/` — and the new UI is correct, copy them straight to the reference folder using the `Copy-Item` commands printed by the Step 1 script, or manually:
 
 ```powershell
+# screenshots from a local Docker run land in results\browser\screenshot\
 Copy-Item "results\browser\screenshot\<name>.png" `
+          "tests\robot\resources\dashboard_output\<folder>\<name>.png" -Force
+
+# screenshots from a CI artifact folder (e.g. robot-results (4)\) follow the same layout
+Copy-Item "robot-results (4)\browser\screenshot\<name>.png" `
           "tests\robot\resources\dashboard_output\<folder>\<name>.png" -Force
 ```
 
-> **Important**: screenshots taken on a Windows host will not match Docker references due to font rendering differences. Only use Option A if the screenshot came from a Docker run.
+> **Important**: screenshots taken on a Windows host will not match Docker references due to font rendering differences. Only use Option A if the screenshots came from a Docker or Linux CI run. Check the `${reference}` log message — a path starting with `/__w/` confirms it ran on Linux.
 
 ### Option B — Regenerate via Docker (required when no Docker screenshots exist)
 
