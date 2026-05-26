@@ -118,6 +118,7 @@ This project is licensed under the MIT License.
     zip_safe=False,
     install_requires=[
         "robotframework>=6.0",
+        "rich>=10.0.0",
     ],
     extras_require=extras,
     entry_points={

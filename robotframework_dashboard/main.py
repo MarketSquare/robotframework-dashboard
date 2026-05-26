@@ -1,24 +1,13 @@
 from .arguments import ArgumentParser
 from .robotdashboard import RobotDashboard
+from .cli_output import console, print_banner
+from .version import __version__
 from sys import exit
 
 
 def main():
     """Main function that runs robotdashboard. Everything is orchestrated from here!"""
-    print(
-        "======================================================================================"
-    )
-    print(
-        """ ____   ___  ____   ___ _____ ____    _    ____  _   _ ____   ___    _    ____  ____  
-|  _ \\ / _ \\| __ ) / _ |_   _|  _ \\  / \\  / ___|| | | | __ ) / _ \\  / \\  |  _ \\|  _ \\ 
-| |_) | | | |  _ \\| | | || | | | | |/ _ \\ \\___ \\| |_| |  _ \\| | | |/ _ \\ | |_) | | | |
-|  _ <| |_| | |_) | |_| || | | |_| / ___ \\ ___) |  _  | |_) | |_| / ___ \\|  _ <| |_| |
-|_| \\_\\\\___/|____/ \\___/ |_| |____/_/   \\_|____/|_| |_|____/ \\___/_/   \\_|_| \\_|____/ 
-"""
-    )
-    print(
-        "======================================================================================"
-    )
+    print_banner(__version__)
     arguments = ArgumentParser().get_arguments()
     robotdashboard = RobotDashboard(
         arguments.database_path,
@@ -47,14 +36,14 @@ def main():
             from robotframework_dashboard.server import ApiServer
             import python_multipart
         except ModuleNotFoundError:
-            print(
-                "  ERROR: The packages 'fastapi-offline', 'uvicorn' and 'python_multipart' are required to run the server!"
+            console.print(
+                "  [bold red]\u2717[/bold red]  [red]The packages 'fastapi-offline', 'uvicorn' and 'python_multipart' are required to run the server![/red]"
             )
-            print(
-                "         Please install them using  'pip install robotframework-dashboard[server]'"
+            console.print(
+                "     Please install them using  [cyan]pip install robotframework-dashboard\\[server][/cyan]"
             )
-            print(
-                "         Or                         'pip install robotframework-dashboard[all]'"
+            console.print(
+                "     Or                         [cyan]pip install robotframework-dashboard\\[all][/cyan]"
             )
             exit(0)
         robotdashboard.dashboard_name = "robot_dashboard.html"

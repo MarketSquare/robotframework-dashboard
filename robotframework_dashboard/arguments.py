@@ -1,10 +1,36 @@
 import argparse
+import re as _re
 from datetime import datetime
 from sys import exit
 from re import split
 from os import getcwd
 from os.path import join, exists
 from .version import __version__
+
+
+class _ColoredHelpFormatter(argparse.RawTextHelpFormatter):
+    """Argparse formatter that adds color to group headers and option flags."""
+
+    _ANSI_RE = _re.compile(r"\033\[[0-9;]*m")
+    _CYAN = "\033[36m"
+    _CYAN_BOLD = "\033[1;36m"
+    _RESET = "\033[0m"
+
+    def start_section(self, heading):
+        if heading:
+            heading = self._CYAN_BOLD + heading + self._RESET
+        super().start_section(heading)
+
+    def _format_action_invocation(self, action):
+        text = super()._format_action_invocation(action)
+        return self._CYAN + text + self._RESET
+
+    def _format_action(self, action):
+        # Call the parent implementation which uses _format_action_invocation internally.
+        # Because ANSI codes inflate the measured string length we recompute the
+        # help-text indent based on the *visible* option width so alignment stays correct.
+        result = super()._format_action(action)
+        return result
 
 
 class dotdict(dict):
@@ -25,9 +51,8 @@ class ArgumentParser:
             arguments = self._parse_arguments()
             arguments = self._process_arguments(arguments)
         except Exception as error:
-            print(
-                f"  ERROR: There was an issue during the parsing of the provided arguments"
-            )
+            from .cli_output import print_error
+            print_error("There was an issue during the parsing of the provided arguments")
             print(f"  {error}")
             exit(0)
         return arguments
@@ -150,7 +175,7 @@ class ArgumentParser:
         """Parses the actual arguments"""
         parser = argparse.ArgumentParser(
             add_help=False,
-            formatter_class=argparse.RawTextHelpFormatter,
+            formatter_class=_ColoredHelpFormatter,
             description="Generate an interactive HTML dashboard from Robot Framework output.xml results.",
             epilog="Boolean flags: omit the value to toggle the default (e.g. '--uselogs'); or pass 'true'/'false' explicitly.\nFor full documentation, visit: https://marketsquare.github.io/robotframework-dashboard/",
         )
@@ -469,7 +494,8 @@ class ArgumentParser:
     def _process_arguments(self, arguments):
         """handles the version execution"""
         if arguments.version:
-            print(__version__)
+            from .cli_output import console
+            console.print("[bold cyan]" + __version__ + "[/bold cyan]")
             exit(0)
 
         # handles possible tags on all provided --outputpath

@@ -157,7 +157,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             self._insert_tests(output_data["tests"], run_alias, timezone)
             self._insert_keywords(output_data["keywords"], run_alias, timezone)
         except Exception as error:
-            print(f"   ERROR: something went wrong with the database: {error}")
+            from .cli_output import print_error
+            print_error(f"something went wrong with the database: {error}")
 
     def _insert_runs(
         self, runs: list, tags: list, run_alias: str, path: Union[Path, str], project_version, custom_filters, timezone
@@ -368,12 +369,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
     def list_runs(self):
         """This function gets all available runs and prints them to the console"""
         run_starts, run_names, run_aliases, run_tags, _ = self._get_runs()
-        for index, run_start in enumerate(run_starts):
-            print(
-                f"  Run {str(index).ljust(3, ' ')} | {run_start} | {run_names[index]}"
-            )
-        if len(run_starts) == 0:
-            print(f"  WARNING: There are no runs so the dashboard will be empty!")
+        from .cli_output import print_runs_table
+        print_runs_table(run_starts, run_names)
 
     def _get_run_paths(self):
         """Helper function to get a mapping of run_start to path for all runs"""
@@ -403,14 +400,12 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 elif "age=" in run:
                     console += self._remove_by_age(run, run_starts)
                 else:
-                    print(
-                        f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions"
-                    )
+                    from .cli_output import print_error
+                    print_error(f"incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions")
                     console += f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions\n"
             except:
-                print(
-                    f"  ERROR: Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions"
-                )
+                from .cli_output import print_error
+                print_error(f"Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions")
                 console += f"  ERROR: Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions\n"
         return console
 
@@ -418,13 +413,13 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         console = ""
         run_start = run.replace("run_start=", "")
         if not run_start in run_starts:
-            print(
-                f"  ERROR: Could not find run to remove from the database: run_start={run_start}"
-            )
+            from .cli_output import print_error
+            print_error(f"Could not find run to remove from the database: run_start={run_start}")
             console += f"  ERROR: Could not find run to remove from the database: run_start={run_start}\n"
             return console
         self._remove_run(run_start)
-        print(f"  Removed run from the database: run_start={run_start}")
+        from .cli_output import print_info
+        print_info(f"Removed run from the database: run_start={run_start}")
         console += f"  Removed run from the database: run_start={run_start}\n"
         return console
 
@@ -441,9 +436,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 indexes.append(int(run))
         for index in indexes:
             self._remove_run(run_starts[index])
-            print(
-                f"  Removed run from the database: index={index}, run_start={run_starts[index]}"
-            )
+            from .cli_output import print_info
+            print_info(f"Removed run from the database: index={index}, run_start={run_starts[index]}")
             console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
         return console
 
@@ -451,9 +445,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         console = ""
         alias = run.replace("alias=", "")
         self._remove_run(run_starts[run_aliases.index(alias)])
-        print(
-            f"  Removed run from the database: alias={alias}, run_start={run_starts[run_aliases.index(alias)]}"
-        )
+        from .cli_output import print_info
+        print_info(f"Removed run from the database: alias={alias}, run_start={run_starts[run_aliases.index(alias)]}")
         console += f"  Removed run from the database: alias={alias}, run_start={run_starts[run_aliases.index(alias)]}\n"
         return console
 
@@ -464,15 +457,13 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         for index, run_tag in enumerate(run_tags):
             if tag in run_tag:
                 self._remove_run(run_starts[index])
-                print(
-                    f"  Removed run from the database: tag={tag}, run_start={run_starts[index]}"
-                )
+                from .cli_output import print_info
+                print_info(f"Removed run from the database: tag={tag}, run_start={run_starts[index]}")
                 console += f"  Removed run from the database: tag={tag}, run_start={run_starts[index]}\n"
                 removed += 1
         if removed == 0:
-            print(
-                f"  WARNING: no runs were removed as no runs were found with tag: {tag}"
-            )
+            from .cli_output import print_warning
+            print_warning(f"no runs were removed as no runs were found with tag: {tag}")
             console += f"  WARNING: no runs were removed as no runs were found with tag: {tag}\n"
         return console
 
@@ -480,16 +471,14 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         console = ""
         limit = int(run.replace("limit=", ""))
         if limit >= len(run_starts):
-            print(
-                f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs ({len(run_starts)})"
-            )
+            from .cli_output import print_warning
+            print_warning(f"no runs were removed as the provided limit ({limit}) is higher than the total number of runs ({len(run_starts)})")
             console += f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs ({len(run_starts)})\n"
             return console
         for index in range(len(run_starts) - limit):
             self._remove_run(run_starts[index])
-            print(
-                f"  Removed run from the database: index={index}, run_start={run_starts[index]}"
-            )
+            from .cli_output import print_info
+            print_info(f"Removed run from the database: index={index}, run_start={run_starts[index]}")
             console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
         return console
 
@@ -514,13 +503,15 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                     if run_dt > cutoff:
                         targets.append(r)
             except ValueError as e:
-                print(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
+                from .cli_output import print_warning
+                print_warning(f"Skipping invalid timestamp: '{r}' ({e})")
         if not targets:
             console += f"  WARNING: no runs were removed as no runs were within range {clean_query}"
             return console
         for run_to_remove in targets:
             self._remove_run(run_to_remove)
-            print(f"  Removed run from the database: run_start={run_to_remove}")
+            from .cli_output import print_info
+            print_info(f"Removed run from the database: run_start={run_to_remove}")
             console += f"  Removed run from the database: run_start={run_to_remove}\n"
         return console
 
@@ -540,9 +531,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         self.connection.cursor().execute(VACUUM_DATABASE)
         self.connection.commit()
         end = time()
-        console = f"  Vacuumed the database in {round(end - start, 2)} seconds\n"
-        print(f"  Vacuumed the database in {round(end - start, 2)} seconds")
-        return console
+        msg = f"Vacuumed the database in {round(end - start, 2)} seconds"
+        from .cli_output import print_success
+        print_success(msg)
+        return f"  {msg}\n"
 
     def parse_time_range(self, range_str: str):
         # Regex groups : [modifier] [value] [unit]

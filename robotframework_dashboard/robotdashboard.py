@@ -269,5 +269,6 @@ class RobotDashboard:
         return console
 
     def _print_console(self, message):
-        print(message)
+        from .cli_output import display
+        display(message)
         return message + "\n"
