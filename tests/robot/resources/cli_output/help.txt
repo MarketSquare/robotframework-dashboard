@@ -8,12 +8,12 @@
 ======================================================================================
 usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]PATH ...[]][]] [[]-f [[]PATH ...[]][]]
                       [[]--projectversion VERSION[]] [[]--customfilters FILTERS[]]
-                      [[]-z OFFSET[]] [[]-d PATH[]] [[]-r [[]QUERY ...[]][]] [[]-c PATH[]]
-                      [[]--novacuum [[]BOOL[]][]] [[]-g [[]BOOL[]][]] [[]-l [[]BOOL[]][]] [[]-n NAME[]]
-                      [[]-t TITLE[]] [[]-q INT[]] [[]--offlinedependencies [[]BOOL[]][]]
-                      [[]-u [[]BOOL[]][]] [[]--logurl URL[]] [[]-j PATH[]]
-                      [[]--forcejsonconfig [[]BOOL[]][]] [[]-m PATH[]]
-                      [[]-s [[]HOST:PORT:USERNAME:PASSWORD[]][]]
+                      [[]-z OFFSET[]] [[]-d PATH[]] [[]-r [[]QUERY ...[]][]]
+                      [[]--logremoved TYPES_PATH[]] [[]-c PATH[]] [[]--novacuum [[]BOOL[]][]]
+                      [[]-g [[]BOOL[]][]] [[]-l [[]BOOL[]][]] [[]-n NAME[]] [[]-t TITLE[]] [[]-q INT[]]
+                      [[]--offlinedependencies [[]BOOL[]][]] [[]-u [[]BOOL[]][]]
+                      [[]--logurl URL[]] [[]-j PATH[]] [[]--forcejsonconfig [[]BOOL[]][]]
+                      [[]-m PATH[]] [[]-s [[]HOST:PORT:USERNAME:PASSWORD[]][]]
                       [[]--noautoupdate [[]BOOL[]][]] [[]--ssl-certfile PATH[]]
                       [[]--ssl-keyfile PATH[]]
 
@@ -72,6 +72,13 @@ database:
                           • '-r age=10d' -> remove runs older than 10 days
                           • '-r age=-10d' -> remove runs younger than 10 days
                           • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
+  --logremoved TYPES_PATH
+                        Log (append if file exists) run data to jsonl before removing from the db
+                          • Supply what types to log (default=all) and (optional) a path to the desired .jsonl
+                        Examples:
+                          • '--logremoved "/tmp/removed_runs.jsonl"'
+                          • '--logremoved "run:suite"'
+                          • '--logremoved "all:/tmp/removed_runs.jsonl"'
   -c PATH, --databaseclass PATH
                         Path to a custom database class (.py) to override the built-in SQLite engine.
                           • See docs for implementation details

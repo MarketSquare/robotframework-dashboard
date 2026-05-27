@@ -285,7 +285,7 @@ class ArgumentParser:
         )
         db_group.add_argument(
             "--logremoved",
-            metavar="PATH",
+            metavar="TYPES_PATH",
             help=(
                 "Log (append if file exists) run data to jsonl before removing from the db\n"
                 "  • Supply what types to log (default=all) and (optional) a path to the desired .jsonl\n"
