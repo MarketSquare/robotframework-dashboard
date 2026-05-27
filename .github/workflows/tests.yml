@@ -101,6 +101,7 @@ jobs:
           bash scripts/install.sh
 
       - name: Initialize Browser library
+        timeout-minutes: 5
         run: |
           rfbrowser init
 
