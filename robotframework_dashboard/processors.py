@@ -43,7 +43,15 @@ class OutputProcessor:
         self.execution_result.visit(
             KeywordProcessor(self.generation_time, keyword_list)
         )
-        average_keyword_list = self.calculate_keyword_averages(keyword_list) if keyword_list else []
+        if not suite_list:
+            print("  WARNING: No suites found in output, suite data will be empty!")
+        if not test_list:
+            print("  WARNING: No tests found in output, test data will be empty!")
+        if keyword_list:
+            average_keyword_list = self.calculate_keyword_averages(keyword_list)
+        else:
+            print("  WARNING: No keywords found in output, keyword data will be empty!")
+            average_keyword_list = []
         run_list, suite_list = self.merge_run_and_suite_metadata(run_list, suite_list)
         return {
             "runs": run_list,
