@@ -296,6 +296,8 @@ class ArgumentParser:
             ),
             action="store",
             type=str,
+            nargs="?",
+            const="all",
             default=None,
             dest="logremoved",
         )
@@ -641,9 +643,7 @@ class ArgumentParser:
                     remaining.pop(0)
                 else:
                     break
-            if not types:
-                types = ["all"]
-            path = ":".join(remaining) if remaining else f"robot_removed_runs_{generation_datetime.strftime('%Y%m%d-%H%M%S')}.jsonl"
+            path = ":".join(remaining) if remaining else "robot_removed_runs.jsonl"
             log_removed = LogRemovedConfig(types=types, path=path)
 
         # validates argument combinations

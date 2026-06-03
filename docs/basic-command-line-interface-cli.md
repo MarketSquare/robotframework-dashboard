@@ -118,7 +118,7 @@ robotdashboard -r age=10d # (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
 robotdashboard -r age=-10d
 # Log data of removed runs in jsonl  
 robotdashboard -r limit=10 --logremoved "/myLogDir/removedRuns.jsonl"
-robotdashboard -r limit=10 --logremoved run:suite:"/myLogDir/removedRuns.jsonl"
+robotdashboard -r limit=10 --logremoved "run:suite:/myLogDir/removedRuns.jsonl"
 robotdashboard -r limit=10 --logremoved all
 robotdashboard -r limit=10 --logremoved run:keyword
 ```

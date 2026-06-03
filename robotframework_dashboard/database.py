@@ -6,7 +6,7 @@ from .abstractdb import AbstractDatabaseProcessor
 from time import time
 from datetime import datetime, timezone, timedelta
 from typing import Union
-import json
+from json import dumps
 
 # Explicit adapter for datetime -> ISO string, replacing the deprecated default
 # behaviour removed in Python 3.12+. Compatible with Python 3.8+.
@@ -419,7 +419,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
 
     def _log_run_jsonl(self, logpath, entry):
         with Path(logpath).open("a", encoding="utf-8") as f:
-            _ = f.write(json.dumps(entry, default=str) + "\n")
+            _ = f.write(dumps(entry, default=str) + "\n")
 
     def remove_runs(self, remove_runs: list):
         """This function removes all provided runs and all their corresponding data"""
