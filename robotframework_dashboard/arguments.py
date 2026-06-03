@@ -643,6 +643,8 @@ class ArgumentParser:
                     remaining.pop(0)
                 else:
                     break
+            if not types:
+                types = ["all"]
             path = ":".join(remaining) if remaining else "robot_removed_runs.jsonl"
             log_removed = LogRemovedConfig(types=types, path=path)
 

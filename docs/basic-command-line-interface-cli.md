@@ -133,7 +133,7 @@ robotdashboard -r limit=10 --logremoved run:keyword
 - Optional: `--logremoved` logs run data to a `.jsonl` file before removal.  
 - Format: `[types:]path` where types are colon-separated from `run`, `suite`, `test`, `keyword`, `all`.  
 - If no types are specified, defaults to `all` (runs, suites, tests and keywords).  
-- If no path is provided, a timestamped file `robot_removed_runs_YYYYMMDD-HHMMSS.jsonl` is created in the current directory.  
+- If no path is provided, defaults to `robot_removed_runs.jsonl` in the current directory.  
 - Each removed run is appended as one JSON line containing the selected data types.  
 
 ### Use a custom database class
