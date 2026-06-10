@@ -27,6 +27,7 @@ js/
   menu.js                    — tab/page switching
   eventlisteners.js          — wires all event listeners on DOMContentLoaded
   statwidgets.js             — custom stat widget CRUD, rendering, and modal wiring
+  linkwidgets.js             — custom link widget CRUD, rendering, and modal wiring
   variables/
     data.js                  — decodes the base64/zlib-compressed data payload
     globals.js               — shared mutable state (filteredRuns, filteredSuites, etc.)
@@ -56,7 +57,7 @@ js/
 
 ### Settings live in `js/variables/settings.js`
 - The `settings` object is the single source of truth for user preferences. It is loaded from localStorage at startup and deep-merged with defaults.
-- Persisted keys: `layouts`, `libraries`, `theme`, `filterProfiles`, `statWidgets`.
+- Persisted keys: `layouts`, `libraries`, `theme`, `filterProfiles`, `statWidgets`, `linkWidgets`, `customSections`.
 
 ### Module-local constants stay in their own file
 - A `const` that is only used within one file stays in that file (e.g. `TIME_PROPS` in `statwidgets.js`).
@@ -97,6 +98,8 @@ Because all modules are concatenated into one `<script>`:
 - Grid items are added with `gridStack.makeWidget(el)`.
 - `gridEditMode` (in `globals.js`) tracks whether the layout is in edit/customize mode.
 - Custom stat widgets are added to grids via `render_custom_stat_widgets()` and `render_add_stat_widget_tile()` in `statwidgets.js`.
+- Custom link widgets follow the identical pattern via `linkwidgets.js`.
+- For the complete end-to-end checklist for adding a new widget type, see `js-feature-patterns.md`.
 
 ---
 

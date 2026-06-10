@@ -1120,6 +1120,48 @@
             </div>
     </div>
 
+    <!-- Add Link Widget Modal -->
+    <div class="modal fade" id="addLinkWidgetModal" tabindex="-1" aria-labelledby="addLinkWidgetModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addLinkWidgetModalLabel">Add Link Widget</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="addLinkWidgetLabel">Label</label>
+                            <input type="text" id="addLinkWidgetLabel" class="form-control"
+                                placeholder="Widget label" maxlength="40">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="addLinkWidgetUrl">URL</label>
+                            <input type="url" id="addLinkWidgetUrl" class="form-control"
+                                placeholder="https://...">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" id="addLinkWidgetNewTab" class="form-check-input" checked>
+                            <label class="form-check-label" for="addLinkWidgetNewTab">Open in new tab</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Text Color</label>
+                            <div class="d-flex flex-wrap gap-2" id="addLinkWidgetColorPicker"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Background Color</label>
+                            <div class="d-flex flex-wrap gap-2" id="addLinkWidgetBgColorPicker"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            id="addLinkWidgetConfirm">Add Widget</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
     <!-- Add Custom Section Modal -->
     <div class="modal fade" id="addCustomSectionModal" tabindex="-1" aria-labelledby="addCustomSectionModalLabel">
             <div class="modal-dialog">
