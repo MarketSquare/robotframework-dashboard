@@ -4,7 +4,15 @@ from sys import exit
 from re import split
 from os import getcwd
 from os.path import join, exists
+from typing import NamedTuple
 from .version import __version__
+
+_VALID_LOG_TYPES = {"run", "suite", "test", "keyword", "all"}
+
+
+class LogRemovedConfig(NamedTuple):
+    types: list
+    path: str
 
 
 class dotdict(dict):
@@ -274,6 +282,24 @@ class ArgumentParser:
             action="append",
             nargs="*",
             default=None,
+        )
+        db_group.add_argument(
+            "--logremoved",
+            metavar="TYPES_PATH",
+            help=(
+                "Log (append if file exists) run data to jsonl before removing from the db\n"
+                "  • Supply what types to log (default=all) and (optional) a path to the desired .jsonl\n"
+                "Examples:\n"
+                "  • '--logremoved \"/tmp/removed_runs.jsonl\"'\n"
+                "  • '--logremoved \"run:suite\"'\n"
+                "  • '--logremoved \"all:/tmp/removed_runs.jsonl\"'\n"
+            ),
+            action="store",
+            type=str,
+            nargs="?",
+            const="all",
+            default=None,
+            dest="logremoved",
         )
         db_group.add_argument(
             "-c",
@@ -605,6 +631,23 @@ class ArgumentParser:
         ssl_certfile = arguments.ssl_certfile
         ssl_keyfile = arguments.ssl_keyfile
 
+        # handles --logremoved: "type1:type2:path" or "path" or "type1:type2"
+        log_removed = None
+        if arguments.logremoved:
+            parts = arguments.logremoved.split(":")
+            types, remaining = [], list(parts)
+            # grab element types, leave path, for windows drive letter X: parse
+            for part in parts:
+                if part in _VALID_LOG_TYPES:
+                    types.append(part)
+                    remaining.pop(0)
+                else:
+                    break
+            if not types:
+                types = ["all"]
+            path = ":".join(remaining) if remaining else "robot_removed_runs.jsonl"
+            log_removed = LogRemovedConfig(types=types, path=path)
+
         # validates argument combinations
         self._check_argument_errors(arguments, outputs, outputfolderpaths, force_json_config, database_class)
         self._check_argument_warnings(arguments, outputs, outputfolderpaths, use_logs, generate_dashboard, no_autoupdate, offline_dependencies)
@@ -640,5 +683,6 @@ class ArgumentParser:
             "ssl_certfile": ssl_certfile,
             "ssl_keyfile": ssl_keyfile,
             "log_url": arguments.logurl,
+            "log_removed": log_removed,
         }
         return dotdict(provided_args)

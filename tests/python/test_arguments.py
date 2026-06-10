@@ -140,6 +140,7 @@ def _make_namespace(**kwargs):
         "ssl_keyfile": None,
         "logurl": None,
         "custom_filters": None,
+        "logremoved": None,
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)

@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from robotframework_dashboard.database import DatabaseProcessor
 from robotframework_dashboard.processors import OutputProcessor
+from robotframework_dashboard.arguments import LogRemovedConfig
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
@@ -504,6 +505,86 @@ def test_get_data_null_test_tags_and_id(db):
     db.close_database()
     assert len(data["tests"]) == 1
     assert data["tests"][0]["tags"] == ""
+
+
+# --- _get_run_data ---
+def test_get_run_data_returns_dict_for_existing_run(populated_db):
+    populated_db.open_database()
+    run_start = populated_db.get_data()["runs"][0]["run_start"]
+    result = populated_db._get_run_data(run_start)
+    populated_db.close_database()
+    assert result is not None
+    assert result["run_start"] == run_start
+
+
+def test_get_run_data_returns_none_for_missing_run(populated_db):
+    populated_db.open_database()
+    result = populated_db._get_run_data("2000-01-01 00:00:00.000000")
+    populated_db.close_database()
+    assert result is None
+
+
+# --- _log_run_jsonl ---
+
+def test_log_run_jsonl_creates_file_and_writes_entry(tmp_path):
+    import json
+    db = DatabaseProcessor(tmp_path / "test.db")
+    logpath = tmp_path / "removed.jsonl"
+    db._log_run_jsonl(logpath, {"run_start": "2025-01-01", "name": "My Run"})
+    parsed = json.loads(logpath.read_text())
+    assert parsed["run_start"] == "2025-01-01"
+
+
+def test_log_run_jsonl_appends_on_successive_calls(tmp_path):
+    db = DatabaseProcessor(tmp_path / "test.db")
+    logpath = tmp_path / "removed.jsonl"
+    db._log_run_jsonl(logpath, {"run_start": "2025-01-01"})
+    db._log_run_jsonl(logpath, {"run_start": "2025-01-02"})
+    assert len(logpath.read_text().splitlines()) == 2
+
+
+def test_log_run_jsonl_serializes_datetime(tmp_path):
+    import json
+    from datetime import datetime
+    db = DatabaseProcessor(tmp_path / "test.db")
+    logpath = tmp_path / "removed.jsonl"
+    db._log_run_jsonl(logpath, {"run_start": datetime(2025, 1, 1, 12, 0, 0)})
+    parsed = json.loads(logpath.read_text())
+    assert "2025-01-01" in parsed["run_start"]
+
+
+# --- _remove_run with logging ---
+
+def test_remove_run_with_logging_writes_jsonl_and_deletes(tmp_path):
+    import json
+    logpath = tmp_path / "removed.jsonl"
+    db = DatabaseProcessor(tmp_path / "test.db", log_removed=LogRemovedConfig(types=["all"], path=str(logpath)))
+    processor = OutputProcessor(SAMPLE_XML)
+    processor.get_run_start()
+    db.open_database()
+    db.insert_output_data(processor.get_output_data(), [], "alias", SAMPLE_XML, None, timezone="+00:00")
+    run_start = db.get_data()["runs"][0]["run_start"]
+    db.remove_runs([f"run_start={run_start}"])
+    assert len(db.get_data()["runs"]) == 0
+    db.close_database()
+    lines = logpath.read_text().splitlines()
+    assert len(lines) == 1
+    assert json.loads(lines[0])["run"]["run_alias"] == "alias"
+
+
+def test_remove_run_logging_failure_rolls_back_delete(tmp_path):
+    from unittest.mock import patch
+    logpath = tmp_path / "removed.jsonl"
+    db = DatabaseProcessor(tmp_path / "test.db", log_removed=LogRemovedConfig(types=["all"], path=str(logpath)))
+    processor = OutputProcessor(SAMPLE_XML)
+    processor.get_run_start()
+    db.open_database()
+    db.insert_output_data(processor.get_output_data(), [], "alias", SAMPLE_XML, None, timezone="+00:00")
+    run_start = db.get_data()["runs"][0]["run_start"]
+    with patch.object(db, "_log_run_jsonl", side_effect=OSError("disk full")):
+        db.remove_runs([f"run_start={run_start}"])
+    assert len(db.get_data()["runs"]) == 1
+    db.close_database()
 
 
 # --- remove_runs bare except branch ---

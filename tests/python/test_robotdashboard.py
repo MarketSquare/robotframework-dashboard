@@ -1,8 +1,10 @@
 import shutil
+import pytest
 from datetime import datetime
 from pathlib import Path
 
 from robotframework_dashboard.robotdashboard import RobotDashboard
+from robotframework_dashboard.arguments import LogRemovedConfig
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
@@ -63,6 +65,20 @@ def test_initialize_database_verbose_returns_console(tmp_path):
     rd = _make_rd(tmp_path)
     console = rd.initialize_database(suppress=False)
     assert "Database preparation" in console or "created database" in console
+
+
+def test_initialize_database_raises_if_log_dir_missing(tmp_path):
+    rd = _make_rd(tmp_path, log_removed=LogRemovedConfig(types=["all"], path=str(tmp_path / "nonexistent" / "log.jsonl")))
+    with pytest.raises(FileNotFoundError):
+        rd.initialize_database()
+
+
+def test_initialize_database_valid_log_path_succeeds(tmp_path):
+    logdir = tmp_path / "logs"
+    logdir.mkdir()
+    rd = _make_rd(tmp_path, log_removed=LogRemovedConfig(types=["all"], path=str(logdir / "removed.jsonl")))
+    rd.initialize_database()
+    assert rd.database is not None
 
 
 # --- process_outputs ---

@@ -116,6 +116,11 @@ robotdashboard -r alias=some_cool_alias,tag=prod,tag=dev -r alias=alias12345
 robotdashboard -r limit=10
 robotdashboard -r age=10d # (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
 robotdashboard -r age=-10d
+# Log data of removed runs in jsonl  
+robotdashboard -r limit=10 --logremoved "/myLogDir/removedRuns.jsonl"
+robotdashboard -r limit=10 --logremoved "run:suite:/myLogDir/removedRuns.jsonl"
+robotdashboard -r limit=10 --logremoved all
+robotdashboard -r limit=10 --logremoved run:keyword
 ```
 - Optional: `-r` or `--removeruns` specifies one or more runs to remove.  
 - Multiple values are separated by commas (,).  
@@ -125,6 +130,11 @@ robotdashboard -r age=-10d
 - With limit=10 only the 10 most recent runs will be kept, all others will be removed.  
 - With age=10d only runs _**older**_ than 10 days will be removed  
 - With age=-10d only runs _**younger**_ than 10 days will be removed  
+- Optional: `--logremoved` logs run data to a `.jsonl` file before removal.  
+- Format: `[types:]path` where types are colon-separated from `run`, `suite`, `test`, `keyword`, `all`.  
+- If no types are specified, defaults to `all` (runs, suites, tests and keywords).  
+- If no path is provided, defaults to `robot_removed_runs.jsonl` in the current directory.  
+- Each removed run is appended as one JSON line containing the selected data types.  
 
 ### Use a custom database class
 ```bash

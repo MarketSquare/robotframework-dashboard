@@ -7,6 +7,7 @@ from time import time
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+from .arguments import LogRemovedConfig
 
 class RobotDashboard:
     """Class that provides all functionality that robotdashboard has to offer
@@ -34,6 +35,7 @@ class RobotDashboard:
         timezone: str = "",
         log_url: Optional[str] = None,
         custom_filters: str = "",
+        log_removed: Optional[LogRemovedConfig] = None,
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -57,16 +59,23 @@ class RobotDashboard:
         self.timezone = timezone
         self.log_url = log_url
         self.custom_filters = custom_filters
+        self.log_removed = log_removed
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
         Also makes a connection that is used internally in the RobotDashboard class functions
         """
         console = ""
+        if self.log_removed and self.log_removed.path:
+            log_parent = Path(self.log_removed.path).parent
+            if not log_parent.exists():
+                message = f"  ERROR: Directory for '--logremoved' does not exist: '{log_parent}'"
+                console += self._print_console(message)
+                raise FileNotFoundError(message)
         if not suppress:
             console += self._print_console(f" 1. Database preparation")
         if not self.database_class:
-            self.database = DatabaseProcessor(self.database_path)
+            self.database = DatabaseProcessor(self.database_path, self.log_removed)
         else:
             if not suppress:
                 console += self._print_console(
@@ -80,6 +89,14 @@ class RobotDashboard:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self.database = module.DatabaseProcessor(self.database_path)
+            is_rm_log_unsupported = not hasattr(self.database, "log_removed_path")
+            self.database.log_removed_path = self.log_removed.path if self.log_removed else None
+            self.database.log_removed_types = self.log_removed.types if self.log_removed else []
+            if is_rm_log_unsupported and self.log_removed and not suppress:
+                console += self._print_console(
+                    "  WARNING The custom database class does not explicitly support '--logremoved'. "
+                    "Logging might be skipped if the custom class overrides the deletion logic."
+                )
         if not suppress:
             console += self._print_console(
                 f"  created database: '{self.database_path}'"

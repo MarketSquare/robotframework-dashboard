@@ -46,3 +46,5 @@ DELETE_FROM_KEYWORDS = """ DELETE FROM keywords WHERE run_start="{run_start}" ""
 UPDATE_RUN_PATH = """ UPDATE runs SET path="{path}" WHERE run_start="{run_start}" """
 
 VACUUM_DATABASE = """ VACUUM """
+
+GET_RUN_INFO_BY_RUN_START = """ SELECT * FROM runs WHERE run_start = ? """
