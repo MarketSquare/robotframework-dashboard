@@ -98,6 +98,7 @@ import {
     update_keyword_table
 } from "./tables.js";
 import { update_custom_stat_widgets } from "../statwidgets.js";
+import { update_custom_graphs } from "../customgraphs.js";
 
 // function that creates all graphs from scratch - used on first load of each tab
 function create_dashboard_graphs() {
@@ -140,6 +141,7 @@ function create_dashboard_graphs() {
         create_keyword_most_used_graph();
         create_keyword_stat_widgets();
         update_custom_stat_widgets();
+        update_custom_graphs();
     } else if (settings.menu.compare) {
         create_compare_statistics_graph();
         create_compare_suite_duration_graph();
@@ -194,6 +196,7 @@ function update_dashboard_graphs() {
         update_keyword_most_used_graph();
         update_keyword_stat_widgets();
         update_custom_stat_widgets();
+        update_custom_graphs();
     } else if (settings.menu.compare) {
         update_compare_statistics_graph();
         update_compare_suite_duration_graph();

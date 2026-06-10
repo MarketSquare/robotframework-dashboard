@@ -66,7 +66,7 @@ function merge_deep(local, defaults) {
         const defaultVal = defaults[key];
         const localVal = local[key];
         // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, filterProfiles, and statWidgets (only in localstorage)
-        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && key !== "customSections" && defaultVal === undefined && localVal !== undefined) {
+        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && key !== "customSections" && key !== "customGraphs" && defaultVal === undefined && localVal !== undefined) {
             continue;
         }
         // Added key: exists in defaults but not local: add defaults

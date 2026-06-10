@@ -1,0 +1,38 @@
+{
+  "statWidgets": [
+    {"id": "w1",  "section": "run", "statKey": "run.totalRuns",          "title": "Executed Runs",      "color": "white-text",  "bgColor": "green-bg"},
+    {"id": "w2",  "section": "run", "statKey": "run.passedRuns",         "title": "Passed Runs",        "color": "blue-text",   "bgColor": "red-bg"},
+    {"id": "w3",  "section": "run", "statKey": "run.failedRuns",         "title": "Failed Runs",        "color": "green-text",  "bgColor": "yellow-bg"},
+    {"id": "w4",  "section": "run", "statKey": "run.skippedRuns",        "title": "Skipped Runs",       "color": "red-text",    "bgColor": ""},
+    {"id": "w5",  "section": "run", "statKey": "run.totalRunTime",       "title": "Total Run Time",     "color": "yellow-text", "bgColor": "blue-bg"},
+    {"id": "w6",  "section": "run", "statKey": "run.averageRunTime",     "title": "Avg Run Time",       "color": "white-text",  "bgColor": "green-bg"},
+    {"id": "w7",  "section": "run", "statKey": "run.averagePassRate",    "title": "Avg Pass Rate",      "color": "blue-text",   "bgColor": "red-bg"},
+    {"id": "w8",  "section": "run", "statKey": "suite.totalSuites",      "title": "Executed Suites",    "color": "green-text",  "bgColor": "yellow-bg"},
+    {"id": "w9",  "section": "run", "statKey": "suite.uniqueSuites",     "title": "Unique Suites",      "color": "red-text",    "bgColor": ""},
+    {"id": "w10", "section": "run", "statKey": "suite.passedSuites",     "title": "Passed Suites",      "color": "yellow-text", "bgColor": "blue-bg"},
+    {"id": "w11", "section": "run", "statKey": "suite.failedSuites",     "title": "Failed Suites",      "color": "white-text",  "bgColor": "green-bg"},
+    {"id": "w12", "section": "run", "statKey": "suite.skippedSuites",    "title": "Skipped Suites",     "color": "blue-text",   "bgColor": "red-bg"},
+    {"id": "w13", "section": "run", "statKey": "suite.passRate",         "title": "Suite Pass Rate",    "color": "green-text",  "bgColor": "yellow-bg"},
+    {"id": "w14", "section": "run", "statKey": "suite.totalTime",        "title": "Total Suite Time",   "color": "red-text",    "bgColor": ""},
+    {"id": "w15", "section": "run", "statKey": "suite.avgTime",          "title": "Avg Suite Time",     "color": "yellow-text", "bgColor": "blue-bg"},
+    {"id": "w16", "section": "run", "statKey": "test.totalTests",        "title": "Executed Tests",     "color": "white-text",  "bgColor": "green-bg"},
+    {"id": "w17", "section": "run", "statKey": "test.uniqueTests",       "title": "Unique Tests",       "color": "blue-text",   "bgColor": "red-bg"},
+    {"id": "w18", "section": "run", "statKey": "test.passedTests",       "title": "Passed Tests",       "color": "green-text",  "bgColor": "yellow-bg"},
+    {"id": "w19", "section": "run", "statKey": "test.failedTests",       "title": "Failed Tests",       "color": "red-text",    "bgColor": ""},
+    {"id": "w20", "section": "run", "statKey": "test.skippedTests",      "title": "Skipped Tests",      "color": "yellow-text", "bgColor": "blue-bg"},
+    {"id": "w21", "section": "run", "statKey": "test.passRate",          "title": "Test Pass Rate",     "color": "white-text",  "bgColor": "green-bg"},
+    {"id": "w22", "section": "run", "statKey": "test.totalTime",         "title": "Total Test Time",    "color": "blue-text",   "bgColor": "red-bg"},
+    {"id": "w23", "section": "run", "statKey": "test.avgTime",           "title": "Avg Test Time",      "color": "green-text",  "bgColor": "yellow-bg"},
+    {"id": "w24", "section": "run", "statKey": "keyword.totalExecutions","title": "Keyword Executions", "color": "red-text",    "bgColor": ""},
+    {"id": "w25", "section": "run", "statKey": "keyword.uniqueKeywords", "title": "Unique Keywords",    "color": "yellow-text", "bgColor": "blue-bg"},
+    {"id": "w26", "section": "run", "statKey": "keyword.passedKeywords", "title": "Passed Keywords",    "color": "white-text",  "bgColor": "green-bg"},
+    {"id": "w27", "section": "run", "statKey": "keyword.failedKeywords", "title": "Failed Keywords",    "color": "blue-text",   "bgColor": "red-bg"},
+    {"id": "w28", "section": "run", "statKey": "keyword.skippedKeywords","title": "Skipped Keywords",   "color": "green-text",  "bgColor": "yellow-bg"},
+    {"id": "w29", "section": "run", "statKey": "keyword.passRate",       "title": "Keyword Pass Rate",  "color": "red-text",    "bgColor": ""},
+    {"id": "w30", "section": "run", "statKey": "keyword.totalTime",      "title": "Total Keyword Time", "color": "yellow-text", "bgColor": "blue-bg"},
+    {"id": "w31", "section": "run", "statKey": "keyword.avgTime",        "title": "Avg Keyword Time",   "color": "white-text",  "bgColor": "green-bg"}
+  ],
+  "layouts": {
+    "gridRun": "[{\"id\":\"customStatWidget-w1\",\"x\":0,\"y\":0,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w2\",\"x\":2,\"y\":0,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w3\",\"x\":4,\"y\":0,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w4\",\"x\":6,\"y\":0,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w5\",\"x\":8,\"y\":0,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w6\",\"x\":10,\"y\":0,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w7\",\"x\":0,\"y\":1,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w8\",\"x\":2,\"y\":1,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w9\",\"x\":4,\"y\":1,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w10\",\"x\":6,\"y\":1,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w11\",\"x\":8,\"y\":1,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w12\",\"x\":10,\"y\":1,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w13\",\"x\":0,\"y\":2,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w14\",\"x\":2,\"y\":2,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w15\",\"x\":4,\"y\":2,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w16\",\"x\":6,\"y\":2,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w17\",\"x\":8,\"y\":2,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w18\",\"x\":10,\"y\":2,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w19\",\"x\":0,\"y\":3,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w20\",\"x\":2,\"y\":3,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w21\",\"x\":4,\"y\":3,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w22\",\"x\":6,\"y\":3,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w23\",\"x\":8,\"y\":3,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w24\",\"x\":10,\"y\":3,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w25\",\"x\":0,\"y\":4,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w26\",\"x\":2,\"y\":4,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w27\",\"x\":4,\"y\":4,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w28\",\"x\":6,\"y\":4,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w29\",\"x\":8,\"y\":4,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w30\",\"x\":10,\"y\":4,\"w\":2,\"h\":1},{\"id\":\"customStatWidget-w31\",\"x\":0,\"y\":5,\"w\":2,\"h\":1}]"
+  }
+}

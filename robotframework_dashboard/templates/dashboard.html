@@ -1153,6 +1153,49 @@
             </div>
     </div>
 
+    <!-- Add Custom Graph Modal -->
+    <div class="modal fade" id="addCustomGraphModal" tabindex="-1" aria-labelledby="addCustomGraphModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCustomGraphModalLabel">Add Custom Graph</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="addCustomGraphTemplate">Graph Type</label>
+                            <select id="addCustomGraphTemplate" class="form-select"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="addCustomGraphDataType">Data Type</label>
+                            <select id="addCustomGraphDataType" class="form-select"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="addCustomGraphType">Chart Style</label>
+                            <select id="addCustomGraphType" class="form-select"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" id="addCustomGraphScopeLabel" for="addCustomGraphScope">Name (exact match, required)</label>
+                            <input type="text" id="addCustomGraphScope" class="form-control"
+                                placeholder="e.g. Login Test" maxlength="200">
+                            <div class="invalid-feedback">Please enter a name to scope this graph.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="addCustomGraphTitle">Title</label>
+                            <input type="text" id="addCustomGraphTitle" class="form-control"
+                                placeholder="Graph title" maxlength="60">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            id="addCustomGraphConfirm">Add Graph</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
     <!-- placeholder_javascript -->
 </body>
 

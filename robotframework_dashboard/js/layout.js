@@ -25,6 +25,12 @@ import {
     setup_add_custom_section_modal,
     wire_delete_section_buttons,
 } from "./customsections.js";
+import {
+    render_custom_graphs,
+    render_add_custom_graph_tile,
+    setup_add_custom_graph_modal,
+    wire_delete_custom_graph_buttons,
+} from "./customgraphs.js";
 
 // Layout history state for undo/redo in edit mode
 let layoutHistory = [];
@@ -37,6 +43,7 @@ function capture_settings_snapshot() {
         layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
+        customGraphs: JSON.parse(JSON.stringify(settings.customGraphs || [])),
         view: {
             dashboard: {
                 graphs: {
@@ -81,6 +88,7 @@ function capture_dom_snapshot() {
         layouts: {},
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
+        customGraphs: JSON.parse(JSON.stringify(settings.customGraphs || [])),
         view: {
             dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
             unified: { graphs: { show: [], hide: [] } },
@@ -185,6 +193,7 @@ function apply_layout_snapshot(snapshot) {
     settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
     set_local_storage_item('statWidgets', JSON.parse(JSON.stringify(snapshot.statWidgets || [])));
     set_local_storage_item('customSections', JSON.parse(JSON.stringify(snapshot.customSections || [])));
+    set_local_storage_item('customGraphs', JSON.parse(JSON.stringify(snapshot.customGraphs || [])));
     settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
     settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
     settings.view.dashboard.sections.show = [...snapshot.view.dashboard.sections.show];
@@ -472,6 +481,16 @@ function setup_grid_graphs(section) {
         if (gridEditMode) {
             wire_delete_buttons(window[grid], sectionKey);
             render_add_stat_widget_tile(window[grid], sectionKey);
+        }
+    }
+
+    // Render custom graphs for this section
+    if (section !== "Compare") {
+        const sectionKey = section.toLowerCase();
+        render_custom_graphs(window[grid], sectionKey, gridEditMode);
+        if (gridEditMode) {
+            wire_delete_custom_graph_buttons(window[grid], sectionKey);
+            render_add_custom_graph_tile(window[grid], sectionKey);
         }
     }
 
@@ -763,6 +782,8 @@ function setup_dashboard_section_layout_buttons() {
     setup_add_stat_widget_modal();
     // Setup the add custom section modal (populate color pickers, wire confirm/cancel)
     setup_add_custom_section_modal();
+    // Setup the add custom graph modal (populate selects, wire confirm/cancel)
+    setup_add_custom_graph_modal();
 }
 
 // function to separately add the eventlisteners for overview section layout buttons
