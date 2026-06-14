@@ -124,3 +124,23 @@ To add a section divider:
 To remove a divider, enter Customize view mode and click the **✕** button on the right side of the bar.
 
 Section dividers are stored in localStorage and survive page reloads.
+
+## 11. Link Widgets
+
+Link widgets are clickable tiles you can add to any dashboard section grid. Each tile displays a label and the destination URL, and navigates to that URL when clicked — either in the same tab or in a new tab. They are available in all sections (Run, Suite, Test, Keyword) and in [Unified View](/settings#defaults-settings-defaults-tab).
+
+To add a link widget:
+
+1. Enter **Customize view** mode.
+2. Click the **"+ Add link widget"** tile that appears at the bottom of the target grid.
+3. In the popup, enter a **label** (the display name shown on the tile) and the **URL** to navigate to.
+4. Check **Open in new tab** if you want the link to open in a new browser tab. Leave it unchecked to navigate in the current tab.
+5. Optionally pick a **text color** and **background color** for the tile.
+6. Click **Add** — the widget is placed in the grid and can be dragged or resized like any other tile.
+7. Click **Save** to persist the layout to localStorage.
+
+To remove a link widget, enter Customize view mode and click the **✕** button in its top-right corner.
+
+> Link widgets are not clickable while Customize view mode is active — this prevents accidental navigation while you are rearranging the layout. Clicking the tile in normal mode navigates to the configured URL.
+
+Link widgets are stored in localStorage and survive page reloads.
