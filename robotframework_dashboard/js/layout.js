@@ -20,6 +20,12 @@ import {
     open_add_stat_widget_modal,
 } from "./statwidgets.js";
 import {
+    render_custom_link_widgets,
+    render_add_link_widget_tile,
+    setup_add_link_widget_modal,
+    wire_link_delete_buttons,
+} from "./linkwidgets.js";
+import {
     render_custom_sections,
     render_add_section_tile,
     setup_add_custom_section_modal,
@@ -36,6 +42,7 @@ function capture_settings_snapshot() {
     return {
         layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
+        linkWidgets: JSON.parse(JSON.stringify(settings.linkWidgets || [])),
         customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
         view: {
             dashboard: {
@@ -80,6 +87,7 @@ function capture_dom_snapshot() {
     const snapshot = {
         layouts: {},
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
+        linkWidgets: JSON.parse(JSON.stringify(settings.linkWidgets || [])),
         customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
         view: {
             dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
@@ -184,6 +192,7 @@ function apply_layout_snapshot(snapshot) {
     applyingSnapshot = true;
     settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
     set_local_storage_item('statWidgets', JSON.parse(JSON.stringify(snapshot.statWidgets || [])));
+    set_local_storage_item('linkWidgets', JSON.parse(JSON.stringify(snapshot.linkWidgets || [])));
     set_local_storage_item('customSections', JSON.parse(JSON.stringify(snapshot.customSections || [])));
     settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
     settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
@@ -473,6 +482,12 @@ function setup_grid_graphs(section) {
             wire_delete_buttons(window[grid], sectionKey);
             render_add_stat_widget_tile(window[grid], sectionKey);
         }
+        // Render custom link widgets for this section
+        render_custom_link_widgets(window[grid], sectionKey, gridEditMode);
+        if (gridEditMode) {
+            wire_link_delete_buttons(window[grid], sectionKey);
+            render_add_link_widget_tile(window[grid], sectionKey);
+        }
     }
 
     // Render custom section dividers (unified grid only)
@@ -761,6 +776,8 @@ function setup_dashboard_section_layout_buttons() {
 
     // Setup the add stat widget modal (populate dropdowns, wire confirm/cancel)
     setup_add_stat_widget_modal();
+    // Setup the add link widget modal (populate color pickers, wire confirm/cancel)
+    setup_add_link_widget_modal();
     // Setup the add custom section modal (populate color pickers, wire confirm/cancel)
     setup_add_custom_section_modal();
 }

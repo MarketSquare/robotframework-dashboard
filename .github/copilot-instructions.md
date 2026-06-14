@@ -106,6 +106,7 @@ The `.github/skills/` directory contains domain-specific knowledge files:
 | `project-architecture.md` | Understanding how components connect and navigating the codebase |
 | `dashboard.md` | Dashboard pages, Chart.js graphs, chart types, graph data/creation modules |
 | `js-bundling.md` | How JS/CSS is bundled and embedded into the HTML (no Node.js bundler) |
+| `js-feature-patterns.md` | **End-to-end patterns for adding new JS features**: custom widget checklist, GridStack item lifecycle, undo/redo snapshot pattern, localStorage-only keys |
 | `conventions-and-gotchas.md` | Edge cases, run identity, offline mode, custom DBs, server auth model |
 | `coding-style.md` | Python/JS/CSS style conventions |
 | `workflows.md` | CLI usage, running tests, server mode, docs site |

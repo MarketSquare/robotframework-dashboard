@@ -65,8 +65,8 @@ function merge_deep(local, defaults) {
     for (const key of new Set([...Object.keys(defaults), ...Object.keys(local)])) {
         const defaultVal = defaults[key];
         const localVal = local[key];
-        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, filterProfiles, and statWidgets (only in localstorage)
-        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && key !== "customSections" && defaultVal === undefined && localVal !== undefined) {
+        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, filterProfiles, statWidgets, and linkWidgets (only in localstorage)
+        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && key !== "customSections" && key !== "linkWidgets" && defaultVal === undefined && localVal !== undefined) {
             continue;
         }
         // Added key: exists in defaults but not local: add defaults
@@ -204,6 +204,8 @@ function merge_layout(localLayout, mergedDefaults) {
                 allowedGraphs.has(item.id) ||
                 // Preserve saved positions for user-created custom stat widgets
                 (typeof item.id === 'string' && item.id.startsWith('customStatWidget-')) ||
+                // Preserve saved positions for user-created custom link widgets
+                (typeof item.id === 'string' && item.id.startsWith('customLinkWidget-')) ||
                 // Preserve saved positions for user-created custom section dividers
                 (typeof item.id === 'string' && item.id.startsWith('customSection-'))
             );
