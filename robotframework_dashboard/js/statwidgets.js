@@ -1,6 +1,8 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
-import { format_duration, generate_id, apply_bg_class, fill_color_picker } from './common.js';
+import { setup_data_and_graphs } from './menu.js';
+import { apply_widget_control_icons } from './theme.js';
+import { format_duration, generate_id, apply_bg_class, fill_color_picker, build_move_controls_html } from './common.js';
 import {
     filteredRuns,
     filteredSuites,
@@ -40,12 +42,13 @@ function get_stat_value(statKey) {
 // Builds the inner HTML for one custom stat widget card slot
 function build_widget_html(widget, editMode) {
     const deleteBtn = editMode
-        ? `<button type="button" class="btn-close btn-close-sm delete-custom-stat-widget" aria-label="Remove widget" data-widget-id="${widget.id}"></button>`
+        ? `<a class="delete-custom-stat-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${widget.id}"></a>`
         : '';
+    const moveBtns = editMode ? build_move_controls_html(deleteBtn) : '';
     return `<div class="stat-widget-inner">
+                ${moveBtns}
                 <h6 class="stat-widget-title" id="customStatWidget-${widget.id}-title">${widget.title}</h6>
                 <div class="stat-value ${widget.color}" id="customStatWidget-${widget.id}-value"></div>
-                ${deleteBtn}
             </div>`;
 }
 
@@ -165,31 +168,109 @@ function sync_modal_defaults_from_stat(opt) {
     if (titleEl && !titleEl.dataset.userEdited) titleEl.value = opt.textContent;
 }
 
-// Adds a special "+ Add Widget" tile to the GridStack for edit mode
-function render_add_stat_widget_tile(gridStack, sectionKey) {
-    const tileId = `addStatWidgetTile-${sectionKey}`;
-    // Avoid duplicates
-    if (gridStack.el.querySelector(`[data-gs-id="${tileId}"]`)) return;
-    const item = document.createElement('div');
-    item.classList.add('grid-stack-item');
-    item.setAttribute('gs-w', 2);
-    item.setAttribute('gs-h', 2);
-    item.setAttribute('gs-min-w', 2);
-    item.setAttribute('gs-min-h', 2);
-    item.setAttribute('gs-max-w', 2);
-    item.setAttribute('gs-max-h', 2);
-    item.setAttribute('gs-no-resize', 'true');
-    item.setAttribute('data-gs-id', tileId);
-    item.innerHTML = `<div class="grid-stack-item-content add-stat-widget-tile" data-section="${sectionKey}">
-        <div class="add-stat-widget-tile-inner">
-            <div class="add-stat-widget-plus">+</div>
-            <div class="add-stat-widget-tile-label">Add stat widget</div>
-        </div>
-    </div>`;
-    gridStack.makeWidget(item);
-    item.querySelector('.add-stat-widget-tile').addEventListener('click', () => {
-        open_add_stat_widget_modal(sectionKey);
+// Returns all stat widget definitions available for the given section ("run"/"suite"/"test"/"keyword"/"unified")
+function get_all_stat_defs(sectionKey) {
+    return sectionKey === 'unified'
+        ? STAT_WIDGET_DEFS
+        : STAT_WIDGET_DEFS.filter(d => d.section.toLowerCase() === sectionKey);
+}
+
+// Populates the "All" tab list with one toggle + title input row per available stat for the given section
+function populate_all_widgets_list(sectionKey) {
+    const container = document.getElementById('addAllWidgetsList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const existingKeys = new Set((settings.statWidgets || []).filter(w => w.section === sectionKey).map(w => w.statKey));
+    const defs = get_all_stat_defs(sectionKey);
+
+    let currentGroup = null;
+    for (const def of defs) {
+        if (sectionKey === 'unified' && def.section !== currentGroup) {
+            currentGroup = def.section;
+            const heading = document.createElement('div');
+            heading.className = 'add-all-widgets-group-heading';
+            heading.textContent = currentGroup;
+            container.appendChild(heading);
+        }
+
+        const row = document.createElement('div');
+        row.classList.add('add-all-widgets-row');
+
+        const switchWrapper = document.createElement('div');
+        switchWrapper.classList.add('form-check', 'form-switch');
+        const toggle = document.createElement('input');
+        toggle.classList.add('form-check-input', 'add-all-widgets-toggle');
+        toggle.type = 'checkbox';
+        toggle.role = 'switch';
+        toggle.id = `addAllWidgetsToggle-${def.key}`;
+        toggle.dataset.statKey = def.key;
+        toggle.checked = true;
+        switchWrapper.appendChild(toggle);
+
+        const titleInput = document.createElement('input');
+        titleInput.type = 'text';
+        titleInput.classList.add('form-control', 'form-control-sm', 'add-all-widgets-title');
+        titleInput.id = `addAllWidgetsTitle-${def.key}`;
+        titleInput.maxLength = 40;
+        titleInput.value = def.label;
+
+        row.appendChild(switchWrapper);
+        row.appendChild(titleInput);
+
+        if (existingKeys.has(def.key)) {
+            const badge = document.createElement('span');
+            badge.classList.add('badge', 'bg-secondary', 'add-all-widgets-badge');
+            badge.textContent = 'Added';
+            row.appendChild(badge);
+        }
+
+        container.appendChild(row);
+    }
+
+    const toggleAll = document.getElementById('addAllWidgetsToggleAll');
+    if (toggleAll) {
+        toggleAll.checked = true;
+        toggleAll.indeterminate = false;
+    }
+}
+
+// Updates the "Toggle all" switch to reflect the checked/unchecked/mixed state of the individual toggles
+function sync_toggle_all_widgets_state() {
+    const toggleAll = document.getElementById('addAllWidgetsToggleAll');
+    const container = document.getElementById('addAllWidgetsList');
+    if (!toggleAll || !container) return;
+    const toggles = [...container.querySelectorAll('.add-all-widgets-toggle')];
+    const checkedCount = toggles.filter(t => t.checked).length;
+    toggleAll.checked = checkedCount === toggles.length;
+    toggleAll.indeterminate = checkedCount > 0 && checkedCount < toggles.length;
+}
+
+// Adds a stat widget for every toggled-on row in the "All" tab list
+function add_selected_stat_widgets(sectionKey, randomColors, color, bgColor) {
+    const container = document.getElementById('addAllWidgetsList');
+    if (!container) return 0;
+
+    const list = settings.statWidgets ? [...settings.statWidgets] : [];
+    let added = 0;
+    container.querySelectorAll('.add-all-widgets-toggle:checked').forEach(toggle => {
+        const statKey = toggle.dataset.statKey;
+        const def = STAT_WIDGET_DEFS.find(d => d.key === statKey);
+        if (!def) return;
+
+        const titleInput = document.getElementById(`addAllWidgetsTitle-${statKey}`);
+        const title = titleInput?.value.trim() || def.label;
+        const widgetColor = randomColors
+            ? STAT_WIDGET_COLORS[Math.floor(Math.random() * STAT_WIDGET_COLORS.length)].value
+            : color;
+        const widgetBgColor = randomColors
+            ? STAT_WIDGET_BG_COLORS[Math.floor(Math.random() * STAT_WIDGET_BG_COLORS.length)].value
+            : bgColor;
+        list.push({ id: generate_id(), section: sectionKey, statKey, title, color: widgetColor, bgColor: widgetBgColor });
+        added++;
     });
+    set_local_storage_item('statWidgets', list);
+    return added;
 }
 
 // Wires all events inside the Add Stat Widget modal (call once after DOM ready)
@@ -197,9 +278,70 @@ function setup_add_stat_widget_modal() {
     populate_stat_widget_select();
     populate_stat_widget_colors();
     populate_stat_widget_bg_colors();
+    fill_color_picker(document.getElementById('addAllWidgetsColorPicker'), STAT_WIDGET_COLORS, 'white-text');
+    fill_color_picker(document.getElementById('addAllWidgetsBgColorPicker'), STAT_WIDGET_BG_COLORS, '');
 
     const statSelect = document.getElementById('addStatWidgetStat');
     const titleInput = document.getElementById('addStatWidgetTitle');
+    const singleConfirm = document.getElementById('addStatWidgetConfirm');
+    const allConfirm = document.getElementById('addAllWidgetsConfirm');
+
+    // Toggle footer confirm buttons based on the active tab
+    document.querySelectorAll('#addStatWidgetTab button[data-bs-toggle="tab"]').forEach(tabBtn => {
+        tabBtn.addEventListener('shown.bs.tab', (e) => {
+            const isAllTab = e.target.id === 'addStatWidgetAllTab-tab';
+            if (singleConfirm) singleConfirm.hidden = isAllTab;
+            if (allConfirm) allConfirm.hidden = !isAllTab;
+            if (isAllTab) {
+                const modal = document.getElementById('addStatWidgetModal');
+                populate_all_widgets_list(modal.dataset.pendingSection || 'run');
+            }
+        });
+    });
+
+    // Toggle the "All" tab's color pickers based on the random colors switch
+    document.getElementById('addAllWidgetsRandom')?.addEventListener('change', (e) => {
+        const group = document.getElementById('addAllWidgetsColorGroup');
+        if (group) group.hidden = e.target.checked;
+    });
+
+    // "Toggle all" switch turns every stat toggle in the "All" tab on or off
+    document.getElementById('addAllWidgetsToggleAll')?.addEventListener('change', (e) => {
+        const checked = e.target.checked;
+        e.target.indeterminate = false;
+        document.querySelectorAll('#addAllWidgetsList .add-all-widgets-toggle').forEach(toggle => {
+            toggle.checked = checked;
+        });
+    });
+
+    // Keep the "Toggle all" switch in sync when individual stat toggles change
+    document.getElementById('addAllWidgetsList')?.addEventListener('change', (e) => {
+        if (e.target.classList.contains('add-all-widgets-toggle')) {
+            sync_toggle_all_widgets_state();
+        }
+    });
+
+    // Add All confirm button
+    allConfirm?.addEventListener('click', () => {
+        const modal      = document.getElementById('addStatWidgetModal');
+        const sectionKey = modal.dataset.pendingSection || 'run';
+        const random     = document.getElementById('addAllWidgetsRandom')?.checked !== false;
+        const colorBtn   = document.querySelector('#addAllWidgetsColorPicker .stat-color-btn.active');
+        const color      = colorBtn?.dataset.color || 'white-text';
+        const bgBtn      = document.querySelector('#addAllWidgetsBgColorPicker .stat-color-btn.active');
+        const bgColor    = bgBtn?.dataset.color || '';
+
+        const added = add_selected_stat_widgets(sectionKey, random, color, bgColor);
+        if (added > 0) {
+            setup_data_and_graphs();
+            const on_finalized = () => {
+                document.dispatchEvent(new CustomEvent("layout-user-action"));
+                document.removeEventListener("graphs-finalized", on_finalized);
+            };
+            document.addEventListener("graphs-finalized", on_finalized);
+        }
+        bootstrap.Modal.getInstance(modal)?.hide();
+    });
 
     // When stat changes: auto-fill title and color (only if user hasn't overridden title)
     statSelect?.addEventListener('change', () => {
@@ -249,6 +391,7 @@ function setup_add_stat_widget_modal() {
             item.innerHTML = `<div class="grid-stack-item-content">${build_widget_html(widget, true)}</div>`;
             grid.makeWidget(item);
             apply_bg_class(item, widget.bgColor);
+            apply_widget_control_icons(item);
             // Wire delete on the newly created widget
             const deleteBtn = item.querySelector(`.delete-custom-stat-widget[data-widget-id="${widget.id}"]`);
             if (deleteBtn) {
@@ -268,9 +411,15 @@ function setup_add_stat_widget_modal() {
         bootstrap.Modal.getInstance(modal)?.hide();
     });
 
-    // Reset user-edited flag on modal open
+    // Reset user-edited flag and tab state on modal open
     document.getElementById('addStatWidgetModal')?.addEventListener('show.bs.modal', () => {
         if (titleInput) titleInput.dataset.userEdited = '';
+        const singleTab = document.getElementById('addStatWidgetSingleTab-tab');
+        if (singleTab && !singleTab.classList.contains('active')) {
+            bootstrap.Tab.getOrCreateInstance(singleTab).show();
+        }
+        if (singleConfirm) singleConfirm.hidden = false;
+        if (allConfirm) allConfirm.hidden = true;
     });
 }
 
@@ -302,12 +451,12 @@ function open_add_stat_widget_modal(sectionKey) {
     if (!modal) return;
     modal.dataset.pendingSection = sectionKey;
     preselectStatSection(sectionKey);
+    populate_all_widgets_list(sectionKey);
     bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
 export {
     render_custom_stat_widgets,
-    render_add_stat_widget_tile,
     update_custom_stat_widgets,
     add_custom_stat_widget,
     remove_custom_stat_widget,

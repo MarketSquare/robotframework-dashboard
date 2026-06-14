@@ -235,6 +235,16 @@ function apply_bg_class(itemEl, bgColor) {
     if (bgColor) content.classList.add(bgColor);
 }
 
+// Builds the "Move to First" / "Move to Last" controls (and optional delete button) shared by
+// custom widgets/sections in edit mode — pinned together in the top-right corner
+function build_move_controls_html(deleteBtnHtml = '') {
+    return `<div class="custom-widget-move-controls">
+                <a class="move-to-first-graph information" data-title="Move to First"></a>
+                <a class="move-to-last-graph information" data-title="Move to Last"></a>
+                ${deleteBtnHtml}
+            </div>`;
+}
+
 // Populates a color picker container with button-per-color entries
 function fill_color_picker(picker, colors, defaultValue) {
     picker.innerHTML = '';
@@ -275,4 +285,5 @@ export {
     generate_id,
     apply_bg_class,
     fill_color_picker,
+    build_move_controls_html,
 };

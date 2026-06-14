@@ -136,6 +136,11 @@
                                 <a type="button" class="information information-icon ms-2 mt-1"
                                     id="unifiedStatisticsInformation"></a>
                             </div>
+                            <div class="col-auto ms-auto section-header-icons">
+                                <a class="add-stat-widget-header information" id="unifiedAddStatWidgetHeader" data-section="unified" hidden></a>
+                                <a class="add-link-widget-header information" id="unifiedAddLinkWidgetHeader" data-section="unified" hidden></a>
+                                <a class="add-section-header information" id="unifiedAddSectionHeader" data-section="unified" hidden></a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -156,7 +161,9 @@
                         <div class="col">
                             <h4 id="runTitle"></h4>
                         </div>
-                        <div class="col-auto ms-auto">
+                        <div class="col-auto ms-auto section-header-icons">
+                            <a class="add-stat-widget-header information" id="runAddStatWidgetHeader" data-section="run" hidden></a>
+                            <a class="add-link-widget-header information" id="runAddLinkWidgetHeader" data-section="run" hidden></a>
                             <a class="move-up-section information" id="runSectionMoveUp" hidden></a>
                             <a class="move-down-section information" id="runSectionMoveDown" hidden></a>
                             <a class="shown-section information" id="runSectionShown" hidden></a>
@@ -207,7 +214,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-auto ms-auto">
+                            <div class="col-auto ms-auto section-header-icons">
+                                <a class="add-stat-widget-header information" id="suiteAddStatWidgetHeader" data-section="suite" hidden></a>
+                                <a class="add-link-widget-header information" id="suiteAddLinkWidgetHeader" data-section="suite" hidden></a>
                                 <a class="move-up-section information" id="suiteSectionMoveUp" hidden></a>
                                 <a class="move-down-section information" id="suiteSectionMoveDown" hidden></a>
                                 <a class="shown-section information" id="suiteSectionShown" hidden></a>
@@ -259,7 +268,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-auto ms-auto">
+                            <div class="col-auto ms-auto section-header-icons">
+                                <a class="add-stat-widget-header information" id="testAddStatWidgetHeader" data-section="test" hidden></a>
+                                <a class="add-link-widget-header information" id="testAddLinkWidgetHeader" data-section="test" hidden></a>
                                 <a class="move-up-section information" id="testSectionMoveUp" hidden></a>
                                 <a class="move-down-section information" id="testSectionMoveDown" hidden></a>
                                 <a class="shown-section information" id="testSectionShown" hidden></a>
@@ -304,7 +315,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-auto ms-auto">
+                        <div class="col-auto ms-auto section-header-icons">
+                            <a class="add-stat-widget-header information" id="keywordAddStatWidgetHeader" data-section="keyword" hidden></a>
+                            <a class="add-link-widget-header information" id="keywordAddLinkWidgetHeader" data-section="keyword" hidden></a>
                             <a class="move-up-section information" id="keywordSectionMoveUp" hidden></a>
                             <a class="move-down-section information" id="keywordSectionMoveDown" hidden></a>
                             <a class="shown-section information" id="keywordSectionShown" hidden></a>
@@ -1092,22 +1105,62 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label" for="addStatWidgetStat">Stat</label>
-                            <select id="addStatWidgetStat" class="form-select"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="addStatWidgetTitle">Title</label>
-                            <input type="text" id="addStatWidgetTitle" class="form-control"
-                                placeholder="Widget title" maxlength="40">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label d-block">Text Color</label>
-                            <div class="d-flex flex-wrap gap-2" id="addStatWidgetColorPicker"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label d-block">Background Color</label>
-                            <div class="d-flex flex-wrap gap-2" id="addStatWidgetBgColorPicker"></div>
+                        <ul class="nav nav-tabs" id="addStatWidgetTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="addStatWidgetSingleTab-tab" data-bs-toggle="tab"
+                                    data-bs-target="#addStatWidgetSingleTab" type="button" role="tab"
+                                    aria-controls="addStatWidgetSingleTab" aria-selected="true">Single</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="addStatWidgetAllTab-tab" data-bs-toggle="tab"
+                                    data-bs-target="#addStatWidgetAllTab" type="button" role="tab"
+                                    aria-controls="addStatWidgetAllTab" aria-selected="false">Multiple </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content pt-3" id="addStatWidgetTabContent">
+                            <div class="tab-pane fade show active" id="addStatWidgetSingleTab" role="tabpanel"
+                                aria-labelledby="addStatWidgetSingleTab-tab">
+                                <div class="mb-3">
+                                    <label class="form-label" for="addStatWidgetStat">Stat</label>
+                                    <select id="addStatWidgetStat" class="form-select"></select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="addStatWidgetTitle">Title</label>
+                                    <input type="text" id="addStatWidgetTitle" class="form-control"
+                                        placeholder="Widget title" maxlength="40">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Text Color</label>
+                                    <div class="d-flex flex-wrap gap-2" id="addStatWidgetColorPicker"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Background Color</label>
+                                    <div class="d-flex flex-wrap gap-2" id="addStatWidgetBgColorPicker"></div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="addStatWidgetAllTab" role="tabpanel"
+                                aria-labelledby="addStatWidgetAllTab-tab">
+                                <p class="mb-2">Toggle the stats you want to add and optionally adjust their titles.</p>
+                                <div class="mb-2 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="addAllWidgetsToggleAll" checked>
+                                    <label class="form-check-label" for="addAllWidgetsToggleAll">Toggle all</label>
+                                </div>
+                                <div id="addAllWidgetsList" class="mb-3 add-all-widgets-list"></div>
+                                <div class="mb-3 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="addAllWidgetsRandom" checked>
+                                    <label class="form-check-label" for="addAllWidgetsRandom">Use random colors</label>
+                                </div>
+                                <div id="addAllWidgetsColorGroup" hidden>
+                                    <div class="mb-3">
+                                        <label class="form-label d-block">Text Color</label>
+                                        <div class="d-flex flex-wrap gap-2" id="addAllWidgetsColorPicker"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label d-block">Background Color</label>
+                                        <div class="d-flex flex-wrap gap-2" id="addAllWidgetsBgColorPicker"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1115,6 +1168,8 @@
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-outline-light btn-sm"
                             id="addStatWidgetConfirm">Add Widget</button>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            id="addAllWidgetsConfirm" hidden>Add Selected Widgets</button>
                     </div>
                 </div>
             </div>

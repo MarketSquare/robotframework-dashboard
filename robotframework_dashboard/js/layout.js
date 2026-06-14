@@ -14,22 +14,21 @@ import {
 import { setup_data_and_graphs } from "./menu.js";
 import {
     render_custom_stat_widgets,
-    render_add_stat_widget_tile,
     setup_add_stat_widget_modal,
     wire_delete_buttons,
     open_add_stat_widget_modal,
 } from "./statwidgets.js";
 import {
     render_custom_link_widgets,
-    render_add_link_widget_tile,
     setup_add_link_widget_modal,
     wire_link_delete_buttons,
+    open_add_link_widget_modal,
 } from "./linkwidgets.js";
 import {
     render_custom_sections,
-    render_add_section_tile,
     setup_add_custom_section_modal,
     wire_delete_section_buttons,
+    open_add_custom_section_modal,
 } from "./customsections.js";
 
 // Layout history state for undo/redo in edit mode
@@ -294,6 +293,9 @@ function setup_section_order() {
     });
 
     if (gridEditMode) {
+        document.querySelectorAll(".add-stat-widget-header").forEach(btn => { btn.hidden = false })
+        document.querySelectorAll(".add-link-widget-header").forEach(btn => { btn.hidden = false })
+        document.querySelectorAll(".add-section-header").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".move-up-section").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".move-down-section").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".shown-section, .hidden-section").forEach(btn => {
@@ -314,6 +316,9 @@ function setup_section_order() {
             }
         });
     } else {
+        document.querySelectorAll(".add-stat-widget-header").forEach(btn => { btn.hidden = true })
+        document.querySelectorAll(".add-link-widget-header").forEach(btn => { btn.hidden = true })
+        document.querySelectorAll(".add-section-header").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".move-up-section").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".move-down-section").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".shown-section").forEach(btn => { btn.hidden = true })
@@ -459,9 +464,13 @@ function setup_grid_graphs(section) {
                 html = html.replace("showGraphHidden", "hidden")
                 html = html.replace("hideGraphHidden", "")
             }
+            html = html.replace("moveToFirstHidden", "")
+            html = html.replace("moveToLastHidden", "")
         } else {
             html = html.replace("showGraphHidden", "hidden")
             html = html.replace("hideGraphHidden", "hidden")
+            html = html.replace("moveToFirstHidden", "hidden")
+            html = html.replace("moveToLastHidden", "hidden")
         }
         item.innerHTML = html
         window[grid].makeWidget(item);
@@ -480,13 +489,11 @@ function setup_grid_graphs(section) {
         render_custom_stat_widgets(window[grid], sectionKey, gridEditMode);
         if (gridEditMode) {
             wire_delete_buttons(window[grid], sectionKey);
-            render_add_stat_widget_tile(window[grid], sectionKey);
         }
         // Render custom link widgets for this section
         render_custom_link_widgets(window[grid], sectionKey, gridEditMode);
         if (gridEditMode) {
             wire_link_delete_buttons(window[grid], sectionKey);
-            render_add_link_widget_tile(window[grid], sectionKey);
         }
     }
 
@@ -495,7 +502,6 @@ function setup_grid_graphs(section) {
         render_custom_sections(window[grid], gridEditMode);
         if (gridEditMode) {
             wire_delete_section_buttons(window[grid]);
-            render_add_section_tile(window[grid]);
         }
     }
 }
@@ -694,6 +700,50 @@ function setup_edit_mode_icons(hidden) {
     }
 }
 
+// Repacks all widgets in a grid, placing the given item first (toFirst) or last (toLast)
+function move_widget_in_grid(gridStack, itemEl, toFirst) {
+    const target = gridStack.engine.nodes.find(n => n.el === itemEl);
+    if (!target) return;
+    const ordered = gridStack.engine.nodes.slice().sort((a, b) => (a.y - b.y) || (a.x - b.x));
+    const others = ordered.filter(n => n !== target);
+    const sequence = toFirst ? [target, ...others] : [...others, target];
+
+    // Compute the final row-flow positions up front
+    const maxColumns = 12;
+    let x = 0, y = 0, rowHeight = 0;
+    const positions = sequence.map(node => {
+        if (x + node.w > maxColumns) {
+            x = 0;
+            y += rowHeight;
+            rowHeight = 0;
+        }
+        const pos = { node, x, y };
+        x += node.w;
+        rowHeight = Math.max(rowHeight, node.h);
+        return pos;
+    });
+
+    gridStack.batchUpdate();
+    try {
+        // Phase 1: move every widget into a non-overlapping holding area below the grid,
+        // so the final placements in phase 2 can't collide with stale positions and
+        // trigger GridStack's own (unpredictable) collision-avoidance shuffling.
+        const maxY = Math.max(0, ...ordered.map(node => node.y + node.h));
+        let holdY = maxY;
+        sequence.forEach(node => {
+            gridStack.update(node.el, { x: 0, y: holdY, w: node.w, h: node.h });
+            holdY += node.h;
+        });
+        // Phase 2: place every widget at its intended final position
+        positions.forEach(({ node, x, y }) => {
+            gridStack.update(node.el, { x, y, w: node.w, h: node.h });
+        });
+    } finally {
+        gridStack.batchUpdate(false);
+    }
+    capture_dom_snapshot_and_push();
+}
+
 // Reusable handler to wire show/hide and move controls within a container
 function attach_section_order_buttons(containerId) {
     const root = `#${containerId}`;
@@ -773,6 +823,40 @@ function setup_dashboard_section_layout_buttons() {
     // Capture DOM snapshot when graph show/hide buttons are toggled (dispatched from eventlisteners.js)
     document.addEventListener("layout-user-action", () => capture_dom_snapshot_and_push());
     attach_section_order_buttons("dashboard");
+
+    // Move widget to first/last position in its grid (delegated so it works after grid re-renders)
+    document.addEventListener("click", (e) => {
+        const firstBtn = e.target.closest(".move-to-first-graph");
+        const lastBtn = e.target.closest(".move-to-last-graph");
+        const btn = firstBtn || lastBtn;
+        if (!btn || btn.hidden) return;
+        const item = btn.closest(".grid-stack-item");
+        const gridEl = btn.closest(".grid-stack");
+        if (!item || !gridEl) return;
+        const gridStack = window[gridEl.id];
+        if (!gridStack) return;
+        move_widget_in_grid(gridStack, item, !!firstBtn);
+    });
+
+    // Open the Add Stat Widget / Add Link Widget / Add Custom Section modals from the section header icons
+    document.addEventListener("click", (e) => {
+        const statBtn = e.target.closest(".add-stat-widget-header");
+        const linkBtn = e.target.closest(".add-link-widget-header");
+        const sectionBtn = e.target.closest(".add-section-header");
+        const btn = statBtn || linkBtn || sectionBtn;
+        if (!btn || btn.hidden) return;
+        if (sectionBtn) {
+            open_add_custom_section_modal();
+            return;
+        }
+        const sectionKey = btn.dataset.section;
+        if (!sectionKey) return;
+        if (statBtn) {
+            open_add_stat_widget_modal(sectionKey);
+        } else {
+            open_add_link_widget_modal(sectionKey);
+        }
+    });
 
     // Setup the add stat widget modal (populate dropdowns, wire confirm/cancel)
     setup_add_stat_widget_modal();

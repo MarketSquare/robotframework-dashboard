@@ -219,6 +219,8 @@ const graphKeys = [
 graphKeys.forEach(key => {
     informationMap[`${key}Fullscreen`] = "Fullscreen";
     informationMap[`${key}Close`] = "Close";
+    informationMap[`${key}MoveToFirst`] = "Move to First";
+    informationMap[`${key}MoveToLast`] = "Move to Last";
     informationMap[`${key}Shown`] = "Hide Graph";
     informationMap[`${key}Hidden`] = "Show Graph";
 });
@@ -236,5 +238,12 @@ graphKeys.forEach(key => {
     informationMap[`${key}Shown`] = "Hide Section";
     informationMap[`${key}Hidden`] = "Show Section";
 });
+
+["run", "suite", "test", "keyword", "unified"].forEach(key => {
+    informationMap[`${key}AddStatWidgetHeader`] = "Add Stat Widget";
+    informationMap[`${key}AddLinkWidgetHeader`] = "Add Link Widget";
+});
+
+informationMap["unifiedAddSectionHeader"] = "Add Custom Section";
 
 export { informationMap };

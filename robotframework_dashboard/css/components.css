@@ -152,80 +152,44 @@
   align-items: center;
 }
 
-/* Add Widget tile shown in customize-view mode */
-.add-stat-widget-tile {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--bs-border-color, rgba(128,128,128,0.4));
-  border-radius: 8px;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.add-stat-widget-tile:hover {
-  border-color: var(--color-text);
-  background-color: rgba(128,128,128,0.08);
-}
-
-.add-stat-widget-tile-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  transition: opacity 0.15s;
-  user-select: none;
-}
-
-.add-stat-widget-plus {
-  font-size: 2rem;
-  font-weight: 300;
-  line-height: 1;
-}
-
-.add-stat-widget-tile-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
 /* Color picker buttons inside the Add Stat Widget modal */
 .stat-color-btn {
   min-width: 60px;
 }
 
-/* Add custom section horizontal tile — shown in customize-view mode (unified grid only) */
-.add-section-tile {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--bs-border-color, rgba(128,128,128,0.4));
-  border-radius: 8px;
-  transition: border-color 0.15s, background-color 0.15s;
+/* "All" tab stat list inside the Add Stat Widget modal */
+.add-all-widgets-list {
+  max-height: 300px;
+  overflow-y: auto;
 }
 
-.add-section-tile:hover {
-  border-color: var(--color-text);
-  background-color: rgba(128,128,128,0.08);
-}
-
-.add-section-tile-inner {
+.add-all-widgets-row {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  user-select: none;
+  margin-bottom: 0.5rem;
 }
 
-.add-section-plus {
-  font-size: 1.5rem;
-  font-weight: 300;
-  line-height: 1;
+.add-all-widgets-row .form-check {
+  margin-bottom: 0;
 }
 
-.add-section-tile-label {
-  font-size: 0.85rem;
-  font-weight: 500;
+.add-all-widgets-row .add-all-widgets-title {
+  flex: 1 1 auto;
+}
+
+.add-all-widgets-row .add-all-widgets-badge {
+  flex: 0 0 auto;
+}
+
+.add-all-widgets-group-heading {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.add-all-widgets-group-heading:first-child {
+  margin-top: 0;
 }
 
 /* Custom section divider bar rendered inside the unified GridStack */
@@ -247,28 +211,16 @@
   user-select: none;
 }
 
-/* Delete button on custom section dividers — pinned to top-right */
-.delete-custom-section {
+/* Move to first/last + delete controls on custom widgets/sections — pinned to top-right,
+   out of flex flow, sized and spaced like the icons in graph headers */
+.custom-widget-move-controls {
   position: absolute;
   top: 5px;
   right: 5px;
   z-index: 1;
-}
-
-/* Delete button on custom stat widgets — pinned to top-right, out of flex flow */
-.delete-custom-stat-widget {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  z-index: 1;
-}
-
-/* Delete button on custom link widgets — pinned to top-right, out of flex flow */
-.delete-custom-link-widget {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Compact flex layout for custom stat widgets — works at any GridStack size */
@@ -292,7 +244,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: calc(100% - 20px); /* leave room so text doesn't run under the delete button */
+  max-width: 100%;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.stat-widget-inner:has(.custom-widget-move-controls) .stat-widget-title {
+  max-width: calc(100% - 96px);
 }
 
 /* When the item is very short (h=1 row ≈ 60px) switch to a side-by-side row */
@@ -312,14 +269,25 @@
 .grid-stack-item[data-gs-h="1"] .stat-widget-title {
   flex: 1 1 0;
   text-align: left;
-  max-width: calc(100% - 40px); /* value + delete button */
+  max-width: calc(100% - 40px); /* leave room for the value */
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.grid-stack-item[gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-widget-title,
+.grid-stack-item[data-gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-widget-title {
+  max-width: calc(100% - 136px); /* value + move/delete controls */
 }
 
 .grid-stack-item[gs-h="1"] .stat-value,
 .grid-stack-item[data-gs-h="1"] .stat-value {
   flex-shrink: 0;
   font-size: 1.1rem;
-  margin-right: 20px; /* keep clear of the absolute delete button */
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.grid-stack-item[gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-value,
+.grid-stack-item[data-gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-value {
+  margin-right: 96px;
 }
 
 .grid-stack-item-content.blue-bg   { background-color: rgba(13, 110, 253, 0.15); }
@@ -328,42 +296,6 @@
 .grid-stack-item-content.yellow-bg { background-color: rgba(254, 216, 79, 0.2);  }
 
 /* ─── Custom link widget ─────────────────────────────────────────────────── */
-
-/* Add link widget tile — same visual language as add-stat-widget-tile */
-.add-link-widget-tile {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--bs-border-color, rgba(128,128,128,0.4));
-  border-radius: 8px;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.add-link-widget-tile:hover {
-  border-color: var(--color-text);
-  background-color: rgba(128,128,128,0.08);
-}
-
-.add-link-widget-tile-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  transition: opacity 0.15s;
-  user-select: none;
-}
-
-.add-link-widget-plus {
-  font-size: 2rem;
-  font-weight: 300;
-  line-height: 1;
-}
-
-.add-link-widget-tile-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
 
 /* Inner layout — mirrors stat-widget-inner */
 .link-widget-inner {
@@ -387,7 +319,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: calc(100% - 20px); /* leave room so text doesn't run under delete button */
+  max-width: 100%;
 }
 
 /* URL preview — small muted text below the label */
@@ -397,7 +329,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: calc(100% - 20px);
+  max-width: 100%;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.link-widget-inner:has(.custom-widget-move-controls) .link-widget-label,
+.link-widget-inner:has(.custom-widget-move-controls) .link-widget-url {
+  max-width: calc(100% - 96px);
 }
 
 /* Clickable in non-edit mode */
@@ -432,7 +370,13 @@
   flex-shrink: 0;
   font-size: 0.72rem;
   text-align: right;
-  max-width: calc(40% - 30px); /* keep clear of the absolute delete button */
+  max-width: 40%;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.grid-stack-item[gs-h="1"] .link-widget-inner:has(.custom-widget-move-controls) .link-widget-url {
+  max-width: calc(40% - 96px);
+  margin-right: 96px;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -540,6 +484,13 @@
 
 .graph-controls {
   display: flex;
+  gap: 8px;
+}
+
+/* Icon row in section card headers (add stat/link widget, add section, move/show/hide section) */
+.section-header-icons {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 

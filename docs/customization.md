@@ -20,7 +20,7 @@ The video above walks through three examples of how you can tailor the dashboard
 See how you can reshape the main dashboard layout by:
 
 - resizing individual graphs  
-- reordering graphs within their sections  
+- reordering graphs within their sections, either by dragging or using the **Move to First** / **Move to Last** buttons (see [Move to First / Move to Last](#12-move-to-first-move-to-last))
 - hiding graphs you don’t want to display  
 - rearranging entire sections to match your preferred workflow  
 - it is also possible to combine all sections into a single unified view, see [Settings - Defaults Tab](/settings#defaults-settings-defaults-tab), for the details
@@ -100,9 +100,11 @@ Stat widgets display a single KPI value (executed runs, failed tests, etc.) as a
 To add a stat widget:
 
 1. Enter **Customize view** mode.
-2. Click the **"+ Add stat widget"** tile that appears at the bottom of the target grid.
-3. In the popup, choose the **statistic** to display and optionally pick a **text color** and **background color**.
-4. Click **Add** — the widget is placed in the grid and can be dragged or resized like any other graph.
+2. Click the **"Add stat widget"** icon in the section header (top-right of the section, next to the other header icons) of the target grid.
+3. The popup has two tabs:
+   - **Single** — choose one **statistic** to display and optionally pick a **text color** and **background color**, then click **Add Widget**.
+   - **Multiple** — toggle on any number of stats from the list (use **Toggle all** to select/deselect everything at once), optionally adjust each widget's title, and either use **random colors** or pick a shared **text color** and **background color** for all of them. Click **Add Selected Widgets** to add them all at once.
+4. The widget(s) are placed in the grid and can be dragged or resized like any other graph.
 5. Click **Save** to persist the layout to localStorage.
 
 To remove a stat widget, enter Customize view mode and click the **✕** button in its top-right corner.
@@ -116,7 +118,7 @@ Custom section dividers are full-width horizontal bars you can place anywhere in
 To add a section divider:
 
 1. Enter **Customize view** mode.
-2. Click the **"+ Add custom section"** tile at the bottom of the unified grid.
+2. Click the **"Add custom section"** icon in the unified section's header (top-right, next to the other header icons).
 3. In the popup, enter a **title** (up to 60 characters) and optionally choose a **text color** and **background color**.
 4. Click **Add** — the divider spans the full grid width and can be dragged to any row.
 5. Click **Save** to persist the layout to localStorage.
@@ -132,7 +134,7 @@ Link widgets are clickable tiles you can add to any dashboard section grid. Each
 To add a link widget:
 
 1. Enter **Customize view** mode.
-2. Click the **"+ Add link widget"** tile that appears at the bottom of the target grid.
+2. Click the **"Add link widget"** icon in the section header (top-right of the section, next to the other header icons) of the target grid.
 3. In the popup, enter a **label** (the display name shown on the tile) and the **URL** to navigate to.
 4. Check **Open in new tab** if you want the link to open in a new browser tab. Leave it unchecked to navigate in the current tab.
 5. Optionally pick a **text color** and **background color** for the tile.
@@ -144,3 +146,9 @@ To remove a link widget, enter Customize view mode and click the **✕** button 
 > Link widgets are not clickable while Customize view mode is active — this prevents accidental navigation while you are rearranging the layout. Clicking the tile in normal mode navigates to the configured URL.
 
 Link widgets are stored in localStorage and survive page reloads.
+
+## 12. Move to First / Move to Last
+
+While in **Customize view** mode, every graph and widget shows a **"Move to First"** and **"Move to Last"** control alongside its other edit icons. Clicking one of these instantly moves the item to the start or end of its grid, without needing to drag it past every other item in between.
+
+This works for regular graphs as well as stat widgets, link widgets, and custom section dividers. Click **Save** to persist the new order to localStorage.

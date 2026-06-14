@@ -27,6 +27,8 @@ function _graphHtml(key, title, viewOptions, { hasVertical = false, titleId = tr
                         ${controls}
                         <a class="fullscreen-graph information" id="${key}Fullscreen"></a>
                         <a class="close-graph information" id="${key}Close" hidden></a>
+                        <a class="move-to-first-graph information" id="${key}MoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="${key}MoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="${key}Shown" showGraphHidden></a>
                         <a class="hidden-graph information" id="${key}Hidden" hideGraphHidden></a>
                     </div>
@@ -41,6 +43,8 @@ function _statWidgetHtml(key, title, valueClass) {
     return `<div class="graph-header">
                 <h6 id="${key}Title">${title}</h6>
                 <div class="graph-controls">
+                    <a class="move-to-first-graph information" id="${key}MoveToFirst" moveToFirstHidden></a>
+                    <a class="move-to-last-graph information" id="${key}MoveToLast" moveToLastHidden></a>
                     <a class="shown-graph information" id="${key}Shown" showGraphHidden></a>
                     <a class="hidden-graph information" id="${key}Hidden" hideGraphHidden></a>
                 </div>
@@ -87,6 +91,8 @@ const graphMetadata = [
                         <a class="pie-graph information" id="runDonutGraphDonut"></a>
                         <a class="fullscreen-graph information" id="runDonutFullscreen"></a>
                         <a class="close-graph information" id="runDonutClose" hidden></a>
+                        <a class="move-to-first-graph information" id="runDonutMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="runDonutMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="runDonutShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="runDonutHidden" hideGraphHidden></a>
                     </div>
@@ -186,6 +192,8 @@ const graphMetadata = [
                         <a class="heatmap-graph information" id="runHeatmapGraphHeatmap"></a>
                         <a class="fullscreen-graph information" id="runHeatmapFullscreen"></a>
                         <a class="close-graph information" id="runHeatmapClose" hidden></a>
+                        <a class="move-to-first-graph information" id="runHeatmapMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="runHeatmapMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="runHeatmapShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="runHeatmapHidden" hideGraphHidden></a>
                     </div>
@@ -213,6 +221,8 @@ const graphMetadata = [
                         <a class="pie-graph information" id="suiteFolderDonutGraphDonut"></a>
                         <a class="fullscreen-graph information" id="suiteFolderDonutFullscreen"></a>
                         <a class="close-graph information" id="suiteFolderDonutClose" hidden></a>
+                        <a class="move-to-first-graph information" id="suiteFolderDonutMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="suiteFolderDonutMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="suiteFolderDonutShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="suiteFolderDonutHidden" hideGraphHidden></a>
                     </div>
@@ -279,6 +289,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="suiteMostTimeConsumingGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="suiteMostTimeConsumingFullscreen"></a>
                         <a class="close-graph information" id="suiteMostTimeConsumingClose" hidden></a>
+                        <a class="move-to-first-graph information" id="suiteMostTimeConsumingMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="suiteMostTimeConsumingMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="suiteMostTimeConsumingShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="suiteMostTimeConsumingHidden" hideGraphHidden></a>
                     </div>
@@ -319,6 +331,8 @@ const graphMetadata = [
                         <a class="line-graph information" id="testStatisticsGraphLine"></a>
                         <a class="fullscreen-graph information" id="testStatisticsFullscreen"></a>
                         <a class="close-graph information" id="testStatisticsClose" hidden></a>
+                        <a class="move-to-first-graph information" id="testStatisticsMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="testStatisticsMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="testStatisticsShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="testStatisticsHidden" hideGraphHidden></a>
                     </div>
@@ -372,6 +386,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="testMostFlakyGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="testMostFlakyFullscreen"></a>
                         <a class="close-graph information" id="testMostFlakyClose" hidden></a>
+                        <a class="move-to-first-graph information" id="testMostFlakyMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="testMostFlakyMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="testMostFlakyShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="testMostFlakyHidden" hideGraphHidden></a>
                     </div>
@@ -401,6 +417,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="testRecentMostFlakyGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="testRecentMostFlakyFullscreen"></a>
                         <a class="close-graph information" id="testRecentMostFlakyClose" hidden></a>
+                        <a class="move-to-first-graph information" id="testRecentMostFlakyMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="testRecentMostFlakyMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="testRecentMostFlakyShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="testRecentMostFlakyHidden" hideGraphHidden></a>
                     </div>
@@ -446,6 +464,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="testMostTimeConsumingGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="testMostTimeConsumingFullscreen"></a>
                         <a class="close-graph information" id="testMostTimeConsumingClose" hidden></a>
+                        <a class="move-to-first-graph information" id="testMostTimeConsumingMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="testMostTimeConsumingMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="testMostTimeConsumingShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="testMostTimeConsumingHidden" hideGraphHidden></a>
                     </div>
@@ -531,6 +551,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="keywordMostTimeConsumingGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="keywordMostTimeConsumingFullscreen"></a>
                         <a class="close-graph information" id="keywordMostTimeConsumingClose" hidden></a>
+                        <a class="move-to-first-graph information" id="keywordMostTimeConsumingMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="keywordMostTimeConsumingMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="keywordMostTimeConsumingShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="keywordMostTimeConsumingHidden" hideGraphHidden></a>
                     </div>
@@ -560,6 +582,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="keywordMostUsedGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="keywordMostUsedFullscreen"></a>
                         <a class="close-graph information" id="keywordMostUsedClose" hidden></a>
+                        <a class="move-to-first-graph information" id="keywordMostUsedMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="keywordMostUsedMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="keywordMostUsedShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="keywordMostUsedHidden" hideGraphHidden></a>
                     </div>
@@ -640,6 +664,8 @@ const graphMetadata = [
                         <a class="timeline-graph information" id="compareTestsGraphTimeline"></a>
                         <a class="fullscreen-graph information" id="compareTestsFullscreen"></a>
                         <a class="close-graph information" id="compareTestsClose" hidden></a>
+                        <a class="move-to-first-graph information" id="compareTestsMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="compareTestsMoveToLast" moveToLastHidden></a>
                         <a class="shown-graph information" id="compareTestsShown" showGraphHidden></a>
                         <a class="hidden-graph information" id="compareTestsHidden" hideGraphHidden></a>
                     </div>

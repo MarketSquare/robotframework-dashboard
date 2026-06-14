@@ -1,16 +1,18 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
-import { generate_id, apply_bg_class, fill_color_picker } from './common.js';
+import { generate_id, apply_bg_class, fill_color_picker, build_move_controls_html } from './common.js';
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
+import { apply_widget_control_icons } from './theme.js';
 
 // Builds the inner HTML for a custom section divider bar
 function build_section_divider_html(section, editMode) {
     const deleteBtn = editMode
-        ? `<button type="button" class="btn-close btn-close-sm delete-custom-section" aria-label="Remove section" data-section-id="${section.id}"></button>`
+        ? `<a class="delete-custom-section information" role="button" aria-label="Remove section" data-title="Remove section" data-section-id="${section.id}"></a>`
         : '';
+    const moveBtns = editMode ? build_move_controls_html(deleteBtn) : '';
     return `<div class="custom-section-divider ${section.textColor || 'white-text'}">
+                ${moveBtns}
                 <span class="custom-section-title">${section.title}</span>
-                ${deleteBtn}
             </div>`;
 }
 
@@ -41,33 +43,6 @@ function render_custom_sections(gridStack, editMode) {
         gridStack.makeWidget(item);
         apply_bg_class(item, section.bgColor);
     }
-}
-
-// Adds a special "Add custom section" horizontal tile to the unified GridStack for edit mode
-function render_add_section_tile(gridStack) {
-    const tileId = 'addSectionTile-unified';
-    if (gridStack.el.querySelector(`[data-gs-id="${tileId}"]`)) return;
-
-    const item = document.createElement('div');
-    item.classList.add('grid-stack-item');
-    item.setAttribute('gs-w',       12);
-    item.setAttribute('gs-h',        1);
-    item.setAttribute('gs-min-w',   12);
-    item.setAttribute('gs-max-w',   12);
-    item.setAttribute('gs-min-h',    1);
-    item.setAttribute('gs-max-h',    1);
-    item.setAttribute('gs-no-resize', 'true');
-    item.setAttribute('data-gs-id', tileId);
-    item.innerHTML = `<div class="grid-stack-item-content add-section-tile">
-        <div class="add-section-tile-inner">
-            <div class="add-section-plus">+</div>
-            <div class="add-section-tile-label">Add custom section</div>
-        </div>
-    </div>`;
-    gridStack.makeWidget(item);
-    item.querySelector('.add-section-tile').addEventListener('click', () => {
-        open_add_custom_section_modal();
-    });
 }
 
 // Saves a new custom section divider to localStorage and returns it
@@ -129,6 +104,7 @@ function setup_add_custom_section_modal() {
             item.innerHTML = `<div class="grid-stack-item-content">${build_section_divider_html(section, true)}</div>`;
             grid.makeWidget(item);
             apply_bg_class(item, section.bgColor);
+            apply_widget_control_icons(item);
             const deleteBtn = item.querySelector(`.delete-custom-section[data-section-id="${section.id}"]`);
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', () => handle_delete_section(section.id, grid));
@@ -177,7 +153,7 @@ function open_add_custom_section_modal() {
 
 export {
     render_custom_sections,
-    render_add_section_tile,
     setup_add_custom_section_modal,
     wire_delete_section_buttons,
+    open_add_custom_section_modal,
 };

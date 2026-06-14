@@ -32,8 +32,14 @@ import {
     informationSmallSVG,
     eyeSVG,
     eyeOffSVG,
+    xSVG,
     moveUpSVG,
     moveDownSVG,
+    moveToFirstGraphSVG,
+    moveToLastGraphSVG,
+    addStatWidgetSVG,
+    addLinkWidgetSVG,
+    addCustomSectionSVG,
     clockSVG,
     menuSVG,
 } from "./variables/svg.js";
@@ -125,6 +131,14 @@ function setup_theme() {
                 ".move-down-table": moveDownSVG(color),
                 ".move-up-section": moveUpSVG(color),
                 ".move-down-section": moveDownSVG(color),
+                ".move-to-first-graph": moveToFirstGraphSVG(color),
+                ".move-to-last-graph": moveToLastGraphSVG(color),
+                ".add-stat-widget-header": addStatWidgetSVG(color),
+                ".add-link-widget-header": addLinkWidgetSVG(color),
+                ".add-section-header": addCustomSectionSVG(color),
+                ".delete-custom-stat-widget": xSVG(color),
+                ".delete-custom-link-widget": xSVG(color),
+                ".delete-custom-section": xSVG(color),
                 ".clock-icon": clockSVG(color),
             }
         };
@@ -253,9 +267,30 @@ function apply_custom_branding() {
     }
 }
 
+// Applies the move/delete control icons (SVGs) to widget controls within root.
+// Used right after a custom widget/section is added live to the grid, since
+// those controls are created without the SVG markup that setup_theme() normally fills in.
+function apply_widget_control_icons(root = document) {
+    const isDark = document.documentElement.classList.contains("dark-mode");
+    const color = isDark ? "white" : "black";
+    const iconMap = {
+        ".move-to-first-graph": moveToFirstGraphSVG(color),
+        ".move-to-last-graph": moveToLastGraphSVG(color),
+        ".delete-custom-stat-widget": xSVG(color),
+        ".delete-custom-link-widget": xSVG(color),
+        ".delete-custom-section": xSVG(color),
+    };
+    for (const [selector, svg] of Object.entries(iconMap)) {
+        root.querySelectorAll(selector).forEach(el => {
+            if (!el.innerHTML) el.innerHTML = svg;
+        });
+    }
+}
+
 export {
     toggle_theme,
     setup_theme,
     apply_theme_colors,
-    apply_custom_branding
+    apply_custom_branding,
+    apply_widget_control_icons
 };

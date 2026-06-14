@@ -1,8 +1,9 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
-import { generate_id, apply_bg_class, fill_color_picker } from './common.js';
+import { generate_id, apply_bg_class, fill_color_picker, build_move_controls_html } from './common.js';
 import { gridEditMode } from './variables/globals.js';
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
+import { apply_widget_control_icons } from './theme.js';
 
 // Strips the protocol from a URL for compact display (https://foo.com/x → foo.com/x)
 function strip_protocol(url) {
@@ -12,15 +13,16 @@ function strip_protocol(url) {
 // Builds the inner HTML for one custom link widget card
 function build_link_widget_html(widget, editMode) {
     const deleteBtn = editMode
-        ? `<button type="button" class="btn-close btn-close-sm delete-custom-link-widget" aria-label="Remove widget" data-widget-id="${widget.id}"></button>`
+        ? `<a class="delete-custom-link-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${widget.id}"></a>`
         : '';
     // In non-edit mode wrap in a clickable div (not an <a> to avoid GridStack drag conflicts)
     const clickable = editMode ? '' : ' link-widget-clickable';
+    const moveBtns = editMode ? build_move_controls_html(deleteBtn) : '';
     const displayUrl = strip_protocol(widget.url);
     return `<div class="link-widget-inner${clickable}" data-href="${widget.url}" data-newtab="${widget.newTab ? '1' : '0'}">
+                ${moveBtns}
                 <div class="link-widget-label ${widget.color}" id="customLinkWidget-${widget.id}-label">${widget.label}</div>
                 <div class="link-widget-url">${displayUrl}</div>
-                ${deleteBtn}
             </div>`;
 }
 
@@ -101,33 +103,6 @@ function populate_link_widget_colors() {
     if (bgPicker)    fill_color_picker(bgPicker,    STAT_WIDGET_BG_COLORS, '');
 }
 
-// Adds a special "+ Add link widget" tile to the GridStack for edit mode
-function render_add_link_widget_tile(gridStack, sectionKey) {
-    const tileId = `addLinkWidgetTile-${sectionKey}`;
-    // Avoid duplicates
-    if (gridStack.el.querySelector(`[data-gs-id="${tileId}"]`)) return;
-    const item = document.createElement('div');
-    item.classList.add('grid-stack-item');
-    item.setAttribute('gs-w', 2);
-    item.setAttribute('gs-h', 2);
-    item.setAttribute('gs-min-w', 2);
-    item.setAttribute('gs-min-h', 2);
-    item.setAttribute('gs-max-w', 2);
-    item.setAttribute('gs-max-h', 2);
-    item.setAttribute('gs-no-resize', 'true');
-    item.setAttribute('data-gs-id', tileId);
-    item.innerHTML = `<div class="grid-stack-item-content add-link-widget-tile" data-section="${sectionKey}">
-        <div class="add-link-widget-tile-inner">
-            <div class="add-link-widget-plus">+</div>
-            <div class="add-link-widget-tile-label">Add link widget</div>
-        </div>
-    </div>`;
-    gridStack.makeWidget(item);
-    item.querySelector('.add-link-widget-tile').addEventListener('click', () => {
-        open_add_link_widget_modal(sectionKey);
-    });
-}
-
 // Wires all events inside the Add Link Widget modal (call once after DOM ready)
 function setup_add_link_widget_modal() {
     populate_link_widget_colors();
@@ -166,6 +141,7 @@ function setup_add_link_widget_modal() {
             item.innerHTML = `<div class="grid-stack-item-content">${build_link_widget_html(widget, true)}</div>`;
             grid.makeWidget(item);
             apply_bg_class(item, widget.bgColor);
+            apply_widget_control_icons(item);
             // Wire delete on the newly created widget
             const deleteBtn = item.querySelector(`.delete-custom-link-widget[data-widget-id="${widget.id}"]`);
             if (deleteBtn) {
@@ -214,7 +190,6 @@ function open_add_link_widget_modal(sectionKey) {
 
 export {
     render_custom_link_widgets,
-    render_add_link_widget_tile,
     setup_add_link_widget_modal,
     wire_link_delete_buttons,
     open_add_link_widget_modal,
