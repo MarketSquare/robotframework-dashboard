@@ -219,6 +219,40 @@ function strip_tz_suffix(s) {
     return /^[+-]\d{2}:\d{2}$/.test(suffix) ? s.slice(0, -6) : s;
 }
 
+// Generates a short random ID (safe across all modern browsers)
+function generate_id() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+    }
+    return Math.random().toString(36).slice(2, 14);
+}
+
+// Applies (or updates) the bg color class on the grid-stack-item-content of a widget item el
+function apply_bg_class(itemEl, bgColor) {
+    const content = itemEl.querySelector('.grid-stack-item-content');
+    if (!content) return;
+    content.classList.remove('blue-bg', 'green-bg', 'red-bg', 'yellow-bg');
+    if (bgColor) content.classList.add(bgColor);
+}
+
+// Populates a color picker container with button-per-color entries
+function fill_color_picker(picker, colors, defaultValue) {
+    picker.innerHTML = '';
+    for (const c of colors) {
+        const btn = document.createElement('button');
+        btn.type          = 'button';
+        btn.className     = 'btn btn-outline-light btn-sm stat-color-btn';
+        btn.dataset.color = c.value;
+        btn.textContent   = c.label;
+        if (c.value === defaultValue) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+            picker.querySelectorAll('.stat-color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+        picker.appendChild(btn);
+    }
+}
+
 export {
     camelcase_to_underscore,
     get_next_folder_level,
@@ -237,5 +271,8 @@ export {
     update_graphs_with_loading,
     show_loading_overlay,
     hide_loading_overlay,
-    strip_tz_suffix
+    strip_tz_suffix,
+    generate_id,
+    apply_bg_class,
+    fill_color_picker,
 };

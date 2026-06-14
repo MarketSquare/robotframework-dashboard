@@ -1,22 +1,7 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
+import { generate_id, apply_bg_class, fill_color_picker } from './common.js';
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
-
-// Generates a short random ID (safe across all modern browsers)
-function generate_section_id() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-    }
-    return Math.random().toString(36).slice(2, 14);
-}
-
-// Applies (or updates) the bg class on the grid-stack-item-content of a section item el
-function apply_section_bg_class(itemEl, bgColor) {
-    const content = itemEl.querySelector('.grid-stack-item-content');
-    if (!content) return;
-    content.classList.remove('blue-bg', 'green-bg', 'red-bg', 'yellow-bg');
-    if (bgColor) content.classList.add(bgColor);
-}
 
 // Builds the inner HTML for a custom section divider bar
 function build_section_divider_html(section, editMode) {
@@ -54,7 +39,7 @@ function render_custom_sections(gridStack, editMode) {
         item.setAttribute('data-gs-id', `customSection-${section.id}`);
         item.innerHTML = `<div class="grid-stack-item-content">${build_section_divider_html(section, editMode)}</div>`;
         gridStack.makeWidget(item);
-        apply_section_bg_class(item, section.bgColor);
+        apply_bg_class(item, section.bgColor);
     }
 }
 
@@ -87,7 +72,7 @@ function render_add_section_tile(gridStack) {
 
 // Saves a new custom section divider to localStorage and returns it
 function add_custom_section(title, bgColor, textColor) {
-    const id      = generate_section_id();
+    const id      = generate_id();
     const section = { id, title, bgColor, textColor };
     const list    = settings.customSections ? [...settings.customSections] : [];
     list.push(section);
@@ -105,40 +90,14 @@ function remove_custom_section(id) {
 function populate_section_bg_colors() {
     const picker = document.getElementById('addCustomSectionBgColorPicker');
     if (!picker) return;
-    picker.innerHTML = '';
-    for (const c of STAT_WIDGET_BG_COLORS) {
-        const btn = document.createElement('button');
-        btn.type          = 'button';
-        btn.className     = 'btn btn-outline-light btn-sm stat-color-btn';
-        btn.dataset.color = c.value;
-        btn.textContent   = c.label;
-        if (c.value === '') btn.classList.add('active');
-        btn.addEventListener('click', () => {
-            picker.querySelectorAll('.stat-color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-        picker.appendChild(btn);
-    }
+    fill_color_picker(picker, STAT_WIDGET_BG_COLORS, '');
 }
 
 // Populates the text color picker in the Add Custom Section modal
 function populate_section_text_colors() {
     const picker = document.getElementById('addCustomSectionTextColorPicker');
     if (!picker) return;
-    picker.innerHTML = '';
-    for (const c of STAT_WIDGET_COLORS) {
-        const btn = document.createElement('button');
-        btn.type          = 'button';
-        btn.className     = 'btn btn-outline-light btn-sm stat-color-btn';
-        btn.dataset.color = c.value;
-        btn.textContent   = c.label;
-        if (c.value === 'white-text') btn.classList.add('active');
-        btn.addEventListener('click', () => {
-            picker.querySelectorAll('.stat-color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-        picker.appendChild(btn);
-    }
+    fill_color_picker(picker, STAT_WIDGET_COLORS, 'white-text');
 }
 
 // Wires all events inside the Add Custom Section modal (call once after DOM ready)
@@ -169,7 +128,7 @@ function setup_add_custom_section_modal() {
             item.setAttribute('data-gs-id', `customSection-${section.id}`);
             item.innerHTML = `<div class="grid-stack-item-content">${build_section_divider_html(section, true)}</div>`;
             grid.makeWidget(item);
-            apply_section_bg_class(item, section.bgColor);
+            apply_bg_class(item, section.bgColor);
             const deleteBtn = item.querySelector(`.delete-custom-section[data-section-id="${section.id}"]`);
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', () => handle_delete_section(section.id, grid));

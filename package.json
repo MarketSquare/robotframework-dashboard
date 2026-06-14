@@ -1,8 +1,11 @@
 {
   "devDependencies": {
     "jsdom": "^29.0.1",
-    "vitepress": "^2.0.0-alpha.13",
+    "vitepress": "^2.0.0-alpha.17",
     "vitest": "^4.1.1"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
   },
   "scripts": {
     "test:js": "vitest run --reporter=verbose",
