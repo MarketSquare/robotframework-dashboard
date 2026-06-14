@@ -1,6 +1,6 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
-import { format_duration } from './common.js';
+import { format_duration, generate_id, apply_bg_class, fill_color_picker } from './common.js';
 import {
     filteredRuns,
     filteredSuites,
@@ -14,14 +14,6 @@ import {
     get_keyword_stats_data,
 } from './graph_data/stats.js';
 import { STAT_WIDGET_DEFS, STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS, TIME_PROPS } from './variables/statwidgetdefs.js';
-
-// Generates a short random ID (safe across all modern browsers)
-function generate_id() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-    }
-    return Math.random().toString(36).slice(2, 14);
-}
 
 // Computes the display value for a given statKey (e.g. "run.totalRuns")
 function get_stat_value(statKey) {
@@ -55,14 +47,6 @@ function build_widget_html(widget, editMode) {
                 <div class="stat-value ${widget.color}" id="customStatWidget-${widget.id}-value"></div>
                 ${deleteBtn}
             </div>`;
-}
-
-// Applies (or updates) the bg class on the grid-stack-item-content of a widget item el
-function apply_bg_class(itemEl, bgColor) {
-    const content = itemEl.querySelector('.grid-stack-item-content');
-    if (!content) return;
-    content.classList.remove('blue-bg', 'green-bg', 'red-bg', 'yellow-bg');
-    if (bgColor) content.classList.add(bgColor);
 }
 
 // Adds all custom stat widgets that belong to sectionKey (lowercase, e.g. "run") to the provided GridStack
@@ -146,24 +130,6 @@ function populate_stat_widget_select() {
             group.appendChild(opt);
         }
         select.appendChild(group);
-    }
-}
-
-// Populates a color picker container with the given color definitions
-function fill_color_picker(picker, colors, defaultValue) {
-    picker.innerHTML = '';
-    for (const c of colors) {
-        const btn = document.createElement('button');
-        btn.type          = 'button';
-        btn.className     = 'btn btn-outline-light btn-sm stat-color-btn';
-        btn.dataset.color = c.value;
-        btn.textContent   = c.label;
-        if (c.value === defaultValue) btn.classList.add('active');
-        btn.addEventListener('click', () => {
-            picker.querySelectorAll('.stat-color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-        picker.appendChild(btn);
     }
 }
 

@@ -1,23 +1,8 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
+import { generate_id, apply_bg_class, fill_color_picker } from './common.js';
 import { gridEditMode } from './variables/globals.js';
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
-
-// Generates a short random ID (safe across all modern browsers)
-function generate_link_id() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-    }
-    return Math.random().toString(36).slice(2, 14);
-}
-
-// Applies (or updates) the bg class on the grid-stack-item-content of a widget item el
-function apply_link_bg_class(itemEl, bgColor) {
-    const content = itemEl.querySelector('.grid-stack-item-content');
-    if (!content) return;
-    content.classList.remove('blue-bg', 'green-bg', 'red-bg', 'yellow-bg');
-    if (bgColor) content.classList.add(bgColor);
-}
 
 // Strips the protocol from a URL for compact display (https://foo.com/x → foo.com/x)
 function strip_protocol(url) {
@@ -66,7 +51,7 @@ function render_custom_link_widgets(gridStack, sectionKey, editMode) {
         item.setAttribute('data-gs-id', `customLinkWidget-${widget.id}`);
         item.innerHTML = `<div class="grid-stack-item-content">${build_link_widget_html(widget, editMode)}</div>`;
         gridStack.makeWidget(item);
-        apply_link_bg_class(item, widget.bgColor);
+        apply_bg_class(item, widget.bgColor);
 
         // Wire click navigation on non-edit tiles
         if (!editMode) {
@@ -94,7 +79,7 @@ function wire_link_click(itemEl, widget) {
 
 // Saves a new custom link widget to localStorage and returns it
 function add_custom_link_widget(section, label, url, newTab, color, bgColor) {
-    const id     = generate_link_id();
+    const id     = generate_id();
     const widget = { id, section, label, url, newTab, color, bgColor };
     const list   = settings.linkWidgets ? [...settings.linkWidgets] : [];
     list.push(widget);
@@ -108,30 +93,12 @@ function remove_custom_link_widget(id) {
     set_local_storage_item('linkWidgets', list);
 }
 
-// Populates a color picker container with the given color definitions
-function fill_link_color_picker(picker, colors, defaultValue) {
-    picker.innerHTML = '';
-    for (const c of colors) {
-        const btn = document.createElement('button');
-        btn.type          = 'button';
-        btn.className     = 'btn btn-outline-light btn-sm stat-color-btn';
-        btn.dataset.color = c.value;
-        btn.textContent   = c.label;
-        if (c.value === defaultValue) btn.classList.add('active');
-        btn.addEventListener('click', () => {
-            picker.querySelectorAll('.stat-color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-        picker.appendChild(btn);
-    }
-}
-
 // Populates the text + bg color pickers in the Add Link Widget modal
 function populate_link_widget_colors() {
     const colorPicker = document.getElementById('addLinkWidgetColorPicker');
     const bgPicker    = document.getElementById('addLinkWidgetBgColorPicker');
-    if (colorPicker) fill_link_color_picker(colorPicker, STAT_WIDGET_COLORS, 'white-text');
-    if (bgPicker)    fill_link_color_picker(bgPicker,    STAT_WIDGET_BG_COLORS, '');
+    if (colorPicker) fill_color_picker(colorPicker, STAT_WIDGET_COLORS, 'white-text');
+    if (bgPicker)    fill_color_picker(bgPicker,    STAT_WIDGET_BG_COLORS, '');
 }
 
 // Adds a special "+ Add link widget" tile to the GridStack for edit mode
@@ -198,7 +165,7 @@ function setup_add_link_widget_modal() {
             item.setAttribute('data-gs-id', `customLinkWidget-${widget.id}`);
             item.innerHTML = `<div class="grid-stack-item-content">${build_link_widget_html(widget, true)}</div>`;
             grid.makeWidget(item);
-            apply_link_bg_class(item, widget.bgColor);
+            apply_bg_class(item, widget.bgColor);
             // Wire delete on the newly created widget
             const deleteBtn = item.querySelector(`.delete-custom-link-widget[data-widget-id="${widget.id}"]`);
             if (deleteBtn) {
