@@ -114,14 +114,19 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
 }
 
 function _get_test_filters() {
+    // The "Only Changes" / "No Changes" filters exist in both the dashboard Test
+    // section and the Compare section. This data function is shared by both, so only
+    // honor the filters that belong to the active section; otherwise the Compare
+    // section's filters leak into the Test statistics graph (and vice-versa).
+    const isCompare = settings.menu.compare;
     return {
         suiteSelectTests: document.getElementById("suiteSelectTests").value,
         testSelect: document.getElementById("testSelect").value,
         testTagsSelect: document.getElementById("testTagsSelect").value,
-        testOnlyChanges: document.getElementById("testOnlyChanges").checked,
-        testNoChanges: document.getElementById("testNoChanges").value,
-        compareOnlyChanges: document.getElementById("compareOnlyChanges").checked,
-        compareNoChanges: document.getElementById("compareNoChanges").value,
+        testOnlyChanges: isCompare ? false : document.getElementById("testOnlyChanges").checked,
+        testNoChanges: isCompare ? "All" : document.getElementById("testNoChanges").value,
+        compareOnlyChanges: isCompare ? document.getElementById("compareOnlyChanges").checked : false,
+        compareNoChanges: isCompare ? document.getElementById("compareNoChanges").value : "All",
         selectedRuns: [...new Set(
             compareRunIds
                 .map(id => document.getElementById(id).value)
