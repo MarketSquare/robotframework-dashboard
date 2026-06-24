@@ -8,6 +8,23 @@ Before starting work on any non-trivial task, read the relevant skill file from 
 
 ---
 
+## Commands
+
+Use the project scripts — do NOT invoke the underlying tools directly (the scripts set coverage paths, artifact dirs, and parallelism). `.bat` for Windows, `.sh` for Linux/macOS.
+
+| Task | Windows | Linux / macOS |
+|---|---|---|
+| JS unit tests | `scripts\javascript-tests.bat` | `bash scripts/javascript-tests.sh` |
+| Python unit tests | `scripts\python-tests.bat` | `bash scripts/python-tests.sh` |
+| Robot acceptance tests | `scripts\robot-tests.bat` | `bash scripts/robot-tests.sh` |
+| Generate dashboard for testing | `python -m robotframework_dashboard.main -n robot_dashboard -f tests` | same |
+| Docs build | `npm run docs:build` | `npm run docs:build` |
+| Docs dev server | `npm run docs:dev` | `npm run docs:dev` |
+
+**Generate dashboard for testing** runs the package directly (no install) against the `tests/` output.xml fixtures, producing `robot_dashboard.html`. Use this to validate any JS/CSS/template/Python pipeline change — open the HTML to confirm rendering, layout, and click handlers. A clean import/syntax check is not sufficient; bundled-output bugs only surface here.
+
+---
+
 ## Project Purpose
 
 `robotframework-dashboard` is a Python CLI tool that reads Robot Framework `output.xml` execution results, stores them in a SQLite database, and generates a fully self-contained HTML dashboard with interactive charts, tables, and filters. No web server is required to view the output — a single `.html` file contains all data, JS, and CSS.
