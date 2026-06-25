@@ -28,7 +28,6 @@ import {
     setup_project_versions_in_select_filter_buttons,
     setup_suite_path_navigator,
     setup_custom_filters_in_select_filter_buttons,
-    update_overview_version_select_list,
     setup_metadata_filter,
     build_profile_from_checks,
     apply_filter_profile,
@@ -59,6 +58,8 @@ import {
     set_filter_show_current_project,
     set_filter_show_current_version,
     update_overview_filter_visibility,
+    update_duration_comparison_for_all_projects,
+    update_overview_version_select_list,
 } from "./graph_creation/overview.js";
 import { update_run_donut_total_graph, update_run_heatmap_graph } from "./graph_creation/run.js";
 import {
@@ -402,6 +403,11 @@ function setup_filter_modal() {
         add_alert(`Filter profile "${newName}" saved!`, "success");
         bootstrap.Modal.getInstance(document.getElementById("mergeProfilesModal")).hide();
     });
+    // Show indicator dot when a specific run is selected in the dropdown
+    document.getElementById("runs").addEventListener("change", function () {
+        const indicator = document.getElementById("filterRunSelectedIndicator");
+        if (indicator) indicator.style.display = this.value !== "All" ? "inline-block" : "none";
+    });
     // Listen for filter changes to update the profile display
     const filterModal = document.getElementById("filtersModal");
     filterModal.addEventListener("change", function () {
@@ -500,10 +506,14 @@ function setup_settings_modal() {
         { key: "show.convertTimezone", elementId: "toggleTimezone" },
         { key: "show.suitesSelectionInSuiteStats", elementId: "toggleSuitesSelectionInSuiteStats", datatype: "string", event: "change" },
         { key: "show.suitesSelectionInTestStats", elementId: "toggleSuitesSelectionInTestStats", datatype: "string", event: "change" },
+        { key: "show.overviewDurationPercentage", elementId: "overviewDurationPercentage", datatype: "number", event: "change" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
         handler(true);
         document.getElementById(def.elementId).addEventListener(def.event || "click", () => handler());
+    });
+    document.getElementById("overviewDurationPercentage").addEventListener("change", () => {
+        if (settings.menu.overview) update_duration_comparison_for_all_projects();
     });
     // Re-populate the date filter pickers when either timezone toggle changes,
     // since the displayed timestamps change and the defaults need to match.
@@ -757,7 +767,6 @@ function setup_sections_filters() {
     update_switch_local_storage("switch.runName", settings.switch.runName, true);
     update_switch_local_storage("switch.totalStats", settings.switch.totalStats, true);
     update_switch_local_storage("switch.latestRuns", settings.switch.latestRuns, true);
-    update_switch_local_storage("switch.percentageFilters", settings.switch.percentageFilters, true);
     update_switch_local_storage("switch.versionFilters", settings.switch.versionFilters, true);
     update_switch_local_storage("switch.sortFilters", settings.switch.sortFilters, true);
     document.getElementById("switchRunTags").addEventListener("click", function () {
@@ -808,19 +817,14 @@ function setup_sections_filters() {
         update_switch_local_storage("switch.totalStats", settings.switch.totalStats);
         update_overview_sections_visibility();
     });
-    document.getElementById("switchPercentageFilters").addEventListener("click", function () {
-        settings.switch.percentageFilters = !settings.switch.percentageFilters
-        update_switch_local_storage("switch.percentageFilters", settings.switch.percentageFilters);
+    document.getElementById("switchVersionFilters").addEventListener("click", function () {
+        settings.switch.versionFilters = !settings.switch.versionFilters
+        update_switch_local_storage("switch.versionFilters", settings.switch.versionFilters);
         update_overview_filter_visibility();
     });
     document.getElementById("switchSortFilters").addEventListener("click", function () {
         settings.switch.sortFilters = !settings.switch.sortFilters
         update_switch_local_storage("switch.sortFilters", settings.switch.sortFilters);
-        update_overview_filter_visibility();
-    });
-    document.getElementById("switchVersionFilters").addEventListener("click", function () {
-        settings.switch.versionFilters = !settings.switch.versionFilters
-        update_switch_local_storage("switch.versionFilters", settings.switch.versionFilters);
         update_overview_filter_visibility();
     });
     document.getElementById("suiteSelectSuites").addEventListener("change", () => {

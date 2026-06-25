@@ -464,6 +464,7 @@
                                 </span>
                                 <div class="d-flex align-items-center">
                                     <select class="form-select form-select-sm" id="runs" style="width: 200px;"></select>
+                                    <span id="filterRunSelectedIndicator" class="filter-active-dot" style="display:none;"></span>
                                 </div>
                             </div>
                             <div class="list-group-item" id="runTagFilter">
@@ -850,11 +851,19 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span class="information info-label" id="settingPercentageFilters">Display Percentage Filters <span class="info-icon-small ms-1"></span></span>
-                                        <div class="form-check form-switch mb-0">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                id="switchPercentageFilters" />
-                                        </div>
+                                        <span class="information info-label" id="settingOverviewDurationPercentage">Duration comparison percentage <span class="info-icon-small ms-1"></span></span>
+                                        <select class="form-select form-select-sm" id="overviewDurationPercentage" style="width: auto;">
+                                            <option value="10">10%</option>
+                                            <option value="20">20%</option>
+                                            <option value="30">30%</option>
+                                            <option value="40">40%</option>
+                                            <option value="50">50%</option>
+                                            <option value="60">60%</option>
+                                            <option value="70">70%</option>
+                                            <option value="80">80%</option>
+                                            <option value="90">90%</option>
+                                            <option value="100">100%</option>
+                                        </select>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span class="information info-label" id="settingVersionFilters">Display Version Filters <span class="info-icon-small ms-1"></span></span>
