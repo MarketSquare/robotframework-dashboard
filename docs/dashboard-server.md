@@ -161,6 +161,9 @@ The admin page supports four methods for adding test results:
 | **By Alias** | Comma-separated alias names. |
 | **By Tag** | Comma-separated tags — removes all runs matching any of the specified tags. |
 | **By Limit** | Keep only the N most recent runs; all older runs are deleted. |
+| **By Limit + Tag(s)** | Supply `limit` together with `tags` to scope the limit: the N most recent runs matching any given tag are kept, older matching runs are deleted, and runs without those tags are left untouched (e.g. `{"limit": 10, "tags": ["nightly"]}`). |
+| **By Age** | Remove runs by age threshold. `"10d"` removes runs **older** than 10 days; a leading minus `"-10d"` removes runs **younger** than 10 days. Units: (y)ear, (d)ay, (h)our, (m)inute, (s)econd. |
+| **By Age + Tag(s)** | Supply `age` together with `tags` to scope the age threshold: only runs matching any given tag within the age range are deleted, runs without those tags are left untouched (e.g. `{"age": "10d", "tags": ["nightly"]}`). |
 | **Remove All** | Irreversibly deletes all runs from the database. |
 
 > **Note:** When a run is removed, the server automatically checks whether a corresponding log file exists in the `robot_logs/` folder (derived by replacing `output` → `log` and `.xml` → `.html` in the stored path). If found, it is deleted alongside the run. The console response will confirm whether a log was removed or note that none was found.
