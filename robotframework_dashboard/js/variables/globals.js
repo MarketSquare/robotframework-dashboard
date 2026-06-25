@@ -1,6 +1,5 @@
 // UI defaults
 const CARDS_PER_ROW = 3;
-const DEFAULT_DURATION_PERCENTAGE = 20;
 
 // populated by prepare_overview()
 const projects_by_tag = {};
@@ -147,7 +146,6 @@ var defaultFaviconHref = (() => {
 
 export {
     CARDS_PER_ROW,
-    DEFAULT_DURATION_PERCENTAGE,
     projects_by_tag,
     projects_by_name,
     latestRunByProjectTag,

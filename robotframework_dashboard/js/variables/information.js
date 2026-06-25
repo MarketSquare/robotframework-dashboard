@@ -186,7 +186,7 @@ Tip: avoid using Status and Only Changes together — the result will be empty.`
     "settingProjectsByName": "Group and display projects on the Overview by their Robot Framework run name.",
     "settingProjectsByTag": "Group and display projects on the Overview by custom project_ tags. See the docs for project tagging.",
     "settingPrefixes": "Show or hide the 'project_' prefix on tag-based project names on the Overview.",
-    "settingPercentageFilters": "Show the duration percentage threshold filter used to color-code run durations on the Overview.",
+    "settingOverviewDurationPercentage": "Threshold for duration color comparison on all project bars. A run is green if at least X% faster than average, red if X% slower.",
     "settingVersionFilters": "Show the version filter for per-project version selection on the Overview.",
     "settingSortFilters": "Show the sort controls for ordering Overview project bars.",
     "settingBackgroundColor": "Main page background color for the current theme.",
