@@ -159,7 +159,7 @@
 
 /* "All" tab stat list inside the Add Stat Widget modal */
 .add-all-widgets-list {
-  max-height: 300px;
+  max-height: 60vh;
   overflow-y: auto;
 }
 

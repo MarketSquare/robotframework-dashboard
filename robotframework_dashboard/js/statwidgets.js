@@ -229,21 +229,7 @@ function populate_all_widgets_list(sectionKey) {
     }
 
     const toggleAll = document.getElementById('addAllWidgetsToggleAll');
-    if (toggleAll) {
-        toggleAll.checked = true;
-        toggleAll.indeterminate = false;
-    }
-}
-
-// Updates the "Toggle all" switch to reflect the checked/unchecked/mixed state of the individual toggles
-function sync_toggle_all_widgets_state() {
-    const toggleAll = document.getElementById('addAllWidgetsToggleAll');
-    const container = document.getElementById('addAllWidgetsList');
-    if (!toggleAll || !container) return;
-    const toggles = [...container.querySelectorAll('.add-all-widgets-toggle')];
-    const checkedCount = toggles.filter(t => t.checked).length;
-    toggleAll.checked = checkedCount === toggles.length;
-    toggleAll.indeterminate = checkedCount > 0 && checkedCount < toggles.length;
+    if (toggleAll) toggleAll.checked = true;
 }
 
 // Adds a stat widget for every toggled-on row in the "All" tab list
@@ -305,20 +291,14 @@ function setup_add_stat_widget_modal() {
         if (group) group.hidden = e.target.checked;
     });
 
-    // "Toggle all" switch turns every stat toggle in the "All" tab on or off
+    // "Toggle all" switch forces every stat toggle in the "All" tab to its own
+    // state. Individual toggles never feed back into this switch — it just keeps
+    // whatever state it has until clicked again.
     document.getElementById('addAllWidgetsToggleAll')?.addEventListener('change', (e) => {
         const checked = e.target.checked;
-        e.target.indeterminate = false;
         document.querySelectorAll('#addAllWidgetsList .add-all-widgets-toggle').forEach(toggle => {
             toggle.checked = checked;
         });
-    });
-
-    // Keep the "Toggle all" switch in sync when individual stat toggles change
-    document.getElementById('addAllWidgetsList')?.addEventListener('change', (e) => {
-        if (e.target.classList.contains('add-all-widgets-toggle')) {
-            sync_toggle_all_widgets_state();
-        }
     });
 
     // Add All confirm button
