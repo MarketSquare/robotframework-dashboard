@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "jsdom": "^29.0.1",
+    "vite": "^7.3.6",
     "vitepress": "^2.0.0-alpha.17",
     "vitest": "^4.1.1"
   },
