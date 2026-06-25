@@ -198,6 +198,72 @@ def test_process_arguments_with_removeruns():
     assert result.remove_runs == ["index=0", "index=1"]
 
 
+# --- _process_remove_runs: scoped retention combinations ---
+
+def test_remove_runs_passthrough_without_combination():
+    # No tags -> nothing combined
+    assert ArgumentParser()._process_remove_runs(["index=0", "limit=10"]) == [
+        "index=0",
+        "limit=10",
+    ]
+
+
+def test_remove_runs_tag_only_passthrough():
+    # tags without a limit/age partner stay independent (full wipe)
+    assert ArgumentParser()._process_remove_runs(["tag=dev"]) == ["tag=dev"]
+
+
+def test_remove_runs_limit_and_tag_combined():
+    assert ArgumentParser()._process_remove_runs(["limit=10", "tag=dev"]) == [
+        "limit=10;tag=dev"
+    ]
+
+
+def test_remove_runs_age_and_tag_combined():
+    assert ArgumentParser()._process_remove_runs(["age=10d", "tag=dev"]) == [
+        "age=10d;tag=dev"
+    ]
+
+
+def test_remove_runs_limit_and_multiple_tags_combined():
+    assert ArgumentParser()._process_remove_runs(
+        ["limit=10", "tag=dev", "tag=prod"]
+    ) == ["limit=10;tag=dev;tag=prod"]
+
+
+def test_remove_runs_combination_with_other_options_keeps_order():
+    # independent ops first (in order), scoped combination last
+    assert ArgumentParser()._process_remove_runs(
+        ["index=0", "limit=10", "tag=dev"]
+    ) == ["index=0", "limit=10;tag=dev"]
+
+
+def test_remove_runs_all_three_errors(capsys):
+    with pytest.raises(SystemExit) as exc:
+        ArgumentParser()._process_remove_runs(["limit=10", "age=10d", "tag=dev"])
+    assert exc.value.code == 3
+    assert "Cannot combine 'limit' and 'age'" in capsys.readouterr().out
+
+
+def test_remove_runs_multiple_limits_with_tag_errors(capsys):
+    with pytest.raises(SystemExit) as exc:
+        ArgumentParser()._process_remove_runs(["limit=10", "limit=5", "tag=dev"])
+    assert exc.value.code == 4
+    assert "Only one 'limit'" in capsys.readouterr().out
+
+
+def test_remove_runs_emits_info_message(capsys):
+    ArgumentParser()._process_remove_runs(["limit=10", "tag=dev"])
+    out = capsys.readouterr().out
+    assert "INFO: Combining 'limit' with 'tag(s)'" in out
+
+
+def test_remove_runs_combination_via_process_arguments():
+    args = _make_namespace(removeruns=[["limit=10,tag=dev"]])
+    result = ArgumentParser()._process_arguments(args)
+    assert result.remove_runs == ["limit=10;tag=dev"]
+
+
 def test_process_arguments_with_messageconfig(tmp_path):
     msg_file = tmp_path / "messages.txt"
     msg_file.write_text("Template: ${name}\nLine 2\n")
