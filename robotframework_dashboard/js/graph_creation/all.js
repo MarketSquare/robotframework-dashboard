@@ -1,9 +1,10 @@
 import { settings } from "../variables/settings.js";
 
-import { 
+import {
     create_overview_latest_graphs,
     create_overview_total_graphs,
-    update_donut_charts
+    update_donut_charts,
+    update_grouped_data_for_filter
 } from "./overview.js";
 import {
     create_run_statistics_graph,
@@ -102,6 +103,7 @@ import { update_custom_stat_widgets } from "../statwidgets.js";
 // function that creates all graphs from scratch - used on first load of each tab
 function create_dashboard_graphs() {
     if (settings.menu.overview) {
+        update_grouped_data_for_filter();
         create_overview_latest_graphs();
         create_overview_total_graphs();
         update_donut_charts();
@@ -156,6 +158,7 @@ function create_dashboard_graphs() {
 // each update function falls back to create if the chart doesn't exist yet
 function update_dashboard_graphs() {
     if (settings.menu.overview) {
+        update_grouped_data_for_filter();
         create_overview_latest_graphs();
         create_overview_total_graphs();
         update_donut_charts();

@@ -1,4 +1,4 @@
-import { setup_filtered_data_and_filters, update_overview_version_select_list } from "./filter.js";
+import { setup_filtered_data_and_filters } from "./filter.js";
 import { areGroupedProjectsPrepared, overviewNavStore } from "./variables/globals.js";
 import { space_to_camelcase } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
@@ -80,7 +80,6 @@ function update_menu(item) {
         set_local_storage_item(`menu.${menuItem}`, (item === id));
         document.getElementById(id).classList.toggle("active", id === item);
     });
-    document.getElementById("filters").hidden = (item === "menuOverview");
     setup_data_and_graphs(true, item === "menuOverview" && !areGroupedProjectsPrepared);
 }
 
@@ -138,14 +137,13 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
     setup_spinner(false); // show spinner immediately
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+            setup_filtered_data_and_filters();
             if (prepareOverviewProjectData) {
                 prepare_overview();
                 setup_overview_localstorage();
                 setup_overview_section_layout_buttons();
                 setup_overview_order_filters();
-                update_overview_version_select_list();
             }
-            setup_filtered_data_and_filters();
             setup_section_order();
             setup_graph_order();
             setup_information_popups();
