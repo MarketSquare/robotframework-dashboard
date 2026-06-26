@@ -326,6 +326,7 @@ function setup_filter_modal() {
                 add_alert(`Filter profile "${name}" applied`, "success");
                 update_profile_select_display();
                 populate_filter_profile_select();
+                update_filters_button_indicator();
             }
         }
     });
