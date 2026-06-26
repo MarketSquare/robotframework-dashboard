@@ -56,8 +56,10 @@
             </li>
         </ul>
         <ul class="navbar-nav flex-row flex-nowrap ms-md-auto me-4" id="iconNavItems">
-            <li class="nav-item">
+            <li class="nav-item" style="position: relative;">
                 <a class="nav-link information" id="filters" data-bs-toggle="modal" data-bs-target="#filtersModal"></a>
+                <span id="filtersActiveIndicator" class="version-selected-dot"
+                    style="display: none; position: absolute; top: 4px; right: 4px;"></span>
             </li>
             <li class="nav-item">
                 <a class="nav-link information" id="customizeLayout"></a>

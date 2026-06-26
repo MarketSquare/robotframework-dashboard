@@ -159,6 +159,14 @@ function update_merge_result_preview() {
 
 // ---- end of merge profiles helpers ----
 
+function update_filters_button_indicator() {
+    const indicator = document.getElementById("filtersActiveIndicator");
+    if (!indicator) return;
+    const anyActive = [...document.querySelectorAll("#filtersModal .version-selected-dot")]
+        .some(el => el.style.display !== "none");
+    indicator.style.display = anyActive ? "inline-block" : "none";
+}
+
 // function to setup filter modal eventlisteners
 function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
@@ -407,14 +415,17 @@ function setup_filter_modal() {
     document.getElementById("runs").addEventListener("change", function () {
         const indicator = document.getElementById("filterRunSelectedIndicator");
         if (indicator) indicator.style.display = this.value !== "All" ? "inline-block" : "none";
+        update_filters_button_indicator();
     });
-    // Listen for filter changes to update the profile display
+    // Listen for filter changes to update the profile display and the navbar dot
     const filterModal = document.getElementById("filtersModal");
     filterModal.addEventListener("change", function () {
         update_profile_select_display();
+        update_filters_button_indicator();
     });
     filterModal.addEventListener("input", function () {
         update_profile_select_display();
+        update_filters_button_indicator();
     });
 }
 

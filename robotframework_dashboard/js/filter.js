@@ -983,6 +983,8 @@ function clear_all_filters() {
     setup_lowest_highest_dates();
     const runsIndicator = document.getElementById("filterRunSelectedIndicator");
     if (runsIndicator) runsIndicator.style.display = "none";
+    const filtersActiveIndicator = document.getElementById("filtersActiveIndicator");
+    if (filtersActiveIndicator) filtersActiveIndicator.style.display = "none";
 }
 
 function clear_suite_path_filter() {
