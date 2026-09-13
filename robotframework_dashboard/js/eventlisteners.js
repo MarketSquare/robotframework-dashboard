@@ -59,7 +59,6 @@ import {
     set_filter_show_current_version,
     update_overview_filter_visibility,
     update_duration_comparison_for_all_projects,
-    update_overview_version_select_list,
 } from "./graph_creation/overview.js";
 import { update_run_donut_total_graph, update_run_heatmap_graph } from "./graph_creation/run.js";
 import {
@@ -779,7 +778,6 @@ function setup_sections_filters() {
     update_switch_local_storage("switch.runName", settings.switch.runName, true);
     update_switch_local_storage("switch.totalStats", settings.switch.totalStats, true);
     update_switch_local_storage("switch.latestRuns", settings.switch.latestRuns, true);
-    update_switch_local_storage("switch.versionFilters", settings.switch.versionFilters, true);
     update_switch_local_storage("switch.sortFilters", settings.switch.sortFilters, true);
     document.getElementById("switchRunTags").addEventListener("click", function () {
         settings.switch.runTags = !settings.switch.runTags
@@ -794,7 +792,6 @@ function setup_sections_filters() {
                 update_overview_total_heading();
                 update_overview_sections_visibility();
                 // update all tagged bars
-                update_overview_version_select_list();
                 update_projectbar_visibility();
                 hide_loading_overlay();
             });
@@ -813,7 +810,6 @@ function setup_sections_filters() {
                 update_overview_total_heading();
                 update_overview_sections_visibility();
                 // update all named project bars
-                update_overview_version_select_list();
                 update_projectbar_visibility();
                 hide_loading_overlay();
             });
@@ -828,11 +824,6 @@ function setup_sections_filters() {
         settings.switch.totalStats = !settings.switch.totalStats
         update_switch_local_storage("switch.totalStats", settings.switch.totalStats);
         update_overview_sections_visibility();
-    });
-    document.getElementById("switchVersionFilters").addEventListener("click", function () {
-        settings.switch.versionFilters = !settings.switch.versionFilters
-        update_switch_local_storage("switch.versionFilters", settings.switch.versionFilters);
-        update_overview_filter_visibility();
     });
     document.getElementById("switchSortFilters").addEventListener("click", function () {
         settings.switch.sortFilters = !settings.switch.sortFilters

@@ -953,26 +953,6 @@ function setup_filter_checkbox_subfilter(parentElementId) {
     });
 }
 
-function generate_version_filter_list_item_html(version, projectName, checked, amount, amountType) {
-    function versionFilterListItemInput(version, id, checked) {
-        return `<input class="form-check-input version-checkbox" type="checkbox" value="${version}" id="${id}" ${checked}>`
-    };
-    function versionFilterListItemLabel(forId, version, amount, amountType, pluralPostfix) {
-        return `<label class="form-check-label" for="${forId}">${version} (${amount} ${amountType}${pluralPostfix})</label>`
-    };
-    const listItemId = `${projectName}VersionFilterListItem`;
-    const listItemInputId = `${listItemId}${version}Input`;
-    const pluralPostfix = amount === 1 ? '' : 's';
-    return `
-        <li>
-            <div class="form-check">
-                ${versionFilterListItemInput(version, listItemInputId, checked)}
-                ${versionFilterListItemLabel(listItemInputId, version, amount, amountType, pluralPostfix)}
-            </div>
-        </li>
-    `
-}
-
 function clear_all_filters() {
     clear_project_filter();
     clear_version_filter();
@@ -1556,7 +1536,6 @@ export {
     setup_filter_checkbox_handler_listeners,
     clear_all_filters,
     set_filter_show_current_version,
-    generate_version_filter_list_item_html,
     build_profile_from_checks,
     apply_filter_profile,
     save_filter_profile_to_storage,

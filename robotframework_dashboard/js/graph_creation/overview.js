@@ -39,8 +39,6 @@ import { runs, use_logs } from '../variables/data.js';
 import {
     clear_all_filters,
     update_filter_active_indicator,
-    setup_filter_checkbox_handler_listeners,
-    generate_version_filter_list_item_html
 } from '../filter.js';
 
 // Data prep/aggregation
@@ -251,18 +249,6 @@ function generate_overview_card_html(
     </div>`;
 }
 
-function apply_overview_latest_version_text_filter() {
-    const versionFilterInput = document.getElementById("overviewLatestVersionFilterSearch");
-    const cardsContainer = document.getElementById("overviewLatestRunCardsContainer");
-    if (!versionFilterInput || !cardsContainer) return;
-    const filterValue = versionFilterInput.value.toLowerCase();
-    const runCards = Array.from(cardsContainer.querySelectorAll("div.overview-card"));
-    runCards.forEach(card => {
-        const version = (card.dataset.projectVersion ?? "").toLowerCase();
-        card.style.display = version.includes(filterValue) ? "" : "none";
-    });
-}
-
 function clear_project_filter() {
     document.getElementById("runs").value = "All";
     document.getElementById("runTagCheckBoxesFilter").value = "";
@@ -297,84 +283,8 @@ function _update_overview_heading(containerId, titleId, titleText) {
     if (subTitleEl) subTitleEl.innerHTML = `showing ${amountOfProjectsShown} project${pluralPostFix}`;
 }
 
-function handle_overview_latest_version_selection(overviewVersionSelectorList, latestRunByProject) {
-    show_loading_overlay();
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const selectedOptions = Array.from(
-                overviewVersionSelectorList.querySelectorAll("input:checked")
-            ).map(inputElement => inputElement.value);
-            if (selectedOptions.includes("All")) {
-                create_overview_latest_graphs(latestRunByProject);
-            } else {
-                const filteredLatestRunByProject = Object.fromEntries(
-                    Object.entries(latestRunByProject)
-                        .filter(([, run]) => selectedOptions.includes(run.project_version ?? "None"))
-                );
-                create_overview_latest_graphs(filteredLatestRunByProject);
-            }
-            update_overview_latest_heading();
-            hide_loading_overlay();
-        });
-    });
-}
-
-function update_overview_version_select_list() {
-    const overviewLatestVersionSelectorList = document.getElementById("overviewLatestVersionSelectorList");
-    if (overviewLatestVersionSelectorList) {
-        overviewLatestVersionSelectorList.innerHTML = '';
-        if (settings.switch.runName || settings.switch.runTags) {
-            const filteredLatestRunByProject = {};
-            settings.switch.runName && Object.assign(filteredLatestRunByProject, latestRunByProjectName);
-            settings.switch.runTags && Object.assign(filteredLatestRunByProject, latestRunByProjectTag);
-            const runAmountByVersion = {};
-            for (const run of Object.values(filteredLatestRunByProject)) {
-                const projectVersion = run.project_version ?? "None";
-                runAmountByVersion[projectVersion] ??= 0;
-                runAmountByVersion[projectVersion]++;
-            }
-            const allVersionAmountInFilter = Object.keys(runAmountByVersion).length;
-            const versionFilterListItemAllHtml = generate_version_filter_list_item_html("All", "overviewLatest", "checked", allVersionAmountInFilter, "version");
-            const specificVersionFilterListItemHtml = Object.keys(runAmountByVersion)
-                .sort().reverse()
-                .map(version => generate_version_filter_list_item_html(version, "overviewLatest", "", runAmountByVersion[version], "run"))
-                .join('');
-            overviewLatestVersionSelectorList.innerHTML = versionFilterListItemAllHtml + specificVersionFilterListItemHtml;
-            const allCheckBox = document.getElementById("overviewLatestVersionFilterListItemAllInput");
-            setup_filter_checkbox_handler_listeners(
-                overviewLatestVersionSelectorList,
-                allCheckBox,
-                "overviewLatestVersionSelectedIndicator",
-                () => { handle_overview_latest_version_selection(overviewLatestVersionSelectorList, filteredLatestRunByProject) }
-            );
-        }
-    }
-}
-
 function create_overview_latest_runs_section() {
     const filtersHtml = `
-        <div class="col-auto me-2 version-filter" id="overviewLatestVersionFilterContainer">
-            <div class="btn-group">
-                <label class="form-label mb-0 information info-label" id="overviewLatestVersionsInfo">Versions <span class="info-icon-small ms-1"></span></label>
-            </div>
-            <div class="btn-group">
-                <div id="overviewLatestVersionFilterDropDown" class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button"
-                        id="overviewLatestVersionFilterBtn" data-bs-toggle="dropdown"
-                        data-bs-auto-close="outside">
-                        Select Versions
-                        <span id="overviewLatestVersionSelectedIndicator"
-                            class="version-selected-dot" style="display:none;"></span>
-                    </button>
-                    <ul id="overviewLatestVersionSelectorList" class="dropdown-menu p-3"
-                        style="max-height: 50vh; overflow-y: auto;">
-                    </ul>
-                </div>
-            </div>
-            <div class="btn-group">
-                <input type="text" class="form-control form-control-sm" id="overviewLatestVersionFilterSearch" placeholder="Version Filter...">
-            </div>
-        </div>
         <div class="col-auto me-1 sort-filter" id="overviewLatestSortFilterContainer">
             <div class="btn-group">
                 <label class="form-label mb-0 information info-label" for="overviewLatestSectionOrder" id="overviewLatestSortInfo">Sort <span class="info-icon-small ms-1"></span></label>
@@ -398,14 +308,6 @@ function create_overview_latest_runs_section() {
 
     create_overview_latest_graphs();
     update_overview_latest_heading();
-    update_overview_version_select_list();
-
-    const versionFilterSearch = document.getElementById("overviewLatestVersionFilterSearch");
-    if (versionFilterSearch) {
-        const maxDelay = 50;
-        const delayScaledByRunAmount = Math.min(filteredRuns.length / 100, maxDelay);
-        versionFilterSearch.addEventListener('input', debounce(apply_overview_latest_version_text_filter, delayScaledByRunAmount));
-    }
 }
 
 // create overview total stats section dynamically
@@ -422,20 +324,6 @@ function create_overview_total_stats_section() {
 
 // create project bar (the collapsables below overview statistic) in overview
 function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate) {
-    const projectVersions = new Set(
-        Object.keys(versionsByProject[projectName] || {})
-            .sort()
-            .reverse()
-    );
-    const versionAmount = projectVersions.size;
-    const versionFilterListItemAllHtml = generate_version_filter_list_item_html("All", projectName, "checked", versionAmount, "version");
-    const versionFilterListItemsHtml = versionFilterListItemAllHtml +
-        [...projectVersions]
-            .map(version => {
-                const runAmount = versionsByProject[projectName][version];
-                return generate_version_filter_list_item_html(version, projectName, "", runAmount, "run");
-            })
-            .join('');
     // added here instead of adding to informationMap, since the dynamic IDs don't work with the map
     const displayProjectName = (!settings.show.prefixes && projectName.startsWith('project_'))
         ? projectName.replace(/^project_/, '')
@@ -462,27 +350,6 @@ See Settings > Overview for more options.`;
                         <h6>Total Runs: ${totalRunsAmount} | Passed Runs: ${passRate}%</h6>
                     </div>
                     <div class="d-flex flex-wrap align-items-start col align-items-center">
-                        <div class="col-auto me-2 version-filter">
-                            <div class="btn-group">
-                                <label class="form-label mb-0 information info-label" data-title="Filter runs by version. 'All' shows all versions.">Versions <span class="info-icon-small ms-1"></span></label>
-                            </div>
-                            <div class="btn-group">
-                                <div id="${projectName}VersionFilterDropDown" class="dropdown">
-                                    <button class="btn btn-sm btn-outline-dark dropdown-toggle"
-                                            type="button" id="${projectName}VersionFilterBtn"
-                                            data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                        Select Versions
-                                        <span id="${projectName}VersionSelectedIndicator" class="version-selected-dot" style="display:none;"></span>
-                                    </button>
-                                    <ul class="dropdown-menu p-3" style="max-height: 50vh; overflow-y: auto;">
-                                        ${versionFilterListItemsHtml}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="btn-group">
-                                <input type="text" class="form-control form-control-sm" id="${projectName}VersionFilterSearch" placeholder="Version Filter...">
-                            </div>
-                        </div>
                         <div class="col-auto me-1 sort-filter">
                             <div class="btn-group">
                                 <label class="form-label mb-0 information info-label" for="${projectName}SectionOrder" data-title="Sort runs by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.">Sort <span class="info-icon-small ms-1"></span></label>
@@ -511,33 +378,6 @@ See Settings > Overview for more options.`;
     `;
     const overview = document.getElementById("overview")
     overview.appendChild(document.createRange().createContextualFragment(projectCard));
-
-    // version filter dropdown
-    const versionFilterDropDownId = `${projectName}VersionFilterDropDown`;
-    const versionFilterSearchId = `${projectName}VersionFilterSearch`;
-    const versionFilterArgs = {
-        cardsContainerId: `${projectName}RunCardsContainer`,
-        versionDropDownFilterId: versionFilterDropDownId,
-        versionStringFilterId: versionFilterSearchId,
-    };
-    const projectVersionFilterDropDown = document.getElementById(versionFilterDropDownId);
-    const allVersionsCheckBox = document.getElementById(`${projectName}VersionFilterListItemAllInput`);
-    const specificVersionSelectedIndicatorId = `${projectName}VersionSelectedIndicator`;
-    setup_filter_checkbox_handler_listeners(
-        projectVersionFilterDropDown,
-        allVersionsCheckBox,
-        specificVersionSelectedIndicatorId,
-        () => { update_project_version_filter_run_card_visibility(versionFilterArgs) }
-    );
-
-    // version filter input
-    const projectVersionFilterSearch = document.getElementById(versionFilterSearchId);
-    const handle_version_filter_input = () => {
-        update_project_version_filter_run_card_visibility(versionFilterArgs);
-    }
-    const maxDelay = 50;
-    const delayScaledByRunAmount = Math.min(totalRunsAmount / 100, maxDelay); // ~0.01ms per run or 50ms max
-    projectVersionFilterSearch.addEventListener('input', debounce(handle_version_filter_input, delayScaledByRunAmount));
 }
 
 function create_project_overview() {
@@ -807,39 +647,6 @@ function create_overview_run_donut(run, chartElementPostfix, projectName) {
     el.chartInstance = new Chart(el, config);
 }
 
-
-// apply version select checkbox and version textinput filter
-function update_project_version_filter_run_card_visibility({ cardsContainerId, versionDropDownFilterId, versionStringFilterId }) {
-    const cardsContainerElement = document.getElementById(cardsContainerId);
-    const scrollOffsetBefore = cardsContainerElement.getBoundingClientRect().top;
-    const versionDropDownFilter = document.getElementById(versionDropDownFilterId);
-    const dropDownCheckBoxes = versionDropDownFilter.querySelectorAll(".version-checkbox");
-    const selectedVersions = Array.from(dropDownCheckBoxes)
-        .filter(checkBox => checkBox.checked)
-        .map(checkBox => checkBox.value);
-    const runCardNodeList = cardsContainerElement.querySelectorAll("div.overview-card");
-    const runCardsArray = Array.from(runCardNodeList);
-    let dropDownFilteredRunCards = runCardsArray;
-    if (!selectedVersions.includes("All")) {
-        dropDownFilteredRunCards = runCardsArray.filter(runCard =>
-            selectedVersions.includes(runCard.dataset.projectVersion)
-        );
-    }
-    const versionStringFilter = document.getElementById(versionStringFilterId);
-    const lowerCaseVersionStringFilterValue = versionStringFilter.value.toLowerCase();
-    const fullyFilteredRunCards = dropDownFilteredRunCards.filter(runCard =>
-        runCard.dataset.projectVersion.toLowerCase()
-            .includes(lowerCaseVersionStringFilterValue)
-    );
-    runCardsArray.forEach(runCard => {
-        runCard.style.display = "none";
-    });
-    fullyFilteredRunCards.forEach(runCard => {
-        runCard.style.display = "";
-    });
-    const scrollOffsetAfter = cardsContainerElement.getBoundingClientRect().top;
-    window.scrollBy(0, scrollOffsetAfter - scrollOffsetBefore);
-}
 function update_overview_latest_heading() {
     _update_overview_heading("overviewLatestRunCardsContainer", "overviewLatestTitle", "Latest Runs");
 }
@@ -856,11 +663,7 @@ function update_overview_sections_visibility() {
 }
 
 function update_overview_filter_visibility() {
-    const versionFilters = document.querySelectorAll(".version-filter");
     const sortFilters = document.querySelectorAll(".sort-filter");
-    versionFilters.forEach(container => {
-        container.hidden = !settings.switch.versionFilters;
-    });
     sortFilters.forEach(container => {
         container.hidden = !settings.switch.sortFilters;
     });
@@ -901,7 +704,6 @@ function update_grouped_data_for_filter() {
             create_project_cards_container(projectName, projectRuns);
         }
     });
-    update_overview_version_select_list();
 }
 
 function update_duration_comparison_for_all_projects() {
@@ -1011,5 +813,4 @@ export {
     update_overview_filter_visibility,
     update_grouped_data_for_filter,
     update_duration_comparison_for_all_projects,
-    update_overview_version_select_list,
 };

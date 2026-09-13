@@ -18,7 +18,6 @@ var settings = {
         runName: true,
         totalStats: true,
         latestRuns: true,
-        versionFilters: true,
         sortFilters: true,
         suitePathsSuiteSection: false,
         suitePathsTestSection: false,
