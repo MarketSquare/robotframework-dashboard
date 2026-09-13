@@ -704,7 +704,7 @@ function setup_project_versions_in_select_filter_buttons() {
     allVersionsCheckBox.checked = true;
     const filterVersionSelectedIndicatorId = "filterVersionSelectedIndicator";
     setup_filter_active_indicator(allVersionsCheckBox, filterVersionSelectedIndicatorId);
-    setup_filter_checkbox_subfilter("projectVersionCheckBoxes");
+    setup_filter_checkbox_subfilter("projectVersionCheckBoxes", true);
     setup_filter_checkbox_handler_listeners(projectVersionList, allVersionsCheckBox, filterVersionSelectedIndicatorId);
 }
 
@@ -938,7 +938,10 @@ function setup_filter_checkbox_handler_listeners(
     }
 }
 
-function setup_filter_checkbox_subfilter(parentElementId) {
+// autoSelectMatches: while the search box has text, check every matching checkbox and
+// uncheck the rest (e.g. typing "1." selects every 1.x version in one go) instead of only
+// narrowing which rows are visible. Clearing the search box leaves the selection as-is.
+function setup_filter_checkbox_subfilter(parentElementId, autoSelectMatches = false) {
     const container = document.getElementById(parentElementId);
     const searchBar = container.querySelector("input.form-control");
     const checkBoxRows = container.querySelectorAll("li.list-group-item-action");
@@ -947,8 +950,12 @@ function setup_filter_checkbox_subfilter(parentElementId) {
         checkBoxRows.forEach(row => {
             const checkbox = row.querySelector("input.form-check-input");
             const rowValue = checkbox.value.toLowerCase();
-            const shouldHide = !rowValue.includes(filterText);
-            row.classList.toggle("d-none", shouldHide);
+            const matches = rowValue.includes(filterText);
+            row.classList.toggle("d-none", !matches);
+            if (autoSelectMatches && filterText && checkbox.value !== "All" && checkbox.checked !== matches) {
+                checkbox.checked = matches;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         });
     });
 }
