@@ -37,7 +37,7 @@
   Removed run from the database: index=-1, run_start=2025-03-13 00:30:06.726165+??:??
   Removed run from the database: index=6, run_start=2025-03-13 00:24:31.912429+??:??
   ERROR: Could not find run to remove from the database: run_start=2025-03-13 00:27:39.871333
-  ERROR: Could not find run to remove from the database: alias=abc, check out robotdashboard --help for instructions
+  ERROR: Could not remove run: alias=abc, reason: 'abc' is not in list, check out robotdashboard --help for instructions
   WARNING: no runs were removed as no runs were found with tag: tag1
   Vacuumed the database in * seconds
 ======================================================================================

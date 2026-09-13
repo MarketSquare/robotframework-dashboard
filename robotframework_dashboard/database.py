@@ -447,11 +447,11 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                         f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions"
                     )
                     console += f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions\n"
-            except:
+            except Exception as error:
                 print(
-                    f"  ERROR: Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions"
+                    f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions"
                 )
-                console += f"  ERROR: Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions\n"
+                console += f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions\n"
         return console
 
     def _remove_by_run_start(self, run: str, run_starts: list):
@@ -565,7 +565,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             clean_query = run_query.replace("age=", "")
             mod, delta = self.parse_time_range(clean_query)
         except ValueError as e:
-            return f" ERROR: {e}"
+            print(f"  ERROR: {e}")
+            return f"  ERROR: {e}\n"
         cutoff = datetime.now(timezone.utc)-delta
         targets = []
         for r in run_starts:
@@ -582,7 +583,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             except ValueError as e:
                 print(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
         if not targets:
-            console += f"  WARNING: no runs were removed as no runs were within range {clean_query}"
+            print(
+                f"  WARNING: no runs were removed as no runs were within range {clean_query}"
+            )
+            console += f"  WARNING: no runs were removed as no runs were within range {clean_query}\n"
             return console
         for run_to_remove in targets:
             self._remove_run(run_to_remove)
