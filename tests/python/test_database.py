@@ -276,54 +276,11 @@ def test_remove_by_limit_only_ignores_tags(db):
     db.close_database()
 
 
-# --- remove_runs by age scoped to tag(s) (issue #309 follow-up) ---
-# Sample XMLs are dated 2025-03 -> always "older" than the test run date.
-
-def test_remove_by_age_with_single_tag_only_removes_matching(db):
-    db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["release"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002222.xml", ["nightly"])
-    starts_before = _run_starts(db)
-    # remove only 'nightly' runs older than 10 days; release untouched
-    db.remove_runs(["age=10d;tag=nightly"])
-    starts_after = _run_starts(db)
-    assert len(starts_after) == 1
-    assert starts_after == [starts_before[1]]  # the release run remains
-    db.close_database()
-
-
-def test_remove_by_age_with_multiple_tags(db):
-    db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["alpha"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["beta"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002222.xml", ["gamma"])
-    starts_before = _run_starts(db)
-    db.remove_runs(["age=10d;tag=alpha;tag=beta"])
-    starts_after = _run_starts(db)
-    assert starts_after == [starts_before[2]]  # only gamma remains
-    db.close_database()
-
-
-def test_remove_by_age_with_tag_no_match_is_noop(db):
-    db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["nightly"])
-    console = db.remove_runs(["age=10d;tag=nonexistent"])
-    assert len(db.get_data()["runs"]) == 2
-    assert "WARNING" in console
-    db.close_database()
-
-
-def test_remove_by_age_only_ignores_tags(db):
-    db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["release"])
-    # no tag scope -> all runs older than 10 days removed regardless of tag
-    db.remove_runs(["age=10d"])
-    assert len(db.get_data()["runs"]) == 0
-    db.close_database()
-
+# NOTE: issue #309 only asked for tag-scoped retention on "limit"
+# (see the block above). "age" intentionally has no tag-scoped variant:
+# db.remove_runs(["age=10d", "tag=nightly"]) runs as two independent
+# operations, same as before this feature — no dedicated test needed here
+# beyond the existing plain "age=10d" / "tag=x" coverage.
 
 # --- list_runs ---
 

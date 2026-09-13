@@ -219,9 +219,12 @@ def test_remove_runs_limit_and_tag_combined():
     ]
 
 
-def test_remove_runs_age_and_tag_combined():
+def test_remove_runs_age_and_tag_not_combined():
+    # issue #309 only asked for tag-scoped retention on "limit" — "age" + "tag"
+    # is intentionally left as two independent operations, unchanged from main
     assert ArgumentParser()._process_remove_runs(["age=10d", "tag=dev"]) == [
-        "age=10d;tag=dev"
+        "age=10d",
+        "tag=dev",
     ]
 
 
@@ -238,17 +241,10 @@ def test_remove_runs_combination_with_other_options_keeps_order():
     ) == ["index=0", "limit=10;tag=dev"]
 
 
-def test_remove_runs_all_three_errors(capsys):
-    with pytest.raises(SystemExit) as exc:
-        ArgumentParser()._process_remove_runs(["limit=10", "age=10d", "tag=dev"])
-    assert exc.value.code == 3
-    assert "Cannot combine 'limit' and 'age'" in capsys.readouterr().out
-
-
 def test_remove_runs_multiple_limits_with_tag_errors(capsys):
     with pytest.raises(SystemExit) as exc:
         ArgumentParser()._process_remove_runs(["limit=10", "limit=5", "tag=dev"])
-    assert exc.value.code == 4
+    assert exc.value.code == 3
     assert "Only one 'limit'" in capsys.readouterr().out
 
 

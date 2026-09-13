@@ -450,8 +450,9 @@ def test_remove_outputs_by_limit_and_tags_builds_scoped_query():
     assert not any(r == "tag=nightly" for r in args)
 
 
-def test_remove_outputs_by_age_and_tags_builds_scoped_query():
-    """age + tags -> single scoped 'age=...;tag=...' query, no standalone tag removals."""
+def test_remove_outputs_by_age_and_tags_stay_independent():
+    """age + tags -> issue #309 only scoped 'limit' by tags; 'age' + 'tags'
+    together still run as two independent operations, unchanged from main."""
     server = _make_server()
     client = _client(server)
     response = client.request(
@@ -461,24 +462,7 @@ def test_remove_outputs_by_age_and_tags_builds_scoped_query():
     )
     assert response.status_code == 200
     args = server.robotdashboard.remove_outputs.call_args[0][0]
-    assert args == ["age=10d;tag=nightly;tag=prod"]
-    assert not any(r == "tag=nightly" for r in args)
-
-
-def test_remove_outputs_limit_age_tags_all_three_errors():
-    """limit + age + tags together is rejected before any removal."""
-    server = _make_server()
-    client = _client(server)
-    response = client.request(
-        "DELETE",
-        "/remove-outputs",
-        json={"limit": 5, "age": "10d", "tags": ["nightly"]},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["success"] == "0"
-    assert "Cannot combine 'limit' and 'age'" in body["message"]
-    server.robotdashboard.remove_outputs.assert_not_called()
+    assert args == ["tag=nightly", "tag=prod", "age=10d"]
 
 
 def test_remove_outputs_all_flag():

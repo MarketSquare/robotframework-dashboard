@@ -72,88 +72,43 @@ class ArgumentParser:
     def _process_remove_runs(self, parts):
         """Process and validate the comma-separated --removeruns parts.
 
-        Detects a scoped retention combination ('limit'+'tags' or 'age'+'tags')
-        and rewrites it into the internal 'limit=N;tag=...' / 'age=X;tag=...'
-        form so the retention acts on the tagged subset instead of running as
-        independent operations. This lets users combine options with the regular
-        comma separator (e.g. '-r "limit=10,tag=nightly"') instead of ';'.
+        Detects a scoped-retention combination ('limit' + 'tags') and rewrites
+        it into the internal 'limit=N;tag=...' form so the limit acts on the
+        tagged subset instead of running as two independent operations. This
+        lets users write the combo with the regular comma separator (e.g.
+        '-r "limit=10,tag=nightly"') instead of ';'.
+
+        Scope note (matches issue #309): only 'limit' can be scoped by tags.
+        'age' + 'tags' is intentionally NOT supported here — combining them
+        just runs as two independent operations, same as on main.
 
         Rules:
-        - 'tags' may be combined with EITHER 'limit' OR 'age', not both (error).
-        - Only one 'limit'/'age' may be combined with tags (error otherwise).
-        - When a combination is detected an INFO message explains exactly what
-          will be deleted; if other options are also present, the deletion order
-          is printed too.
+        - No tags, or tags without a 'limit' partner -> no combination, every
+          part stays independent (unchanged behavior, including 'age'+'tags').
+        - Only one 'limit' may be combined with tags (error otherwise).
         """
         limit_parts = [p for p in parts if p.startswith("limit=")]
-        age_parts = [p for p in parts if p.startswith("age=")]
         tag_parts = [p for p in parts if p.startswith("tag=")]
         other_parts = [
-            p
-            for p in parts
-            if not (
-                p.startswith("limit=")
-                or p.startswith("age=")
-                or p.startswith("tag=")
-            )
+            p for p in parts if not (p.startswith("limit=") or p.startswith("tag="))
         ]
-        has_limit, has_age, has_tag = bool(limit_parts), bool(age_parts), bool(tag_parts)
 
-        # No tags, or tags without a retention partner -> no combination,
-        # behave exactly as before (every part is an independent operation).
-        if not has_tag or (not has_limit and not has_age):
+        if not tag_parts or not limit_parts:
             return parts
-
-        # Tags require exactly one retention partner.
-        if has_limit and has_age:
-            print(
-                "  ERROR: Cannot combine 'limit' and 'age' with 'tags' at the same time.\n"
-                "   Provide either 'limit'+'tag(s)' (keep N newest tagged runs) OR\n"
-                "   'age'+'tag(s)' (remove tagged runs in an age range), not both."
-            )
-            exit(3)
         if len(limit_parts) > 1:
             print("  ERROR: Only one 'limit' may be combined with 'tag(s)'.")
-            exit(4)
-        if len(age_parts) > 1:
-            print("  ERROR: Only one 'age' may be combined with 'tag(s)'.")
-            exit(5)
+            exit(3)
 
         tag_values = [p.replace("tag=", "") for p in tag_parts]
-        tag_suffix = "".join(f";tag={value}" for value in tag_values)
-        tag_list = ", ".join(tag_values)
-        if has_limit:
-            retention = limit_parts[0]
-            limit_value = retention.replace("limit=", "")
-            combo_message = (
-                f"  INFO: Combining 'limit' with 'tag(s)' -> keeping the {limit_value} most recent "
-                f"run(s) tagged with [{tag_list}] and removing older matching runs "
-                f"(runs without these tags are left untouched)."
-            )
-        else:
-            retention = age_parts[0]
-            age_value = retention.replace("age=", "")
-            direction = "younger than" if age_value.startswith("-") else "older than"
-            combo_message = (
-                f"  INFO: Combining 'age' with 'tag(s)' -> removing run(s) tagged with "
-                f"[{tag_list}] that are {direction} {age_value.lstrip('-')} "
-                f"(runs without these tags are left untouched)."
-            )
-        combo = f"{retention}{tag_suffix}"
-
-        # Independent options (index/run_start/alias) keep their original order
-        # and run before the scoped combination.
-        result = other_parts + [combo]
-        if other_parts:
-            print(
-                "  INFO: A scoped combination was detected alongside other remove options.\n"
-                "   They will be deleted in this order:"
-            )
-            for position, part in enumerate(other_parts, start=1):
-                print(f"     {position}. {part}")
-            print(f"     {len(other_parts) + 1}. {combo}  (the scoped combination)")
-        print(combo_message)
-        return result
+        limit_value = limit_parts[0].replace("limit=", "")
+        combo = limit_parts[0] + "".join(f";tag={value}" for value in tag_values)
+        print(
+            f"  INFO: Combining 'limit' with 'tag(s)' -> keeping the {limit_value} most recent "
+            f"run(s) tagged with [{', '.join(tag_values)}] and removing older matching runs "
+            f"(runs without these tags are left untouched)."
+        )
+        # other independent options (index/run_start/alias) run before the combo
+        return other_parts + [combo]
 
     def _check_argument_warnings(self, arguments, outputs, outputfolderpaths, use_logs, generate_dashboard, no_autoupdate, offline_dependencies):
         """Checks for argument combinations that are valid but likely unintended and prints warnings"""
@@ -364,8 +319,6 @@ class ArgumentParser:
                 "  • '-r limit=10,tag=nightly' -> keep 10 newest 'nightly' runs, leave others\n"
                 "  • '-r age=10d' -> remove runs older than 10 days\n"
                 "  • '-r age=-10d' -> remove runs younger than 10 days\n"
-                "  • '-r age=10d,tag=nightly' -> remove 'nightly' runs older than 10 days, leave others\n"
-                "  • combine 'tag' with EITHER 'limit' OR 'age' (not both) to scope retention to those tag(s)\n"
                 "  • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported\n"
             ),
             action="append",

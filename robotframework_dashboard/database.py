@@ -434,11 +434,14 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 elif "alias=" in run:
                     console += self._remove_by_alias(run, run_starts, run_aliases)
                 elif "limit=" in run:
+                    # checked before "tag=" because a scoped combo ("limit=10;tag=x")
+                    # still contains the substring "tag=" and would otherwise be
+                    # misrouted to _remove_by_tag
                     console += self._remove_by_limit(run, run_starts, run_tags)
-                elif "age=" in run:
-                    console += self._remove_by_age(run, run_starts, run_tags)
                 elif "tag=" in run:
                     console += self._remove_by_tag(run, run_starts, run_tags)
+                elif "age=" in run:
+                    console += self._remove_by_age(run, run_starts)
                 else:
                     print(
                         f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions"
@@ -553,30 +556,19 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
         return console
 
-    def _remove_by_age(self, run_query: str, run_starts: list, run_tags: list = None):
-        """Remove runs by age threshold.
-
-        When tag filters are appended (e.g. 'age=10d;tag=nightly;tag=prod'),
-        only runs matching any of those tags are considered: matching runs that
-        fall within the age range are removed, runs without the tag(s) are left
-        untouched.
-        """
+    def _remove_by_age(self, run_query: str, run_starts: list):
+        # NOTE: issue #309 / PR #313 only asked for tag-scoped retention on
+        # "limit" (see _remove_by_limit); age intentionally has no tag scoping
+        # here, matching the original issue's proposed direction.
         console = ""
-        parts = run_query.split(";")
-        tag_filters = [
-            part.replace("tag=", "") for part in parts[1:] if part.startswith("tag=")
-        ]
         try:
-            clean_query = parts[0].replace("age=", "")
+            clean_query = run_query.replace("age=", "")
             mod, delta = self.parse_time_range(clean_query)
         except ValueError as e:
             return f" ERROR: {e}"
         cutoff = datetime.now(timezone.utc)-delta
         targets = []
-        for index, r in enumerate(run_starts):
-            if tag_filters and run_tags is not None:
-                if not any(tag in run_tags[index] for tag in tag_filters):
-                    continue
+        for r in run_starts:
             try:
                 run_dt = datetime.fromisoformat(r)
                 if run_dt.tzinfo is None:
@@ -590,8 +582,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             except ValueError as e:
                 print(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
         if not targets:
-            scope = f" with tag(s) {', '.join(tag_filters)}" if tag_filters else ""
-            console += f"  WARNING: no runs were removed as no runs{scope} were within range {clean_query}"
+            console += f"  WARNING: no runs were removed as no runs were within range {clean_query}"
             return console
         for run_to_remove in targets:
             self._remove_run(run_to_remove)
