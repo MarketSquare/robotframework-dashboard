@@ -51,6 +51,18 @@ export default defineConfig({
     `]
   ],
   base: '/robotframework-dashboard/',
+  markdown: {
+    config(md) {
+      const fence = md.renderer.rules.fence!
+      md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+        const token = tokens[idx]
+        if (token.info.trim() === 'mermaid') {
+          return `<pre class="mermaid">${md.utils.escapeHtml(token.content)}</pre>`
+        }
+        return fence(tokens, idx, options, env, self)
+      }
+    }
+  },
   themeConfig: {
     search: {
       provider: 'local'
@@ -94,6 +106,7 @@ export default defineConfig({
       {
         text: 'Advanced',
         items: [
+          { text: '📐 Architecture', link: '/architecture.md' },
           { text: '🖥️ Dashboard Server', link: '/dashboard-server.md' },
           { text: '🗄️ Custom Database Class', link: '/custom-database-class.md' },
           { text: '🔔 Listener Integration', link: '/listener-integration.md' },

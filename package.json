@@ -1,8 +1,9 @@
 {
   "devDependencies": {
     "jsdom": "^29.0.1",
+    "mermaid": "^11.17.2",
     "vite": "^7.3.6",
-    "vitepress": "^2.0.0-alpha.17",
+    "vitepress": "^2.0.0-alpha.20",
     "vitest": "^4.1.1"
   },
   "overrides": {

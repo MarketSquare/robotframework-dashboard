@@ -51,6 +51,9 @@ features:
   - title: ⚙️ Settings
     details: Configure dashboard preferences including themes, default views, graph options, and save your settings for consistent team-wide use.
     link: /settings.md
+  - title: 📐 Architecture
+    details: See how robotdashboard is structured internally, from CLI invocation to a rendered dashboard, in both Regular Mode and Server Mode.
+    link: /architecture.md
   - title: 🖥️ Dashboard Server
     details: Host the dashboard for multi-user access, programmatic updates, and remote server integration.
     link: /dashboard-server.md
