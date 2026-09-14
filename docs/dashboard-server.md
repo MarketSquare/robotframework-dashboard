@@ -152,6 +152,8 @@ The admin page supports four methods for adding test results:
 | **By Folder Path** | Provide a folder path; the server recursively scans for `*output*.xml` files. Supports run tags, version label, and custom filters. |
 | **By File Upload** | Upload an `output.xml` file directly. Supports run tags, version label, and custom filters. Gzip-compressed files (`.gz`/`.gzip`) are automatically decompressed. |
 
+> **Tip:** Every method above also accepts an optional log URL (`output_log_url` in `/add-outputs`, `log_url` in `/add-output-file`) mirroring the CLI's [`--logurl`](/basic-command-line-interface-cli.md) flag. Use this when the log is already hosted elsewhere (e.g. a CI artifact or cloud storage URL) instead of uploading it to this server via `/add-log` / `/add-log-file`. Include a `{run_alias}` placeholder in the URL when a single request may add more than one run (e.g. `output_folder_path`), otherwise every run added by that request would be stored with the same URL.
+
 ### Removing Outputs
 
 | Method | Description |
@@ -175,6 +177,8 @@ The admin page supports four methods for adding test results:
 | **Add Log (File Upload)** | Upload a `log.html` file. Gzip-compressed files are automatically decompressed. |
 | **Remove Log by Name** | Remove a specific log file (e.g., `log-20250219-172535.html`). |
 | **Remove All Logs** | Irreversibly deletes all uploaded log files. |
+
+> **Note:** Reports are not tracked in the database — they're reached through the link Robot Framework builds into the top-right corner of `log.html`, so `/add-log` and `/add-log-file` never need to associate a report with a run directly. Uploading a filename containing `report` (e.g. `report_20250219-172535.html`) via `/add-log-file` is still supported: the file is saved to `robot_logs/` as-is and no database matching is attempted. The response reports `SUCCESS` either way, with the console message noting whether a matching `log` file (same name, `report` replaced by `log`) was found in `robot_logs/` — if not, it's just a warning that the report may not yet be reachable from a log, not an error. See [Log Linking](/log-linking.md#accessing-reports) for naming and placement requirements.
 
 ### Database & Log Tables
 

@@ -251,6 +251,25 @@ def test_add_outputs_no_version_clears_project_version():
     assert server.robotdashboard.project_version is None
 
 
+def test_add_outputs_by_path_with_log_url():
+    server = _make_server()
+    client = _client(server)
+    payload = {"output_path": str(SAMPLE_XML), "output_log_url": "https://ci.example.com/log.html"}
+    response = client.post("/add-outputs", json=payload)
+    assert response.status_code == 200
+    assert response.json()["success"] == "1"
+    assert server.robotdashboard.log_url == "https://ci.example.com/log.html"
+
+
+def test_add_outputs_no_log_url_clears_log_url():
+    server = _make_server()
+    server.robotdashboard.log_url = "https://old.example.com/log.html"
+    client = _client(server)
+    payload = {"output_path": str(SAMPLE_XML)}
+    client.post("/add-outputs", json=payload)
+    assert server.robotdashboard.log_url is None
+
+
 # ---------------------------------------------------------------------------
 # POST /add-outputs — by output_folder_path
 # ---------------------------------------------------------------------------
@@ -263,6 +282,31 @@ def test_add_outputs_by_folder():
     assert response.status_code == 200
     assert response.json()["success"] == "1"
     server.robotdashboard.process_outputs.assert_called_once()
+
+
+def test_add_outputs_by_folder_with_log_url_placeholder():
+    server = _make_server()
+    client = _client(server)
+    payload = {
+        "output_folder_path": str(OUTPUTS_DIR),
+        "output_log_url": "https://ci.example.com/{run_alias}/log.html",
+    }
+    response = client.post("/add-outputs", json=payload)
+    assert response.status_code == 200
+    assert response.json()["success"] == "1"
+
+
+def test_add_outputs_by_folder_with_log_url_without_placeholder_rejected():
+    server = _make_server()
+    client = _client(server)
+    payload = {
+        "output_folder_path": str(OUTPUTS_DIR),
+        "output_log_url": "https://ci.example.com/log.html",
+    }
+    response = client.post("/add-outputs", json=payload)
+    assert response.status_code == 200
+    assert response.json()["success"] == "0"
+    server.robotdashboard.process_outputs.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -384,6 +428,35 @@ def test_add_output_file_with_tags(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert response.json()["success"] == "1"
     assert server.robotdashboard.project_version == "2.0"
+
+
+def test_add_output_file_with_log_url(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    client = _client(server)
+    xml_bytes = SAMPLE_XML.read_bytes()
+    response = client.post(
+        "/add-output-file",
+        files={"file": ("output-test.xml", xml_bytes, "application/xml")},
+        data={"log_url": "https://ci.example.com/log.html"},
+    )
+    assert response.status_code == 200
+    assert response.json()["success"] == "1"
+    assert server.robotdashboard.log_url == "https://ci.example.com/log.html"
+
+
+def test_add_output_file_no_log_url_clears_log_url(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    server.robotdashboard.log_url = "https://old.example.com/log.html"
+    client = _client(server)
+    xml_bytes = SAMPLE_XML.read_bytes()
+    response = client.post(
+        "/add-output-file",
+        files={"file": ("output-test.xml", xml_bytes, "application/xml")},
+    )
+    assert response.status_code == 200
+    assert server.robotdashboard.log_url is None
 
 
 # ---------------------------------------------------------------------------
@@ -635,6 +708,64 @@ def test_add_log_file_update_path_error(tmp_path, monkeypatch):
     )
     assert response.status_code == 200
     assert response.json()["success"] == "0"
+
+
+# ---------------------------------------------------------------------------
+# POST /add-log-file — report files (#308: saved without DB matching, warn
+# instead of error when no matching log is found)
+# ---------------------------------------------------------------------------
+
+def test_add_log_file_report_without_matching_log_warns_but_succeeds(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    server.log_dir = str(tmp_path / "robot_logs")
+    client = _client(server)
+    response = client.post(
+        "/add-log-file",
+        files={"file": ("report-abc.html", b"<html>report</html>", "text/html")},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] == "1"
+    assert "WARNING" in data["console"]
+    assert (tmp_path / "robot_logs" / "report-abc.html").exists()
+    server.robotdashboard.update_output_path.assert_not_called()
+
+
+def test_add_log_file_report_with_matching_log_succeeds_without_warning(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    log_dir = tmp_path / "robot_logs"
+    log_dir.mkdir()
+    (log_dir / "report-abc.html".replace("report", "log")).write_text("<html>log</html>")
+    server.log_dir = str(log_dir)
+    client = _client(server)
+    response = client.post(
+        "/add-log-file",
+        files={"file": ("report-abc.html", b"<html>report</html>", "text/html")},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] == "1"
+    assert "WARNING" not in data["console"]
+    server.robotdashboard.update_output_path.assert_not_called()
+
+
+def test_add_log_file_report_gzipped(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    server.log_dir = str(tmp_path / "robot_logs")
+    client = _client(server)
+    gz_data = gzip.compress(b"<html>report content</html>")
+    response = client.post(
+        "/add-log-file",
+        files={"file": ("report-abc.html.gz", gz_data, "application/gzip")},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] == "1"
+    assert (tmp_path / "robot_logs" / "report-abc.html").exists()
+    server.robotdashboard.update_output_path.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

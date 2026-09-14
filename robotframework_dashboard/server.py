@@ -94,6 +94,14 @@ add_output_model_config = {
                     "output_version": "v1.2",
                 },
             },
+            "output_with_log_url": {
+                "summary": "Add an output with an externally hosted log URL",
+                "description": "Provide an output.xml path along with 'output_log_url' to store a link to a log already hosted elsewhere (e.g., a CI artifact or cloud storage URL) instead of a local log file. Use the '{run_alias}' placeholder when processing multiple outputs (e.g. via 'output_folder_path') so each run gets its own URL.",
+                "value": {
+                    "output_path": "C:\\users\\docs\\output.xml",
+                    "output_log_url": "https://ci.example.com/build42/log.html",
+                },
+            },
         },
     }
 }
@@ -250,6 +258,7 @@ class AddOutput(BaseModel):
     output_alias: Optional[str] = None
     output_version: Optional[str] = None
     output_custom_filters: Optional[str] = None
+    output_log_url: Optional[str] = None
     model_config = add_output_model_config
 
 
@@ -465,6 +474,10 @@ class ApiServer:
             1. output_path: str valid path to output.xml (+ optional 'output_tags: List[str]' or optional 'output_version: str' version)
             2. output_data: str output.xml content (+ optional 'output_tags: List[str]', optional 'output_alias: str` or optional 'output_version: str' version)
             3. output_folder_path: str valid path to folder (subfolders are also searched) that contain *output*.xml (+ optional 'output_tags: List[str]' or optional 'output_version: str' version)
+            'output_log_url' is optional on all 3 combinations and mirrors the CLI '--logurl' flag: it stores a link to an
+            externally hosted log instead of the local output path. Use the '{run_alias}' placeholder when the request may
+            process more than one output (e.g. via 'output_folder_path'), otherwise every run would be stored with the
+            same URL.
             """
             input = "provided input, overwritten on runtime"
             console = "no console output"
@@ -487,6 +500,17 @@ class ApiServer:
                     raise Exception(
                         "Please only provide output_path, output_data or output_folder_path, not more than 1 type at the same time!"
                     )
+                if (
+                    add_output.output_log_url
+                    and "{run_alias}" not in add_output.output_log_url
+                    and add_output.output_folder_path != None
+                ):
+                    input = "your input"
+                    raise Exception(
+                        "'output_log_url' was provided without a '{run_alias}' placeholder while processing an output_folder_path "
+                        "(potentially multiple outputs). Either add '{run_alias}' to the URL template or provide a single output "
+                        "via 'output_path' or 'output_data'."
+                    )
                 output_tags = []
                 if add_output.output_tags:
                     output_tags = add_output.output_tags
@@ -494,6 +518,7 @@ class ApiServer:
                     self.robotdashboard.project_version = add_output.output_version
                 else:
                     self.robotdashboard.project_version = None
+                self.robotdashboard.log_url = add_output.output_log_url or None
                 self.robotdashboard.custom_filters = add_output.output_custom_filters
                 if add_output.output_path != None:
                     input = add_output.output_path
@@ -547,11 +572,15 @@ class ApiServer:
             tags: str = Form(default=""),
             version: str = Form(default=""),
             custom_filters: str = Form(default=""),
+            log_url: str = Form(default=""),
             username: str = Depends(authenticate),
         ) -> ResponseMessage:
             """Add output file to database endpoint function
             The tags parameter should be provided as colon-separated values (e.g., 'tag1:tag2:tag3')
             The version parameter is an optional string to label the run (e.g., software version)
+            The log_url parameter is optional and mirrors the CLI '--logurl' flag: it stores a link to an externally
+            hosted log instead of the local output path. Since this endpoint always processes a single output file,
+            the '{run_alias}' placeholder is optional here.
             """
             console = "no console output"
             try:
@@ -579,6 +608,7 @@ class ApiServer:
                     self.robotdashboard.project_version = None
 
                 self.robotdashboard.custom_filters = custom_filters
+                self.robotdashboard.log_url = log_url or None
 
                 outputs = [[output_path, output_tags]]
                 console = self.robotdashboard.process_outputs(
@@ -740,6 +770,11 @@ class ApiServer:
         ) -> ResponseMessage:
             """Add log file to server endpoint function
             The log file name should match the output.xml alias (e.g., 'log-alias.html' for 'output-alias.xml')
+
+            Report files (filename containing 'report') are handled differently: reports are not tracked in the
+            database, so no output-matching is attempted. The file is saved as-is and this endpoint only checks
+            whether a corresponding 'log' file already exists next to it (so it can be reached via the link Robot
+            Framework builds into log.html) and warns, rather than errors, if it does not.
             """
             console = ""
             try:
@@ -759,11 +794,23 @@ class ApiServer:
                     with open(log_path, "wb") as buffer:
                         buffer.write(file_bytes)
 
-                console += self.robotdashboard.update_output_path(log_path)
-                if "ERROR" in console:
-                    raise Exception(
-                        "A problem occurred while adding the log file, check the console message!"
-                    )
+                log_name = Path(log_path).name
+                is_report = "report" in log_name
+                if is_report:
+                    expected_log_name = log_name.replace("report", "log")
+                    if exists(join(self.log_dir, expected_log_name)):
+                        console += f"SUCCESS: matching log file '{expected_log_name}' found, the report is reachable from it.\n"
+                    else:
+                        console += (
+                            f"WARNING: no matching log file '{expected_log_name}' was found in '{self.log_dir}'. "
+                            "The report has been saved but may not be reachable until a matching log is uploaded.\n"
+                        )
+                else:
+                    console += self.robotdashboard.update_output_path(log_path)
+                    if "ERROR" in console:
+                        raise Exception(
+                            "A problem occurred while adding the log file, check the console message!"
+                        )
                 console += "======================================================================================\n"
                 console += f"Added {file.filename} to the folder {self.log_dir}\n"
                 console += "======================================================================================\n"
@@ -782,7 +829,11 @@ class ApiServer:
                 return response
             response = {
                 "success": "1",
-                "message": f"SUCCESS: the log file has been placed and the database was updated",
+                "message": (
+                    "SUCCESS: the report file has been placed"
+                    if is_report
+                    else "SUCCESS: the log file has been placed and the database was updated"
+                ),
                 "console": console,
             }
             return response

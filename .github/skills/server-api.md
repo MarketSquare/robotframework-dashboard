@@ -39,11 +39,11 @@ Served with **uvicorn** via `fastapi_offline.FastAPIOffline`.
 | `POST` | `/refresh-dashboard` | Basic (if configured) | Manually triggers `robotdashboard.create_dashboard()` without adding data |
 | `GET` | `/get-outputs` | None | Returns list of `{run_start, name, alias, tags}` for all stored runs |
 | `POST` | `/add-outputs` | Basic (if configured) | Add output(s) from a path, raw XML string, or folder. See body fields below. |
-| `POST` | `/add-output-file` | Basic (if configured) | Multipart upload of `output.xml` (or `.gz`/`.gzip`). Form fields: `tags` (colon-separated), `version`. |
+| `POST` | `/add-output-file` | Basic (if configured) | Multipart upload of `output.xml` (or `.gz`/`.gzip`). Form fields: `tags` (colon-separated), `version`, `custom_filters`, `log_url`. |
 | `DELETE` | `/remove-outputs` | Basic (if configured) | Remove runs by various selectors. See body fields below. |
 | `GET` | `/get-logs` | None | Lists filenames in `robot_logs/` |
 | `POST` | `/add-log` | Basic (if configured) | Saves HTML log content to `robot_logs/<log_name>` and links it to the matching run in the DB |
-| `POST` | `/add-log-file` | Basic (if configured) | Same as `/add-log` but via multipart file upload (supports `.gz`/`.gzip`) |
+| `POST` | `/add-log-file` | Basic (if configured) | Same as `/add-log` but via multipart file upload (supports `.gz`/`.gzip`). Filenames containing `report` are saved as-is with no DB matching — see Report Handling below. |
 | `DELETE` | `/remove-log` | Basic (if configured) | Removes one log by `log_name`, or all logs with `all: True` |
 | `GET` | `/log` | None | Serves a log HTML file by `?path=` query param; stores parent dir for subsequent resource requests |
 | `GET` | `/{full_path:path}` | None | Catch-all: serves static resources (screenshots, etc.) relative to the last served log's directory. Path-traversal protected. |
@@ -63,6 +63,7 @@ Exactly one input source must be provided (mutually exclusive):
 | `output_tags` | `List[str]` | Optional tags to attach to all added runs |
 | `output_alias` | `str` | Optional alias override |
 | `output_version` | `str` | Optional project version string |
+| `output_log_url` | `str` | Optional externally-hosted log URL, mirrors CLI `--logurl`. Requires a `{run_alias}` placeholder when `output_folder_path` is used (potentially multiple runs); rejected without one. `/add-output-file`'s multipart equivalent is the unprefixed `log_url` form field (no placeholder requirement there since it always processes a single file). |
 
 ### `DELETE /remove-outputs`
 Any combination of the following:
@@ -111,6 +112,15 @@ output-XYZ.xml  ←→  log-XYZ.html
 The suffix `XYZ` must match between the output file and its corresponding log. The server's `/add-log` and `/add-log-file` endpoints enforce this convention when calling `update_output_path()` to link the log to the correct run in the DB.
 
 ---
+
+## Report Handling (`/add-log-file`)
+
+Reports are not tracked in the database — Robot Framework's own `log.html` already links to `report.html` (top-right corner), so the dashboard just needs the report saved next to its log with a matching name (`log_XYZ.html` ↔ `report_XYZ.html`).
+
+`/add-log-file` detects a `report` substring in the uploaded filename and takes a different path than for `log` files:
+- The file is saved to `robot_logs/` as-is; `update_output_path()` (DB matching) is **not** called — a report filename would never match a stored output/log path anyway.
+- It checks whether a `log` file exists with the same name (`report` → `log`) in `robot_logs/`. If found: `SUCCESS` with a console note that the report is reachable from its log. If not found: still `SUCCESS`, but the console carries a `WARNING` that the report was saved but has no matching log yet (upload order matters — upload the log first, or the report before it just produces a harmless warning).
+- This intentionally returns `success: "1"` either way; before this behavior, a `report*.html` upload always returned `success: "0"` with a misleading DB-matching error even though the file was saved correctly (#308).
 
 ## Server State
 

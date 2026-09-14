@@ -151,3 +151,5 @@ Robot Framework `report.html` files can also be accessed through the log file:
 | --------------------------------- | ---------------------------------- |
 | `log_nightly.html`                | `report_nightly.html`              |
 | `my_log_123.html`                 | `my_report_123.html`               |
+
+When uploading through the [dashboard server](/dashboard-server.md), upload the report the same way as the log: `POST /add-log-file` with the report file. Reports are not stored in the database, so no output-matching is attempted for a filename containing `report` — the file is just saved to `robot_logs/`. Upload the report after its matching log so the response can confirm the log was found; uploading it first only produces a harmless warning that no matching log exists yet.
