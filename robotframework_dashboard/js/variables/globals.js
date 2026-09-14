@@ -15,6 +15,7 @@ var filteredRuns;
 var filteredSuites;
 var filteredTests;
 var filteredKeywords;
+var filteredExceptions;
 
 // vars to keep track of grids
 var gridUnified = null
@@ -158,6 +159,7 @@ export {
     filteredSuites,
     filteredTests,
     filteredKeywords,
+    filteredExceptions,
     gridUnified,
     gridRun,
     gridSuite,

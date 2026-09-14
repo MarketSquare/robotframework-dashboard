@@ -129,11 +129,15 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 self.connection.cursor().execute(KEYWORD_TABLE_UPDATE_OWNER)
                 self.connection.commit()
                 keyword_table_length = get_keywords_length()
+            # exceptions table: added later, safe to create if missing
+            self.connection.cursor().execute(CREATE_EXCEPTIONS)
+            self.connection.commit()
         else:
             self.connection.cursor().execute(CREATE_RUNS)
             self.connection.cursor().execute(CREATE_SUITES)
             self.connection.cursor().execute(CREATE_TESTS)
             self.connection.cursor().execute(CREATE_KEYWORDS)
+            self.connection.cursor().execute(CREATE_EXCEPTIONS)
             self.connection.commit()
 
     def close_database(self):
@@ -159,6 +163,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             self._insert_suites(output_data["suites"], run_alias, timezone)
             self._insert_tests(output_data["tests"], run_alias, timezone)
             self._insert_keywords(output_data["keywords"], run_alias, timezone)
+            self._insert_exceptions(output_data.get("exceptions", []), run_alias, timezone)
         except Exception as error:
             print(f"   ERROR: something went wrong with the database: {error}")
 
@@ -227,6 +232,18 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         self.connection.executemany(INSERT_INTO_KEYWORDS, full_keywords)
         self.connection.commit()
 
+    def _insert_exceptions(self, exceptions: list, run_alias: str, timezone: str = ""):
+        """Helper function to insert the exception data"""
+        full_exceptions = []
+        for exc in exceptions:
+            exc = list(exc)
+            if timezone:
+                exc[0] = f"{exc[0]}{timezone}"
+            exc.append(run_alias)
+            full_exceptions.append(tuple(exc))
+        self.connection.executemany(INSERT_INTO_EXCEPTIONS, full_exceptions)
+        self.connection.commit()
+
     @staticmethod
     def _get_local_timezone_offset():
         """Helper function to get the local machine's timezone offset as a string like +01:00"""
@@ -250,7 +267,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
 
     def get_data(self):
         """This function gets all the data in the database"""
-        data, runs, suites, tests, keywords, aliases = {}, [], [], [], [], {}
+        data, runs, suites, tests, keywords, exceptions, aliases = {}, [], [], [], [], [], {}
         name_labels = {}
         local_tz = self._get_local_timezone_offset()
         alias_counter = 1
@@ -349,6 +366,21 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 name_prefix_lookup.get(row["run_start"][:19], ""))
             keywords.append(row)
         data["keywords"] = keywords
+        # Get exceptions from exceptions table
+        try:
+            exception_rows = self.connection.cursor().execute(SELECT_FROM_EXCEPTIONS).fetchall()
+            for exception_row in exception_rows:
+                row = self._dict_from_row(exception_row)
+                if not self._has_timezone_offset(row["run_start"]):
+                    row["run_start"] = f"{row['run_start']}{local_tz}"
+                row["run_alias"] = aliases.get(row["run_start"],
+                    alias_prefix_lookup.get(row["run_start"][:19], ""))
+                row["run_name"] = name_labels.get(row["run_start"],
+                    name_prefix_lookup.get(row["run_start"][:19], ""))
+                exceptions.append(row)
+        except Exception:
+            pass  # table may not exist in older/custom databases
+        data["exceptions"] = exceptions
         return data
 
     def _dict_from_row(self, row: sqlite3.Row):
@@ -604,6 +636,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 cursor.execute(DELETE_FROM_SUITES.format(run_start=run_start))
                 cursor.execute(DELETE_FROM_TESTS.format(run_start=run_start))
                 cursor.execute(DELETE_FROM_KEYWORDS.format(run_start=run_start))
+                try:
+                    cursor.execute(DELETE_FROM_EXCEPTIONS.format(run_start=run_start))
+                except Exception:
+                    pass  # table may not exist in older/custom databases
                 # Log inside the transaction: if the write fails, the transaction
                 # rolls back and the run is not deleted.
                 if self.log_removed_path and entry:

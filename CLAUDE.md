@@ -39,7 +39,7 @@ The entire system is this three-stage pipeline:
 1. PYTHON CLI
    output.xml files
        └─► OutputProcessor (robot.api ResultVisitor)
-               └─► SQLite database (runs / suites / tests / keywords tables)
+               └─► SQLite database (runs / suites / tests / keywords / exceptions tables)
 
 2. HTML TEMPLATE
    database.get_data()
@@ -101,13 +101,13 @@ Templates live in `robotframework_dashboard/templates/`. They use simple string 
 - `templates/dashboard.html` → generates `robot_dashboard.html`
 - `templates/admin.html` → generates the server's `/admin` page
 
-Key placeholders: `<!-- placeholder_javascript -->`, `<!-- placeholder_css -->`, `<!-- placeholder_dependencies -->`, `"placeholder_runs"`, `"placeholder_suites"`, `"placeholder_tests"`, `"placeholder_keywords"`.
+Key placeholders: `<!-- placeholder_javascript -->`, `<!-- placeholder_css -->`, `<!-- placeholder_dependencies -->`, `"placeholder_runs"`, `"placeholder_suites"`, `"placeholder_tests"`, `"placeholder_keywords"`, `"placeholder_exceptions"`.
 
 ---
 
 ## Database
 
-- Built-in: SQLite via `database.py`. Tables: `runs`, `suites`, `tests`, `keywords`.
+- Built-in: SQLite via `database.py`. Tables: `runs`, `suites`, `tests`, `keywords`, `exceptions`.
 - Custom backends: implement `AbstractDatabaseProcessor` from `abstractdb.py`, point to it with `--databaseclass`.
 - Run identity: `run_start` timestamp. Duplicate runs are silently skipped.
 - Schema migrations are handled inline at DB open time via `ALTER TABLE ADD COLUMN`.

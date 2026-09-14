@@ -67,6 +67,7 @@ import {
     create_keyword_most_failed_graph,
     create_keyword_most_time_consuming_graph,
     create_keyword_most_used_graph,
+    create_keyword_exceptions_graph,
     create_keyword_stat_widgets,
     update_keyword_statistics_graph,
     update_keyword_times_run_graph,
@@ -77,6 +78,7 @@ import {
     update_keyword_most_failed_graph,
     update_keyword_most_time_consuming_graph,
     update_keyword_most_used_graph,
+    update_keyword_exceptions_graph,
     update_keyword_stat_widgets,
 } from "./keyword.js";
 import {
@@ -92,10 +94,12 @@ import {
     create_suite_table,
     create_test_table,
     create_keyword_table,
+    create_exception_table,
     update_run_table,
     update_suite_table,
     update_test_table,
-    update_keyword_table
+    update_keyword_table,
+    update_exception_table
 } from "./tables.js";
 import { update_custom_stat_widgets } from "../statwidgets.js";
 
@@ -138,6 +142,7 @@ function create_dashboard_graphs() {
         create_keyword_most_failed_graph();
         create_keyword_most_time_consuming_graph();
         create_keyword_most_used_graph();
+        create_keyword_exceptions_graph();
         create_keyword_stat_widgets();
         update_custom_stat_widgets();
     } else if (settings.menu.compare) {
@@ -149,6 +154,7 @@ function create_dashboard_graphs() {
         create_suite_table();
         create_test_table();
         create_keyword_table();
+        create_exception_table();
     }
 }
 
@@ -192,6 +198,7 @@ function update_dashboard_graphs() {
         update_keyword_most_failed_graph();
         update_keyword_most_time_consuming_graph();
         update_keyword_most_used_graph();
+        update_keyword_exceptions_graph();
         update_keyword_stat_widgets();
         update_custom_stat_widgets();
     } else if (settings.menu.compare) {
@@ -203,6 +210,7 @@ function update_dashboard_graphs() {
         update_suite_table();
         update_test_table();
         update_keyword_table();
+        update_exception_table();
     }
 }
 

@@ -61,6 +61,7 @@ For all available CLI options see the [Basic CLI docs](https://marketsquare.gith
 - 🖥️ **Server Mode** - Host your dashboard for multi-user access and automatic updates.  
 - 🎧 **Listener Integration** - Automatically updates dashboard after every test run.  
 - 📝 **Message Config Support** - Group similar test failures using regex-based patterns.  
+- 🚨 **Exception Tracking** - Track exception messages caught by TRY/EXCEPT blocks across runs, with a dedicated graph and table.  
 - ⚙️ **Configurable Defaults** - Preload dashboard settings via JSON for consistent appearance.  
 
 …and many more advanced features to help you visualize, analyze, and manage your Robot Framework test results with ease!

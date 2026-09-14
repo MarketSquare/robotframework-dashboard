@@ -16,7 +16,7 @@ Interactive visualizations across four sections — Runs, Suites, Tests, Keyword
 Side-by-side comparison of up to four test runs with statistics, charts (bar, radar, timeline), and summaries to identify regressions or improvements.
 
 ### Tables Page
-Raw database data in DataTables for runs, suites, tests, and keywords. Useful for debugging and ad-hoc analysis.
+Raw database data in DataTables for runs, suites, tests, keywords, and exceptions. Useful for debugging and ad-hoc analysis.
 
 ## Chart.js Architecture
 
@@ -46,6 +46,7 @@ Each module transforms filtered DB data into Chart.js-compatible datasets:
 - `donut.js` — aggregated donut/doughnut data, including folder-level drill-down for suites.
 - `heatmap.js` — matrix data (day × hour/minute) for execution activity.
 - `messages.js` — failure message frequency data.
+- `exceptions.js` — exception message frequency data, aggregated from keywords caught inside TRY/EXCEPT blocks (`ExceptionProcessor` in `processors.py`, stored in the `exceptions` table).
 - `tooltip_helpers.js` — rich tooltip metadata (duration, status, message).
 - `helpers.js` — shared utilities (height updates, data exclusions).
 
@@ -55,7 +56,7 @@ Each section has its own module that wires data modules to chart factory calls:
 - `run.js` — Run statistics, donut, duration, heatmap, stats graphs.
 - `suite.js` — Suite folder donut, statistics, duration, most-failed, most-time-consuming.
 - `test.js` — Test statistics (timeline), duration, deviation (boxplot), messages, most-flaky, most-failed, most-time-consuming.
-- `keyword.js` — Keyword statistics, times-run, duration variants, most-failed, most-time-consuming, most-used.
+- `keyword.js` — Keyword statistics, times-run, duration variants, most-failed, most-time-consuming, most-used, exceptions (bar/timeline).
 - `compare.js` — Compare page statistics bar, radar, and timeline graphs.
 
 ### Common Patterns

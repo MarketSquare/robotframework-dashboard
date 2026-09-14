@@ -594,6 +594,14 @@ const graphMetadata = [
                     </div
                 </div>`,
     },
+    {
+        key: "keywordExceptions",
+        label: "Keyword Exceptions",
+        defaultType: "bar",
+        viewOptions: ["Bar", "Timeline"],
+        hasFullscreenButton: true,
+        html: _graphHtml("keywordExceptions", "Exceptions", ["Bar", "Timeline"], { hasVertical: true }),
+    },
     // --- Suite Stat Widgets — managed via Add Stat Widget modal ---
     { key: "suiteStatExecuted",  label: "Suite Stat Executed",   defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatExecuted",  "Executed Suites",  "blue-text") },
     { key: "suiteStatUnique",    label: "Suite Stat Unique",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatUnique",    "Unique Suites",    "white-text") },
@@ -711,6 +719,15 @@ const graphMetadata = [
         hasFullscreenButton: false,
         information: null,
         html: _tableHtml("keywordTable", "Keyword"),
+    },
+    {
+        key: "exceptionTable",
+        label: "Table Exception",
+        defaultType: "table",
+        viewOptions: ["Table"],
+        hasFullscreenButton: false,
+        information: null,
+        html: _tableHtml("exceptionTable", "Exception"),
     },
 ];
 

@@ -112,6 +112,7 @@ These switches are stored alongside the other dashboard settings and can also be
 | Keyword Most Failed         | Bar<br>Timeline               | Bar: Keywords ranked by total failures.<br>Timeline: Shows when failures occurred across runs.                             | Top 10 default, Top 50 fullscreen                                             |
 | Keyword Most Time-Consuming | Bar<br>Timeline               | Bar: Ranked by how often a keyword was the slowest in a run.<br>Timeline: Slowest keyword per run on timeline.             | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only (persisted) |
 | Keyword Most Used           | Bar<br>Timeline               | Bar: Ranked by how frequently keywords were used.<br>Timeline: Shows keyword usage trends over time.                       | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only (persisted) |
+| Keyword Exceptions          | Bar<br>Timeline               | Bar: Exception messages caught by TRY/EXCEPT blocks, ranked by occurrence count across all runs.<br>Timeline: Shows which runs each exception message occurred in. | Top 10 default, Top 50 fullscreen                                             |
 
 
 ## Compare Tab
@@ -142,3 +143,4 @@ These enhanced tooltips make it easier to understand test results without needin
 | Suites     | run_start, full_name, name, total, passed, failed, skipped, elapsed_s, start_time, run_alias, id                            | Contains suite-level data.                                                    | -     |
 | Tests      | run_start, full_name, name, passed, failed, skipped, elapsed_s, start_time, message, tags, run_alias, id                    | Contains test-level data.                                                     | -     |
 | Keywords   | run_start, name, passed, failed, skipped, times_run, total_time_s, average_time_s, min_time_s, max_time_s, run_alias, owner | Contains keyword-level data.                                                  | -     |
+| Exceptions | run_start, message, amount, run_alias                                                                                      | Contains exception messages caught by TRY/EXCEPT blocks, aggregated per run.  | -     |

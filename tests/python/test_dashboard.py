@@ -344,3 +344,58 @@ def test_generate_dashboard_server_mode_keeps_absolute_paths(tmp_path):
     assert match, "runs payload not found in dashboard"
     decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
     assert decoded[0]["path"] == abs_path
+
+
+def test_generate_dashboard_embeds_exceptions(tmp_path):
+    import json, zlib, base64, re
+    dashboard = tmp_path / "dashboard.html"
+    data = {
+        "runs": [], "suites": [], "tests": [], "keywords": [],
+        "exceptions": [{"run_start": "2025-01-01", "message": "Timeout error", "amount": 2}],
+    }
+    DashboardGenerator().generate_dashboard(
+        name_dashboard=str(dashboard),
+        data=data,
+        generation_datetime=datetime(2025, 1, 1),
+        dashboard_title="",
+        server=False,
+        json_config=None,
+        message_config=[],
+        quantity=20,
+        use_logs=False,
+        offline=False,
+        force_json_config=False,
+        no_autoupdate=False,
+    )
+    content = dashboard.read_text(encoding="utf-8")
+    match = re.search(r'const exceptions = decode_and_decompress\("([^"]+)"\)', content)
+    assert match, "exceptions payload not found in dashboard"
+    decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
+    assert decoded[0]["message"] == "Timeout error"
+    assert decoded[0]["amount"] == 2
+
+
+def test_generate_dashboard_missing_exceptions_key_defaults_to_empty(tmp_path):
+    """generate_dashboard() tolerates data lacking an 'exceptions' key (data.get default)."""
+    dashboard = tmp_path / "dashboard.html"
+    data = {"runs": [], "suites": [], "tests": [], "keywords": []}
+    DashboardGenerator().generate_dashboard(
+        name_dashboard=str(dashboard),
+        data=data,
+        generation_datetime=datetime(2025, 1, 1),
+        dashboard_title="",
+        server=False,
+        json_config=None,
+        message_config=[],
+        quantity=20,
+        use_logs=False,
+        offline=False,
+        force_json_config=False,
+        no_autoupdate=False,
+    )
+    content = dashboard.read_text(encoding="utf-8")
+    import json, zlib, base64, re
+    match = re.search(r'const exceptions = decode_and_decompress\("([^"]+)"\)', content)
+    assert match, "exceptions payload not found in dashboard"
+    decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
+    assert decoded == []
