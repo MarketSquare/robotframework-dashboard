@@ -25,7 +25,6 @@ import {
 } from '../variables/chartconfig.js';
 import { settings } from '../variables/settings.js';
 import {
-    DEFAULT_DURATION_PERCENTAGE,
     projects_by_tag,
     projects_by_name,
     selectedRunSetting,
@@ -33,19 +32,18 @@ import {
     versionsByProject,
     latestRunByProjectName,
     latestRunByProjectTag,
-    areGroupedProjectsPrepared
+    areGroupedProjectsPrepared,
+    filteredRuns,
 } from '../variables/globals.js';
 import { runs, use_logs } from '../variables/data.js';
 import {
     clear_all_filters,
     update_filter_active_indicator,
-    setup_filter_checkbox_handler_listeners,
-    generate_version_filter_list_item_html
 } from '../filter.js';
 
 // Data prep/aggregation
 function prepare_projects_grouped_data() {
-    for (const run of runs) {
+    for (const run of filteredRuns) {
         const tags = run.tags.split(",");
         const project_tags = tags.filter(tag => tag.toLowerCase().startsWith("project_"));
         for (const project of project_tags) {
@@ -62,11 +60,11 @@ function prepare_projects_grouped_data() {
     areGroupedProjectsPrepared = true;
 }
 
-// versionByProject = {projectName:{version:amount}}
+// versionsByProject = {projectName: {version: amount}}
 function prepare_projects_version_counts_map(projects) {
-    for (const [project, runs] of Object.entries(projects)) {
+    for (const [project, projectRuns] of Object.entries(projects)) {
         const versionCounts = {};
-        for (const run of runs) {
+        for (const run of projectRuns) {
             const projectVersion = run.project_version ?? "None";
             versionCounts[projectVersion] = (versionCounts[projectVersion] || 0) + 1;
         }
@@ -157,12 +155,15 @@ function generate_overview_card_html(
         compares = '';
     }
     // for project bars
-    const versionsForProject = Object.keys(versionsByProject[projectName]);
-    const projectHasVersions = !(versionsForProject.length === 1 && versionsForProject[0] === "None");
+    const runsForProject = projects_by_name[projectName] ?? projects_by_tag[projectName] ?? [];
+    const projectHasVersions = runsForProject.some(r => r.project_version != null && r.project_version !== "None");
     // for overview statistics
     // Preserve the original project name (used for logic like tag-detection),
     // but compute a display name that omits the 'project_' prefix when prefixes are hidden.
     const originalProjectName = projectName;
+    const projectEverHasVersions = runs
+        .filter(r => r.name === originalProjectName)
+        .some(r => r.project_version != null && r.project_version !== "None");
     const displayProjectName = settings.show.prefixes ? projectName : projectName.replace(/^project_/, '');
     projectName = displayProjectName;
     let cardTitle = `
@@ -175,7 +176,7 @@ function generate_overview_card_html(
             cardTitle = `
                 <h5 class="card-title mb-0 fw-semibold">${stats[5]}, <span class="text-muted">Version:</span> ${normalizedProjectVersion}</h5>
             `;
-        } else if (projectHasVersions) {
+        } else if (projectHasVersions || projectEverHasVersions) {
             // Non-tagged projects with versions: interactive version title
             cardTitle = `
                 <div class="mx-auto run-card-version-title"
@@ -248,18 +249,6 @@ function generate_overview_card_html(
     </div>`;
 }
 
-function apply_overview_latest_version_text_filter() {
-    const versionFilterInput = document.getElementById("overviewLatestVersionFilterSearch");
-    const cardsContainer = document.getElementById("overviewLatestRunCardsContainer");
-    if (!versionFilterInput || !cardsContainer) return;
-    const filterValue = versionFilterInput.value.toLowerCase();
-    const runCards = Array.from(cardsContainer.querySelectorAll("div.overview-card"));
-    runCards.forEach(card => {
-        const version = (card.dataset.projectVersion ?? "").toLowerCase();
-        card.style.display = version.includes(filterValue) ? "" : "none";
-    });
-}
-
 function clear_project_filter() {
     document.getElementById("runs").value = "All";
     document.getElementById("runTagCheckBoxesFilter").value = "";
@@ -294,45 +283,8 @@ function _update_overview_heading(containerId, titleId, titleText) {
     if (subTitleEl) subTitleEl.innerHTML = `showing ${amountOfProjectsShown} project${pluralPostFix}`;
 }
 
-// create overview latest runs section dynamically
 function create_overview_latest_runs_section() {
-    const percentageSelectHtml = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(val =>
-        `<option value="${val}" ${val === DEFAULT_DURATION_PERCENTAGE ? 'selected' : ''}>${val}</option>`
-    ).join('');
-
     const filtersHtml = `
-        <div class="col-auto percentage-filter" id="overviewLatestPercentageFilterContainer">
-            <div class="btn-group">
-                <label class="form-check-label information info-label" for="overviewLatestDurationPercentage" id="overviewLatestPercentageInfo">Percentage <span class="info-icon-small ms-1"></span></label>
-            </div>
-            <div class="btn-group">
-                <select class="form-select form-select-sm me-2" id="overviewLatestDurationPercentage">
-                    ${percentageSelectHtml}
-                </select>
-            </div>
-        </div>
-        <div class="col-auto me-2 version-filter" id="overviewLatestVersionFilterContainer">
-            <div class="btn-group">
-                <label class="form-label mb-0 information info-label" id="overviewLatestVersionsInfo">Versions <span class="info-icon-small ms-1"></span></label>
-            </div>
-            <div class="btn-group">
-                <div id="overviewLatestVersionFilterDropDown" class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button"
-                        id="overviewLatestVersionFilterBtn" data-bs-toggle="dropdown"
-                        data-bs-auto-close="outside">
-                        Select Versions
-                        <span id="overviewLatestVersionSelectedIndicator"
-                            class="version-selected-dot" style="display:none;"></span>
-                    </button>
-                    <ul id="overviewLatestVersionSelectorList" class="dropdown-menu p-3"
-                        style="max-height: 50vh; overflow-y: auto;">
-                    </ul>
-                </div>
-            </div>
-            <div class="btn-group">
-                <input type="text" class="form-control form-control-sm" id="overviewLatestVersionFilterSearch" placeholder="Version Filter...">
-            </div>
-        </div>
         <div class="col-auto me-1 sort-filter" id="overviewLatestSortFilterContainer">
             <div class="btn-group">
                 <label class="form-label mb-0 information info-label" for="overviewLatestSectionOrder" id="overviewLatestSortInfo">Sort <span class="info-icon-small ms-1"></span></label>
@@ -356,30 +308,6 @@ function create_overview_latest_runs_section() {
 
     create_overview_latest_graphs();
     update_overview_latest_heading();
-
-    // Setup event listeners for filters
-    const percentageSelector = document.getElementById("overviewLatestDurationPercentage");
-    if (percentageSelector) {
-        percentageSelector.addEventListener('change', () => {
-            show_loading_overlay();
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    create_overview_latest_graphs();
-                    hide_loading_overlay();
-                });
-            });
-        });
-    }
-
-    const versionFilterSearch = document.getElementById("overviewLatestVersionFilterSearch");
-    if (versionFilterSearch) {
-        const handle_version_filter_input = () => {
-            apply_overview_latest_version_text_filter();
-        };
-        const maxDelay = 50;
-        const delayScaledByRunAmount = Math.min(runs.length / 100, maxDelay);
-        versionFilterSearch.addEventListener('input', debounce(handle_version_filter_input, delayScaledByRunAmount));
-    }
 }
 
 // create overview total stats section dynamically
@@ -396,23 +324,6 @@ function create_overview_total_stats_section() {
 
 // create project bar (the collapsables below overview statistic) in overview
 function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate) {
-    const projectVersions = new Set(
-        Object.keys(versionsByProject[projectName])
-            .sort()
-            .reverse()
-    );
-    const versionAmount = projectVersions.size;
-    const versionFilterListItemAllHtml = generate_version_filter_list_item_html("All", projectName, "checked", versionAmount, "version");
-    const versionFilterListItemsHtml = versionFilterListItemAllHtml +
-        [...projectVersions]
-            .map(version => {
-                const runAmount = versionsByProject[projectName][version];
-                return generate_version_filter_list_item_html(version, projectName, "", runAmount, "run");
-            })
-            .join('');
-    const percentageSelectHtml = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(val =>
-        `<option value="${val}" ${val === DEFAULT_DURATION_PERCENTAGE ? 'selected' : ''}>${val}</option>`
-    ).join('');
     // added here instead of adding to informationMap, since the dynamic IDs don't work with the map
     const displayProjectName = (!settings.show.prefixes && projectName.startsWith('project_'))
         ? projectName.replace(/^project_/, '')
@@ -439,37 +350,6 @@ See Settings > Overview for more options.`;
                         <h6>Total Runs: ${totalRunsAmount} | Passed Runs: ${passRate}%</h6>
                     </div>
                     <div class="d-flex flex-wrap align-items-start col align-items-center">
-                         <div class="col-auto me-2 percentage-filter">
-                            <div class="btn-group">
-                                <label class="form-check-label information info-label" for="${projectName}DurationPercentage" data-title="Duration color threshold: green if the run is at least X% faster than average, red if X% slower.">Percentage <span class="info-icon-small ms-1"></span></label>
-                            </div>
-                            <div class="btn-group">
-                                <select class="form-select form-select-sm" id="${projectName}DurationPercentage">
-                                    ${percentageSelectHtml}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-auto me-2 version-filter">
-                            <div class="btn-group">
-                                <label class="form-label mb-0 information info-label" data-title="Filter runs by version. 'All' shows all versions.">Versions <span class="info-icon-small ms-1"></span></label>
-                            </div>
-                            <div class="btn-group">
-                                <div id="${projectName}VersionFilterDropDown" class="dropdown" >
-                                    <button class="btn btn-sm btn-outline-dark dropdown-toggle"
-                                            type="button" id="${projectName}VersionFilterBtn"
-                                            data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                        Select Versions
-                                    <span id="${projectName}VersionSelectedIndicator" class="version-selected-dot" style="display:none;"></span>
-                                    </button>
-                                    <ul class="dropdown-menu p-3" style="max-height: 50vh; overflow-y: auto;">
-                                        ${versionFilterListItemsHtml}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="btn-group">
-                                <input type="text" class="form-control form-control-sm" id="${projectName}VersionFilterSearch" placeholder="Version Filter...">
-                            </div>
-                        </div>
                         <div class="col-auto me-1 sort-filter">
                             <div class="btn-group">
                                 <label class="form-label mb-0 information info-label" for="${projectName}SectionOrder" data-title="Sort runs by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.">Sort <span class="info-icon-small ms-1"></span></label>
@@ -498,40 +378,6 @@ See Settings > Overview for more options.`;
     `;
     const overview = document.getElementById("overview")
     overview.appendChild(document.createRange().createContextualFragment(projectCard));
-
-    // percentage selector
-    const projectPercentageSelector = document.getElementById(`${projectName}DurationPercentage`);
-    projectPercentageSelector.addEventListener('change', () => {
-        const newPercent = parseInt(projectPercentageSelector.value, 10);
-        update_duration_comparison_for_project(projectName, projectRuns, newPercent);
-    });
-
-    // version filters
-    const versionFilterDropDownId = `${projectName}VersionFilterDropDown`;
-    const versionFilterSearchId = `${projectName}VersionFilterSearch`;
-    const versionFilterArgs = {
-        cardsContainerId: `${projectName}RunCardsContainer`,
-        versionDropDownFilterId: versionFilterDropDownId,
-        versionStringFilterId: versionFilterSearchId,
-    };
-    const projectVersionFilterDropDown = document.getElementById(versionFilterDropDownId);
-    const allVersionsCheckBox = document.getElementById(`${projectName}VersionFilterListItemAllInput`);
-    const specificVersionSelectedIndicatorId = `${projectName}VersionSelectedIndicator`;
-    setup_filter_checkbox_handler_listeners(
-        projectVersionFilterDropDown,
-        allVersionsCheckBox,
-        specificVersionSelectedIndicatorId,
-        () => { update_project_version_filter_run_card_visibility(versionFilterArgs) }
-    );
-
-    // version filter input
-    const projectVersionFilterSearch = document.getElementById(versionFilterSearchId);
-    const handle_version_filter_input = () => {
-        update_project_version_filter_run_card_visibility(versionFilterArgs);
-    }
-    const maxDelay = 50;
-    const delayScaledByRunAmount = Math.min(totalRunsAmount / 100, maxDelay); // ~0.01ms per run or 50ms max
-    projectVersionFilterSearch.addEventListener('input', debounce(handle_version_filter_input, delayScaledByRunAmount));
 }
 
 function create_project_overview() {
@@ -556,10 +402,8 @@ function create_project_cards_container(projectName, projectRuns, percent = null
     // create section for project in overview if not present
     if (!cardsContainer) create_project_bar(projectName, projectRuns, totalRunsAmount, passRate);
 
-    // Read percentage from selector if not provided
     if (percent === null) {
-        const percentageSelector = document.getElementById(`${projectName}DurationPercentage`);
-        percent = percentageSelector ? parseInt(percentageSelector.value, 10) : DEFAULT_DURATION_PERCENTAGE;
+        percent = settings.show.overviewDurationPercentage;
     }
 
     const container = document.getElementById(`${projectName}RunCardsContainer`);
@@ -616,7 +460,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
             Object.entries(latestRunByProject).sort(([, runA], [, runB]) => runB.passed - runA.passed)
         );
     }
-    const percent = document.getElementById("overviewLatestDurationPercentage").value;
+    const percent = settings.show.overviewDurationPercentage;
     for (const [projectName, latestRun] of Object.entries(latestRunByProject)) {
         const projectRuns = allProjects[projectName];
         const totalRunsAmount = projectRuns.length;
@@ -637,7 +481,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
             'overviewLatest'
         );
     }
-    apply_overview_latest_version_text_filter();
+    update_overview_latest_heading();
 }
 
 // function to create overview total statistics
@@ -803,39 +647,6 @@ function create_overview_run_donut(run, chartElementPostfix, projectName) {
     el.chartInstance = new Chart(el, config);
 }
 
-
-// apply version select checkbox and version textinput filter
-function update_project_version_filter_run_card_visibility({ cardsContainerId, versionDropDownFilterId, versionStringFilterId }) {
-    const cardsContainerElement = document.getElementById(cardsContainerId);
-    const scrollOffsetBefore = cardsContainerElement.getBoundingClientRect().top;
-    const versionDropDownFilter = document.getElementById(versionDropDownFilterId);
-    const dropDownCheckBoxes = versionDropDownFilter.querySelectorAll(".version-checkbox");
-    const selectedVersions = Array.from(dropDownCheckBoxes)
-        .filter(checkBox => checkBox.checked)
-        .map(checkBox => checkBox.value);
-    const runCardNodeList = cardsContainerElement.querySelectorAll("div.overview-card");
-    const runCardsArray = Array.from(runCardNodeList);
-    let dropDownFilteredRunCards = runCardsArray;
-    if (!selectedVersions.includes("All")) {
-        dropDownFilteredRunCards = runCardsArray.filter(runCard =>
-            selectedVersions.includes(runCard.dataset.projectVersion)
-        );
-    }
-    const versionStringFilter = document.getElementById(versionStringFilterId);
-    const lowerCaseVersionStringFilterValue = versionStringFilter.value.toLowerCase();
-    const fullyFilteredRunCards = dropDownFilteredRunCards.filter(runCard =>
-        runCard.dataset.projectVersion.toLowerCase()
-            .includes(lowerCaseVersionStringFilterValue)
-    );
-    runCardsArray.forEach(runCard => {
-        runCard.style.display = "none";
-    });
-    fullyFilteredRunCards.forEach(runCard => {
-        runCard.style.display = "";
-    });
-    const scrollOffsetAfter = cardsContainerElement.getBoundingClientRect().top;
-    window.scrollBy(0, scrollOffsetAfter - scrollOffsetBefore);
-}
 function update_overview_latest_heading() {
     _update_overview_heading("overviewLatestRunCardsContainer", "overviewLatestTitle", "Latest Runs");
 }
@@ -852,17 +663,7 @@ function update_overview_sections_visibility() {
 }
 
 function update_overview_filter_visibility() {
-    // Update filter visibility for all bars using classes
-    const percentageFilters = document.querySelectorAll(".percentage-filter");
-    const versionFilters = document.querySelectorAll(".version-filter");
     const sortFilters = document.querySelectorAll(".sort-filter");
-
-    percentageFilters.forEach(container => {
-        container.hidden = !settings.switch.percentageFilters;
-    });
-    versionFilters.forEach(container => {
-        container.hidden = !settings.switch.versionFilters;
-    });
     sortFilters.forEach(container => {
         container.hidden = !settings.switch.sortFilters;
     });
@@ -872,6 +673,45 @@ function update_donut_charts() {
     document.querySelectorAll(".overview-canvas").forEach(canvas => {
         const chart = canvas.querySelector("canvas").chartInstance;
         if (chart) chart.update();
+    });
+}
+
+// Updates project bars in-place after a filter change — avoids recreating Chart.js canvases.
+function update_grouped_data_for_filter() {
+    Object.keys(projects_by_tag).forEach(k => delete projects_by_tag[k]);
+    Object.keys(projects_by_name).forEach(k => delete projects_by_name[k]);
+    Object.keys(latestRunByProjectTag).forEach(k => delete latestRunByProjectTag[k]);
+    Object.keys(latestRunByProjectName).forEach(k => delete latestRunByProjectName[k]);
+    Object.keys(versionsByProject).forEach(k => delete versionsByProject[k]);
+    prepare_projects_grouped_data();
+    prepare_latest_run_by_project();
+    prepare_projects_version_counts_map({ ...projects_by_name, ...projects_by_tag });
+    const projectData = { ...projects_by_name, ...projects_by_tag };
+    document.querySelectorAll(".overview-project-card").forEach(bar => {
+        const projectName = bar.id.replace(/Section$/, "");
+        const projectRuns = projectData[projectName];
+        const isTagged = projectName.startsWith("project_");
+        const settingsVisible = isTagged ? settings.switch.runTags : settings.switch.runName;
+        bar.hidden = !settingsVisible || !projectRuns;
+        if (projectRuns && settingsVisible) {
+            const subtitleEl = bar.querySelector(".card-header h6");
+            if (subtitleEl) {
+                const totalRunsAmount = projectRuns.length;
+                const passedRunsAmount = projectRuns.filter(run => run.failed === 0).length;
+                const passRate = ((passedRunsAmount / totalRunsAmount) * 100).toFixed(2);
+                subtitleEl.textContent = `Total Runs: ${totalRunsAmount} | Passed Runs: ${passRate}%`;
+            }
+            create_project_cards_container(projectName, projectRuns);
+        }
+    });
+}
+
+function update_duration_comparison_for_all_projects() {
+    const percent = settings.show.overviewDurationPercentage;
+    document.querySelectorAll(".overview-project-card").forEach(bar => {
+        const projectName = bar.id.replace(/Section$/, "");
+        const projectRuns = projects_by_name[projectName] ?? projects_by_tag[projectName];
+        if (projectRuns) update_duration_comparison_for_project(projectName, projectRuns, percent);
     });
 }
 
@@ -970,5 +810,7 @@ export {
     update_overview_latest_heading,
     update_overview_total_heading,
     update_overview_sections_visibility,
-    update_overview_filter_visibility
+    update_overview_filter_visibility,
+    update_grouped_data_for_filter,
+    update_duration_comparison_for_all_projects,
 };

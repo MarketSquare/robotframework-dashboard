@@ -18,8 +18,6 @@ var settings = {
         runName: true,
         totalStats: true,
         latestRuns: true,
-        percentageFilters: true,
-        versionFilters: true,
         sortFilters: true,
         suitePathsSuiteSection: false,
         suitePathsTestSection: false,
@@ -43,6 +41,7 @@ var settings = {
         compareStatusFilter: "All",
     },
     show: {
+        overviewDurationPercentage: 20,
         unified: false,
         dateLabels: true,
         legends: true,
