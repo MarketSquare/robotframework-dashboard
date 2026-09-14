@@ -20,9 +20,18 @@ Its responsibilities include:
 - The script is pabot compatible  
 - Enforcing an optional database run limit (e.g., keep only latest 100 runs)  
 
-The listener script can be found here: [robotdashboardlistener.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/listener/robotdashboardlistener.py)
+The listener ships **inside the `robotframework-dashboard` package itself** — no separate download and no extra dependencies (it talks HTTP using only the Python standard library). This means it's available the moment you `pip install robotframework-dashboard`, which matters in closed-off/offline environments where fetching a script from GitHub isn't practical:
 
-> Important: the name of the file and the class should match. In the example it is both **robotdashboardlistener**, but changing it is fine if both are equal. 
+```bash
+pip install robotframework-dashboard
+robot --listener robotframework_dashboard.robotdashboardlistener tests.robot
+```
+
+The implementation — and the full up-to-date list of arguments in code, if you want to read it straight from the source — lives at [`robotframework_dashboard/robotdashboardlistener.py`](https://github.com/marketsquare/robotframework-dashboard/blob/main/robotframework_dashboard/robotdashboardlistener.py).
+
+A standalone copy also lives at [`example/listener/robotdashboardlistener.py`](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/listener/robotdashboardlistener.py) for anyone who prefers pointing `--listener` at a local file path instead of the installed module — it's just a one-line re-export of the file above, kept for that use case.
+
+> Important: the name of the file (or, for the packaged module, the last part of the dotted path) and the class inside it must match. Both are **robotdashboardlistener**.
 
 ## Basic Usage
 
@@ -33,55 +42,67 @@ You can attach the listener directly when running Robot Framework.
 **Basic test run**
 
 ```bash
-robot --listener robotdashboardlistener.py tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener tests.robot  
 ```
 
 **With tags**
 
 ```bash
-robot --listener robotdashboardlistener.py:tags=smoke,regression tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:tags=smoke,regression tests.robot  
 ```
 
 **With version label**
 
 ```bash
-robot --listener robotdashboardlistener.py:version=v1.2.3 tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:version=v1.2.3 tests.robot  
 ```
 
 **With log file upload**
 
 ```bash
-robot --listener robotdashboardlistener.py:uploadlog=true tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:uploadlog=true tests.robot  
 ```
 
-**With custom host/port and a path**
+**With custom host/port**
 
 ```bash
-robot --listener path/to/listeners/robotdashboardlistener.py:host=10.0.0.5:port=8543 tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:host=10.0.0.5:port=8543 tests.robot  
+```
+
+**With no port** — for a server reachable on the protocol's default port (80/443), or behind a reverse proxy that doesn't expose one, leave `port` empty to omit it from the URL entirely:
+
+```bash
+robot --listener robotframework_dashboard.robotdashboardlistener:host=dashboard.internal.company.com:port= tests.robot  
 ```
 
 **With HTTPS**
 
 ```bash
-robot --listener robotdashboardlistener.py:protocol=https:port=8543 tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:protocol=https:port=8543 tests.robot  
 ```
 
 **With HTTPS and SSL verification disabled (for self-signed certificates)**
 
 ```bash
-robot --listener robotdashboardlistener.py:protocol=https:sslverify=false tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:protocol=https:sslverify=false tests.robot  
 ```
 
 **With HTTPS and a custom CA bundle**
 
 ```bash
-robot --listener robotdashboardlistener.py:protocol=https:sslverify=/path/to/ca-bundle.pem tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:protocol=https:sslverify=/path/to/ca-bundle.pem tests.robot  
 ```
 
 **With basic authentication**
 
 ```bash
-robot --listener robotdashboardlistener.py:user=admin:password=secret tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:user=admin:password=secret tests.robot  
+```
+
+**Using the standalone file copy instead** (same arguments, just point at a path):
+
+```bash
+robot --listener path/to/example/listener/robotdashboardlistener.py:host=10.0.0.5:port=8543 tests.robot  
 ```
 
 ## Full Listener Options
@@ -94,7 +115,7 @@ The listener supports the following arguments:
 | `version` | Version label for the run (e.g., software version, release tag) |
 | `uploadlog` | Set to `true` to upload the log file to the server (default: `false`) |
 | `host` | Dashboard server hostname (default: `127.0.0.1`) |
-| `port` | Dashboard server port (default: `8543`) |
+| `port` | Dashboard server port (default: `8543`). Leave empty (`port=`) to omit the port from the URL entirely — for a server reachable on the protocol's default port (80/443) or behind a reverse proxy that doesn't expose one |
 | `protocol` | Protocol to use when connecting to the server: `http` or `https` (default: `http`) |
 | `sslverify` | SSL certificate verification for HTTPS: `true` (default), `false` (skip verification for self-signed certs), or a path to a CA bundle file |
 | `limit` | Maximum number of runs stored in the database (older runs will be auto-deleted, based on the order in the database) |
@@ -106,7 +127,7 @@ The listener supports the following arguments:
 **Example with all options**
 
 ```bash
-robot --listener robotdashboardlistener.py:tags=dev1,dev2:version=v2.0:host=127.0.0.2:port=8888:protocol=https:sslverify=false:limit=100:uploadlog=true:customfilters=Environment=staging:ComponentA=2.0:user=admin:password=secret tests.robot  
+robot --listener robotframework_dashboard.robotdashboardlistener:tags=dev1,dev2:version=v2.0:host=127.0.0.2:port=8888:protocol=https:sslverify=false:limit=100:uploadlog=true:customfilters=Environment=staging:ComponentA=2.0:user=admin:password=secret tests.robot  
 ```
 
 ## Using the Listener with Pabot
@@ -117,13 +138,13 @@ The listener automatically detects when the *final merged output* is ready.
 **Basic Pabot usage**
 
 ```bash
-pabot --listener robotdashboardlistener.py tests.robot  
+pabot --listener robotframework_dashboard.robotdashboardlistener tests.robot  
 ```
 
 **Pabot with test-level splitting**
 
 ```bash
-pabot --testlevelsplit --listener robotdashboardlistener.py tests.robot  
+pabot --testlevelsplit --listener robotframework_dashboard.robotdashboardlistener tests.robot  
 ```
 
 **Pabot with custom output file name**
@@ -131,7 +152,7 @@ pabot --testlevelsplit --listener robotdashboardlistener.py tests.robot
 When using a custom `-o` output file, you **must** pass `output=<name>.xml` to the listener:
 
 ```bash
-pabot --testlevelsplit --listener robotdashboardlistener.py:output=custom_output.xml -o custom_output.xml tests.robot  
+pabot --testlevelsplit --listener robotframework_dashboard.robotdashboardlistener:output=custom_output.xml -o custom_output.xml tests.robot  
 ```
 
 The listener will wait for the final merged output and then send it to the Dashboard Server.
@@ -139,22 +160,21 @@ The listener will wait for the final merged output and then send it to the Dashb
 ## Using the Listener with RobotCode (robot.toml)
 
 RobotDashboard also supports a listener in the `robot.toml` of **RobotCode**. The example can be found here: [robot.toml](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/listener/robot.toml)
-Place both `robot.toml` and `robotdashboardlistener.py` in your project root (or adjust paths accordingly).
+Since the listener ships inside the package, `robot.toml` can reference it by its dotted module path directly — no file to place in your project at all.
 
 ### Basic usage steps
 
 1. Place `robot.toml` in project root  
-2. Ensure `robotdashboardlistener.py` is in root or update the path in the file  
-3. Install RobotCode runner  
+2. Install RobotCode runner  
    - ```bash
      pip install robotcode-runner  
      ```  
-4. Start the dashboard server  
+3. Start the dashboard server  
    - ```bash
      robotdashboard --server default  
      ```  
-5. Choose one listener configuration in `robot.toml` (see examples below!)
-6. Run your tests  
+4. Choose one listener configuration in `robot.toml` (see examples below!)
+5. Run your tests  
    - ```bash
      robotcode robot .  
      ```
@@ -165,36 +185,45 @@ Place both `robot.toml` and `robotdashboardlistener.py` in your project root (or
 
 ```bash
 [listeners]  
-"robotdashboardlistener.py" = []  
+"robotframework_dashboard.robotdashboardlistener" = []  
 ```
 
 **With tags**
 
 ```bash
 [listeners]  
-"robotdashboardlistener.py" = ["tags=dev1,dev2,dev3"]  
+"robotframework_dashboard.robotdashboardlistener" = ["tags=dev1,dev2,dev3"]  
 ```
 
 **Custom host + port**
 
 ```bash
 [listeners]  
-"robotdashboardlistener.py" = ["tags=dev1,dev2,dev3", "host=127.0.0.2", "port=8888"]  
+"robotframework_dashboard.robotdashboardlistener" = ["tags=dev1,dev2,dev3", "host=127.0.0.2", "port=8888"]  
+```
+
+**No port** (server reachable on the protocol's default port, or behind a reverse proxy)
+
+```bash
+[listeners]  
+"robotframework_dashboard.robotdashboardlistener" = ["host=dashboard.internal.company.com", "port="]  
 ```
 
 **Automatic deletion when more than 100 runs exist**
 
 ```bash
 [listeners]  
-"robotdashboardlistener.py" = ["tags=dev1,dev2,dev3", "limit=100"]  
+"robotframework_dashboard.robotdashboardlistener" = ["tags=dev1,dev2,dev3", "limit=100"]  
 ```
 
 **Combined: tags, version, log upload, and limit**
 
 ```bash
 [listeners]  
-"robotdashboardlistener.py" = ["tags=dev1,dev2", "version=v2.0", "uploadlog=true", "limit=100"]  
+"robotframework_dashboard.robotdashboardlistener" = ["tags=dev1,dev2", "version=v2.0", "uploadlog=true", "limit=100"]  
 ```
+
+> If you'd rather use the standalone file copy instead of the dotted module path, place both `robot.toml` and `robotdashboardlistener.py` (from [example/listener/](https://github.com/marketsquare/robotframework-dashboard/tree/main/example/listener)) in your project root, and reference it as `"robotdashboardlistener.py"` instead.
 
 ## Pushing output.xml Without a Test Run (robotdashboardscript.py)
 
@@ -230,6 +259,12 @@ python robotdashboardscript.py --output path/to/output.xml --log path/to/log.htm
 python robotdashboardscript.py --output path/to/output.xml --host 10.0.0.5 --port 8543
 ```
 
+**With no port** — for a server reachable on the protocol's default port (80/443), or behind a reverse proxy that doesn't expose one, pass an empty string to omit it from the URL entirely:
+
+```bash
+python robotdashboardscript.py --output path/to/output.xml --host dashboard.internal.company.com --port ""
+```
+
 **With HTTPS and SSL verification disabled (for self-signed certificates)**
 
 ```bash
@@ -259,7 +294,7 @@ The arguments mirror those of `robotdashboardlistener.py`:
 | `--tags` | Comma-separated list of tags attached to the run in the Dashboard |
 | `--version` | Version label for the run (e.g., software version, release tag) |
 | `--host` | Dashboard server hostname (default: `127.0.0.1`) |
-| `--port` | Dashboard server port (default: `8543`) |
+| `--port` | Dashboard server port (default: `8543`). Pass an empty string (`""`) to omit the port from the URL entirely |
 | `--protocol` | Protocol to use when connecting to the server: `http` or `https` (default: `http`) |
 | `--sslverify` | SSL certificate verification for HTTPS: `true` (default), `false` (skip verification for self-signed certs), or a path to a CA bundle file |
 | `--limit` | Maximum number of runs stored in the database (older runs will be auto-deleted) |
