@@ -43,30 +43,12 @@ Validate Project Tests
     Click    selector=id=collapseTestsBody
     Validate Component    id=TestsSection    name=prjTests    folder=overview
 
-Validate Project Tests With Version Filter
-    Open Overview Page
-    Click    selector=id=collapseTestsBody
-    Fill Text    selector=id=TestsVersionFilterSearch    txt=1.1
-    Validate Component    id=TestsSection    name=prjTestsV1_1    folder=overview
-
 Validate Project Testsuites
     Open Overview Page
     Click    selector=id=collapseTestsuitesBody
     Validate Component    id=TestsuitesSection    name=prjTestsuites    folder=overview
 
-Validate Project Testsuites With Version Filter
-    Open Overview Page
-    Click    selector=id=collapseTestsuitesBody
-    Fill Text    selector=id=TestsuitesVersionFilterSearch    txt=1.1
-    Validate Component    id=TestsuitesSection    name=prjTestsuitesV1_1    folder=overview
-
 Validate Project Other
     Open Overview Page
     Click    selector=id=collapseTestsuitesBody
     Validate Component    id=TestsuitesSection    name=prjOther    folder=overview
-
-Validate Project Other With Version Filter
-    Open Overview Page
-    Click    selector=id=collapseTestsuitesBody
-    Fill Text    selector=id=TestsuitesVersionFilterSearch    txt=1.1
-    Validate Component    id=TestsuitesSection    name=prjOtherV1_1    folder=overview

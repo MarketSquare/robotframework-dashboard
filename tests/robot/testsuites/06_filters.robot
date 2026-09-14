@@ -59,6 +59,22 @@ Add Filter Profile With Versions Filter
     Add Filter Profile PrfVersions For    Versions
     Filter Profile PrfVersions Should Be    {'projectVersions': [{'value': 'All', 'checked': False}, {'value': 'None', 'checked': True}, {'value': '1.2', 'checked': False}, {'value': '1.1', 'checked': False}, {'value': '1.0', 'checked': False}]}
 
+Versions Filter Search Selects Matching Versions
+    Open Filter Dialog
+    Click    selector=id=selectProjectVersion
+    Fill Text    selector=id=projectVersionCheckBoxesFilter    txt=1.
+    ${state10}    Get Checkbox State    selector=id=projectVersionInputItem1.0
+    ${state11}    Get Checkbox State    selector=id=projectVersionInputItem1.1
+    ${state12}    Get Checkbox State    selector=id=projectVersionInputItem1.2
+    ${stateAll}    Get Checkbox State    selector=id=projectVersionInputItemAll
+    ${stateNone}    Get Checkbox State    selector=id=projectVersionInputItemNone
+    Should Be True    ${state10}
+    Should Be True    ${state11}
+    Should Be True    ${state12}
+    Should Not Be True    ${stateAll}
+    Should Not Be True    ${stateNone}
+    Close Filter Dialog
+
 Add Filter Profile With Date Filters
     Set Date Filter    fromDate=03132025    fromTime=1225am    toDate=04012025    toTime=1159pm
 
