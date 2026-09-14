@@ -678,3 +678,109 @@ def test_remove_runs_exception_branch_logs_error(populated_db):
     console = populated_db.remove_runs(["index=not_a_number"])
     populated_db.close_database()
     assert "ERROR" in console
+
+
+# --- _insert_exceptions / get_data exceptions / _remove_run exceptions ---
+
+def test_insert_and_get_exceptions(tmp_path):
+    """Exceptions inserted via _insert_exceptions appear in get_data()."""
+    db = DatabaseProcessor(tmp_path / "exc.db")
+    processor = OutputProcessor(SAMPLE_XML)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    run_start = data["runs"][0][0]
+    data["exceptions"] = [(run_start, "Timeout error", 3)]
+    db.open_database()
+    db.insert_output_data(data, [], "alias", SAMPLE_XML, None, timezone="+02:00")
+    result = db.get_data()
+    db.close_database()
+    assert len(result["exceptions"]) == 1
+    assert result["exceptions"][0]["message"] == "Timeout error"
+    assert result["exceptions"][0]["amount"] == 3
+
+
+def test_insert_exceptions_without_timezone(tmp_path):
+    """Exceptions inserted without timezone get local tz appended by get_data()."""
+    db = DatabaseProcessor(tmp_path / "exc_notz.db")
+    processor = OutputProcessor(SAMPLE_XML)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    run_start = data["runs"][0][0]
+    data["exceptions"] = [(run_start, "Connection refused", 1)]
+    db.open_database()
+    db.insert_output_data(data, [], "alias", SAMPLE_XML, None, timezone="")
+    result = db.get_data()
+    db.close_database()
+    assert len(result["exceptions"]) == 1
+    assert re.match(r".*[+-]\d{2}:\d{2}$", result["exceptions"][0]["run_start"])
+
+
+def test_insert_output_data_without_exceptions_key_defaults_to_empty(tmp_path):
+    """insert_output_data() tolerates output_data lacking an 'exceptions' key."""
+    db = DatabaseProcessor(tmp_path / "exc_missing_key.db")
+    processor = OutputProcessor(SAMPLE_XML)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    del data["exceptions"]
+    db.open_database()
+    db.insert_output_data(data, [], "alias", SAMPLE_XML, None, timezone="+01:00")
+    result = db.get_data()
+    db.close_database()
+    assert result["exceptions"] == []
+
+
+def test_remove_run_deletes_exceptions(tmp_path):
+    """_remove_run also deletes from the exceptions table."""
+    db = DatabaseProcessor(tmp_path / "exc_rm.db")
+    processor = OutputProcessor(SAMPLE_XML)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    run_start = data["runs"][0][0]
+    data["exceptions"] = [(run_start, "Error X", 2)]
+    db.open_database()
+    db.insert_output_data(data, [], "alias", SAMPLE_XML, None, timezone="+01:00")
+    assert len(db.get_data()["exceptions"]) == 1
+    db.remove_runs(["index=0"])
+    assert len(db.get_data()["exceptions"]) == 0
+    db.close_database()
+
+
+def test_remove_run_without_exceptions_table(tmp_path):
+    """get_data() and _remove_run handle a missing exceptions table gracefully
+    (e.g. a custom database class, or a table dropped out-of-band)."""
+    db_path = tmp_path / "no_exc_table.db"
+    conn = sqlite3.connect(str(db_path))
+    conn.execute("""CREATE TABLE runs ("run_start" TEXT, "full_name" TEXT, "name" TEXT,
+        "total" INTEGER, "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER,
+        "elapsed_s" TEXT, "start_time" TEXT, "tags" TEXT, "run_alias" TEXT,
+        "path" TEXT, "metadata" TEXT, "project_version" TEXT, "custom_filters" TEXT,
+        UNIQUE(run_start, full_name))""")
+    conn.execute("""CREATE TABLE suites ("run_start" TEXT, "full_name" TEXT, "name" TEXT,
+        "total" INTEGER, "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER,
+        "elapsed_s" TEXT, "start_time" TEXT, "run_alias" TEXT, "id" TEXT)""")
+    conn.execute("""CREATE TABLE tests ("run_start" TEXT, "full_name" TEXT, "name" TEXT,
+        "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER, "elapsed_s" TEXT,
+        "start_time" TEXT, "message" TEXT, "tags" TEXT, "run_alias" TEXT, "id" TEXT)""")
+    conn.execute("""CREATE TABLE keywords ("run_start" TEXT, "name" TEXT,
+        "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER, "times_run" TEXT,
+        "total_time_s" TEXT, "average_time_s" TEXT, "min_time_s" TEXT,
+        "max_time_s" TEXT, "run_alias" TEXT, "owner" TEXT)""")
+    conn.execute("INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("2020-01-01 00:00:00+00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0",
+         "2020-01-01", "tag", "alias", "/path.xml", "{}", None, None))
+    conn.commit()
+    conn.close()
+    # Opening via DatabaseProcessor creates the exceptions table (all columns already
+    # current, so no migration branches fire) — drop it again to simulate a database
+    # that somehow doesn't have it (e.g. a custom database class).
+    db = DatabaseProcessor(str(db_path))
+    db.open_database()
+    db.connection.cursor().execute("DROP TABLE IF EXISTS exceptions")
+    db.connection.commit()
+    # get_data should handle the missing exceptions table
+    data = db.get_data()
+    assert data["exceptions"] == []
+    # remove_runs should also handle the missing exceptions table
+    db.remove_runs(["index=0"])
+    assert len(db.get_data()["runs"]) == 0
+    db.close_database()

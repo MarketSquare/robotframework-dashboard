@@ -134,6 +134,8 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "keywordMostTimeConsumingGraphTimeline": "Timeline: the slowest keyword per run over time (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the latest run's slowest keywords.",
     "keywordMostUsedGraphBar": "Bar: keywords ranked by total usage frequency across all runs (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the most-used keywords in the latest run.",
     "keywordMostUsedGraphTimeline": "Timeline: keyword usage trends across runs (Top 10; Top 50 in fullscreen). When 'Only Last Run' is on, shows the latest run's most-used keywords.",
+    "keywordExceptionsGraphBar": "Bar: Displays exception messages caught by TRY/EXCEPT blocks, ranked by how many times each exception occurred across all runs. The regular view shows the Top 10; fullscreen mode expands to the Top 50.",
+    "keywordExceptionsGraphTimeline": "Timeline: Displays exception messages caught by TRY/EXCEPT blocks over time. Each row is a distinct exception message; each cell represents a run where that exception occurred, with the count shown.",
     "filterProfileInformation": `Filter Profiles let you save and reapply named filter combinations.
 - Add Profile: name a new profile and choose which filters to include.
 - Save Profile: saves the current filter values under that name.
@@ -212,6 +214,7 @@ const graphKeys = [
     "testStatSkipped", "testStatPassRate", "testStatTotalTime", "testStatAvgTime",
     "keywordStatistics", "keywordTimesRun", "keywordTotalDuration", "keywordAverageDuration",
     "keywordMinDuration", "keywordMaxDuration", "keywordMostFailed", "keywordMostTimeConsuming", "keywordMostUsed",
+    "keywordExceptions",
     "keywordStatExecutions", "keywordStatUnique", "keywordStatPassed", "keywordStatFailed",
     "keywordStatTotalTime", "keywordStatAvgTime",
     "compareStatistics", "compareSuiteDuration", "compareTests",
@@ -225,7 +228,7 @@ graphKeys.forEach(key => {
     informationMap[`${key}Hidden`] = "Show Graph";
 });
 
-["runTable", "suiteTable", "testTable", "keywordTable"].forEach(key => {
+["runTable", "suiteTable", "testTable", "keywordTable", "exceptionTable"].forEach(key => {
     informationMap[`${key}MoveUp`] = "Move Up";
     informationMap[`${key}MoveDown`] = "Move Down";
     informationMap[`${key}Shown`] = "Hide Table";
