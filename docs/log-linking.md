@@ -94,8 +94,8 @@ When processing one output file per run, pass the direct URL:
 
 ```bash
 robotdashboard -u true \
-  -o output-20250313-003006.xml \
-  --logurl https://marketsquare.github.io/robotframework-dashboard/example/tests/robot/resources/outputs/log-20250313-003006.html
+  -o output-20260910-060011.xml \
+  --logurl https://marketsquare.github.io/robotframework-dashboard/example/tests/robot/resources/outputs/log-20260910-060011.html
 ```
 
 The URL is stored in the database for that run. Clicking any graph element for that run opens it directly in a new tab.
@@ -108,8 +108,8 @@ When processing multiple output files at once (via `-f` or repeated `-o`), use `
 
 | File | Alias | Resolved URL |
 |---|---|---|
-| `output_20250313-002134.xml` | `20250313-002134` | `…/log-20250313-002134.html` |
-| `output_20250313-003006.xml` | `20250313-003006` | `…/log-20250313-003006.html` |
+| `output_20260817-021512.xml` | `20260817-021512` | `…/log-20260817-021512.html` |
+| `output_20260910-060011.xml` | `20260910-060011` | `…/log-20260910-060011.html` |
 
 ```bash
 robotdashboard -u true \
