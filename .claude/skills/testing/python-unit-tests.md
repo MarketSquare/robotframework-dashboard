@@ -80,7 +80,7 @@ Unit tests run as a separate `unit-tests` job in `.github/workflows/tests.yml` *
 
 ## Schema migration test
 
-`test_schema_migration_runs_table_from_10_to_14` in `test_database.py` creates a legacy 10-column SQLite database by hand and asserts that `DatabaseProcessor.__init__` automatically migrates all four tables to their current column counts (runs: 15, suites: 11, tests: 12, keywords: 12 — the test name still says `to_14`; update the asserted counts when adding a column, see the `add-db-column` skill). This protects against regressions when future schema columns are added.
+`test_schema_migration_runs_table_from_10_to_14` in `test_database.py` creates a legacy 10-column SQLite database by hand and asserts that `DatabaseProcessor.__init__` automatically migrates all four tables to their current column counts (runs: 15, suites: 11, tests: 12, keywords: 12 — the test name still says `to_14`; update the asserted counts when adding a column). This protects against regressions when future schema columns are added.
 
 ## Analyzing and fixing failures
 

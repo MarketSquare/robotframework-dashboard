@@ -14,7 +14,6 @@ Project skills live in `.claude/skills/<name>/SKILL.md` and are auto-discovered.
 | `coding-standards` | Python/JS/HTML/CSS style, JS naming (functions `snake_case`, variables `camelCase`), where things live in `js/` |
 | `filtering-and-settings` | Filter modal and pipeline, overview→dashboard pre-filters, settings object, localStorage, JSON config, layout editor |
 | `dashboard-graphs` | Pages, Chart.js architecture, which module owns which graph, **checklist for adding a graph** |
-| `add-db-column` | Checklist for threading a new runs/suites/tests/keywords column through parse → DB → migration → JS → tests → docs |
 | `add-cli-argument` | Checklist for a new `--flag`: argparse, validation, wiring, server/listener parity, CLI tests + `help.txt`, docs |
 | `js-features` | Checklist for adding a widget type / persisted feature / modal |
 | `js-bundling` | How JS/CSS get inlined into the HTML by Python, CDN vs offline libraries, data encoding |

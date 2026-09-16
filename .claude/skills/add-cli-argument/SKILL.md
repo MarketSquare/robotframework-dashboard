@@ -41,7 +41,7 @@ input_group.add_argument(
 | Consumer | Change |
 |---|---|
 | `main.py` | Pass `arguments.my_flag` into `RobotDashboard(...)` — **positional**, so append at the end and mirror the order in `RobotDashboard.__init__` |
-| `robotdashboard.py` | New `__init__` parameter with a default; store on `self`; use it in the relevant step (`process_outputs`, `create_dashboard`, `remove_outputs`, …). If it ends up in the DB → `add-db-column` skill |
+| `robotdashboard.py` | New `__init__` parameter with a default; store on `self`; use it in the relevant step (`process_outputs`, `create_dashboard`, `remove_outputs`, …). If it ends up in the DB, follow `custom_filters` (commit `759b798`) through `queries.py`, the migration chain in `database.py`, `abstractdb.py`, and `tables.js` |
 | `dashboard.py` | If it changes the generated HTML, add a `placeholder_*` token in `templates/dashboard.html` and the replacement in `generate_dashboard` — never rename existing tokens |
 | `server.py` | Flags that affect uploads or generation usually need a server-side equivalent: request-model field on `AddOutput`/`GetOutput`, a form field on `/add-output-file`, and the admin page (`templates/admin.html`, `js/admin_page/admin_api.js`) |
 | `robotdashboardlistener.py` | Per-run inputs (tags, version, custom filters, log URL…) should be settable from the listener too — keep the argument table in `docs/listener-integration.md` in sync |
