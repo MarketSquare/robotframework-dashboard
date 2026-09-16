@@ -10,53 +10,62 @@
   created database: '*.db'
 ======================================================================================
  2. Processing output XML(s)
-  Processing output XML 'output-20250313-002134.xml'
-  Processed output XML 'output-20250313-002134.xml' in * seconds
-  Processing output XML 'output-20250313-002151.xml'
-  Processed output XML 'output-20250313-002151.xml' in * seconds
-  Processing output XML 'output-20250313-002222.xml'
-  Processed output XML 'output-20250313-002222.xml' in * seconds
-  Processing output XML 'output-20250313-002257.xml'
-  Processed output XML 'output-20250313-002257.xml' in * seconds
-  Processing output XML 'output-20250313-002338.xml'
-  Processed output XML 'output-20250313-002338.xml' in * seconds
-  Processing output XML 'output-20250313-002400.xml'
-  Processed output XML 'output-20250313-002400.xml' in * seconds
-  Processing output XML 'output-20250313-002431.xml'
-  Processed output XML 'output-20250313-002431.xml' in * seconds
-  Processing output XML 'output-20250313-002457.xml'
-  Processed output XML 'output-20250313-002457.xml' in * seconds
-  Processing output XML 'output-20250313-002528.xml'
-  Processed output XML 'output-20250313-002528.xml' in * seconds
-  Processing output XML 'output-20250313-002549.xml'
-  Processed output XML 'output-20250313-002549.xml' in * seconds
-  Processing output XML 'output-20250313-002636.xml'
-  Processed output XML 'output-20250313-002636.xml' in * seconds
-  Processing output XML 'output-20250313-002703.xml'
-  Processed output XML 'output-20250313-002703.xml' in * seconds
-  Processing output XML 'output-20250313-002739.xml'
-  Processed output XML 'output-20250313-002739.xml' in * seconds
-  Processing output XML 'output-20250313-002915.xml'
-  Processed output XML 'output-20250313-002915.xml' in * seconds
-  Processing output XML 'output-20250313-003006.xml'
-  Processed output XML 'output-20250313-003006.xml' in * seconds
+  Processing output XML 'output-20260817-021512.xml'
+  Processed output XML 'output-20260817-021512.xml' in * seconds
+  Processing output XML 'output-20260817-060004.xml'
+  Processed output XML 'output-20260817-060004.xml' in * seconds
+  Processing output XML 'output-20260818-021545.xml'
+  Processed output XML 'output-20260818-021545.xml' in * seconds
+  Processing output XML 'output-20260819-144031.xml'
+  Processed output XML 'output-20260819-144031.xml' in * seconds
+  Processing output XML 'output-20260820-060009.xml'
+  Processed output XML 'output-20260820-060009.xml' in * seconds
+  Processing output XML 'output-20260821-021503.xml'
+  Processed output XML 'output-20260821-021503.xml' in * seconds
+  Processing output XML 'output-20260822-101527.xml'
+  Processed output XML 'output-20260822-101527.xml' in * seconds
+  Processing output XML 'output-20260824-090558.xml'
+  Processed output XML 'output-20260824-090558.xml' in * seconds
+  Processing output XML 'output-20260825-060016.xml'
+  Processed output XML 'output-20260825-060016.xml' in * seconds
+  Processing output XML 'output-20260826-021522.xml'
+  Processed output XML 'output-20260826-021522.xml' in * seconds
+  Processing output XML 'output-20260828-162040.xml'
+  Processed output XML 'output-20260828-162040.xml' in * seconds
+  Processing output XML 'output-20260828-174502.xml'
+  Processed output XML 'output-20260828-174502.xml' in * seconds
+  Processing output XML 'output-20260901-021519.xml'
+  Processed output XML 'output-20260901-021519.xml' in * seconds
+  Processing output XML 'output-20260902-060033.xml'
+  Processed output XML 'output-20260902-060033.xml' in * seconds
+  Processing output XML 'output-20260904-113007.xml'
+  Processed output XML 'output-20260904-113007.xml' in * seconds
+  Processing output XML 'output-20260905-130049.xml'
+  Processed output XML 'output-20260905-130049.xml' in * seconds
+  Processing output XML 'output-20260909-021536.xml'
+  Processed output XML 'output-20260909-021536.xml' in * seconds
+  Processing output XML 'output-20260910-060011.xml'
+  Processed output XML 'output-20260910-060011.xml' in * seconds
 ======================================================================================
  3. Listing all available runs in the database
-  Run 0   | 2025-03-13 00:21:34.707148+??:?? | Tests
-  Run 1   | 2025-03-13 00:21:51.185366+??:?? | Tests
-  Run 2   | 2025-03-13 00:22:22.304104+??:?? | Testsuites
-  Run 3   | 2025-03-13 00:22:57.472888+??:?? | Tests
-  Run 4   | 2025-03-13 00:23:38.413294+??:?? | Other
-  Run 5   | 2025-03-13 00:24:00.827779+??:?? | Tests
-  Run 6   | 2025-03-13 00:24:31.912429+??:?? | Testsuites
-  Run 7   | 2025-03-13 00:24:57.422440+??:?? | Tests
-  Run 8   | 2025-03-13 00:25:28.306253+??:?? | Tests
-  Run 9   | 2025-03-13 00:25:49.609465+??:?? | Tests
-  Run 10  | 2025-03-13 00:26:36.304669+??:?? | Other
-  Run 11  | 2025-03-13 00:27:03.713995+??:?? | Testsuites
-  Run 12  | 2025-03-13 00:27:39.871333+??:?? | Tests
-  Run 13  | 2025-03-13 00:29:15.926420+??:?? | Tests
-  Run 14  | 2025-03-13 00:30:06.726165+??:?? | Tests
+  Run 0   | 2026-08-17 02:15:12+??:?? | WebshopUI
+  Run 1   | 2026-08-17 06:00:04.123457+??:?? | WebshopAPI
+  Run 2   | 2026-08-18 02:15:45.246914+??:?? | WebshopUI
+  Run 3   | 2026-08-19 14:40:31.370371+??:?? | WebshopUI
+  Run 4   | 2026-08-20 06:00:09.493828+??:?? | WebshopAPI
+  Run 5   | 2026-08-21 02:15:03.617285+??:?? | WebshopUI
+  Run 6   | 2026-08-22 10:15:27.740742+??:?? | WebshopAPI
+  Run 7   | 2026-08-24 09:05:58.864199+??:?? | WebshopUI
+  Run 8   | 2026-08-25 06:00:16.987656+??:?? | WebshopAPI
+  Run 9   | 2026-08-26 02:15:22.111113+??:?? | WebshopUI
+  Run 10  | 2026-08-28 16:20:40.234570+??:?? | WebshopUI
+  Run 11  | 2026-08-28 17:45:02.358027+??:?? | WebshopAPI
+  Run 12  | 2026-09-01 02:15:19.481484+??:?? | WebshopUI
+  Run 13  | 2026-09-02 06:00:33.604941+??:?? | WebshopAPI
+  Run 14  | 2026-09-04 11:30:07.728398+??:?? | WebshopUI
+  Run 15  | 2026-09-05 13:00:49.851855+??:?? | WebshopAPI
+  Run 16  | 2026-09-09 02:15:36.975312+??:?? | WebshopUI
+  Run 17  | 2026-09-10 06:00:11.098769+??:?? | WebshopAPI
 ======================================================================================
  4. Removing runs from the database
   skipping step

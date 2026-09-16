@@ -7,8 +7,9 @@ from robotframework_dashboard.robotdashboard import RobotDashboard
 from robotframework_dashboard.arguments import LogRemovedConfig
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
-SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
-SAMPLE_XML_2 = OUTPUTS_DIR / "output-20250313-002151.xml"
+ALL_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))
+SAMPLE_XML = ALL_XML[0]
+SAMPLE_XML_2 = ALL_XML[1]
 
 
 def _make_rd(tmp_path, **kwargs):
@@ -216,7 +217,7 @@ def test_update_output_path_returns_string(tmp_path):
     rd = _make_rd(tmp_path)
     rd.initialize_database()
     rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), [])])
-    console = rd.update_output_path("log-20250313-002134.html")
+    console = rd.update_output_path(SAMPLE_XML.name.replace("output-", "log-").replace(".xml", ".html"))
     assert isinstance(console, str)
 
 

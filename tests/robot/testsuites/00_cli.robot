@@ -25,10 +25,10 @@ Validate RobotDashboard version
     Validate CLI    command=robotdashboard -d version.db --version    expected=version
 
 Validate RobotDashboard o
-    Validate CLI    command=robotdashboard -d o.db -o ${OUTPUTS_FOLDER}/output-20250313-002222.xml:tag1   expected=outputpath
+    Validate CLI    command=robotdashboard -d o.db -o ${OUTPUTS_FOLDER}/output-20260818-021545.xml:tag1   expected=outputpath
 
 Validate RobotDashboard outputpath
-    Validate CLI    command=robotdashboard -d outputpath.db --outputpath ${OUTPUTS_FOLDER}/output-20250313-002222.xml
+    Validate CLI    command=robotdashboard -d outputpath.db --outputpath ${OUTPUTS_FOLDER}/output-20260818-021545.xml
     ...       expected=outputpath
 
 Validate RobotDashboard f
@@ -39,12 +39,12 @@ Validate RobotDashboard outputfolderpath
 
 Validate RobotDashboard r
     Validate CLI    command=robotdashboard -d r.db --outputfolderpath ${OUTPUTS_FOLDER}
-    Validate CLI    command=robotdashboard -d r.db -r "index=0:3;-1;6,run_start=2025-03-13 00:27:39.871333,alias=abc,tag=tag1"    expected=removerun
+    Validate CLI    command=robotdashboard -d r.db -r "index=0:3;-1;6,run_start=2026-09-01 02:15:19.481484,alias=abc,tag=tag1"    expected=removerun
 
 Validate RobotDashboard removerun
     Validate CLI    command=robotdashboard -d removerun.db --outputfolderpath ${OUTPUTS_FOLDER}
     Validate CLI
-    ...    command=robotdashboard -d removerun.db --removerun "index=0:3;-1;6" --removerun "run_start=2025-03-13 00:27:39.871333" --removerun alias=abc,tag=tag1
+    ...    command=robotdashboard -d removerun.db --removerun "index=0:3;-1;6" --removerun "run_start=2026-09-01 02:15:19.481484" --removerun alias=abc,tag=tag1
     ...    expected=removerun
 
 Validate RobotDashboard d
