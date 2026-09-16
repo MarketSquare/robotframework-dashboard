@@ -82,6 +82,29 @@ Versions Filter Search Selects Matching Versions
     Should Not Be True    ${stateNone}
     Close Filter Dialog
 
+Versions Filter Search Clear Button Keeps Selection
+    Open Filter Dialog
+    Click    selector=id=selectProjectVersion
+    Wait For Elements State    selector=id=projectVersionCheckBoxesFilterClear    state=hidden
+    Fill Text    selector=id=projectVersionCheckBoxesFilter    txt=1.
+    Wait For Elements State    selector=id=projectVersionCheckBoxesFilterClear    state=visible
+    Wait For Elements State    selector=id=projectVersionInputItemNone    state=hidden
+    Click    selector=id=projectVersionCheckBoxesFilterClear
+    Wait For Elements State    selector=id=projectVersionCheckBoxesFilterClear    state=hidden
+    Wait For Elements State    selector=id=projectVersionInputItemNone    state=visible
+    Get Property    selector=id=projectVersionCheckBoxesFilter    property=value    assertion_operator===    assertion_expected=${EMPTY}
+    ${state10}    Get Checkbox State    selector=id=projectVersionInputItem1.0
+    ${state11}    Get Checkbox State    selector=id=projectVersionInputItem1.1
+    ${state12}    Get Checkbox State    selector=id=projectVersionInputItem1.2
+    ${stateAll}    Get Checkbox State    selector=id=projectVersionInputItemAll
+    ${stateNone}    Get Checkbox State    selector=id=projectVersionInputItemNone
+    Should Be True    ${state10}
+    Should Be True    ${state11}
+    Should Be True    ${state12}
+    Should Not Be True    ${stateAll}
+    Should Not Be True    ${stateNone}
+    Close Filter Dialog
+
 Add Filter Profile With Date Filters
     Set Date Filter    fromDate=03132025    fromTime=1225am    toDate=04012025    toTime=1159pm
 

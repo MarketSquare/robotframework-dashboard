@@ -21,8 +21,6 @@ const informationMap = {
 - Average Pass Rate: mean pass rate across all runs
 See Settings > Overview for display options.`,
     "overviewLatestInformation": "Shows the latest run per project. Click a card to apply a project filter and open the dashboard.",
-    "overviewLatestPercentageInfo": "Duration color threshold: green if the run is at least X% faster than average, red if X% slower.",
-    "overviewLatestVersionsInfo": "Filter overview cards by project version. 'All' shows all versions.",
     "overviewLatestSortInfo": "Sort project cards by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.",
     "unifiedStatisticsInformation": `Unified view combining data from all projects into one dashboard.
 - Use the top filters to focus on specific projects, versions, or timeframes.
@@ -149,6 +147,8 @@ It helps identify tests with inconsistent execution times, which might be flaky 
 - A dot indicates the filter is active.`,
     "filterVersionsInformation": `Filter by project version. 'All' disables the filter.
 - 'None' covers runs without a version label.
+- Typing in the search box selects every matching version (e.g. "1." selects all 1.x).
+- The X in the search box clears it while keeping the current selection.
 - A dot indicates the filter is active.`,
     "filterFromDateInformation": "Show only runs that started on or after this date.",
     "filterFromTimeInformation": "Show only runs that started at or after this time (combined with From Date).",

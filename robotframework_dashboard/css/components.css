@@ -115,6 +115,34 @@
   display: block;
 }
 
+.filter-search-wrapper {
+  position: relative;
+}
+
+.filter-search-wrapper .form-control {
+  padding-right: 1.25rem;
+}
+
+.filter-search-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.5;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.filter-search-clear:hover {
+  opacity: 1;
+}
+
 .filter-profile-bar {
   border-bottom: 1px solid var(--bs-border-color);
 }

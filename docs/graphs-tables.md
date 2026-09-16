@@ -32,8 +32,7 @@ The Overview page supports several display toggles (configured in [Settings - Ov
 | **Projects by Name** | Groups runs by their project name. |
 | **Projects by Tag** | Groups runs by `project_` tags instead of name. See [Project Tagging](/advanced-cli-examples#project-tagging). |
 | **Prefixes** | Shows or hides the `project_` prefix text on tag-based names. |
-| **Percentage Filters** | Enables the duration percentage threshold control for color-coding. |
-| **Version Filters** | Enables per-project version filtering with checkbox selectors. |
+| **Duration comparison percentage** | Threshold used to color-code run durations (faster/slower than average). |
 | **Sort Filters** | Enables sort controls on the Overview page. |
 
 ## Graph Switch Persistence

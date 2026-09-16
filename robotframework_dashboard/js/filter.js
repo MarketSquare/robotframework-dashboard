@@ -942,12 +942,16 @@ function setup_filter_checkbox_handler_listeners(
 // autoSelectMatches: while the search box has text, check every matching checkbox and
 // uncheck the rest (e.g. typing "1." selects every 1.x version in one go) instead of only
 // narrowing which rows are visible. Clearing the search box leaves the selection as-is.
+// An optional ".filter-search-clear" button next to the search box empties it in one step
+// (unlike deleting characters one by one, which re-runs the auto-select on every keystroke).
 function setup_filter_checkbox_subfilter(parentElementId, autoSelectMatches = false) {
     const container = document.getElementById(parentElementId);
     const searchBar = container.querySelector("input.form-control");
+    const clearButton = container.querySelector(".filter-search-clear");
     const checkBoxRows = container.querySelectorAll("li.list-group-item-action");
-    searchBar.addEventListener("input", () => {
+    const apply_search = () => {
         const filterText = searchBar.value.toLowerCase();
+        if (clearButton) clearButton.hidden = !filterText;
         checkBoxRows.forEach(row => {
             const checkbox = row.querySelector("input.form-check-input");
             const rowValue = checkbox.value.toLowerCase();
@@ -958,6 +962,12 @@ function setup_filter_checkbox_subfilter(parentElementId, autoSelectMatches = fa
                 checkbox.dispatchEvent(new Event('change', { bubbles: true }));
             }
         });
+    };
+    searchBar.addEventListener("input", apply_search);
+    clearButton?.addEventListener("click", () => {
+        searchBar.value = "";
+        apply_search();
+        searchBar.focus();
     });
 }
 
@@ -998,6 +1008,7 @@ function clear_custom_filters() {
 
 function clear_version_filter() {
     document.getElementById("projectVersionCheckBoxesFilter").value = "";
+    document.getElementById("projectVersionCheckBoxesFilterClear").hidden = true;
     const versionElements = document.getElementById("projectVersionList").getElementsByTagName("input");
     for (const input of versionElements) {
         input.checked = false;

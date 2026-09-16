@@ -528,9 +528,15 @@
                                         </div>
                                         <div id="projectVersionCheckBoxes" class="filterCheckBoxes mt-2"
                                             style="max-height: 50vh; overflow-y: auto;">
-                                            <input id="projectVersionCheckBoxesFilter"
-                                                class="form-control form-control-sm" type="text"
-                                                placeholder="Filter... (selects matches)">
+                                            <div class="filter-search-wrapper">
+                                                <input id="projectVersionCheckBoxesFilter"
+                                                    class="form-control form-control-sm" type="text"
+                                                    placeholder="Type to select...">
+                                                <button type="button" class="filter-search-clear"
+                                                    id="projectVersionCheckBoxesFilterClear"
+                                                    aria-label="Clear search" title="Clear search (keeps selection)"
+                                                    hidden>&times;</button>
+                                            </div>
                                             <ul class="list-group" id="projectVersionList">
                                             </ul>
                                         </div>

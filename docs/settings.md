@@ -95,7 +95,7 @@ This allows you to include or exclude specific libraries based on your dashboard
 
 ## Overview Settings (Overview Tab)
 
-The **Overview** tab controls which sections and filters are visible on the Overview page. These toggles let you tailor the Overview layout to your needs.
+The **Overview** tab controls which sections are visible on the Overview page and how projects are grouped and color-coded. These toggles let you tailor the Overview layout to your needs.
 
 ### Details
 
@@ -106,8 +106,7 @@ The **Overview** tab controls which sections and filters are visible on the Over
 | **Projects by Name** | On | Group and display projects by their run name on the Overview. |
 | **Projects by Tag** | Off | Group and display projects by custom `project_` tags. See [Project Tagging](/advanced-cli-examples#project-tagging). |
 | **Display Prefixes** | On | Show the `project_` prefix text on tag-based project names. |
-| **Percentage Filters** | On | Show the duration percentage threshold filter for color-coding run durations. |
-| **Version Filters** | On | Show the version filter allowing per-project version selection. |
+| **Duration comparison percentage** | 20% | Threshold for color-coding run durations on all project bars: green if a run is at least X% faster than average, red if X% slower. |
 | **Sort Filters** | On | Show the sort filter controls on the Overview. |
 
 ### Saving Overview Settings

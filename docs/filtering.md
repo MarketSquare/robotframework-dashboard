@@ -10,12 +10,13 @@ RobotFramework Dashboard provides flexible filtering options across different pa
 
 ## Overview Page
 
-The **Overview** page does not have global filters. However, it offers a few **display settings**:
+The **Overview** page uses the same **global filters** as the Dashboard page (see below): open the filter modal from the top navigation bar and every project bar, the Latest Runs bar and the Total Stats bar reflect the filtered set of runs. A dot on the filter icon indicates a filter is active.
 
-- **Display By Name** – Toggle whether to display the names of projects in the statistics.
-- **Display By Tag** – Toggle whether to use custom project tags if defined in your test run metadata. (See [Advanced CLI & Examples](advanced-cli-examples.md#project-tagging) for more information on Tags!)
-- **Duration Percentage Threshold** – Adjust the percentage threshold used to color-code durations (faster/slower runs).
-- **Select Versions** – Filter the displayed runs by their associated versions.
+In addition, the Overview offers a few **display settings** under **Settings > Overview**:
+
+- **Projects by Name** – Toggle whether to display the names of projects in the statistics.
+- **Projects by Tag** – Toggle whether to use custom project tags if defined in your test run metadata. (See [Advanced CLI & Examples](advanced-cli-examples.md#project-tagging) for more information on Tags!)
+- **Duration comparison percentage** – Adjust the percentage threshold used to color-code durations (faster/slower runs).
 
 > These settings affect only the way the statistics are presented on the Overview page.
 
@@ -52,7 +53,8 @@ Global filters are applied to the entire dashboard, affecting all sections and g
 - **All** (ticked by default) means no version filter is applied.
 - **None** covers runs that have no version label set.
 - A dot next to the label indicates the filter is active.
-- Use the search box inside the dropdown to quickly find a version by name.
+- Typing in the search box inside the dropdown selects every matching version and unselects the rest (e.g. `1.` selects all `1.x` versions in one go).
+- Click the **X** in the search box to clear it while keeping the current selection. Deleting characters one by one instead re-runs the matching on every keystroke.
 
 #### 4. From Date / From Time
 
@@ -214,7 +216,7 @@ The **Tables** page allows for detailed inspection of raw test data and uses the
 
 | Page | Filter support |
 |------|---------------|
-| **Overview** | Display-only settings (name, tag, duration threshold, versions) |
+| **Overview** | Same global filters as Dashboard + display settings (name, tag, duration threshold) |
 | **Dashboard** | Full global filters + section-specific filters + Filter Profiles |
 | **Compare** | Run selection dropdowns + suite paths toggle |
 | **Tables** | Same global filters as Dashboard |
