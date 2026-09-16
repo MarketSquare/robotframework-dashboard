@@ -1,5 +1,6 @@
 ---
-description: Use when adding, modifying, or debugging JavaScript modules, CSS, external dependencies, or the HTML embedding process.
+name: js-bundling
+description: How dashboard JS and CSS are bundled into the single HTML file by the Python DependencyProcessor (import-graph discovery, topological sort, import/export stripping), how third-party libraries are switched between CDN and offline copies, and how run data is zlib+base64 embedded and decoded. Use when adding a JS/CSS file, upgrading a library, debugging a missing module in the generated HTML, or working on dependencies.py / dashboard.py.
 ---
 
 # JavaScript and CSS Bundling
@@ -95,42 +96,7 @@ Current third-party libraries:
 
 ## JS Module Structure
 
-```
-js/
-  variables/
-    data.js          ← decodes compressed runs/suites/tests/keywords data
-    globals.js       ← mutable global state (active filters, selected runs)
-    settings.js      ← settings state
-    graphs.js        ← graph instance registry
-    graphmetadata.js ← graph metadata (title, tab, build function)
-    chartconfig.js   ← Chart.js base config factory
-    information.js   ← DOM element lookups
-    svg.js           ← inline SVG icon strings
-  graph_creation/
-    chart_factory.js ← create_chart() / update_chart() — Chart.js lifecycle
-    overview.js      ← overview page chart builders
-    run.js           ← run-level chart builders
-    suite.js         ← suite-level chart builders
-    test.js          ← test-level chart builders
-    keyword.js       ← keyword-level chart builders
-    compare.js       ← comparison page chart builders
-    tables.js        ← DataTables initializers
-    config_helpers.js
-    all.js           ← calls all tab section builders
-  graph_data/        ← pure data transformation (statistics, duration, heatmap, donut, ...)
-  common.js          ← shared utilities
-  database.js        ← DB statistics display
-  eventlisteners.js  ← modal/filter/settings event wiring
-  filter.js          ← filtering logic applied to global data arrays
-  information.js     ← element setup helpers
-  layout.js          ← GridStack layout initialization
-  localstorage.js    ← settings/layout persistence
-  log.js             ← log.html link generation
-  menu.js            ← navbar and tab setup
-  theme.js           ← dark/light theme switching
-  main.js            ← startup entry point (imports and calls all setup functions)
-  admin_page/        ← separate bundle for the FastAPI /admin page
-```
+The per-file layout of `js/` is documented in the `coding-standards` skill (kept in one place so it cannot drift). `js/main.js` is the root of the import graph; `js/admin_page/` is a separate bundle.
 
 ---
 

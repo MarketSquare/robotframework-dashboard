@@ -7,6 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.2.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.2.0) - 2026-09-14
+
+### Added
+- Custom link widgets — add CRUD-managed link cards to the dashboard layout for quick navigation to external resources
+- "Move to First" / "Move to Last" controls for graphs, stat widgets, link widgets, and custom sections in Customize view mode
+- Section header action icons replace the old "+ Add..." drop tiles, and the Add Stat Widget modal gained a "Multiple" tab for adding several stats at once with shared or random colors
+- Tag-scoped output retention — `--limit` and `--age` based run removal can now be scoped to specific tags, keeping trimmed runs limited to the projects/tags you choose
+- Runs are now logged to a `.jsonl` file before being removed from the database, preserving a record of pruned runs
+- Relative run time on Overview run cards — run timestamps now show a human-readable relative time (e.g. "15 minutes ago") with the exact timestamp available on hover
+- The `robotdashboardlistener` now ships inside the `robotframework-dashboard` package itself, and both the listener and `robotdashboardscript.py` accept a host URL without a port
+- `log_url` support for the `/add-output-file` server endpoint, matching the existing CLI `--logurl` behavior
+- `/add-log-file` now accepts `report*` filenames — the file is saved and a warning (not an error) is returned if no matching log file is found yet
+
+### Fixed
+- The Compare page's "Only Changes" filter no longer blanks the Test statistics graph
+- Log file links now resolve correctly against `filteredRuns` when local time mode is enabled
+- Output XML processing no longer fails on suites/tests that contain no keywords
+
+---
+
 ## [2.1.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.1.0) - 2026-05-25
 
 ### Added

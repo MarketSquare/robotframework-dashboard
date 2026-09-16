@@ -66,7 +66,9 @@ def _parse_args():
     parser.add_argument(
         "--port",
         default="8543",
-        help="Dashboard server port (default: 8543).",
+        help="Dashboard server port (default: 8543). Pass an empty string ('') to omit the port "
+        "from the URL entirely, for servers reachable on the protocol's default port (80/443) "
+        "or behind a reverse proxy that doesn't expose one.",
     )
     parser.add_argument(
         "--protocol",
@@ -112,6 +114,14 @@ def _parse_ssl_verify(sslverify: str):
     return sslverify  # treat as path to CA bundle
 
 
+def _base_url(protocol, host, port):
+    """Build the server base URL, omitting the port when none was provided
+    (e.g. servers reachable on the protocol's default port or behind a reverse proxy)"""
+    if port in (None, "", "none", "None"):
+        return f"{protocol}://{host}"
+    return f"{protocol}://{host}:{port}"
+
+
 def _print_pusher(value: str):
     print(f"robotdashboardscript: {value}")
 
@@ -144,7 +154,7 @@ def _add_output_to_server(output_path: str, tags, version, customfilters, host, 
             )
         }
         response = post(
-            f"{protocol}://{host}:{port}/add-output-file",
+            f"{_base_url(protocol, host, port)}/add-output-file",
             data=form_data,
             files=files,
             auth=auth,
@@ -152,7 +162,7 @@ def _add_output_to_server(output_path: str, tags, version, customfilters, host, 
         )
     except ConnectionError:
         _print_pusher(
-            f"ERROR the server is not running or the url {protocol}://{host}:{port}/add-output-file is not correct!"
+            f"ERROR the server is not running or the url {_base_url(protocol, host, port)}/add-output-file is not correct!"
         )
         exit(1)
     except Exception as e:
@@ -184,14 +194,14 @@ def _upload_log_file(log_path: str, host, port, protocol, ssl_verify, auth):
             )
         }
         response = post(
-            f"{protocol}://{host}:{port}/add-log-file",
+            f"{_base_url(protocol, host, port)}/add-log-file",
             files=files,
             auth=auth,
             verify=ssl_verify,
         )
     except ConnectionError:
         _print_pusher(
-            f"ERROR the server is not running or the url {protocol}://{host}:{port}/add-log-file is not correct!"
+            f"ERROR the server is not running or the url {_base_url(protocol, host, port)}/add-log-file is not correct!"
         )
         return
     except Exception as e:
@@ -211,14 +221,14 @@ def _remove_runs_over_limit(limit: int, host, port, protocol, ssl_verify, auth):
     body = {"limit": limit}
     try:
         response = delete(
-            f"{protocol}://{host}:{port}/remove-outputs",
+            f"{_base_url(protocol, host, port)}/remove-outputs",
             json=body,
             auth=auth,
             verify=ssl_verify,
         )
     except ConnectionError:
         _print_pusher(
-            f"ERROR the server is not running or the url {protocol}://{host}:{port}/remove-outputs is not correct!"
+            f"ERROR the server is not running or the url {_base_url(protocol, host, port)}/remove-outputs is not correct!"
         )
         return
     if response.status_code == 200:

@@ -37,6 +37,15 @@ pip install robotframework-dashboard[all]
 
 > **Note:** `[server]` and `[all]` currently install the same extras (fastapi-offline, uvicorn, python-multipart). Use either one.
 
+### Listener Integration
+
+The [listener](/listener-integration.md) that auto-uploads results to a running server ships inside the base package — no extra install step and no extra dependencies. It talks HTTP using only the Python standard library:
+
+```bash
+pip install robotframework-dashboard
+robot --listener robotframework_dashboard.robotdashboardlistener tests.robot
+```
+
 ### Dependencies
 This will automatically install the required dependencies:
 - robotframework>=6.0 – the core testing framework

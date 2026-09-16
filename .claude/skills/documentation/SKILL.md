@@ -1,5 +1,6 @@
 ---
-description: Use when adding, updating, or reviewing documentation — new features, CLI options, filters, settings, graphs, server, or any user-facing behaviour change. Covers docs/, README.md, CONTRIBUTING.md, and setup.py long_description.
+name: documentation
+description: Where user-facing documentation lives (docs/ VitePress site, README.md, CONTRIBUTING.md, setup.py long_description), the docs page map, and the checklist for keeping them in sync. Use whenever a CLI flag, filter, setting, graph, server endpoint, or other user-visible behaviour is added or changed.
 ---
 
 # Documentation
@@ -40,6 +41,8 @@ Served at `https://marketsquare.github.io/robotframework-dashboard/`. Source is 
 | `docs/dashboard-server.md` | Dashboard Server | `--server` flag, REST API overview, authentication, auto-update, log linking via server |
 | `docs/log-linking.md` | Log Linking | How to configure log paths so the dashboard links back to Robot Framework HTML logs |
 | `docs/listener-integration.md` | Listener Integration | Using `robotdashboardlistener.py` to auto-update the dashboard after every test run |
+| `docs/architecture.md` | Architecture | Pipeline and component diagrams (mermaid) — keep in sync with CLAUDE.md when the pipeline changes |
+| `docs/performance.md` | Performance | Benchmarks, scale data, tips for large databases |
 | `docs/custom-database-class.md` | Custom Database Class | Implementing `AbstractDatabaseProcessor`, `--databaseclass` flag, example MySQL class |
 | `docs/contributions.md` | Contributions | How to contribute, issue/PR guidelines |
 

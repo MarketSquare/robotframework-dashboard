@@ -1,5 +1,6 @@
 ---
-description: Use when the user says "Do the release actions" or asks to prepare a new release. Covers all steps to bump the version, update tests, regenerate the example, update the changelog, produce Slack notes, and create a skill.
+name: release
+description: "Step-by-step release procedure: bump version.py and setup.py, update the CLI version fixture, regenerate example/robot_dashboard.html and example/robot_results.db, write the CHANGELOG entry, and produce Slack release notes. Use when the user says \"do the release actions\" or asks to prepare/cut a release."
 ---
 
 # Release Actions
@@ -60,14 +61,14 @@ copy robot_dashboard.html example\robot_dashboard.html
 ```
 
 ```bash
-# Linux / macOS
+# Linux / macOS / Git Bash — there is no example.sh; run the same python commands as example.bat
 rm -f robot_results.db robot_dashboard.html
-bash scripts/example.sh
+tr -d '\r' < scripts/example.bat | tr '\\' '/' | bash    # strip CRLF, flip backslashes in paths
 cp robot_results.db example/robot_results.db
 cp robot_dashboard.html example/robot_dashboard.html
 ```
 
-The `scripts/example.bat` (or `.sh`) script imports all test `output.xml` files with various tags and options to create a rich example dashboard.
+`scripts/example.bat` imports all test `output.xml` files with various tags, versions, timezones and custom filters to create a rich example dashboard. The commands are plain `python -m robotframework_dashboard.main …` lines with Windows-style paths, hence the `tr` translation above.
 
 ---
 
@@ -149,9 +150,9 @@ Example dashboard: https://marketsquare.github.io/robotframework-dashboard/examp
 
 ---
 
-## Step 6 — Update the copilot instructions (optional)
+## Step 6 — Update CLAUDE.md (optional)
 
-If a **new skill file** was created as part of this release, add it to the skills table in `.github/copilot-instructions.md`.
+If a **new skill** was created under `.claude/skills/` as part of this release, add it to the skills table in `CLAUDE.md`.
 
 ---
 

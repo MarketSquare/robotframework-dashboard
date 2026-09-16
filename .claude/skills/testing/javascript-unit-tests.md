@@ -1,21 +1,17 @@
----
-name: js-unit-tests
-description: 'Run, analyze, fix, and write JavaScript unit tests in tests/javascript/. Use when: working on, running, or reasoning about JS unit tests; JS tests are failing; adding tests for JS modules; debugging Vitest errors. DO NOT USE FOR: Python unit tests (tests/python/), acceptance tests (tests/robot/), or Robot Framework test suites.'
-argument-hint: 'Optional: specific test file or test name to focus on'
----
-
 # JavaScript Unit Tests
+
+Deep reference for `tests/javascript/`. Runner and tier overview: [SKILL.md](SKILL.md).
 
 ## How to run
 
 **Windows:**
 ```bat
-scripts\jstests.bat
+scripts\javascript-tests.bat
 ```
 
 **Linux / macOS:**
 ```bash
-bash scripts/jstests.sh
+bash scripts/javascript-tests.sh
 ```
 
 Both scripts run `npx vitest run --reporter=verbose`.
@@ -44,6 +40,7 @@ tests/javascript/
 ├── common.test.js
 ├── filter.test.js
 ├── localstorage.test.js
+├── log.test.js
 └── graph_data/       # one file per graph_data source module
     ├── donut.test.js
     ├── failed.test.js
@@ -57,9 +54,10 @@ tests/javascript/
 
 | File | What it covers |
 |---|---|
-| `common.test.js` | `format_duration`, `strip_tz_suffix`, `format_name` |
-| `filter.test.js` | `filter_data_by_name`, `filter_data_by_tag`, `merge_filter_profile`, `get_searchable_keys`, `convert_timezone` |
-| `localstorage.test.js` | `merge_deep`, `merge_view`, `merge_view_section_or_graph`, `merge_theme_colors`, `merge_layout`, `collect_allowed_graphs` |
+| `common.test.js` | `format_duration`, `strip_tz_suffix`, `get_next_folder_level`, `compare_to_average`, case converters, `parse_run_start`, `format_relative_time`, `format_run_start_exact`, `transform_file_path`, `combine_paths`, `debounce` |
+| `filter.test.js` | Re-implemented pure logic from `filter.js` (`sort_wall_clock`, `remove_milliseconds`, `remove_timezones`, `filter_data`) plus the exported `convert_timezone` — most of `filter.js` reads the DOM and is covered by robot tests instead |
+| `localstorage.test.js` | `merge_deep`, `set_nested_setting`, `merge_view_section_or_graph` and related merge helpers |
+| `log.test.js` | `open_log_file` (regression for issue #311) |
 | `graph_data/helpers.test.js` | `convert_timeline_data` |
 | `graph_data/tooltip_helpers.test.js` | `build_tooltip_meta`, `lookup_tooltip_meta`, `format_status` |
 | `graph_data/failed.test.js` | `get_most_failed_data` (bar + timeline modes) |
