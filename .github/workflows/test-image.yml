@@ -47,3 +47,5 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}
+          # zstd layers decompress several times faster than gzip when the CI runner pulls the image
+          outputs: type=image,push=true,compression=zstd,compression-level=3,force-compression=true
