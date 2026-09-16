@@ -21,7 +21,7 @@ Stop Browser
     Close Browser
 
 Open Dashboard
-    New Context    colorScheme=dark    viewport={"width": 1920, "height": 1600}
+    New Context    colorScheme=dark    viewport={"width": 1920, "height": 2000}
     New Page    url=file:${ROOT_FOLDER}/robotdashboard_${DASHBOARD_INDEX}.html
     Wait For Elements State    selector=id=loading    state=hidden
     # the relative run times on the overview cards ("2 hours ago") change as time passes,
