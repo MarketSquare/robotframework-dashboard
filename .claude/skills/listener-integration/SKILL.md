@@ -1,5 +1,6 @@
 ---
-description: Use when working on the listener integration feature, the robotdashboardlistener.py script, or any task involving auto-uploading output.xml to the server after test runs.
+name: listener-integration
+description: "The Robot Framework listener (robotframework_dashboard.robotdashboardlistener) and standalone push script that upload output.xml/log.html to the dashboard server after a run: all listener arguments, pabot/RobotCode usage, and which server endpoints get called. Use for any listener, auto-upload, or CI-integration task."
 ---
 
 # Listener Integration

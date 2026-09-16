@@ -21,4 +21,9 @@ docker -v 2> /dev/null ||
 USER_MAPPING="--user $(id -u):$(id -g)"
 [ "$(uname -o)" = Msys ] && USER_MAPPING=""
 
-docker run -it --rm --ipc=host -v"/$(pwd)":/robotframework-dashboard $USER_MAPPING $IMAGE "${@}"
+# Only allocate a TTY when we actually have one. Without this check the script fails with
+# "the input device is not a TTY" when run from CI, AI agents, or any non-interactive shell.
+TTY_FLAG=""
+[ -t 0 ] && TTY_FLAG="-t"
+
+docker run -i $TTY_FLAG --rm --ipc=host -v"/$(pwd)":/robotframework-dashboard $USER_MAPPING $IMAGE "${@}"

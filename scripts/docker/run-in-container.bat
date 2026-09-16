@@ -21,8 +21,14 @@ IF [%FOUND%] == [] GOTO IMAGE_NOT_FOUND
 REM Check for workspace
 IF NOT EXIST robotframework_dashboard\robotdashboard.py GOTO WORKSPACE_NOT_FOUND
 
+REM Only allocate a TTY for interactive use. cmd.exe cannot detect a TTY, so we rely on the
+REM CLAUDECODE variable that AI agent shells set; a TTY there fails with "input device is not a TTY".
+SET TTY_FLAG=-t
+IF DEFINED CLAUDECODE SET TTY_FLAG=
+IF DEFINED CI SET TTY_FLAG=
+
 REM Start docker container
-docker run -it --rm --ipc=host -v.:/robotframework-dashboard %IMAGE% %1 %2 %3 %4 %5 %6 %7 %8 %9
+docker run -i %TTY_FLAG% --rm --ipc=host -v.:/robotframework-dashboard %IMAGE% %1 %2 %3 %4 %5 %6 %7 %8 %9
 GOTO END
 
 :ARGS_MISSING

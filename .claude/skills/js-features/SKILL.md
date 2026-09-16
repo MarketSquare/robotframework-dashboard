@@ -1,10 +1,11 @@
 ---
-description: Use when adding a new feature to the JavaScript front-end: new widget types, new GridStack tiles, new localStorage-persisted data, or new modal dialogs. Contains the complete end-to-end checklist and all architectural patterns needed to add features without re-exploring the codebase from scratch.
+name: js-features
+description: End-to-end checklist for adding a front-end feature — new widget types, GridStack tiles, localStorage-persisted data (merge_deep/merge_layout whitelists), undo/redo snapshots, modal dialogs, and the layout-user-action event. Use when implementing a new dashboard feature rather than fixing an existing one.
 ---
 
 # JavaScript Feature Patterns
 
-This skill covers the recurring patterns used when adding new features to the dashboard front-end. Reading this file (plus `js-patterns.md` for structure and `js-coding-standards.md` for style rules) is sufficient to implement most features without additional codebase exploration.
+This skill covers the recurring patterns used when adding new features to the dashboard front-end. Reading this file (plus the `coding-standards` skill for structure and style rules) is sufficient to implement most features without additional codebase exploration.
 
 ---
 
