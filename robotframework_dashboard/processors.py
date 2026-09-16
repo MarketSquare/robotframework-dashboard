@@ -139,7 +139,8 @@ class OutputProcessor:
 
         # Convert tuple to list, update last element, then back to tuple
         run = list(run_list[0])
-        run[-1] = str(list(set(run_metadata_items)))
+        # dedupe while keeping document order; a set would reorder per process (hash seed)
+        run[-1] = str(list(dict.fromkeys(run_metadata_items)))
         run_list[0] = tuple(run)
 
         return run_list, new_suite_list
