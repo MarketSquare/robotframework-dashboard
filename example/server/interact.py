@@ -14,7 +14,7 @@ PASS = "pass" # leave empty when no auth is configured on the server like this: 
 BASE_URL = f"http://{HOST}:{PORT}"
 AUTH = (USER, PASS)  # passed to every mutation request; ignored by server when no auth is configured
 
-SINGLE_OUTPUT_PATH = Path("D:/robotframework-dashboard/tests/robot/resources/outputs/output-20250313-002222.xml")
+SINGLE_OUTPUT_PATH = Path("D:/robotframework-dashboard/tests/robot/resources/outputs/output-20260818-021545.xml")
 OUTPUT_FOLDER_PATH = Path("D:/robotframework-dashboard/tests/robot/resources/outputs/")
 
 # --- read-only endpoints (no auth required) ---
