@@ -38,6 +38,8 @@ content-type: application/json
 ###
 
 ### add an output by folder path — all *output*.xml files are picked up recursively (auth required)
+### output_log_url mirrors the CLI '--logurl' flag; the '{run_alias}' placeholder is required here
+### because a folder can contain multiple outputs, so every run needs its own URL
 POST http://{{host}}:{{port}}/add-outputs HTTP/1.1
 Authorization: Basic {{base64credentials}}
 content-type: application/json
@@ -45,7 +47,8 @@ content-type: application/json
 {
   "output_folder_path": "C:\\users\\docs\\prod-outputs",
   "output_tags": ["production-run"],
-  "output_version": "v1.2.3"
+  "output_version": "v1.2.3",
+  "output_log_url": "https://ci.example.com/build42/log_{run_alias}.html"
 }
 
 ###

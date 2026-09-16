@@ -1,12 +1,15 @@
 # RobotCode Configuration for RobotDashboard Listener
 #
+# The listener ships inside the robotframework-dashboard package (no extra dependencies), so it
+# can be referenced by its dotted module path below with nothing to place in your project.
+# If you'd rather use a local file copy instead, see the commented "file path" variants below.
+#
 # Setup:
 #   1. Place robot.toml in project root
-#   2. Place robotdashboardlistener.py in root (or update path below)
-#   3. pip install robotcode-runner
-#   4. robotdashboard --server (start the dashboard server)
-#   5. Choose one listener configuration below (uncomment to use)
-#   6. robotcode robot .
+#   2. pip install robotcode-runner
+#   3. robotdashboard --server (start the dashboard server)
+#   4. Choose one listener configuration below (uncomment to use)
+#   5. robotcode robot .
 #
 # Reference: https://robotcode.io/02_get_started/configuration
 # Run examples:
@@ -15,28 +18,39 @@
 
 # Basic - no parameters
 [listeners]
-"robotdashboardlistener.py" = []
+"robotframework_dashboard.robotdashboardlistener" = []
 
 # With tags and version
 # [listeners]
-# "robotdashboardlistener.py" = ["tags=dev1,dev2,dev3", "version=v1.2.3"]
+# "robotframework_dashboard.robotdashboardlistener" = ["tags=dev1,dev2,dev3", "version=v1.2.3"]
 
 # With log upload
 # [listeners]
-# "robotdashboardlistener.py" = ["uploadlog=true"]
+# "robotframework_dashboard.robotdashboardlistener" = ["uploadlog=true"]
 
 # Custom host/port with limit
 # [listeners]
-# "robotdashboardlistener.py" = ["host=127.0.0.2", "port=8888", "limit=100"]
+# "robotframework_dashboard.robotdashboardlistener" = ["host=127.0.0.2", "port=8888", "limit=100"]
+
+# No port (server on the protocol's default port, or behind a reverse proxy)
+# [listeners]
+# "robotframework_dashboard.robotdashboardlistener" = ["host=dashboard.internal.company.com", "port="]
 
 # HTTPS with SSL verification disabled (for self-signed certificates)
 # [listeners]
-# "robotdashboardlistener.py" = ["protocol=https", "port=8543", "sslverify=false"]
+# "robotframework_dashboard.robotdashboardlistener" = ["protocol=https", "port=8543", "sslverify=false"]
 
 # HTTPS with a custom CA bundle
 # [listeners]
-# "robotdashboardlistener.py" = ["protocol=https", "port=8543", "sslverify=/path/to/ca-bundle.pem"]
+# "robotframework_dashboard.robotdashboardlistener" = ["protocol=https", "port=8543", "sslverify=/path/to/ca-bundle.pem"]
 
 # All features combined
 # [listeners]
-# "robotdashboardlistener.py" = ["tags=dev1,dev2", "version=v2.0", "uploadlog=true", "limit=100", "host=127.0.0.2", "port=8888"]
+# "robotframework_dashboard.robotdashboardlistener" = ["tags=dev1,dev2", "version=v2.0", "uploadlog=true", "limit=100", "host=127.0.0.2", "port=8888"]
+
+# --- Using a local file copy instead of the dotted module path ---
+# Place robotdashboardlistener.py (from example/listener/) next to this file, then reference it
+# the same way, swapping "robotframework_dashboard.robotdashboardlistener" for
+# "robotdashboardlistener.py" in any of the examples above, e.g.:
+# [listeners]
+# "robotdashboardlistener.py" = []

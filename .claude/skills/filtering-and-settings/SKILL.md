@@ -1,5 +1,6 @@
 ---
-description: Use when working on dashboard filters, settings, localStorage persistence, the JSON config system, graph layout, or the GridStack drag-and-drop layout editor.
+name: filtering-and-settings
+description: The dashboard's global filter modal and pipeline (runs, run tags AND/OR/NOT, dates, amount, metadata, versions, custom filters, filter profiles), the settings object and localStorage persistence, JSON config, and the GridStack layout editor. Use when a bug or feature touches filters, the overview→dashboard navigation pre-filters, settings toggles, or saved layouts.
 ---
 
 # Filtering, Settings, and Layout
@@ -8,7 +9,7 @@ description: Use when working on dashboard filters, settings, localStorage persi
 
 The dashboard front-end has three tightly coupled systems:
 1. **Settings** — a single `settings` object that controls all display preferences, persisted in `localStorage`
-2. **Filtering** — a 10-stage pipeline that produces `filteredRuns/Suites/Tests/Keywords` from the raw decoded data
+2. **Filtering** — a multi-stage pipeline that produces `filteredRuns/Suites/Tests/Keywords` from the raw decoded data
 3. **Layout** — GridStack-based drag-and-drop positioning + section ordering, also persisted in `settings`
 
 Key files: `js/variables/settings.js`, `js/variables/globals.js`, `js/filter.js`, `js/localstorage.js`, `js/eventlisteners.js`, `js/layout.js`
@@ -29,11 +30,12 @@ The `settings` object is the single source of truth for all dashboard configurat
 | `graphTypes` | Object | Per-graph chart type (e.g. `"bar"`, `"line"`, `"percentages"`) |
 | `view` | Object | Per-page `sections: {show, hide}` and `graphs: {show, hide}` lists for overview, unified, dashboard, compare, tables |
 
-**localStorage-only keys** (not in the defaults object but always preserved during merge):
+**localStorage-only keys** (not in the defaults object but always preserved during merge — whitelist lives in `merge_deep()`):
 - `layouts` — GridStack position data per section
 - `libraries` — keyword library show/hide toggles
 - `theme` — `"dark"` or `"light"`
 - `filterProfiles` — named filter state snapshots
+- `statWidgets`, `linkWidgets`, `customSections` — user-created widgets/sections (see `js-features` skill)
 
 ---
 
@@ -64,7 +66,7 @@ When merging persisted settings with current defaults:
 - `view` → `merge_view()`: preserves `show`/`hide` lists, **purges** entries for graphs/sections that no longer exist
 - `layouts` → `merge_layout()`: removes graph IDs that no longer exist in `collect_allowed_graphs()`
 - `theme_colors` → `merge_theme_colors()`: preserves the `custom` sub-key
-- Keys in localStorage that don't exist in defaults are **dropped** (schema migration) — **except** the four localStorage-only keys above
+- Keys in localStorage that don't exist in defaults are **dropped** (schema migration) — **except** the localStorage-only keys above
 
 ---
 
@@ -80,22 +82,29 @@ In `localstorage.js`: if the placeholder string was not replaced (i.e. the strin
 
 ## Filtering Pipeline (`js/filter.js`)
 
-`setup_filtered_data_and_filters()` is called when the filter modal closes or on initial load. It runs these 10 stages in order:
+`setup_filtered_data_and_filters()` is called when the filter modal closes, when navigating from the overview page, and on initial load. Stages, in order:
 
 | Stage | What it does |
 |---|---|
-| 1. Remove milliseconds | Strips sub-second precision from `run_start` if `settings.show.milliseconds` is false |
-| 2. Convert timezone | Converts `run_start` timestamps to viewer's local timezone if `settings.show.convertTimezone` is true |
-| 3. Remove timezone display | Strips `+HH:MM` suffix if `settings.show.timezones` is false |
-| 4. `filter_runs()` | Filter by run name, `#runs` dropdown (`"All"` or specific name) |
-| 5. `filter_runtags()` | Filter by run tag checkboxes (`#runTag`); AND/OR logic via `#useOrTags`; returns empty if no tags selected |
+| 1. `remove_milliseconds()` | Strips sub-second precision from `run_start` if `settings.show.milliseconds` is false |
+| 2. `convert_timezone()` | Converts `run_start` timestamps to viewer's local timezone if `settings.show.convertTimezone` is true |
+| 3. `remove_timezones()` | Strips `+HH:MM` suffix if `settings.show.timezones` is false |
+| 4. `filter_runs()` | Filter by run name, `#runs` dropdown (`"All"` or specific name). Honours `selectedRunSetting` (set by overview card click) |
+| 5. `filter_runtags()` | Run tag checkboxes in `#runTag` (ids `runTagCheckBox<tag>`, `value` = raw tag); mode from `#tagMode` (`AND`/`OR`/`NOT`); returns empty if no tags selected. Honours `selectedTagSetting` (set by overview project-tag card click) by matching on `input.value` |
 | 6. `filter_dates()` | Date range via `#fromDate`, `#fromTime`, `#toDate`, `#toTime`; validates range |
-| 7. `filter_amount()` | Keep last N runs (`#amount` input); handles edge cases (empty, negative, decimal/comma) |
-| 8. `filter_metadata()` | Filter by metadata key:value (`#metadata` dropdown; exact match against `run.metadata`) |
-| 9. `filter_project_versions()` | Filter by project version checkboxes (`#projectVersionList`); `"None"` covers runs with null version |
-| 10. `filter_data()` | Filter suites/tests/keywords to only include entries whose `run_start` is in `filteredRuns`; applies `settings.libraries` to exclude disabled keyword libraries |
+| 7. `filter_metadata()` | Metadata key:value (`#metadata` dropdown; exact match against `run.metadata`) |
+| 8. `filter_project_versions()` | Project version checkboxes (`#projectVersionList`); `"None"` covers runs with null version |
+| 9. `filter_custom_filters()` | One dropdown per custom-filter dimension (`#customFilter_<dim>_List`, mode in `#customFilter_<dim>_Mode`); dimensions come from `run.custom_filters` (`--customfilters` CLI) |
+| 10. `filter_runs_by_suite_path()` | Restrict to runs containing the selected suite path prefix |
+| 11. `filter_amount()` | Keep last N runs (`#amount` input); handles edge cases (empty, negative, decimal/comma) |
+| 12. `filter_data()` ×3 | Filter suites/tests/keywords to entries whose `run_start` is in `filteredRuns`; applies `settings.libraries` to exclude disabled keyword libraries; then `filter_suite_path_data()` narrows suites/tests to the path prefix |
+| 13. `sort_wall_clock()` | Re-sorts all four arrays chronologically by wall-clock `run_start` |
 
-After filtering: updates count headlines (`#runTitle`, etc.), repopulates all dropdown selects (compare run selects, suite/test/keyword selects, test tag selects), then calls `sort_wall_clock()` to re-sort all four arrays chronologically.
+After filtering: updates count headlines (`#runTitle` → "showing X of N runs", etc.) and repopulates all dropdown selects (compare run selects, suite/test/keyword selects, test tag selects).
+
+### Overview → Dashboard pre-filter
+
+Clicking a project card on the overview calls `clear_all_filters()`, then `set_filter_show_current_project(projectName)` (`graph_creation/overview.js`), which sets `selectedTagSetting` for `project_*` tags or `selectedRunSetting` for run names, then `update_menu("menuDashboard")`. The `filter_runs`/`filter_runtags` stages consume and reset those globals on the next pipeline run. Version badges on cards additionally call `set_filter_show_current_version()`.
 
 ---
 
@@ -109,7 +118,7 @@ settings.filterProfiles = {
   "ProfileName": {
     runs: "All",                          // string — run name or "All"
     runTags: [{ id: "All", checked: true }, ...],   // array of {id, checked}
-    useOrTags: false,                     // boolean — AND/OR tag logic
+    tagMode: "AND",                       // "AND" | "OR" | "NOT" (legacy profiles may carry useOrTags: bool instead)
     projectVersions: [{ value: "All", checked: true }, ...],
     fromDate: "YYYY-MM-DD", fromTime: "HH:MM",
     toDate:   "YYYY-MM-DD", toTime:   "HH:MM",
@@ -154,7 +163,7 @@ When a profile is selected, `render_merge_profile_settings(profile, side)` build
 |---|---|
 | `runs` / `metadata` | Same value → keep; different → `"All"` |
 | `runTags` / `projectVersions` | Union of checked entries (OR) |
-| `useOrTags` | OR wins |
+| `tagMode` | Most permissive wins: OR > AND > NOT (legacy `useOrTags` booleans are converted first) |
 | `fromDate` + `fromTime` | Earlier datetime (widest start) |
 | `toDate` + `toTime` | Later datetime (widest end) |
 | `amount` | `Math.max` of both values |

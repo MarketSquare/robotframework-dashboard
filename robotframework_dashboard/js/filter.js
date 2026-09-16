@@ -181,7 +181,8 @@ function filter_runtags(runs) {
     if (selectedTagSetting != '') {
         for (const input of tagElements) {
             input.checked = false;
-            if (input.id === selectedTagSetting) {
+            // checkbox ids are prefixed with "runTagCheckBox", the value holds the raw tag name
+            if (input.value === selectedTagSetting) {
                 input.checked = true;
             }
         }

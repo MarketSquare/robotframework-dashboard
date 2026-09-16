@@ -1,21 +1,17 @@
----
-name: unit-tests
-description: 'Run, analyze, fix, and report on the Python unit tests in tests/python/. Use when: working on, running, or reasoning about unit tests; tests are failing; CI is red; debugging test errors; adding a missing argument to a test helper after a new parameter was introduced. DO NOT USE FOR: acceptance tests (tests/robot/), Robot Framework test suites.'
-argument-hint: 'Optional: specific test file or test name to focus on'
----
+# Python Unit Tests
 
-# Unit Tests
+Deep reference for `tests/python/`. Runner and tier overview: [SKILL.md](SKILL.md).
 
 ## How to run
 
 **Windows:**
 ```bat
-scripts\unittests.bat
+scripts\python-tests.bat
 ```
 
 **Linux / macOS:**
 ```bash
-bash scripts/unittests.sh
+bash scripts/python-tests.sh
 ```
 
 Both scripts run `pytest` with coverage reporting on the `robotframework_dashboard` package.
@@ -84,7 +80,7 @@ Unit tests run as a separate `unit-tests` job in `.github/workflows/tests.yml` *
 
 ## Schema migration test
 
-`test_schema_migration_runs_table_from_10_to_14` in `test_database.py` creates a legacy 10-column SQLite database by hand and asserts that `DatabaseProcessor.__init__` automatically migrates all four tables to their current column counts (runs: 14, suites: 11, tests: 12, keywords: 12). This protects against regressions when future schema columns are added.
+`test_schema_migration_runs_table_from_10_to_14` in `test_database.py` creates a legacy 10-column SQLite database by hand and asserts that `DatabaseProcessor.__init__` automatically migrates all four tables to their current column counts (runs: 15, suites: 11, tests: 12, keywords: 12 — the test name still says `to_14`; update the asserted counts when adding a column). This protects against regressions when future schema columns are added.
 
 ## Analyzing and fixing failures
 
@@ -112,9 +108,9 @@ When a new required parameter is added to `generate_dashboard()`, `RobotDashboar
 - Also check for any direct call-sites in other test functions in the same file.
 
 **Test helpers in this project:**
-- `tests/test_dashboard.py` → `_call_generate(tmp_path, **kwargs)`
-- `tests/test_robotdashboard.py` → `_make_rd(tmp_path, **kwargs)`
-- `tests/test_server.py` → `_make_server(**kwargs)`
+- `tests/python/test_dashboard.py` → `_call_generate(tmp_path, **kwargs)`
+- `tests/python/test_robotdashboard.py` → `_make_rd(tmp_path, **kwargs)`
+- `tests/python/test_server.py` → `_make_server(**kwargs)`
 
 ### Report format
 

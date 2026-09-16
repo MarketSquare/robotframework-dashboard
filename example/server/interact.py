@@ -45,10 +45,13 @@ print("add-outputs (by path):", response.json())
 print()
 
 # add an output by folder path — all *output*.xml files are picked up recursively
+# output_log_url mirrors the CLI '--logurl' flag; the '{run_alias}' placeholder is required here
+# because a folder can contain multiple outputs, so every run needs its own URL
 body = {
     "output_folder_path": str(OUTPUT_FOLDER_PATH),
     "output_tags": ["production-run"],
     "output_version": "v1.2.3",
+    "output_log_url": "https://ci.example.com/build42/log_{run_alias}.html",
 }
 response = requests.post(f"{BASE_URL}/add-outputs", json=body, auth=AUTH)
 print("add-outputs (by folder):", response.json())
@@ -60,7 +63,7 @@ with open(output_path, "rb") as f:
     from gzip import compress
     compressed = compress(f.read())
 files = {"file": (f"{output_path.name}.gz", compressed, "application/gzip")}
-form = {"tags": "tag1:tag2", "version": "v1.2.3", "custom_filters": "env=prod"}
+form = {"tags": "tag1:tag2", "version": "v1.2.3", "custom_filters": "env=prod", "log_url": "https://ci.example.com/build42/log.html"}
 response = requests.post(f"{BASE_URL}/add-output-file", files=files, data=form, auth=AUTH)
 print("add-output-file:", response.json())
 print()

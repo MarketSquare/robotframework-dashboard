@@ -41,6 +41,17 @@ Open Overview Page
     Wait For Elements State    selector=id=overviewLatestRunsSection
     Wait For Elements State    selector=id=overviewTotalStatsSection
 
+Enable Run Tags On Overview Page
+    Click    selector=id=settings
+    Click    selector=id=overview-tab
+    Click    selector=id=switchRunTags
+    Click    selector=id=closeSettings
+
+Open Dashboard Page From Overview Project Card
+    [Arguments]    ${project}
+    Click    selector=id=overviewLatest${project}Card0
+    Wait For Elements State    selector=id=runStatisticsSection
+
 Open Compare Page
     Click    selector=id=menuCompare
     Wait For Elements State    selector=id=compareStatisticsSection
@@ -207,7 +218,7 @@ Validate Filter Settings
 
     Open Filter Dialog
     IF    len("${runs}")    Get Selected Options    id=runs    value    ==    ${runs}
-    IF    len("S{run_tags}")
+    IF    len("${runTags}")
         VAR    @{selected_run_tags}    @{EMPTY}
         ${elements}    Get Elements    selector=id=runTag >> css=input.form-check-input
         FOR    ${element}    IN    @{elements}

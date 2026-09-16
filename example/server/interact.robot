@@ -43,11 +43,14 @@ Add Output By Path With All Options
 
 Add Output By Folder Path
     [Documentation]    Add all *output*.xml files found recursively in a folder (auth required)
+    ...    output_log_url mirrors the CLI '--logurl' flag; the '{run_alias}' placeholder is required
+    ...    here because a folder can contain multiple outputs, so every run needs its own URL
     VAR    @{tags}    production-run
     VAR    &{body}
     ...    output_folder_path=C:\\users\\docs\\prod-outputs
     ...    output_tags=${tags}
     ...    output_version=v1.2.3
+    ...    output_log_url=https://ci.example.com/build42/log_{run_alias}.html
     ${response}    POST    url=${URL}/add-outputs    json=${body}    auth=${AUTH}
     Log    ${response.json()}
 

@@ -1,152 +1,104 @@
-# robotframework-dashboard — Copilot Instructions
+# robotframework-dashboard
 
-This file gives AI agents and contributors the context needed to work effectively in this codebase.
+Context for AI agents working in this repository.
 
-## How to Use the Skills Files
+## Skills
 
-Before starting work on any non-trivial task, read the relevant skill file from `.github/skills/`. Each file contains deep domain knowledge that avoids re-exploring the codebase from scratch. Use the table in the **Skills** section below to pick the right one(s). Read the skill file with a file-read tool before making any changes.
+Project skills live in `.claude/skills/<name>/SKILL.md` and are auto-discovered. Read the matching skill **before** starting any non-trivial task — each one captures knowledge that otherwise has to be re-derived from the code.
+
+| Skill | Use when |
+|---|---|
+| `gh-issue` | Working a GitHub issue end to end (`/gh-issue 327`, "work on gh issue 327") — fetch, branch, fix, test, review, then wait for commit approval |
+| `testing` | Running, adding, or fixing tests of any tier; diagnosing red CI runs (`gh run download`); robot tests **must** run in Docker (see below) |
+| `dev-workflow` | Running the CLI from source, regenerating/validating the dashboard HTML, server mode, docs site |
+| `coding-standards` | Python/JS/HTML/CSS style, JS naming (functions `snake_case`, variables `camelCase`), where things live in `js/` |
+| `filtering-and-settings` | Filter modal and pipeline, overview→dashboard pre-filters, settings object, localStorage, JSON config, layout editor |
+| `dashboard-graphs` | Pages, Chart.js architecture, which module owns which graph, **checklist for adding a graph** |
+| `add-cli-argument` | Checklist for a new `--flag`: argparse, validation, wiring, server/listener parity, CLI tests + `help.txt`, docs |
+| `js-features` | Checklist for adding a widget type / persisted feature / modal |
+| `js-bundling` | How JS/CSS get inlined into the HTML by Python, CDN vs offline libraries, data encoding |
+| `server-api` | FastAPI endpoints, auth, log linking, admin page |
+| `listener-integration` | The listener and push script that upload results to the server |
+| `documentation` | docs/, README, CONTRIBUTING, setup.py — what to update when behaviour changes |
+| `release` | Release procedure: versions, fixtures, example dashboard, changelog, Slack notes |
 
 ---
 
 ## Commands
 
-Use the project scripts — do NOT invoke the underlying tools directly (the scripts set coverage paths, artifact dirs, and parallelism). `.bat` for Windows, `.sh` for Linux/macOS.
+Use the project scripts — do **not** call `pytest`, `vitest`, `robot`, or `pabot` directly (scripts set coverage paths, artifact dirs, parallelism). `.bat` for cmd.exe, `.sh` for bash (incl. Git Bash on Windows).
 
-| Task | Windows | Linux / macOS |
-|---|---|---|
-| JS unit tests | `scripts\javascript-tests.bat` | `bash scripts/javascript-tests.sh` |
-| Python unit tests | `scripts\python-tests.bat` | `bash scripts/python-tests.sh` |
-| Robot acceptance tests | `scripts\robot-tests.bat` | `bash scripts/robot-tests.sh` |
-| Generate dashboard for testing | `python -m robotframework_dashboard.main -n robot_dashboard -f tests` | same |
-| Docs build | `npm run docs:build` | `npm run docs:build` |
-| Docs dev server | `npm run docs:dev` | `npm run docs:dev` |
+| Task | Command |
+|---|---|
+| Robot acceptance tests — **Docker only** | `bash scripts/docker/run-in-robot-container.sh bash scripts/robot-tests.sh` (one suite: `… robot --outputdir results tests/robot/testsuites/<suite>.robot`) |
+| Build the robot Docker image (once) | `bash scripts/docker/create-test-image.sh robot` |
+| Python unit tests | `bash scripts/python-tests.sh` / `scripts\python-tests.bat` |
+| JS unit tests | `bash scripts/javascript-tests.sh` / `scripts\javascript-tests.bat` |
+| Generate a dashboard from source | `python -m robotframework_dashboard.main -f tests -n robot_dashboard.html` |
+| Docs site | `npm run docs:dev` / `npm run docs:build` |
 
-**Generate dashboard for testing** runs the package directly (no install) against the `tests/` output.xml fixtures, producing `robot_dashboard.html`. Use this to validate any JS/CSS/template/Python pipeline change — open the HTML to confirm rendering, layout, and click handlers. A clean import/syntax check is not sufficient; bundled-output bugs only surface here.
+**Why robot tests are Docker-only:** the robot suites shell out to the `robotdashboard` CLI, i.e. whatever is `pip install`-ed — not your working tree. A local run silently tests stale code, and Windows-rendered screenshots never match the Linux references. The Docker wrapper runs `pip install .` first and mirrors CI.
 
----
-
-## Project Purpose
-
-`robotframework-dashboard` is a Python CLI tool that reads Robot Framework `output.xml` execution results, stores them in a SQLite database, and generates a fully self-contained HTML dashboard with interactive charts, tables, and filters. No web server is required to view the output — a single `.html` file contains all data, JS, and CSS.
+**Generate a dashboard from source** runs the package without installing it, against the 15 `output.xml` fixtures under `tests/`. Use it to validate any JS/CSS/template/Python change: a clean import or syntax check is not sufficient — rendering, layout, and click-handler bugs only surface in the bundled output.
 
 ---
 
-## Core Pipeline: Python CLI → HTML Template → JavaScript
+## What this project is
 
-The entire system is this three-stage pipeline:
+`robotframework-dashboard` is a Python CLI (`robotdashboard`) that reads Robot Framework `output.xml` files, stores them in SQLite, and generates a **single self-contained HTML dashboard** — all data, JS, and CSS inlined, no web server needed to view it.
+
+## Pipeline
 
 ```
-1. PYTHON CLI
-   output.xml files
-       └─► OutputProcessor (robot.api ResultVisitor)
-               └─► SQLite database (runs / suites / tests / keywords tables)
-
-2. HTML TEMPLATE
-   database.get_data()
-       └─► DashboardGenerator
-               ├─► DependencyProcessor: merges all JS modules (topological sort) → inline <script>
-               ├─► DependencyProcessor: merges all CSS files → inline <style>
-               ├─► CDN or offline dependency tags
-               ├─► Data encoded as: JSON → zlib compress → base64 → string literal in HTML
-               └─► templates/dashboard.html (string placeholder replacement) → robot_dashboard.html
-
-3. JAVASCRIPT (runs in the browser)
-   js/variables/data.js decodes the embedded base64 data back to JS arrays
-       └─► Chart.js charts, DataTables, filters, layout — all from local data, zero server calls
+1. PYTHON CLI        output.xml ─► OutputProcessor (robot.api ResultVisitor) ─► SQLite (runs/suites/tests/keywords)
+2. HTML TEMPLATE     database.get_data() ─► DashboardGenerator
+                        ├─ DependencyProcessor: all js/ modules merged (topological sort) → one inline <script>
+                        ├─ DependencyProcessor: all css/ files merged → one inline <style>
+                        ├─ CDN <script src> tags, or offline copies from dependencies/ (--offlinedependencies)
+                        ├─ data: JSON → zlib → base64 → string literal in the HTML
+                        └─ templates/dashboard.html placeholders replaced → robot_dashboard.html
+3. BROWSER           js/variables/data.js decodes the payload ─► Chart.js, GridStack, DataTables — zero server calls
 ```
 
-The output is a **single `.html` file** that is entirely self-contained. All Robot Framework data is embedded as compressed strings; all JS and CSS is inlined.
+Optional `--server` mode hosts the same pipeline behind FastAPI (upload endpoints, `/admin`, auto-regeneration).
 
----
-
-## Entry Points
+## Entry points
 
 | File | Role |
 |---|---|
-| `robotframework_dashboard/main.py` | CLI entry point (`robotdashboard` command) |
-| `robotframework_dashboard/robotdashboard.py` | `RobotDashboard` class — orchestrates all 5 pipeline steps |
-| `robotframework_dashboard/arguments.py` | `ArgumentParser` wrapping `argparse` |
-| `robotframework_dashboard/processors.py` | `OutputProcessor` + 4 `ResultVisitor` subclasses |
-| `robotframework_dashboard/database.py` | Built-in SQLite implementation |
-| `robotframework_dashboard/abstractdb.py` | `AbstractDatabaseProcessor` ABC (custom DB backends) |
-| `robotframework_dashboard/queries.py` | All SQL strings as module-level constants |
+| `robotframework_dashboard/main.py` | CLI entry (`robotdashboard`) |
+| `robotframework_dashboard/robotdashboard.py` | `RobotDashboard` — orchestrates init DB, process outputs, list/remove runs, generate HTML |
+| `robotframework_dashboard/arguments.py` | `ArgumentParser` wrapping argparse |
+| `robotframework_dashboard/processors.py` | `OutputProcessor` + `ResultVisitor` subclasses for runs/suites/tests/keywords |
+| `robotframework_dashboard/database.py` / `queries.py` | Built-in SQLite backend; all SQL as constants |
+| `robotframework_dashboard/abstractdb.py` | `AbstractDatabaseProcessor` for custom backends (`--databaseclass`) |
 | `robotframework_dashboard/dashboard.py` | `DashboardGenerator` — template rendering |
-| `robotframework_dashboard/dependencies.py` | `DependencyProcessor` — JS/CSS inlining and CDN switching |
-| `robotframework_dashboard/server.py` | Optional FastAPI server (`--server` flag) |
+| `robotframework_dashboard/dependencies.py` | `DependencyProcessor` — JS/CSS inlining, CDN/offline switching |
+| `robotframework_dashboard/server.py` | FastAPI server |
+| `robotframework_dashboard/robotdashboardlistener.py` | Robot listener that uploads results to the server |
+| `robotframework_dashboard/js/main.js` | Browser startup entry; everything is reached via its import graph |
+| `robotframework_dashboard/templates/dashboard.html`, `admin.html` | Templates with string placeholders (not Jinja) |
+
+Frontend source: `robotframework_dashboard/js/` and `css/`. **There is no Node bundler** for the dashboard — Python does the bundling. `package.json` exists only for the VitePress docs site.
 
 ---
 
-## JavaScript and CSS
+## Hard rules
 
-All frontend source lives under `robotframework_dashboard/js/` and `robotframework_dashboard/css/`. **There is no Node.js bundler (no webpack, Vite, or Rollup) for the dashboard.** Bundling is done in Python by `DependencyProcessor` at HTML generation time.
+- **Never rename placeholder tokens** in templates (`<!-- placeholder_javascript -->`, `<!-- placeholder_css -->`, `<!-- placeholder_dependencies -->`, `"placeholder_runs"`, `"placeholder_suites"`, `"placeholder_tests"`, `"placeholder_keywords"`, `placeholder_json_config`). Replacement is string substitution.
+- **New JS module** → `import` it from an existing module. `DependencyProcessor` discovers files only through the import graph from `main.js`; there is no manual registry.
+- **Data always flows** parse → DB → HTML through `RobotDashboard` methods. Don't bypass it.
+- **Offline mode** reads `robotframework_dashboard/dependencies/`. When upgrading a library version in `dependencies.py`, update the local copy too.
+- **Validate frontend changes by regenerating the HTML** (`dev-workflow` skill); robot tests for anything behavioural (`testing` skill).
+- **Commit only when asked.** Branch off `main` for any change; never commit to `main` directly.
 
-Key JS directories:
+## Gotchas
 
-| Path | Contents |
-|---|---|
-| `js/variables/` | Global state, data decoding, settings, graph registry |
-| `js/graph_creation/` | Chart.js setup per tab (overview, run, suite, test, keyword, compare, tables) |
-| `js/graph_data/` | Data transformation modules that feed Chart.js |
-| `js/main.js` | Startup entry — imports and calls all setup functions |
-| `js/admin_page/` | Separate JS bundle for the server's `/admin` page only |
-
-See `.github/skills/js-bundling.md` for details on how JS modules are resolved, ordered, and embedded.
-
----
-
-## HTML Templates
-
-Templates live in `robotframework_dashboard/templates/`. They use simple string placeholder tokens (not Jinja2):
-
-- `templates/dashboard.html` → generates `robot_dashboard.html`
-- `templates/admin.html` → generates the server's `/admin` page
-
-Key placeholders: `<!-- placeholder_javascript -->`, `<!-- placeholder_css -->`, `<!-- placeholder_dependencies -->`, `"placeholder_runs"`, `"placeholder_suites"`, `"placeholder_tests"`, `"placeholder_keywords"`.
-
----
-
-## Database
-
-- Built-in: SQLite via `database.py`. Tables: `runs`, `suites`, `tests`, `keywords`.
-- Custom backends: implement `AbstractDatabaseProcessor` from `abstractdb.py`, point to it with `--databaseclass`.
-- Run identity: `run_start` timestamp. Duplicate runs are silently skipped.
-- Schema migrations are handled inline at DB open time via `ALTER TABLE ADD COLUMN`.
-
----
-
-## Skills
-
-The `.github/skills/` directory contains domain-specific knowledge files:
-
-| Skill file | When to use |
-|---|---|
-| `.github/skills/project-architecture.md` | Understanding how components connect and navigating the codebase |
-| `.github/skills/dashboard.md` | Dashboard pages, Chart.js graphs, chart types, graph data/creation modules |
-| `.github/skills/js-bundling.md` | How JS/CSS is bundled and embedded into the HTML (no Node.js bundler) |
-| `.github/skills/js-feature-patterns.md` | **End-to-end patterns for adding new JS features**: custom widget checklist, GridStack item lifecycle, undo/redo snapshot pattern, localStorage-only keys |
-| `.github/skills/conventions-and-gotchas.md` | Edge cases, run identity, offline mode, custom DBs, server auth model |
-| `.github/skills/coding-style.md` | Python/JS/CSS style conventions |
-| `.github/skills/workflows.md` | CLI usage, running tests, server mode, docs site |
-| `.github/skills/dev-workflow.md` | How to run the tool locally during development (no install required), dev loop for JS/CSS/template changes |
-| `.github/skills/robotframework-tests.md` | Test suite structure, pabot parallelism, how to add tests |
-| `.github/skills/fix-robot-tests.md` | **Step-by-step workflow for fixing failing robot tests** — parsing output.xml, updating stale screenshots, fixing tab-navigation timeouts, using Docker to regenerate references |
-| `.github/skills/python-unit-tests.md` | Python unit tests (pytest, coverage, test layout, fixtures) |
-| `.github/skills/javascript-unit-tests.md` | JavaScript unit tests (Vitest, mocking patterns, which modules are testable) |
-| `.github/skills/server-api.md` | All REST endpoints, authentication, log linking, auto-update behavior |
-| `.github/skills/filtering-and-settings.md` | Filter pipeline, settings object, localStorage persistence, layout/GridStack system, **filter profiles** (data structure, all profile functions, merge modal) |
-| `.github/skills/listener-integration.md` | Listener script (`robotdashboardlistener.py`), all listener arguments, pabot/RobotCode usage, server endpoints called |
-| `.github/skills/documentation.md` | All documentation locations (docs/, README.md, CONTRIBUTING.md, setup.py), page map, and checklist for keeping docs in sync when features change |
-| `.github/skills/js-patterns.md` | How JavaScript code is currently structured in this project: module layout, variable placement, naming patterns, GridStack/Chart.js usage |
-| `.github/skills/js-coding-standards.md` | Rules for writing JavaScript: naming conventions, where to put variables, function patterns, scope, localStorage, DOM access |
-| `.github/skills/release-actions.md` | **Step-by-step release workflow** — bump version, update test fixtures, regenerate example dashboard/database, update changelog, produce Slack notes |
-
----
-
-## Key Rules for AI Agents
-
-- **Never break the placeholder token names** in templates. Replacement is positional string substitution.
-- **When adding a new JS module**, import it from an existing module so `DependencyProcessor` can discover it via the dependency graph. The topological sort handles ordering automatically.
-- **Data always flows**: parse → DB → HTML. Do not bypass the pipeline.
-- **`package.json` is for the VitePress docs site only.** It has nothing to do with bundling dashboard JS.
-- **Offline mode** (`--offlinedependencies`) reads from `robotframework_dashboard/dependencies/`. Keep local copies in sync when upgrading library versions.
-- **Validate JS/CSS/template changes by regenerating and opening the HTML** — see `.github/skills/dev-workflow.md` ("Validating JS/CSS/Template Changes"). A clean `import`/syntax check is not sufficient; rendering, layout, and click-handler bugs only surface in the bundled output. The `tests/` folder has ready-made output.xml fixtures: `python -m robotframework_dashboard.main -f tests -n robot_dashboard.html`.
+- Run identity is `run_start` from `output.xml`; duplicate runs are silently skipped. `run_alias` defaults to the file name and is auto-adjusted on collision.
+- Log linking needs log names mirroring output names (`output-XYZ.xml` ↔ `log-XYZ.html`); the server's `/add-log` enforces this.
+- `--projectversion` and `version_*` tags are mutually exclusive; version tags are parsed in `RobotDashboard._process_single_output`.
+- Custom DB backends: module must expose a `DatabaseProcessor` class compatible with `AbstractDatabaseProcessor`. Schema migrations are inline `ALTER TABLE ADD COLUMN` at DB open.
+- Server auth: HTTP Basic only on `/admin`; every other endpoint is unauthenticated by design. Any mutation regenerates the dashboard unless `--no-autoupdate`; `POST /refresh-dashboard` does it manually.
+- Run-tag checkbox ids are `runTagCheckBox<tag>`; the raw tag is in `value`. Overview card ids are `overviewLatest<project>Card0`. Match on the right attribute.
+- Git Bash on Windows: a trailing backslash in a path argument (`-f .\tests\`) swallows the next argument. Use forward slashes.
+- CHANGELOG.md is written at release time by the `release` skill, not per PR.

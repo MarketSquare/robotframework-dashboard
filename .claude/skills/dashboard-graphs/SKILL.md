@@ -1,5 +1,6 @@
 ---
-description: Use when working on dashboard pages, tabs, graphs, Chart.js configurations, or the HTML template.
+name: dashboard-graphs
+description: What each dashboard page (Overview, Dashboard, Compare, Tables) shows, the Chart.js architecture (get_graph_config, chart_factory, supported chart types), which graph_data / graph_creation module owns each graph, and the step-by-step checklist for adding a new graph (graphmetadata entry, naming rules, data + creation modules, tooltips, tests, docs). Use when adding or changing a graph, chart type, tooltip, or page section.
 ---
 
 # Dashboard Pages and Charts
@@ -64,3 +65,35 @@ Each section has its own module that wires data modules to chart factory calls:
 - Fullscreen mode changes data limits (e.g. top-N from 10/30 to 50/100) via `inFullscreen` and `inFullscreenGraph` globals.
 - Clicking chart data points opens the corresponding Robot Framework log via `open_log_file` / `open_log_from_label`.
 - Chart color constants (passed/failed/skipped backgrounds and borders) live in `js/variables/chartconfig.js`.
+
+---
+
+## Adding a New Graph (checklist)
+
+Everything keys off one entry in `js/variables/graphmetadata.js`; the rest of the system derives ids, buttons, sections, and defaults from it. Naming is rigid — get it right once:
+
+| Piece | Convention | Example (`runDuration`) |
+|---|---|---|
+| `key` | `<section><Name>` camelCase | `runDuration` |
+| `label` | `"<Section> <Name>"` — **the leading word decides which section grid it lands in** (`Run`, `Suite`, `Test`, `Keyword`, `Compare`, `Table`) | `"Run Duration"` |
+| Canvas id | `<key>Graph` (from `_graphHtml`) | `runDurationGraph` |
+| Chart instance | `window["<key>Graph"]` (registered by `graphVars` in `graphs.js`) | `window.runDurationGraph` |
+| Type-switch buttons | `<key>Graph<View>` | `runDurationGraphBar`, `runDurationGraphLine` |
+| Persisted type | `settings.graphTypes.<key>GraphType` (auto-added by `defaultGraphTypes`) | `runDurationGraphType` |
+| Create/update fns | `create_<snake_key>_graph` / `update_<snake_key>_graph` — **must be global**, the type-switch handler calls `window["create_<snake_key>_graph"]()` | `create_run_duration_graph` |
+| Config builder | `build_<snake_key>_config` | `build_run_duration_config` |
+
+Steps:
+
+1. **`js/variables/graphmetadata.js`** — add `{ key, label, defaultType, viewOptions: ["Bar", "Line"], hasFullscreenButton, html: _graphHtml(key, "Title", viewOptions) }`. Options: `defaultSize`/`minSize` (`{w, h}`), `defaultHidden: true` to ship hidden, `hasVertical` for vertically scrollable timelines. `viewOptions` must be keys of `viewOptionClassMap`. Insert it where it should appear in the default layout order.
+2. **`js/graph_data/<name>.js`** (new or existing) — a pure function `get_<name>_data(...)` that turns `filteredRuns`/`filteredSuites`/… into Chart.js datasets. Keep it DOM-free so it can be unit-tested (`testing` skill → JS).
+3. **`js/graph_creation/<section>.js`** — `build_<snake_key>_config()` calling `get_graph_config(type, data, title, xTitle, yTitle)`, then the one-liners `create_*` (`create_chart(id, build_fn)`) and `update_*` (`update_chart`). Respect `settings.graphTypes.<key>GraphType` for each view option and `inFullscreen && inFullscreenGraph.includes(key)` for larger limits. Export both.
+4. **`js/graph_creation/all.js`** — import and call `create_*` in `create_dashboard_graphs()` and `update_*` in `update_dashboard_graphs()` inside the right section block.
+5. **`js/variables/information.js`** — add `key` to `graphKeys` (generates Fullscreen/Close/Move/Show/Hide tooltips) and one `"<key>Graph<View>": "…"` tooltip per view option.
+6. **`js/variables/settings.js`** — nothing for plain graphs (types and show/hide lists are derived). Only add a `settings.switch.*` entry if the graph gets its own toggle (e.g. `ignoreSkips`), wired in `eventlisteners.js` and persisted via `set_local_storage_item`.
+7. **Template** — nothing; sections already exist (`#runStatisticsSection` … `#runDataHidden`). Compare/Table graphs are the exception and have their own markup patterns in `graphmetadata.js` (`_tableHtml`).
+8. **CSS** — only for a new `viewOptionClassMap` icon class (`css/components.css`).
+9. **Tests** — reference screenshot for the section changes: regenerate `dashboard_output/<section>/base<Section>Section.png` in Docker; add a JS unit test for the `graph_data` function.
+10. **Docs** — row in the section table of `docs/graphs-tables.md` (Graph Name / Views / Views Description / Notes).
+
+Verify: regenerate the dashboard (`dev-workflow` skill), open the section, switch every view option, toggle fullscreen, hide/show it in Customize mode, reload — position and type must persist.

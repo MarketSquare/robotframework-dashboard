@@ -36,6 +36,13 @@ Validate Dashboard Run Tags Filter
     Validate Component    id=runStatisticsSection    name=runTagsFilterAmount    folder=run
     Should Show 1 Of 1 Runs
 
+Validate Dashboard Run Tags Filter From Overview Project Card
+    Open Overview Page
+    Enable Run Tags On Overview Page
+    Open Dashboard Page From Overview Project Card    project=project_1
+    Should Show 8 Of 8 Runs
+    Validate Filter Settings    runTags=project_1
+
 Validate Dashboard Date Filter
     Set Date Filter    fromDate=03132025    fromTime=1225am
     Validate Component    id=runStatisticsSection    name=runDateFilter    folder=run
