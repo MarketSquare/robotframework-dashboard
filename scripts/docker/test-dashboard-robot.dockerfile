@@ -1,6 +1,9 @@
 # Base of the image is the playwright image for ubuntu 22.04
 FROM mcr.microsoft.com/playwright:v1.56.0-jammy
 
+# links the GHCR package built by .github/workflows/test-image.yml to this repository
+LABEL org.opencontainers.image.source=https://github.com/MarketSquare/robotframework-dashboard
+
 # we need the test requirements to be withing the image to install them
 COPY requirements-test.txt /tmp/requirements-test.txt
 RUN << EOF
