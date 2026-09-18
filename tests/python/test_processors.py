@@ -549,3 +549,138 @@ def test_keyword_processor_old_style_lib_no_dot_in_name():
     row = kw_list[0]
     assert row[1] == "PlainKeyword"   # name unchanged
     assert row[6] == "MyLib"
+
+
+# --- rebot --merge attempt history (issue #310) ---
+
+import json
+from robotframework_dashboard.processors import parse_merged_message
+
+
+class _NewStyleTest:
+    """Mimics a Robot Framework 7 test case that ran once."""
+
+    def __init__(self):
+        self.full_name = "Suite.Test"
+        self.name = "Test"
+        self.passed = False
+        self.failed = True
+        self.skipped = False
+        self.elapsed_time = timedelta(seconds=1)
+        self.start_time = datetime(2025, 1, 1, 12, 0, 1)
+        self.message = "Element not found"
+        self.tags = ["tag1"]
+        self.id = "s1-t1"
+
+MERGE_HEADER = '*HTML* <span class="merge">Test has been re-executed and results merged.</span>'
+
+
+def _merge_block(state, status, message=None):
+    block = f'<span class="{state.lower()}-status">{state} status:</span> <span class="{status.lower()}">{status}</span><br>'
+    if message:
+        block += f'<span class="{state.lower()}-message">{state} message:</span> {message}<br>'
+    return block
+
+
+def test_parse_merged_message_plain_message_has_no_attempts():
+    assert parse_merged_message("Element not found", "FAIL") == ("Element not found", [])
+    assert parse_merged_message("", "PASS") == ("", [])
+
+
+def test_parse_merged_message_single_rerun():
+    message = MERGE_HEADER + "<hr>" + _merge_block("New", "PASS") + "<hr>" + _merge_block("Old", "FAIL", "Timeout &lt;10s&gt;")
+    final_message, attempts = parse_merged_message(message, "PASS")
+    assert final_message == ""
+    assert attempts == [
+        {"status": "FAIL", "message": "Timeout <10s>"},
+        {"status": "PASS", "message": ""},
+    ]
+
+
+def test_parse_merged_message_chained_reruns_oldest_first():
+    message = (
+        MERGE_HEADER + "<hr>" + _merge_block("New", "PASS", "finally")
+        + "<hr>" + _merge_block("Old", "FAIL", "second")
+        + "<hr>" + _merge_block("Old", "FAIL", "first")
+    )
+    final_message, attempts = parse_merged_message(message, "PASS")
+    assert final_message == "finally"
+    assert [a["status"] for a in attempts] == ["FAIL", "FAIL", "PASS"]
+    assert [a["message"] for a in attempts] == ["first", "second", "finally"]
+
+
+def test_parse_merged_message_skipped_rerun_keeps_original():
+    message = (
+        '*HTML* Test has been re-executed and results merged. Latter result had '
+        '<span class="skip">SKIP</span> status and was ignored. Message:\nno environment<hr>boom'
+    )
+    final_message, attempts = parse_merged_message(message, "FAIL")
+    assert final_message == "boom"
+    assert attempts == [
+        {"status": "FAIL", "message": "boom"},
+        {"status": "SKIP", "message": "no environment"},
+    ]
+
+
+class _MergedTest(_NewStyleTest):
+    def __init__(self):
+        super().__init__()
+        self.passed = True
+        self.failed = False
+        self.message = MERGE_HEADER + "<hr>" + _merge_block("New", "PASS") + "<hr>" + _merge_block("Old", "FAIL", "x" * 200)
+
+
+def test_test_processor_stores_attempts_and_final_message():
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list).visit_test(_MergedTest())
+    row = test_list[0]
+    assert row[8] == ""  # the merge HTML is not stored as the test message
+    attempts = json.loads(row[11])
+    assert [a["status"] for a in attempts] == ["FAIL", "PASS"]
+    assert len(attempts[0]["message"]) == 150  # attempt messages are truncated like test messages
+
+
+def test_test_processor_without_rerun_has_empty_attempts():
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list).visit_test(_NewStyleTest())
+    assert test_list[0][11] == ""
+
+
+def test_merged_output_end_to_end(tmp_path):
+    """rebot --merge of two fixtures gives one run whose tests carry an attempt chain."""
+    from robot.rebot import rebot_cli
+    from tests.python.conftest import OUTPUTS_DIR
+
+    merged = tmp_path / "merged.xml"
+    rebot_cli(
+        ["--merge", "--output", str(merged), "--log", "NONE", "--report", "NONE",
+         str(OUTPUTS_DIR / "output-20260817-021512.xml"), str(OUTPUTS_DIR / "output-20260818-021545.xml")],
+        exit=False,
+    )
+    processor = OutputProcessor(merged)
+    processor.get_run_start()
+    tests = processor.get_output_data()["tests"]
+    assert tests
+    for test in tests:
+        assert not test[8].startswith("*HTML*")
+        assert len(json.loads(test[11])) == 2
+
+
+def test_merged_output_run_and_suite_start_time_fall_back_to_first_test(tmp_path):
+    """rebot --merge clears the start time of merged suites; the earliest test start is used instead."""
+    from robot.rebot import rebot_cli
+    from tests.python.conftest import OUTPUTS_DIR
+
+    merged = tmp_path / "merged.xml"
+    rebot_cli(
+        ["--merge", "--output", str(merged), "--log", "NONE", "--report", "NONE",
+         str(OUTPUTS_DIR / "output-20260817-021512.xml"), str(OUTPUTS_DIR / "output-20260818-021545.xml")],
+        exit=False,
+    )
+    processor = OutputProcessor(merged)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    assert data["runs"][0][8] is not None
+    first_test_start = min(test[7] for test in data["tests"])
+    assert data["runs"][0][8] == first_test_start
+    assert all(suite[8] is not None for suite in data["suites"])

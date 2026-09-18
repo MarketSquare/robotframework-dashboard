@@ -27,17 +27,20 @@ vi.mock('@js/variables/chartconfig.js', () => ({
         backgroundColor: 'rgba(206, 62, 1, 0.7)',
         borderColor: '#ce3e01',
     },
+    rerunBorderColor: '#36a2eb',
+    rerunBorderWidth: 3,
 }));
 vi.mock('@js/variables/data.js', () => ({
     message_config: 'placeholder_message_config',
 }));
-vi.mock('@js/graph_data/helpers.js', () => ({
+vi.mock('@js/graph_data/helpers.js', async () => ({
+    ...(await vi.importActual('@js/graph_data/helpers.js')),
     convert_timeline_data: (datasets) => {
         const grouped = {};
         for (const ds of datasets) {
             const key = `${ds.label}::${ds.backgroundColor}::${ds.borderColor}`;
             if (!grouped[key]) {
-                grouped[key] = { label: ds.label, data: [], backgroundColor: ds.backgroundColor, borderColor: ds.borderColor, parsing: true };
+                grouped[key] = { label: ds.label, data: [], backgroundColor: ds.backgroundColor, borderColor: ds.borderColor, borderWidth: ds.borderWidth, parsing: true };
             }
             grouped[key].data.push(...ds.data);
         }
@@ -62,6 +65,7 @@ function makeTestData(entries) {
         skipped: e.skipped ?? 0,
         elapsed_s: e.elapsed_s ?? 1.0,
         message: e.message || '',
+        attempts: e.attempts || '',
     }));
 }
 
@@ -69,6 +73,41 @@ function makeTestData(entries) {
 describe('get_messages_data', () => {
     beforeEach(() => {
         settings.show.aliases = false;
+        settings.switch = { testRerunView: 'reruns' };
+    });
+
+    describe('rerun attempt history', () => {
+        const hardFail = '[{"status": "FAIL", "message": "first"}, {"status": "FAIL", "message": "last"}]';
+
+        it('only counts the final message, the attempts are not extra entries', () => {
+            const data = makeTestData([
+                { run_start: '2025-01-15 10:00:00', failed: 1, message: 'last', attempts: hardFail },
+            ]);
+            const [graphData] = get_messages_data('test', 'bar', data);
+            expect(graphData.labels).toEqual(['last']);
+            expect(graphData.datasets[0].data).toEqual([1]);
+        });
+
+        it('marks re-executed tests in the timeline and exposes the attempts in pointMeta', () => {
+            const data = makeTestData([
+                { run_start: '2025-01-15 10:00:00', failed: 1, message: 'last', attempts: hardFail },
+                { run_start: '2025-01-16 10:00:00', failed: 1, message: 'last' },
+            ]);
+            const [graphData, , pointMeta] = get_messages_data('test', 'timeline', data);
+            const marked = graphData.datasets.filter(d => d.borderWidth === 3);
+            expect(marked).toHaveLength(1);
+            expect(pointMeta['last::0'].attempts).toHaveLength(2);
+            expect(pointMeta['last::1'].attempts).toEqual([]);
+        });
+
+        it('ignores the attempt history with the rerun view set to final', () => {
+            settings.switch.testRerunView = 'final';
+            const data = makeTestData([
+                { run_start: '2025-01-15 10:00:00', failed: 1, message: 'last', attempts: hardFail },
+            ]);
+            const [graphData] = get_messages_data('test', 'timeline', data);
+            expect(graphData.datasets.filter(d => d.borderWidth === 3)).toHaveLength(0);
+        });
     });
 
     describe('bar graph type', () => {

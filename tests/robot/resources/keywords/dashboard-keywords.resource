@@ -81,6 +81,27 @@ Validate Component
     Take Screenshot    filename=${SCREENSHOT_FOLDER}/${name}    selector=id=${id}
     Validate Screenshot    screenshot=${name}    reference=${name}    folder=${folder}    threshold=${threshold}
 
+Set Test Statistics Rerun View
+    [Arguments]    ${view}
+    Select Options By    id=testRerunView    value    ${view}
+    Wait For Elements State    selector=id=loading    state=hidden
+
+Get Rerun Marked Bar Count
+    [Documentation]    Bars in a timeline graph that carry the rerun border (blue, width 3).
+    [Arguments]    ${graph}=testStatisticsGraph
+    ${count}    Evaluate JavaScript    ${None}    () => window.${graph}.data.datasets.filter(dataset => dataset.borderWidth === 3).length
+    RETURN    ${count}
+
+Set Compare Tests Rerun View
+    [Arguments]    ${view}
+    Select Options By    id=compareRerunView    value    ${view}
+    Wait For Elements State    selector=id=loading    state=hidden
+
+Get Test Count With Attempts
+    [Documentation]    Tests in the filtered data that carry a rerun attempt history.
+    ${count}    Evaluate JavaScript    ${None}    () => filteredTests.filter(test => test.attempts).length
+    RETURN    ${count}
+
 Open Filter Dialog
     Click    selector=id=filters
 

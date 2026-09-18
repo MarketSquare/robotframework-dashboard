@@ -9,10 +9,12 @@ import {
     lineConfig,
     passedConfig,
     failedConfig,
-    skippedConfig
+    skippedConfig,
+    rerunBorderColor,
+    rerunBorderWidth
 } from "../variables/chartconfig.js";
 import { settings, get_run_label } from "../variables/settings.js";
-import { convert_timeline_data, exclude_from_suite_data } from "./helpers.js";
+import { convert_timeline_data, exclude_from_suite_data, parse_test_attempts, resolve_test_status } from "./helpers.js";
 import { compareRunIds } from "../variables/graphs.js";
 
 // function to prepare the data in the correct format for statistics graphs
@@ -132,7 +134,16 @@ function _get_test_filters() {
                 .map(id => document.getElementById(id).value)
                 .filter(val => val !== "None")
         )],
+        // "final" (merged result), "reruns" (final result, re-executed tests marked) or "first" (first attempt)
+        rerunView: (isCompare ? settings.switch.compareRerunView : settings.switch.testRerunView) || "reruns",
     };
+}
+
+// function to get the bar config for a test status, with the rerun border when the test was re-executed
+function get_test_status_config(statusName, markRerun) {
+    const config = statusName === "PASS" ? passedConfig : statusName === "FAIL" ? failedConfig : skippedConfig;
+    if (!markRerun) return config;
+    return { ...config, borderColor: rerunBorderColor, borderWidth: rerunBorderWidth };
 }
 
 function _get_test_label(test) {
@@ -182,22 +193,19 @@ function get_test_statistics_data(filteredTests) {
             runStarts.push(runId);
         }
         const runAxis = runStarts.indexOf(runId);
-        const statusName = test.passed == 1 ? "PASS" : test.failed == 1 ? "FAIL" : "SKIP";
-        const config =
-            test.passed == 1 ? passedConfig :
-                test.failed == 1 ? failedConfig :
-                    test.skipped == 1 ? skippedConfig : null;
-        if (config) {
-            datasets.push({
-                label: testLabel,
-                data: [{ x: [runAxis, runAxis + 1], y: testLabel }],
-                ...config,
-            });
-        }
+        const attempts = parse_test_attempts(test);
+        const statusName = resolve_test_status(test, attempts, filters.rerunView);
+        const markRerun = attempts.length > 0 && filters.rerunView !== "final";
+        datasets.push({
+            label: testLabel,
+            data: [{ x: [runAxis, runAxis + 1], y: testLabel }],
+            ...get_test_status_config(statusName, markRerun),
+        });
         testMetaMap[`${testLabel}::${runAxis}`] = {
             message: test.message || '',
             elapsed_s: test.elapsed_s || 0,
             status: statusName,
+            attempts,
         };
     }
     let finalDatasets = convert_timeline_data(datasets);
@@ -257,7 +265,9 @@ function get_test_statistics_line_data(filteredTests) {
     for (const test of filteredTests) {
         if (_should_skip_test(test, filters)) continue;
         const testLabel = _get_test_label(test);
-        const statusName = test.passed == 1 ? "Passed" : test.failed == 1 ? "Failed" : "Skipped";
+        const attempts = parse_test_attempts(test);
+        const resolvedStatus = resolve_test_status(test, attempts, filters.rerunView);
+        const statusName = resolvedStatus === "PASS" ? "Passed" : resolvedStatus === "FAIL" ? "Failed" : "Skipped";
 
         if (!testDataMap.has(testLabel)) {
             testDataMap.set(testLabel, []);
@@ -266,6 +276,8 @@ function get_test_statistics_line_data(filteredTests) {
             x: new Date(test.start_time),
             message: test.message || "",
             status: statusName,
+            attempts,
+            markRerun: attempts.length > 0 && filters.rerunView !== "final",
             runStart: test.run_start,
             runAlias: test.run_alias,
             runName: test.run_name,
@@ -301,6 +313,7 @@ function get_test_statistics_line_data(filteredTests) {
     const allPoints = [];
     const allColors = [];
     const allBorderColors = [];
+    const allBorderWidths = [];
     const allMeta = [];
 
     for (const [testLabel, points] of testDataMap) {
@@ -314,10 +327,12 @@ function get_test_statistics_line_data(filteredTests) {
                 skippedBackgroundColor
             );
             allBorderColors.push(
+                p.markRerun ? rerunBorderColor :
                 p.status === "Passed" ? passedBackgroundBorderColor :
                 p.status === "Failed" ? failedBackgroundBorderColor :
                 skippedBackgroundBorderColor
             );
+            allBorderWidths.push(p.markRerun ? rerunBorderWidth : 1);
             allMeta.push(p);
         }
     }
@@ -327,6 +342,7 @@ function get_test_statistics_line_data(filteredTests) {
         data: allPoints,
         pointBackgroundColor: allColors,
         pointBorderColor: allBorderColors,
+        pointBorderWidth: allBorderWidths,
         pointRadius: 6,
         pointHoverRadius: 9,
         showLine: false,

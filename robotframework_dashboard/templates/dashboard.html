@@ -269,6 +269,14 @@
                                             id="switchSectionFiltersApplyTest" />
                                     </div>
                                 </div>
+                                <div class="filter-group flex-nowrap">
+                                    <label class="form-label mb-0 text-nowrap information info-label" for="testRerunView" id="testSectionRerunFilter">Reruns <span class="info-icon-small ms-1"></span></label>
+                                    <select class="form-select form-select-sm w-auto" id="testRerunView">
+                                        <option value="reruns">Mark Reruns</option>
+                                        <option value="final">Final Result</option>
+                                        <option value="first">First Attempt</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-auto ms-auto section-header-icons">
                                 <a class="add-stat-widget-header information" id="testAddStatWidgetHeader" data-section="test" hidden></a>
@@ -386,6 +394,14 @@
                                         <input class="form-check-input" type="checkbox" role="switch"
                                             id="switchSuitePathsCompareSection" />
                                     </div>
+                                </div>
+                                <div class="col-auto d-flex me-2">
+                                    <label class="form-label mb-0 me-2 mt-1 text-nowrap information info-label" for="compareRerunView" id="compareSectionRerunFilter">Reruns <span class="info-icon-small ms-1"></span></label>
+                                    <select class="form-select form-select-sm w-auto" id="compareRerunView">
+                                        <option value="reruns">Mark Reruns</option>
+                                        <option value="final">Final Result</option>
+                                        <option value="first">First Attempt</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

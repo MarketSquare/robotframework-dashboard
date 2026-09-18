@@ -72,6 +72,21 @@ Output Arguments
     ...    -o ${CURDIR}/../outputs/output-20260910-060011.xml:prod:project_2:version_1.2
     RETURN    ${files}
 
+Generate Dashboard With Merged Output
+    [Documentation]    Generates a dashboard with one regular run and one run merged from two outputs
+    ...    with `rebot --merge`, the way `robot --rerunfailed` results are combined (see docs/reruns.md).
+    ${index}    Get Dashboard Index
+    Release Lock    name=dashboard_index
+    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
+    ${merged}    Set Variable    ${OUTPUT_DIR}/merged_${DASHBOARD_INDEX}.xml
+    ${output}    Run    command=rebot --merge --output ${merged} --log NONE --report NONE ${CURDIR}/../outputs/output-20260817-021512.xml ${CURDIR}/../outputs/output-20260818-021545.xml
+    Log    ${output}
+    ${files}    Catenate  SEPARATOR=${SPACE}
+    ...    -o ${CURDIR}/../outputs/output-20260817-021512.xml:prod:project_1:version_1.0
+    ...    -o ${merged}:prod:project_1:version_1.0
+    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db ${files} -n robotdashboard_${DASHBOARD_INDEX}.html -j ${CURDIR}/../test_config.json
+    Log    ${output}
+
 Remove Database And Dashboard
     ${files}    List Files In Directory    path=${CURDIR}/../../../..
     FOR    ${file}    IN    @{files}

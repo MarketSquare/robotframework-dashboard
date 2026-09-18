@@ -1,8 +1,8 @@
 import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
-import { failedConfig } from "../variables/chartconfig.js";
+import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
 import { message_config } from "../variables/data.js";
-import { convert_timeline_data } from "./helpers.js";
+import { convert_timeline_data, parse_test_attempts } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for messages graphs
@@ -104,15 +104,19 @@ function get_messages_data(dataType, graphType, filteredData) {
                 const foundValues = filteredData.filter(value => check_label(value.message, label) && value.run_start === runStart);
                 if (foundValues.length > 0) {
                     const value = foundValues[0];
+                    // tests re-executed with robot --rerunfailed (rebot --merge history) get the rerun border
+                    const attempts = (settings.switch.testRerunView || "reruns") !== "final" ? parse_test_attempts(value) : [];
                     pointMeta[`${label}::${runAxis}`] = {
                         status: value.passed == 1 ? "PASS" : value.failed == 1 ? "FAIL" : "SKIP",
                         elapsed_s: value.elapsed_s || 0,
                         message: value.message || '',
+                        attempts,
                     };
                     datasets.push({
                         label: label,
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
                         ...failedConfig,
+                        ...(attempts.length > 0 ? { borderColor: rerunBorderColor, borderWidth: rerunBorderWidth } : {}),
                     });
                     foundValues.forEach(value => runLabelsSet.add(get_run_label(value)));
                 }

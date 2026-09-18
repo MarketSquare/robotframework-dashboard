@@ -26,3 +26,7 @@ Validate Compare Test Table Base View
 Validate Compare Keyword Table Base View
     Open Tables Page
     Validate Component    id=keywordTableCanvas    name=baseKeywordTable    folder=tables
+
+Validate Compare Exception Table Base View
+    Open Tables Page
+    Validate Component    id=exceptionTableCanvas    name=baseExceptionTable    folder=tables

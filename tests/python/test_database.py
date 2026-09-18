@@ -59,7 +59,7 @@ def test_tests_table_column_count(db):
     db.open_database()
     cols = db.connection.cursor().execute("PRAGMA table_info(tests)").fetchall()
     db.close_database()
-    assert len(cols) == 12
+    assert len(cols) == 13
 
 
 def test_keywords_table_column_count(db):
@@ -494,7 +494,7 @@ def test_schema_migration_runs_table_from_10_to_14(tmp_path):
 
     assert len(runs_cols) == 15
     assert len(suites_cols) == 11
-    assert len(tests_cols) == 12
+    assert len(tests_cols) == 13
     assert len(keywords_cols) == 12
 
 
@@ -584,15 +584,16 @@ def test_get_data_null_test_tags_and_id(db):
          "2020-01-01", "tag", "alias_ti", "/path.xml", "{}", None, None),
     )
     db.connection.execute(
-        "INSERT INTO tests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO tests VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
         ("2020-01-01 00:00:00+00:00", "Suite.Test", "Test", 1, 0, 0, "0.1",
-         "2020-01-01", "OK", None, "alias_ti", None),
+         "2020-01-01", "OK", None, "alias_ti", None, None),
     )
     db.connection.commit()
     data = db.get_data()
     db.close_database()
     assert len(data["tests"]) == 1
     assert data["tests"][0]["tags"] == ""
+    assert data["tests"][0]["attempts"] == ""
 
 
 # --- _get_run_data ---
@@ -791,3 +792,25 @@ def test_remove_run_without_exceptions_table(tmp_path):
     db.remove_runs(["index=0"])
     assert len(db.get_data()["runs"]) == 0
     db.close_database()
+
+
+# --- test attempts (rebot --merge rerun history, issue #310) ---
+
+def test_insert_and_get_data_round_trips_test_attempts(db):
+    attempts = '[{"status": "FAIL", "message": "boom"}, {"status": "PASS", "message": ""}]'
+    data = {
+        "runs": [("2020-01-01 00:00:00", "Suite", "Suite", 1, 1, 0, 0, "1.0", "2020-01-01", "[]")],
+        "suites": [],
+        "tests": [
+            ("2020-01-01 00:00:00", "Suite.Retried", "Retried", 1, 0, 0, "0.1", "2020-01-01", "", "[]", "s1-t1", attempts),
+            ("2020-01-01 00:00:00", "Suite.Once", "Once", 1, 0, 0, "0.1", "2020-01-01", "", "[]", "s1-t2", ""),
+        ],
+        "keywords": [],
+    }
+    db.open_database()
+    db.insert_output_data(data, tags=[], run_alias="alias", path="/p.xml", project_version="")
+    tests = {row["name"]: row for row in db.get_data()["tests"]}
+    db.close_database()
+    assert tests["Retried"]["attempts"] == attempts
+    assert tests["Retried"]["run_alias"] == "alias"
+    assert tests["Once"]["attempts"] == ""

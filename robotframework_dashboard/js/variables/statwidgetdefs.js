@@ -28,6 +28,9 @@ const STAT_WIDGET_DEFS = [
     { key: "test.passRate",          label: "Test Pass Rate",      section: "Test"    },
     { key: "test.totalTime",         label: "Total Test Time",     section: "Test"    },
     { key: "test.avgTime",           label: "Avg Test Time",       section: "Test"    },
+    { key: "test.reranTests",        label: "Re-executed Tests",   section: "Test"    },
+    { key: "test.recoveredOnRerun",  label: "Recovered On Rerun",  section: "Test"    },
+    { key: "test.failedAllAttempts", label: "Failed All Attempts", section: "Test"    },
     // Keyword scope
     { key: "keyword.totalExecutions", label: "Keyword Executions", section: "Keyword" },
     { key: "keyword.uniqueKeywords",  label: "Unique Keywords",    section: "Keyword" },

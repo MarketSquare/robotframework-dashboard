@@ -1260,7 +1260,9 @@ function setup_graph_view_buttons() {
         ["heatMapTestType", "switch.heatmapStatus"],
         ["heatMapHour", "switch.heatmapHour"],
         ["testNoChanges", "switch.testStatusFilter"],
+        ["testRerunView", "switch.testRerunView"],
         ["compareNoChanges", "switch.compareStatusFilter"],
+        ["compareRerunView", "switch.compareRerunView"],
     ].forEach(([elementId, settingsKey]) => {
         const value = settingsKey.split(".").reduce((acc, k) => acc?.[k], settings);
         if (typeof value === "string") {
@@ -1274,8 +1276,10 @@ function setup_graph_view_buttons() {
         ["heatMapTestType", "runHeatmapGraph", update_run_heatmap_graph, "switch.heatmapStatus", "select"],
         ["testOnlyChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testOnlyChanges", "checkbox"],
         ["testNoChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testStatusFilter", "select"],
+        ["testRerunView", "testStatisticsGraph", update_test_statistics_graph, "switch.testRerunView", "select"],
         ["compareOnlyChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareOnlyChanges", "checkbox"],
         ["compareNoChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareStatusFilter", "select"],
+        ["compareRerunView", "compareTestsGraph", update_compare_tests_graph, "switch.compareRerunView", "select"],
         ["onlyLastRunSuite", "suiteMostTimeConsumingGraph", update_suite_most_time_consuming_graph, "switch.onlyLastRunSuite", "checkbox"],
         ["onlyLastRunTest", "testMostTimeConsumingGraph", update_test_most_time_consuming_graph, "switch.onlyLastRunTest", "checkbox"],
         ["onlyLastRunKeyword", "keywordMostTimeConsumingGraph", update_keyword_most_time_consuming_graph, "switch.onlyLastRunKeyword", "checkbox"],

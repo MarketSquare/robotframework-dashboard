@@ -75,6 +75,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             # run: metadata was added in 1.0.0
             # keyword: owner was added in 1.2.0
             # run: project_version was added in 1.3.0
+            # test: attempts (rebot --merge rerun history) was added in 2.3.0
             run_table_length = get_runs_length()
             if run_table_length == 10:  # -> column alias not present
                 self.connection.cursor().execute(RUN_TABLE_UPDATE_ALIAS)
@@ -117,6 +118,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 test_table_length = get_tests_length()
             if test_table_length == 11:
                 self.connection.cursor().execute(TEST_TABLE_UPDATE_ID)
+                self.connection.commit()
+                test_table_length = get_tests_length()
+            if test_table_length == 12:
+                self.connection.cursor().execute(TEST_TABLE_UPDATE_ATTEMPTS)
                 self.connection.commit()
                 test_table_length = get_tests_length()
 
@@ -344,6 +349,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 row["tags"] = ""
             if row["id"] == None:
                 row["id"] == ""
+            if row.get("attempts") == None:
+                row["attempts"] = ""
             # For older entries without timezone in run_start, append current local timezone
             if not self._has_timezone_offset(row["run_start"]):
                 row["run_start"] = f"{row['run_start']}{local_tz}"

@@ -37,7 +37,7 @@
   flex-wrap: wrap;
   align-items: center;
   column-gap: 0.75rem;
-  row-gap: 0.35rem;
+  row-gap: 6px;
 }
 
 .section-filters .filter-group {
