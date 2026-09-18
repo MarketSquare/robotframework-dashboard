@@ -21,7 +21,6 @@ function setup_output_button_eventlisteners() {
     document.getElementById("addOutputData").addEventListener("click", add_output_data);
     document.getElementById("addOutputFolderPath").addEventListener("click", add_output_folder_path);
     document.getElementById("removeOutputs").addEventListener("click", remove_outputs);
-    document.getElementById("removeLimit").addEventListener("click", remove_outputs);
     document.getElementById("removeAllOutputs").addEventListener("click", remove_all_outputs);
     document.getElementById("addLogData").addEventListener("click", add_log);
     document.getElementById("addLogFile").addEventListener("click", add_log_file);

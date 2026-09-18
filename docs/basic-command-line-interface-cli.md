@@ -129,7 +129,7 @@ robotdashboard -r limit=10 --logremoved run:keyword
 - Must specify data types: index, run_start, alias, tag or limit.  
 - Index ranges use `:` for ranges and `;` for lists.  
 - Quotation marks are required when spaces exist in identifiers.  
-- With limit=10 only the 10 most recent runs will be kept, all others will be removed.  
+- With limit=10 only the 10 most recent runs will be kept, all others will be removed. The limit must be at least 1.  
 - With limit=10,tag=nightly only the 10 most recent runs **carrying that tag** are kept; older tagged runs are removed and runs without the tag are left untouched. Add more `tag=` values to scope to multiple tags. Only `limit` supports this tag scoping — `tag` and `age` combined just run as two independent operations.  
 - With age=10d only runs _**older**_ than 10 days will be removed  
 - With age=-10d (leading minus) only runs _**younger**_ than 10 days will be removed  

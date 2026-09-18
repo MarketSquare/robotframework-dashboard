@@ -566,6 +566,15 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         console = ""
         parts = run.split(";")
         limit = int(parts[0].replace("limit=", ""))
+        # A limit below 1 would slice past the start of the candidate list and
+        # remove every run (issue #333); removing everything is a separate,
+        # explicit action.
+        if limit < 1:
+            print(
+                f"  ERROR: no runs were removed as the provided limit ({limit}) must be at least 1"
+            )
+            console += f"  ERROR: no runs were removed as the provided limit ({limit}) must be at least 1\n"
+            return console
         tag_filters = [
             part.replace("tag=", "") for part in parts[1:] if part.startswith("tag=")
         ]

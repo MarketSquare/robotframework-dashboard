@@ -92,8 +92,7 @@ function add_output_folder_path() {
 }
 
 // function to remove outputs from the database
-function remove_outputs() {
-    document.getElementById("removeSpinner").hidden = false
+async function remove_outputs() {
     var [data, run_starts, indexes, aliases, tags] = [{}, [], [], [], []]
     const removeRunStarts = document.getElementById("removeRunStarts").value.split(",")
     for (const runStart of removeRunStarts) {
@@ -115,7 +114,15 @@ function remove_outputs() {
     if (aliases.length > 0) { data["aliases"] = aliases }
     const removeTags = document.getElementById("removeTags").value.split(",")
     const removeLimit = document.getElementById("removeLimit").value
-    if (removeLimit != "") { data["limit"] = removeLimit }
+    if (removeLimit != "") {
+        // the server rejects limits below 1 (issue #333); catch it here so the
+        // other fields are not cleared for nothing
+        if (!(Number(removeLimit) >= 1)) {
+            add_alert("The limit must be a number of at least 1", "warning")
+            return
+        }
+        data["limit"] = removeLimit
+    }
     const removeAge = document.getElementById("removeAge").value
     if (removeAge != "") { data["age"] = removeAge }
     for (const removeTag of removeTags) {
@@ -123,6 +130,17 @@ function remove_outputs() {
         tags.push(removeTag)
     }
     if (tags.length > 0) { data["tags"] = tags }
+    if (Object.keys(data).length == 0) {
+        add_alert("Nothing to remove: fill in at least one of the remove fields first", "warning")
+        return
+    }
+    // the confirm modal renders HTML, so keep the user-typed values out of it
+    const criteria = Object.keys(data).join(", ")
+    const confirmed = await confirm_action(`Are you sure you want to remove the outputs matching the given ${criteria}?<br><br>
+                This is irreversible!
+                `);
+    if (!confirmed) { return }
+    document.getElementById("removeSpinner").hidden = false
     document.getElementById("removeRunStarts").value = ""
     document.getElementById("removeIndexes").value = ""
     document.getElementById("removeAliases").value = ""

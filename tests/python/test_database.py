@@ -208,6 +208,18 @@ def test_remove_by_limit_higher_than_count_is_noop(populated_db):
     assert len(populated_db.get_data()["runs"]) == 1
 
 
+def test_remove_by_limit_below_one_is_rejected(populated_db):
+    """Issue #333: limit=0 / negative must not slice away every run."""
+    populated_db.open_database()
+    _insert_second_run(populated_db)
+    for limit in ("limit=0", "limit=-1"):
+        console = populated_db.remove_runs([limit])
+        assert "ERROR" in console
+        assert "must be at least 1" in console
+        assert len(populated_db.get_data()["runs"]) == 2
+    populated_db.close_database()
+
+
 # --- remove_runs by limit scoped to tag(s) (issue #309) ---
 
 def _insert_run(db, xml, tags):
