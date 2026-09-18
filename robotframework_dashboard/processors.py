@@ -5,7 +5,7 @@ from pathlib import Path
 from collections import Counter
 from html import unescape
 from json import dumps
-import re
+from re import compile, DOTALL
 
 # `rebot --merge` (used after `robot --rerunfailed`) keeps only the final result of a
 # re-executed test, but records every earlier attempt in the test message as HTML:
@@ -15,20 +15,20 @@ import re
 #   <hr><span class="old-status">Old status:</span> <span class="fail">FAIL</span><br>
 #   <span class="old-message">Old message:</span> ...<br>
 # Each further merge prepends its result, so the "old" blocks run newest to oldest.
-MERGE_HEADER_RE = re.compile(
+MERGE_HEADER_RE = compile(
     r"^\*HTML\*\s*<span class=\"merge\">(?:Test|Task) has been re-executed and results merged\.</span>"
 )
-MERGE_ATTEMPT_RE = re.compile(
+MERGE_ATTEMPT_RE = compile(
     r"<span class=\"(?:new|old)-status\">(?:New|Old) status:</span>\s*<span class=\"\w+\">(\w+)</span><br>"
     r"(?:<span class=\"(?:new|old)-message\">(?:New|Old) message:</span>\s*(.*?)<br>)?",
-    re.DOTALL,
+    DOTALL,
 )
 # The variant rebot writes when the re-execution was skipped: the original result is
 # kept and the skipped attempt is only mentioned in the message.
-MERGE_SKIPPED_RE = re.compile(
+MERGE_SKIPPED_RE = compile(
     r"^\*HTML\*\s*(?:Test|Task) has been re-executed and results merged\. Latter result had "
     r"<span class=\"skip\">SKIP</span> status and was ignored\. Message:\n(.*?)(?:<hr>(.*))?$",
-    re.DOTALL,
+    DOTALL,
 )
 
 

@@ -32,7 +32,7 @@ Then add the merged `output.xml` like any other run:
 robotdashboard --outputpath output.xml
 ```
 
-With the [server](dashboard-server.md), push the merged file with the [standalone script](listener-integration.md#pushing-outputxml-without-a-test-run-robotdashboardscriptpy) after the `rebot --merge` step. The [listener](listener-integration.md) uploads the output of the run it is attached to, which is the unmerged rerun, so it is not suitable for this workflow.
+With the [server](dashboard-server.md), upload the merged file after the `rebot --merge` step: the [standalone script](listener-integration.md#pushing-outputxml-without-a-test-run-robotdashboardscriptpy), a request to [`/add-outputs`](dashboard-server.md#server-features-endpoints) or the [admin page](dashboard-server.md#adding-outputs) all work. Only the [listener](listener-integration.md) does not fit: it uploads the output of the robot run it is attached to when that run ends, which is before `rebot --merge` has produced the merged file.
 
 ::: warning Run start of a merged output
 robotdashboard uses the `generated` timestamp of the `output.xml` as the run identity. For a merged output that is the moment `rebot --merge` ran, i.e. shortly after the last rerun finished.
