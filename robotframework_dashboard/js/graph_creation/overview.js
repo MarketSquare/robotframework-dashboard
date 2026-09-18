@@ -35,11 +35,31 @@ import {
     areGroupedProjectsPrepared,
     filteredRuns,
 } from '../variables/globals.js';
-import { runs, use_logs } from '../variables/data.js';
+import { runs, tests, use_logs } from '../variables/data.js';
+import { get_rerun_summary } from '../graph_data/helpers.js';
 import {
     clear_all_filters,
     update_filter_active_indicator,
 } from '../filter.js';
+
+// rerun summary (rebot --merge attempt history) per run, keyed by the run_start without
+// milliseconds/timezone so it matches run_start values that were reformatted by the filters
+let rerunSummaryByRun = null;
+function get_rerun_summary_for_run(runStart) {
+    if (!rerunSummaryByRun) {
+        rerunSummaryByRun = new Map();
+        const testsByRun = new Map();
+        for (const test of tests) {
+            const key = String(test.run_start).slice(0, 19);
+            if (!testsByRun.has(key)) testsByRun.set(key, []);
+            testsByRun.get(key).push(test);
+        }
+        for (const [key, runTests] of testsByRun) {
+            rerunSummaryByRun.set(key, get_rerun_summary(runTests));
+        }
+    }
+    return rerunSummaryByRun.get(String(runStart ?? "").slice(0, 19)) || { reran: 0, recovered: 0, failedAllAttempts: 0 };
+}
 
 // Data prep/aggregation
 function prepare_projects_grouped_data() {
@@ -204,6 +224,11 @@ function generate_overview_card_html(
     const runTimeHtml = relativeRunTime
         ? `<div class="run-card-run-time information" data-title="Run executed at ${format_run_start_exact(runStart)}">${relativeRunTime}</div>`
         : '';
+    // tests re-executed with robot --rerunfailed (rebot --merge history), shown like the other status lines
+    const reruns = isTotalStats ? { reran: 0 } : get_rerun_summary_for_run(runStart);
+    const rerunLineHtml = reruns.reran > 0
+        ? `<div class="blue-text text-nowrap information" data-title="${reruns.reran} tests were re-executed after failing, ${reruns.recovered} of them passed on a rerun">Rerun: ${reruns.reran} (fixed ${reruns.recovered})</div>`
+        : '';
     return `
     <div class="col-4 overview-card" id="${projectNameForElementId}Card${idPostfix}" data-project-version="${normalizedProjectVersion}">
         <div class="card border-3 border-${status}">
@@ -224,6 +249,7 @@ function generate_overview_card_html(
                             <div class="green-text">Passed: ${stats[0]}</div>
                             <div class="red-text">Failed: ${stats[1]}</div>
                             <div class="yellow-text">Skipped: ${stats[2]}</div>
+                            ${rerunLineHtml}
                         </div>
                     </div>
                     <div class="col-5 d-flex align-items-center" style="overflow:auto;">

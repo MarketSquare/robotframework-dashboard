@@ -45,7 +45,7 @@ All unit tests live flat in `tests/python/` — no subdirectories.
 
 ## Test data
 
-Real `output.xml` files live in `tests/robot/resources/outputs/`. These are the same 15 Robot Framework output files used by the acceptance tests — no synthetic mocks. Using real XMLs means `OutputProcessor` and `DatabaseProcessor` are exercised against genuine data, not fabricated inputs.
+Real `output.xml` files live in `tests/robot/resources/outputs/`. These are the same 18 Robot Framework output files used by the acceptance tests — no synthetic mocks. Using real XMLs means `OutputProcessor` and `DatabaseProcessor` are exercised against genuine data, not fabricated inputs. The tests pick fixtures by `sorted(OUTPUTS_DIR.glob("output-*.xml"))`, never by file name, so regenerating the fixtures (`tests/robot/resources/generator/`, see its README) does not require touching them.
 
 Inline data fixtures (plain Python tuples/dicts) are used only for edge cases that real XMLs cannot cover, such as malformed inputs and single-entry keyword lists.
 

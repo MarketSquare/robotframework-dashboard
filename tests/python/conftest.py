@@ -9,7 +9,8 @@ import pytest
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
-SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
+ALL_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))
+SAMPLE_XML = ALL_XML[0]
 
 
 @pytest.fixture

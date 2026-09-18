@@ -13,7 +13,9 @@ Deep reference for `tests/robot/`. How to run them is in [SKILL.md](SKILL.md) �
 | `robotframework-databaselibrary` | SQLite query assertions |
 | `robotframework-doctestlibrary` | Visual screenshot comparison |
 
-`scripts/robot-tests.sh` runs pabot with `--pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 2 -d results`. `--pabotlib` starts the shared lock server (needed by the index counter below); `--testlevelsplit` parallelises per test case.
+`scripts/robot-tests.sh` runs pabot with `--pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes 4 -d results` (`ROBOT_PROCESSES` overrides the process count). `--pabotlib` starts the shared lock server (needed by the index counter below); `--testlevelsplit` parallelises per test case.
+
+If any test fails, the script reruns **only the failed tests** once (`--rerunfailed`) and merges both attempts with `rebot --merge`; the exit code is the number of tests still failing. This absorbs transient failures in the container (Playwright browser-launch crash, a dropped keystroke in a date input, a modal still fading). `results/output.xml` / `log.html` are the merged result; `results/first_output.xml` and `results/rerun_output.xml` keep the attempts. A test that is red in the merged log therefore failed **twice** — a real problem, not a flake. When diagnosing, remember the merged run only contains the rerun's screenshots for rerun tests.
 
 ---
 
@@ -38,28 +40,38 @@ Deep reference for `tests/robot/`. How to run them is in [SKILL.md](SKILL.md) �
 
 | File | Contents |
 |---|---|
-| `tests/robot/resources/keywords/general-keywords.resource` | `Get Dashboard Index`, `Generate Dashboard`, `Remove Database And Dashboard With Index` |
+| `tests/robot/resources/keywords/general-keywords.resource` | `Generate Shared Dashboard` (browser suites), `Get Dashboard Index` + `Generate Dashboard` + `Remove Database And Dashboard With Index` (CLI/DB suites), `Output Arguments` (the 18 `-o file:tags` arguments) |
 | `tests/robot/resources/keywords/database-keywords.resource` | DB connection helpers, normalisation, row comparison |
-| `tests/robot/resources/keywords/dashboard-keywords.resource` | Browser lifecycle (`Open Dashboard`), page navigation (`Open Overview Page`, …), filter helpers (`Set Run Filter`, `Set Run Tags Filter`, `Set Date Filter`, `Set Amount Filter`, `Set Versions Filter`), profile helpers, `Validate Component`, `Validate Filter Settings`, `Should Show N Of M Runs`, `Change Settings` |
-| `tests/robot/resources/outputs/` | The 15 `output.xml` fixtures (tagged `prod`/`dev`, `project_1`/`project_2`, `version_1.0`–`1.2`) |
+| `tests/robot/resources/keywords/dashboard-keywords.resource` | Browser lifecycle (`Open Dashboard`, `Wait For Dashboard Idle`), page navigation (`Open Overview Page`, …), filter helpers (`Set Run Filter`, `Set Run Tags Filter`, `Set Date Filter`, `Set Amount Filter`, `Set Versions Filter`), profile helpers, `Validate Component`, `Validate Filter Settings`, `Should Show N Of M Runs`, `Change Settings` |
+| `tests/robot/resources/outputs/` | The 18 `output.xml` + `log.html` fixtures — **generated** by `tests/robot/resources/generator/generate.py` (see its README), never edited by hand. `Generate Dashboard` tags them `prod`/`dev`, `project_1`/`project_2`, `version_1.0`–`1.2` |
 | `tests/robot/resources/cli_output/` | Expected CLI output reference files |
 | `tests/robot/resources/database_output/` | Expected DB row reference files |
 | `tests/robot/resources/dashboard_output/<folder>/<name>.png` | Reference screenshots |
-| `tests/robot/resources/test_config.json` | Passed via `-j` in `Generate Dashboard`; dismisses notices/banners that would overlay screenshots |
+| `tests/robot/resources/test_config.json` | Passed via `-j` by `Generate Shared Dashboard`; disables chart animations (`show.animation: false`) so Chart.js draws synchronously. Add flags for notices/banners here if they ever overlay screenshots |
 
-### Parallel-safe index system
+### Shared dashboard for browser tests
 
-Tests run in parallel and each needs its own `.db` and `.html`. `Get Dashboard Index` uses a pabot lock to atomically bump `tests/robot/resources/index.txt`; each test gets integer N and works with `robotresults_N.db` + `robotdashboard_N.html`. `Remove Database And Dashboard With Index` cleans both up in teardown. Always use it for new browser tests.
+All browser tests (02–07) use identical inputs, so `Generate Shared Dashboard` (test setup) builds `robotresults_shared.db` + `robotdashboard_shared.html` **once per run** under a pabot lock and every test opens that file; each test gets its own browser context (own `localStorage`), so parallel tests cannot influence each other. The files are removed by the `__init__.robot` teardown (`Run Teardown Only Once`). Parsing the 18 fixtures per test used to be the biggest cost of the suite.
+
+### Parallel-safe index system (CLI/DB tests)
+
+When a test needs its **own** database or generated files (`01_database.robot`), `Get Dashboard Index` uses a pabot lock to atomically bump `index.txt`; the test gets integer N and works with `robotresults_N.db` + `robotdashboard_N.html`; `Remove Database And Dashboard With Index` cleans both up in teardown.
 
 ### Fixture facts useful for assertions
 
-15 runs total. By run tag: `prod` 8, `dev` 7, `project_1` 8, `project_2` 7, `amount` 1. Overview "Latest Runs" cards in run-tags mode have ids `overviewLatest<tag>Card0` (e.g. `overviewLatestproject_1Card0`).
+18 runs total, two simulated projects: `WebshopUI` (10 runs, 105–113 tests, run name / overview card `WebshopUI`) and `WebshopAPI` (8 runs, 50 tests). Runs span 2026-08-17 … 2026-09-10. By run tag: `prod` 4, `dev` 14, `project_1` 10, `project_2` 8, `amount` 1 (on a `dev` run). Overview "Latest Runs" cards in run-tags mode have ids `overviewLatest<tag>Card0` (e.g. `overviewLatestproject_1Card0`); project sections use the run name (`WebshopUISection`, `collapseWebshopUIBody`).
+
+The data is designed to fill every graph: persistent failures, flaky tests, tests broken/fixed at a given run, an outage run per project (`WebshopUI` run 7 on 2026-08-28, `WebshopAPI` run 5) whose failed tests were re-executed with `robot --rerunfailed` and merged with `rebot --merge` (one rerun for `WebshopUI` run 7, two for `WebshopAPI` run 5 — the only runs with an `attempts` history), one all-green run (`WebshopAPI` run 4, 2026-08-25) and one pass+skip-only run (`WebshopAPI` run 6, 2026-09-02), `TRY/EXCEPT` exceptions, feature-flag skips, slow outliers and duration trends. `tests/robot/resources/generator/libraries/profiles.py` says which test does what.
+
+After regenerating fixtures: rerun **all** robot suites in Docker and refresh `cli_output/`, `database_output/` and every reference screenshot.
 
 ---
 
 ## Browser tests (02–07)
 
-- Headless Chromium via `robotframework-browser`; `Open Dashboard` opens `robotdashboard_N.html` over `file://`, sets animation duration to 0, and hides the relative run-time labels so screenshots stay deterministic.
+- Headless Chromium via `robotframework-browser`; `Open Dashboard` opens `robotdashboard_shared.html` over `file://` and hides the relative run-time labels so screenshots stay deterministic.
+- **Never `Sleep` before a screenshot.** `Wait For Dashboard Idle` polls `window.dashboard_is_idle()`, a **test-only** hook that `Open Dashboard` injects from `tests/robot/resources/scripts/dashboard_idle.js` (`Evaluate JavaScript`; the shipped dashboard contains no test code): false while the page spinner, filter overlay, graph overlays, an open/closing modal or backdrop, a jQuery fade or a Chart.js animation is active, and true only after 50 ms without any of those. `Validate Component` and `Open Dashboard` call it; call it yourself before DOM assertions that follow a filter/settings change. If a new async render path is added to the dashboard (a `setTimeout`, a fade, a new overlay), extend `dashboard_idle.js` rather than sleeping in the tests (unit-tested in `tests/javascript/dashboard_idle.test.js`; the file must start with the arrow function or Browser evaluates it as an expression).
+- Note: the settings UI "animation duration" only scales the stagger delay in `graph_config.js`; Chart.js's default 1000 ms draw still runs. That is why the test config turns animations off instead.
 - `Validate Component    id=<sectionId>    name=<refName>    folder=<refFolder>` takes a screenshot of one element and compares it with `tests/robot/resources/dashboard_output/<refFolder>/<refName>.png` at 99.5 % accuracy by default (`threshold=0.005`); pass `threshold=` to loosen.
 - Prefer DOM assertions (`Should Show 8 Of 8 Runs`, `Validate Filter Settings    runTags=project_1`) over screenshots when the behaviour under test is a state, not a rendering — they need no reference image.
 - Put multi-step UI interactions into a named keyword in `dashboard-keywords.resource` (e.g. `Enable Run Tags On Overview Page`) rather than inlining raw `Click` sequences in the test case.

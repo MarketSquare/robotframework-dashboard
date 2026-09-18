@@ -1,7 +1,7 @@
 import { get_test_statistics_data, get_compare_statistics_graph_data } from "../graph_data/statistics.js";
 import { get_compare_suite_duration_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
-import { update_height } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { filteredRuns, filteredSuites, filteredTests } from "../variables/globals.js";
@@ -42,6 +42,7 @@ function _build_compare_tests_config() {
                         const truncated = meta.message.length > 120 ? meta.message.substring(0, 120) + "..." : meta.message;
                         lines.push(`Message: ${truncated}`);
                     }
+                    lines.push(...format_attempt_lines(meta.attempts));
                 }
                 return lines;
             },

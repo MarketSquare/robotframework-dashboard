@@ -27,10 +27,18 @@ Open Dashboard
     # the relative run times on the overview cards ("2 hours ago") change as time passes,
     # hide them so the screenshot comparisons stay deterministic
     Add Style Tag    content=.run-card-run-time { visibility: hidden; }
-    Click    selector=id=settings
-    Fill Text    selector=id=toggleAnimationDuration    txt=0
-    Click    selector=id=closeSettings
-    Wait For Elements State    selector=id=loading    state=hidden
+    # chart animations are disabled through tests/robot/resources/test_config.json (-j), so Chart.js draws synchronously
+    # test-only render-state hook, injected here so the shipped dashboard carries no test code
+    ${script}    Get File    path=${CURDIR}/../scripts/dashboard_idle.js
+    Evaluate JavaScript    ${None}    ${script}
+    Wait For Dashboard Idle
+
+Wait For Dashboard Idle
+    [Documentation]    Waits until the dashboard reports that all rendering has finished: no spinner,
+    ...    overlay, modal, fade or Chart.js animation, and 50 ms without any of those
+    ...    (window.dashboard_is_idle, injected by Open Dashboard from resources/scripts/dashboard_idle.js).
+    ...    Use before every screenshot or DOM assertion that follows a filter/settings change instead of sleeping.
+    Wait For Function    () => window.dashboard_is_idle()    timeout=10s    polling=raf
 
 Close Dashboard
     Close Page
@@ -69,9 +77,30 @@ Validate Screenshot
 
 Validate Component
     [Arguments]    ${id}    ${name}    ${folder}    ${threshold}=${EMPTY}
-    Sleep    time_=1s
+    Wait For Dashboard Idle
     Take Screenshot    filename=${SCREENSHOT_FOLDER}/${name}    selector=id=${id}
     Validate Screenshot    screenshot=${name}    reference=${name}    folder=${folder}    threshold=${threshold}
+
+Set Test Statistics Rerun View
+    [Arguments]    ${view}
+    Select Options By    id=testRerunView    value    ${view}
+    Wait For Elements State    selector=id=loading    state=hidden
+
+Get Rerun Marked Bar Count
+    [Documentation]    Bars in a timeline graph that carry the rerun border (blue, width 3).
+    [Arguments]    ${graph}=testStatisticsGraph
+    ${count}    Evaluate JavaScript    ${None}    () => window.${graph}.data.datasets.filter(dataset => dataset.borderWidth === 3).length
+    RETURN    ${count}
+
+Set Compare Tests Rerun View
+    [Arguments]    ${view}
+    Select Options By    id=compareRerunView    value    ${view}
+    Wait For Elements State    selector=id=loading    state=hidden
+
+Get Test Count With Attempts
+    [Documentation]    Tests in the filtered data that carry a rerun attempt history.
+    ${count}    Evaluate JavaScript    ${None}    () => filteredTests.filter(test => test.attempts).length
+    RETURN    ${count}
 
 Open Filter Dialog
     Click    selector=id=filters

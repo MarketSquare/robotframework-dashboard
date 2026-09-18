@@ -37,6 +37,8 @@ var settings = {
         sectionFiltersApplyKeyword: true,
         testOnlyChanges: false,
         testStatusFilter: "All",
+        testRerunView: "reruns",
+        compareRerunView: "reruns",
         compareOnlyChanges: false,
         compareStatusFilter: "All",
     },

@@ -27,17 +27,20 @@ The robot suites call the `robotdashboard` **CLI** (see `Generate Dashboard` in 
 # Build the image once (also rebuild after dependency changes)
 bash scripts/docker/create-test-image.sh robot
 
-# Full suite, same as CI
+# Full suite, same as CI (failed tests are rerun once and merged, see robot-tests.md)
 bash scripts/docker/run-in-robot-container.sh bash scripts/robot-tests.sh
 
-# One suite
+# One suite (delete the shared dashboard first, see below)
+rm -f robotdashboard_shared.html robotresults_shared.db
 bash scripts/docker/run-in-robot-container.sh robot --outputdir results tests/robot/testsuites/06_filters.robot
 
-# One test by name pattern
-bash scripts/docker/run-in-robot-container.sh robot --outputdir results -t "*Run Tags Filter*" tests/robot/testsuites/06_filters.robot
+# One test by name pattern (quotes are lost through the wrapper: use a glob without spaces, e.g. -t "*Rerun*")
+bash scripts/docker/run-in-robot-container.sh robot --outputdir results -t "*Run*Tags*Filter*" tests/robot/testsuites/06_filters.robot
 ```
 
 `.bat` equivalents exist under `scripts\docker\` for cmd.exe; prefer the `.sh` form from an agent shell.
+
+**Stale shared dashboard:** the browser suites open `robotdashboard_shared.html`, generated once per run by `Generate Shared Dashboard` and only when the file does not exist. The full run removes it in the `__init__.robot` teardown; a single-suite/single-test run does **not** (the init file is not part of the run), so the next single-suite run silently tests the previous build of the dashboard. Delete `robotdashboard_shared.html` and `robotresults_shared.db` before every single-suite run after a source change.
 
 Results land in `results/` (gitignored). Screenshots taken during the run: `results/browser/screenshot/<name>.png`.
 
@@ -70,7 +73,9 @@ Targeted runs are fine for iteration (see the deep references), but run the proj
 
 ## CI
 
-`.github/workflows/tests.yml` ("Robotdashboard Tests"): `unit-tests` and `js-unit-tests` jobs run first; `robot-tests` declares `needs: [unit-tests, js-unit-tests]` and is skipped if either fails. The robot job always uploads its `results/` folder as artifact **`robot-results`**.
+`.github/workflows/tests.yml` ("Robotdashboard Tests"): `python-tests`, `javascript-tests` and `robot-tests` jobs. The robot job runs inside the prebuilt image `ghcr.io/marketsquare/robotframework-dashboard-test-robot` (built from `scripts/docker/test-dashboard-robot.dockerfile` by `.github/workflows/test-image.yml` — automatically when `requirements-test.txt` or the Dockerfile change on `main`, or via *Run workflow*), so the only setup step is `pip install ".[all]"`. Same image as the local Docker runs. The robot job always uploads its `results/` folder as artifact **`robot-results`**; `scripts/robot-tests.sh` reruns failed tests once and merges (`first_output.xml` / `rerun_output.xml` keep the attempts).
+
+When bumping a test dependency: the PR still runs against the old image; the image is rebuilt when the bump lands on `main`. Build locally with `bash scripts/docker/create-test-image.sh robot` to verify before merging.
 
 ### Diagnosing a red CI run
 

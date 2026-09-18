@@ -54,6 +54,22 @@ All tests run automatically in GitHub Actions. They are triggered through the `.
 Results can be found at the `PR > checks > Upload robot logs`.
 The check will have a failed status if any tests has failed.
 
+### Test Data
+The `output.xml` / `log.html` files in `tests/robot/resources/outputs/` (also used by the python unit tests and the
+example dashboard) are **generated** by `tests/robot/resources/generator/generate.py` from two simulated projects
+(`WebshopUI`, `WebshopAPI`) with fake browser/API libraries. Do not edit the fixtures by hand; change the generator
+(`libraries/profiles.py` decides which tests fail, are flaky, skip, throw exceptions or get slower; `RERUNS` in
+`generate.py` decides which runs get their failed tests re-executed and merged with `rebot --merge`) and run
+
+```
+python tests/robot/resources/generator/generate.py
+```
+
+then refresh the reference screenshots, `cli_output` and `database_output` files by running the robot tests in Docker.
+The generator suites are not part of the test pipeline. See `tests/robot/resources/generator/README.md`.
+
+The example dashboard in `example/` is built from the same fixtures with `python scripts/example.py` (or `scripts\example.bat` on Windows).
+
 ## Running Tests Locally - in a Docker Container
 Run the tests locally on your PC before pushing and waiting for the results from the GitHub actions is always a good idea. But this requires to install the required components in your native PC. In some cases this will not work as expected bacause of the differemt versions used. E.g.  screenshots taken during the tests may differ, so that the tests might fail.
 
@@ -87,6 +103,15 @@ bash scripts/docker/run-in-robot-container.sh bash scripts/robot-tests.sh
 # Windows
 C:> scripts\docker\run-in-robot-container.bat bash scripts/robot-tests.sh
 ```
+
+Failed tests are rerun once and the two attempts merged (`rebot --merge`) so that a transient browser crash or timing
+race does not fail the pipeline; a test that is still red in `results/log.html` failed twice.
+
+The GitHub action runs the same image, prebuilt and published to GHCR by `.github/workflows/test-image.yml`
+(rebuilt when `requirements-test.txt` or `scripts/docker/test-dashboard-robot.dockerfile` change on `main`).
+
+Browser tests never sleep before a screenshot: `Wait For Dashboard Idle` polls `window.dashboard_is_idle()`, a hook
+the tests inject into the page (`tests/robot/resources/scripts/dashboard_idle.js`) that is only true when no spinner, overlay, modal, fade or chart animation is in progress.
 
 To run a individual tests out of a suite:
 ```bash

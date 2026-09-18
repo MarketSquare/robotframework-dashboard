@@ -137,7 +137,8 @@ Must return **all data** in this dictionary format:
       "message": "",
       "tags": "[\"sanity\"]",
       "run_alias": "output-20241013-223319",
-      "id": "s1-s1-t1"
+      "id": "s1-s1-t1",
+      "attempts": ""
     },
     {...etc}
   ],
@@ -162,7 +163,7 @@ Must return **all data** in this dictionary format:
 
 ```
 
-Each type must be a list of dictionaries matching what RobotDashboard expects.
+Each type must be a list of dictionaries matching what RobotDashboard expects. The optional `attempts` key on tests holds the JSON-encoded rerun history of a merged `--rerunfailed` output (see [Reruns](reruns.md)); leave it empty for tests that ran once.
 
 ---
 

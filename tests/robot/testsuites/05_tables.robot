@@ -6,8 +6,8 @@ Resource    ../resources/keywords/general-keywords.resource
 
 Suite Setup    Start Browser
 Suite Teardown    Close Browser
-Test Setup    Run Keywords    Generate Dashboard    Open Dashboard
-Test Teardown    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+Test Setup    Run Keywords    Generate Shared Dashboard    Open Dashboard
+Test Teardown    Close Dashboard
 
 
 *** Test Cases ***
@@ -26,3 +26,7 @@ Validate Compare Test Table Base View
 Validate Compare Keyword Table Base View
     Open Tables Page
     Validate Component    id=keywordTableCanvas    name=baseKeywordTable    folder=tables
+
+Validate Compare Exception Table Base View
+    Open Tables Page
+    Validate Component    id=exceptionTableCanvas    name=baseExceptionTable    folder=tables

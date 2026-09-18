@@ -2,7 +2,7 @@ import { get_most_failed_data } from "../graph_data/failed.js";
 import { get_most_flaky_data } from "../graph_data/flaky.js";
 import { get_most_time_consuming_or_most_used_data } from "../graph_data/time_consuming.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
-import { update_height } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { settings } from "../variables/settings.js";
@@ -30,6 +30,9 @@ function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataTy
                 if (dataType === "test" && meta.message) {
                     const truncated = meta.message.length > 120 ? meta.message.substring(0, 120) + "..." : meta.message;
                     lines.push(`Message: ${truncated}`);
+                }
+                if (dataType === "test") {
+                    lines.push(...format_attempt_lines(meta.attempts));
                 }
                 return lines;
             },

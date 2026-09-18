@@ -11,6 +11,9 @@ const greyBackgroundBorderColor = "#0f172a";
 const greyBackgroundColor = "rgba(33, 37, 41, 0.7)";
 const blueBackgroundBorderColor = "rgba(54, 162, 235)";
 const blueBackgroundColor = "rgba(54, 162, 235, 0.5)";
+// border used to mark tests that were re-executed (rebot --merge attempt history)
+const rerunBorderColor = "#36a2eb";
+const rerunBorderWidth = 3;
 const graphFontSize = 12;
 
 // base bar config
@@ -77,6 +80,8 @@ export {
     greyBackgroundColor,
     blueBackgroundBorderColor,
     blueBackgroundColor,
+    rerunBorderColor,
+    rerunBorderWidth,
     graphFontSize,
     barConfig,
     passedConfig,

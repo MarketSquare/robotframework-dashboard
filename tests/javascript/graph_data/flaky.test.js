@@ -25,19 +25,26 @@ vi.mock('@js/variables/chartconfig.js', () => ({
     passedConfig: { backgroundColor: 'rgba(151, 189, 97, 0.7)', borderColor: '#97bd61' },
     failedConfig: { backgroundColor: 'rgba(206, 62, 1, 0.7)', borderColor: '#ce3e01' },
     skippedConfig: { backgroundColor: 'rgba(254, 216, 79, 0.7)', borderColor: '#fed84f' },
+    rerunBorderColor: '#36a2eb',
+    rerunBorderWidth: 3,
 }));
-vi.mock('@js/graph_data/helpers.js', () => ({
+vi.mock('@js/graph_data/helpers.js', async () => ({
+    ...(await vi.importActual('@js/graph_data/helpers.js')),
     convert_timeline_data: (datasets) => {
         const grouped = {};
         for (const ds of datasets) {
             const key = `${ds.label}::${ds.backgroundColor}::${ds.borderColor}`;
             if (!grouped[key]) {
-                grouped[key] = { label: ds.label, data: [], backgroundColor: ds.backgroundColor, borderColor: ds.borderColor, parsing: true };
+                grouped[key] = { label: ds.label, data: [], backgroundColor: ds.backgroundColor, borderColor: ds.borderColor, borderWidth: ds.borderWidth, parsing: true };
             }
             grouped[key].data.push(...ds.data);
         }
         return Object.values(grouped);
     },
+}));
+vi.mock('@js/variables/globals.js', () => ({
+    inFullscreen: false,
+    inFullscreenGraph: '',
 }));
 vi.mock('@js/common.js', () => ({
     strip_tz_suffix: (s) => s.replace(/[+-]\d{2}:\d{2}$/, ''),
@@ -59,12 +66,17 @@ function makeTestData(entries) {
         skipped: e.skipped ?? 0,
         elapsed_s: e.elapsed_s ?? 1.0,
         message: e.message || '',
+        attempts: e.attempts || '',
     }));
 }
+
+const RECOVERED = '[{"status": "FAIL", "message": "boom"}, {"status": "PASS", "message": ""}]';
+const HARD_FAIL = '[{"status": "FAIL", "message": "a"}, {"status": "FAIL", "message": "b"}]';
 
 describe('get_most_flaky_data', () => {
     beforeEach(() => {
         settings.switch.suitePathsTestSection = false;
+        settings.switch.testRerunView = 'reruns';
         settings.show.aliases = false;
     });
 
@@ -231,6 +243,63 @@ describe('get_most_flaky_data', () => {
             const bgColors = graphData.datasets.map(d => d.backgroundColor);
             // Should have distinct colors for PASS, FAIL, SKIP
             expect(new Set(bgColors).size).toBeGreaterThanOrEqual(2);
+        });
+    });
+
+    describe('rerun attempt history', () => {
+        it('counts a recovery on rerun as a flip even when every run ends green', () => {
+            const data = makeTestData([
+                { name: 'Retry Hero', run_start: '2025-01-15 10:00:00', passed: 1, attempts: RECOVERED },
+                { name: 'Retry Hero', run_start: '2025-01-16 10:00:00', passed: 1, attempts: RECOVERED },
+                { name: 'Stable', run_start: '2025-01-15 10:00:00', passed: 1 },
+                { name: 'Stable', run_start: '2025-01-16 10:00:00', passed: 1 },
+            ]);
+            const [graphData] = get_most_flaky_data('test', 'bar', data, false, false, 10);
+            expect(graphData.labels).toEqual(['Retry Hero']);
+            expect(graphData.datasets[0].data).toEqual([2]);
+        });
+
+        it('does not count attempts that failed every time as flips', () => {
+            const data = makeTestData([
+                { name: 'Broken', run_start: '2025-01-15 10:00:00', failed: 1, attempts: HARD_FAIL },
+                { name: 'Broken', run_start: '2025-01-16 10:00:00', failed: 1, attempts: HARD_FAIL },
+            ]);
+            const [graphData] = get_most_flaky_data('test', 'bar', data, false, false, 10);
+            expect(graphData.labels).toEqual([]);
+        });
+
+        it('ignores the attempt history with the rerun view set to final', () => {
+            settings.switch.testRerunView = 'final';
+            const data = makeTestData([
+                { name: 'Retry Hero', run_start: '2025-01-15 10:00:00', passed: 1, attempts: RECOVERED },
+                { name: 'Retry Hero', run_start: '2025-01-16 10:00:00', passed: 1, attempts: RECOVERED },
+            ]);
+            const [graphData] = get_most_flaky_data('test', 'bar', data, false, false, 10);
+            expect(graphData.labels).toEqual([]);
+        });
+
+        it('marks re-executed tests in the timeline and exposes the attempts in pointMeta', () => {
+            const data = makeTestData([
+                { name: 'Retry Hero', run_start: '2025-01-15 10:00:00', passed: 1, attempts: RECOVERED },
+                { name: 'Retry Hero', run_start: '2025-01-16 10:00:00', passed: 1 },
+            ]);
+            const [graphData, , pointMeta] = get_most_flaky_data('test', 'timeline', data, false, false, 10);
+            const marked = graphData.datasets.filter(d => d.borderWidth === 3);
+            expect(marked).toHaveLength(1);
+            expect(marked[0].borderColor).toBe('#36a2eb');
+            expect(pointMeta['Retry Hero::0'].attempts).toHaveLength(2);
+            expect(pointMeta['Retry Hero::1'].attempts).toEqual([]);
+        });
+
+        it('shows the first attempt status in the timeline with the first attempt view', () => {
+            settings.switch.testRerunView = 'first';
+            const data = makeTestData([
+                { name: 'Retry Hero', run_start: '2025-01-15 10:00:00', passed: 1, attempts: RECOVERED },
+                { name: 'Retry Hero', run_start: '2025-01-16 10:00:00', passed: 1 },
+            ]);
+            const [, , pointMeta] = get_most_flaky_data('test', 'timeline', data, false, false, 10);
+            expect(pointMeta['Retry Hero::0'].status).toBe('FAIL');
+            expect(pointMeta['Retry Hero::1'].status).toBe('PASS');
         });
     });
 

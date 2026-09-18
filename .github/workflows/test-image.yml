@@ -1,0 +1,65 @@
+name: Robot test image
+
+# Builds the Docker image the robot-tests job of tests.yml runs in (Playwright base + pip +
+# requirements-test.txt + rfbrowser init) and pushes it to GHCR. Rebuilt automatically when the
+# test dependencies or the Dockerfile change on main; run it manually (workflow_dispatch) the first
+# time and whenever the image needs refreshing. The package must be public so PR builds can pull it.
+# The push is a single manifest (no provenance/SBOM attestations): with attestations, buildx pushes an
+# index whose children show up as "untagged" package versions, and deleting one of those in the
+# package UI silently breaks the tagged image ("manifest unknown" on pull).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - requirements-test.txt
+      - scripts/docker/test-dashboard-robot.dockerfile
+      - .github/workflows/test-image.yml
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/robotframework-dashboard-test-robot
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase image name
+        run: echo "IMAGE=${IMAGE,,}" >> "$GITHUB_ENV"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: scripts/docker/test-dashboard-robot.dockerfile
+          push: true
+          provenance: false
+          sbom: false
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          # zstd layers decompress several times faster than gzip when the CI runner pulls the image
+          outputs: type=image,push=true,compression=zstd,compression-level=3,force-compression=true
+
+      # Every push adds a package version (tags: latest + sha); keep the newest three so a rollback
+      # stays possible and drop the rest. Safe because pushes are single manifests (see above).
+      - name: Remove old image versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: robotframework-dashboard-test-robot
+          package-type: container
+          min-versions-to-keep: 3

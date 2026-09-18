@@ -1,3 +1,5 @@
+import { get_rerun_summary } from "./helpers.js";
+
 // function to prepare the data for the run stats canvas
 function get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKeywords) {
     const wasExecuted = (row) => (parseInt(row.passed)||0) + (parseInt(row.failed)||0) + (parseInt(row.skipped)||0) > 0;
@@ -68,6 +70,7 @@ function get_test_stats_data(filteredTests) {
         stats.duration += parseFloat(test.elapsed_s || 0);
     }
     const pct = (n) => stats.total > 0 ? Math.round(n / stats.total * 100) : 0;
+    const reruns = get_rerun_summary(filteredTests);
     return {
         totalTests: stats.total,
         uniqueTests: stats.names.size,
@@ -77,6 +80,9 @@ function get_test_stats_data(filteredTests) {
         passRate: stats.total > 0 ? `${pct(stats.passed)}%` : 'N/A',
         totalTime: Math.round(stats.duration),
         avgTime: stats.total > 0 ? Math.round(stats.duration / stats.total * 100) / 100 : 0,
+        reranTests: reruns.reran,
+        recoveredOnRerun: `${reruns.recovered} (${pct(reruns.recovered)}%)`,
+        failedAllAttempts: `${reruns.failedAllAttempts} (${pct(reruns.failedAllAttempts)}%)`,
     };
 }
 

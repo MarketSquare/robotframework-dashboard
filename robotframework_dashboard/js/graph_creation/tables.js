@@ -1,4 +1,5 @@
 import { filteredRuns, filteredSuites, filteredTests, filteredKeywords, filteredExceptions } from "../variables/globals.js";
+import { parse_test_attempts } from "../graph_data/helpers.js";
 
 // data builder functions
 function _get_run_table_data() {
@@ -20,6 +21,7 @@ function _get_test_table_data() {
     return filteredTests.map(test => [
         test.run_start, test.full_name, test.name, test.passed, test.failed, test.skipped,
         test.elapsed_s, test.start_time, test.message, test.tags, test.run_alias, test.id,
+        parse_test_attempts(test).map(attempt => attempt.status).join(" → "),
     ]);
 }
 
@@ -53,6 +55,7 @@ const testColumns = [
     { title: "run" }, { title: "full_name" }, { title: "name" },
     { title: "passed" }, { title: "failed" }, { title: "skipped" }, { title: "elapsed_s" },
     { title: "start_time" }, { title: "message" }, { title: "tags" }, { title: "alias" }, { title: "id" },
+    { title: "attempts" },
 ];
 const keywordColumns = [
     { title: "run" }, { title: "name" }, { title: "passed" }, { title: "failed" },

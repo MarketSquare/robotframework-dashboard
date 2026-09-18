@@ -52,58 +52,23 @@ jobs:
 
   robot-tests:
     runs-on: ubuntu-latest
+    # Prebuilt image with pip, requirements-test.txt and rfbrowser init already done
+    # (built by test-image.yml from scripts/docker/test-dashboard-robot.dockerfile, same image
+    # as the local Docker test runs). Saves ~1.5 minutes of setup per run.
     container:
-      image: mcr.microsoft.com/playwright:v1.56.0-jammy
+      image: ghcr.io/marketsquare/robotframework-dashboard-test-robot:latest
+      # the token can pull the package as long as it is linked to this repository (or public)
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: Ensure pip cache directory exists
-        run: mkdir -p ~/.cache/pip
-
-      - name: Ensure Playwright cache directory exists
-        run: mkdir -p ~/.cache/ms-playwright
-
-      - name: Cache pip packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('requirements-test.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
-      - name: Ensure pip is installed
-        run: |
-          apt-get update
-          apt-get install -y python3-pip
-
-      - name: Install Robot Framework and Python dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements-test.txt
-
       - name: Install/Build project
         run: |
           bash scripts/install.sh
-
-      - name: Initialize Browser library
-        timeout-minutes: 5
-        run: |
-          rfbrowser init
 
       - name: Run Robot Framework tests
         run: |

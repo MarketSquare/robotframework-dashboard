@@ -1,0 +1,4 @@
+# Read by RobotCode (VS Code) and the robotcode CLI only; plain robot/pabot ignore this file.
+# Lets the editor resolve the fake libraries the fixture generator suites import by bare
+# name (Library  ApiSim / BrowserSim / Features); generate.py passes the same --pythonpath.
+python-path = ["tests/robot/resources/generator/libraries"]

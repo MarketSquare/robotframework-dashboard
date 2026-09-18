@@ -196,6 +196,7 @@ export default defineConfig({
           { text: '🗄️ Custom Database Class', link: '/custom-database-class.md' },
           { text: '🔔 Listener Integration', link: '/listener-integration.md' },
           { text: '📂 Log Linking', link: '/log-linking.md' },
+          { text: '🔁 Reruns', link: '/reruns.md' },
           { text: '📈 Performance', link: '/performance.md' },
         ]
       },

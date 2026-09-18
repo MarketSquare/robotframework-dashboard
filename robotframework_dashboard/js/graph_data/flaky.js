@@ -1,54 +1,47 @@
 import { settings, get_run_label } from "../variables/settings.js";
-import { passedConfig, failedConfig, skippedConfig } from "../variables/chartconfig.js";
-import { convert_timeline_data } from "./helpers.js";
+import { passedConfig, failedConfig, skippedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
+import { convert_timeline_data, parse_test_attempts, resolve_test_status, count_attempt_flips } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for (recent) most flaky test graph
+// with the rerun view of the test section (settings.switch.testRerunView) set to anything but "final",
+// a status change inside the attempt history of a re-executed test (FAIL -> PASS on rerun) counts as a flip too
 function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, limit) {
+    const rerunView = settings.switch.testRerunView || "reruns";
+    const useAttempts = rerunView !== "final";
+    const status_of = (value) => {
+        const attempts = useAttempts ? parse_test_attempts(value) : [];
+        const status = resolve_test_status(value, attempts, rerunView);
+        return [status === "PASS" ? "passed" : status === "FAIL" ? "failed" : "skipped", attempts];
+    };
     var data = {};
     for (const value of filteredData) {
         if (ignore && value.skipped == 1) {
             continue;
         }
         const key = settings.switch.suitePathsTestSection ? value.full_name : value.name;
+        const [current_status, attempts] = status_of(value);
+        // a run in which any attempt failed counts as a failed run (recent sorting), also when the rerun passed
+        const counts_as_failed = current_status === "failed" || (current_status === "skipped" && !ignore)
+            || attempts.some(attempt => attempt.status === "FAIL");
         if (data[key]) {
             data[key]["run_starts"].push(value.run_start);
-            let current_status;
-            if (value.passed == 1) {
-                current_status = "passed";
-            } else if (value.failed == 1) {
-                current_status = "failed";
+            if (counts_as_failed) {
                 data[key]["failed_run_starts"].push(value.run_start);
-            } else if (!ignore) {
-                if (value.skipped == 1) {
-                    current_status = "skipped";
-                    data[key]["failed_run_starts"].push(value.run_start);
-                }
             }
             if (current_status !== data[key]["previous_status"]) {
                 data[key]["flips"] += 1;
                 data[key]["previous_status"] = current_status;
             }
         } else {
-            let previous_status;
             data[key] = {
                 "run_starts": [value.run_start],
                 "flips": 0,
-                "failed_run_starts": []
+                "failed_run_starts": counts_as_failed ? [value.run_start] : [],
+                "previous_status": current_status,
             };
-            if (value.passed == 1) {
-                previous_status = "passed";
-            } else if (value.failed == 1) {
-                previous_status = "failed";
-                data[key]["failed_run_starts"].push(value.run_start);
-            } else if (!ignore) {
-                if (value.skipped == 1) {
-                    previous_status = "skipped";
-                    data[key]["failed_run_starts"].push(value.run_start);
-                }
-            }
-            data[key]["previous_status"] = previous_status;
         }
+        data[key]["flips"] += count_attempt_flips(attempts);
     }
     var sortedData = [];
     for (var test in data) {
@@ -115,33 +108,22 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
                 }
                 if (foundValues.length > 0) {
                     var value = foundValues[0];
-                    const statusName = value.passed == 1 ? "PASS" : value.failed == 1 ? "FAIL" : "SKIP";
+                    const [status, attempts] = status_of(value);
+                    const statusName = status === "passed" ? "PASS" : status === "failed" ? "FAIL" : "SKIP";
                     pointMeta[`${label}::${runAxis}`] = {
                         status: statusName,
                         elapsed_s: value.elapsed_s || 0,
                         message: value.message || '',
+                        attempts,
                     };
-                    if (value.passed == 1) {
-                        datasets.push({
-                            label: label,
-                            data: [{ x: [runAxis, runAxis + 1], y: label }],
-                            ...passedConfig,
-                        });
-                    }
-                    else if (value.failed == 1) {
-                        datasets.push({
-                            label: label,
-                            data: [{ x: [runAxis, runAxis + 1], y: label }],
-                            ...failedConfig,
-                        });
-                    }
-                    else if (value.skipped == 1) {
-                        datasets.push({
-                            label: label,
-                            data: [{ x: [runAxis, runAxis + 1], y: label }],
-                            ...skippedConfig,
-                        });
-                    }
+                    const config = status === "passed" ? passedConfig : status === "failed" ? failedConfig : skippedConfig;
+                    const rerunConfig = attempts.length > 0 ? { borderColor: rerunBorderColor, borderWidth: rerunBorderWidth } : {};
+                    datasets.push({
+                        label: label,
+                        data: [{ x: [runAxis, runAxis + 1], y: label }],
+                        ...config,
+                        ...rerunConfig,
+                    });
                 }
             }
             runAxis += 1;

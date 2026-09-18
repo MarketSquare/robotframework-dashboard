@@ -28,19 +28,22 @@ vi.mock('@js/variables/globals.js', () => ({
     inFullscreenGraph: '',
 }));
 vi.mock('@js/variables/chartconfig.js', () => ({
+    rerunBorderColor: '#36a2eb',
+    rerunBorderWidth: 3,
     failedConfig: {
         backgroundColor: 'rgba(206, 62, 1, 0.7)',
         borderColor: '#ce3e01',
     },
 }));
-vi.mock('@js/graph_data/helpers.js', () => ({
+vi.mock('@js/graph_data/helpers.js', async () => ({
+    ...(await vi.importActual('@js/graph_data/helpers.js')),
     convert_timeline_data: (datasets) => {
         // Simplified grouping for testing
         const grouped = {};
         for (const ds of datasets) {
             const key = `${ds.label}::${ds.backgroundColor}::${ds.borderColor}`;
             if (!grouped[key]) {
-                grouped[key] = { label: ds.label, data: [], backgroundColor: ds.backgroundColor, borderColor: ds.borderColor, parsing: true };
+                grouped[key] = { label: ds.label, data: [], backgroundColor: ds.backgroundColor, borderColor: ds.borderColor, borderWidth: ds.borderWidth, parsing: true };
             }
             grouped[key].data.push(...ds.data);
         }
@@ -237,6 +240,21 @@ describe('get_most_failed_data', () => {
             ]);
             const [, runStartsArray] = get_most_failed_data('test', 'timeline', data, false);
             expect(runStartsArray).toContain('My Run');
+        });
+    });
+
+    describe('rerun attempt history', () => {
+        const hardFail = '[{"status": "FAIL", "message": "a"}, {"status": "FAIL", "message": "b"}]';
+
+        it('marks re-executed tests in the timeline and exposes the attempts in pointMeta', () => {
+            const data = [
+                { name: 'Broken', full_name: 'Suite.Broken', run_start: '2025-01-15 10:00:00', run_alias: 'r1', passed: 0, failed: 1, skipped: 0, elapsed_s: 1, message: 'b', attempts: hardFail },
+                { name: 'Broken', full_name: 'Suite.Broken', run_start: '2025-01-16 10:00:00', run_alias: 'r2', passed: 0, failed: 1, skipped: 0, elapsed_s: 1, message: 'b', attempts: '' },
+            ];
+            const [graphData, , pointMeta] = get_most_failed_data('test', 'timeline', data, false);
+            expect(graphData.datasets.filter(d => d.borderWidth === 3)).toHaveLength(1);
+            expect(pointMeta['Broken::0'].attempts).toHaveLength(2);
+            expect(pointMeta['Broken::1'].attempts).toEqual([]);
         });
     });
 });
