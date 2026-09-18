@@ -42,5 +42,8 @@ screenshots/
 node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+.docs-worktrees/
+.docs-dist-cache/
+docs/public/example/
 # Claude Code per-user settings
 .claude/settings.local.json

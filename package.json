@@ -14,7 +14,9 @@
     "test:js:watch": "vitest",
     "test:js:coverage": "vitest run --coverage",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "node scripts/copy-static.mjs && vitepress build docs",
+    "docs:build": "node scripts/docs/copy-static.mjs && vitepress build docs",
+    "docs:build:versions": "node scripts/docs/build-versioned-docs.mjs",
+    "docs:preview:versions": "node scripts/docs/serve-versioned-docs.mjs",
     "docs:preview": "vitepress preview docs"
   }
 }

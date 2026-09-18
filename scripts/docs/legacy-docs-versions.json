@@ -1,0 +1,250 @@
+{
+  "0.1.1": {
+    "commit": "f6726a74f6e0f0fc5139848e39fd4b4b943f3879",
+    "released": "2024-10-21"
+  },
+  "0.1.2": {
+    "commit": "097dbafafb51f4f0d519665262d6a16e6f250a47",
+    "released": "2024-10-21"
+  },
+  "0.1.3": {
+    "commit": "76d29dde7d3997ccf2522ae9e88664b6750692f6",
+    "released": "2024-10-21"
+  },
+  "0.1.4": {
+    "commit": "3398a05b3f270e2a7cc6240ab7609daec58eea7c",
+    "released": "2024-10-22"
+  },
+  "0.1.5": {
+    "commit": "b169509f356d4d78be2b4f9b251e062d48d48a0b",
+    "released": "2024-10-22"
+  },
+  "0.2.0": {
+    "commit": "c3e26ed0d6372051d4856e114ad451e005fbbc3e",
+    "released": "2024-10-25"
+  },
+  "0.2.1": {
+    "commit": "93b01630340596697a1c5333bcd1b747d4b34e46",
+    "released": "2024-10-28"
+  },
+  "0.2.2": {
+    "commit": "ffe05fa75c719d2df8a18d46b1e654dae79d41cd",
+    "released": "2024-10-28"
+  },
+  "0.2.3": {
+    "commit": "03ed45ba7e786f74b244cc3e6cf6be313cc7940a",
+    "released": "2024-10-28"
+  },
+  "0.2.4": {
+    "commit": "b0fc607cf8c6736c173ac62c2500e8110f913022",
+    "released": "2024-10-29"
+  },
+  "0.2.5": {
+    "commit": "846f30233050af973799179dc746ef524312a32d",
+    "released": "2024-10-29"
+  },
+  "0.2.6": {
+    "commit": "94f726f2c332482d31716ee72ace2c292ee6a3bf",
+    "released": "2024-10-30"
+  },
+  "0.3.0": {
+    "commit": "77a148a80cc1a1795f173f23060d587e7be8634b",
+    "released": "2024-10-30"
+  },
+  "0.3.1": {
+    "commit": "8b5fa4d8bcd6b5927e469bf799cf4e60a554c167",
+    "released": "2024-10-30"
+  },
+  "0.3.2": {
+    "commit": "c643df7a84079b69ad8297facdf946e8d1ecfcbf",
+    "released": "2024-10-30"
+  },
+  "0.3.3": {
+    "commit": "7a01791813be1587bb846081c371070faf3cd481",
+    "released": "2024-10-31"
+  },
+  "0.3.4": {
+    "commit": "ef1fd5f119ee6d791efe5f1737a2c6ab33bd0519",
+    "released": "2024-11-01"
+  },
+  "0.3.5": {
+    "commit": "ea77e3a005c484cf193518ecd3df5379f5860ad9",
+    "released": "2024-11-01"
+  },
+  "0.3.6": {
+    "commit": "916a1b676496e8b2d8228ecc1e4abe8920b06b85",
+    "released": "2024-11-02"
+  },
+  "0.3.7": {
+    "commit": "27c13597dec842527f09ec82c8e033d8a0ce0d65",
+    "released": "2024-11-02"
+  },
+  "0.3.8": {
+    "commit": "93238358129c473d385123086fecbed6f8ee16d9",
+    "released": "2024-11-02"
+  },
+  "0.4.0": {
+    "commit": "07fd733eee912f0fd0a5dc31629e14ef1259f4c0",
+    "released": "2024-11-14"
+  },
+  "0.4.1": {
+    "commit": "c9485af23123d3fa1dcc9570ee9837566610fe39",
+    "released": "2024-11-15"
+  },
+  "0.4.2": {
+    "commit": "aee318de3b79a2262b6e33464100c2cbc16f79e8",
+    "released": "2025-02-01"
+  },
+  "0.4.3": {
+    "commit": "832872e186ae68eaedd72b98c290b07b472b4078",
+    "released": "2025-02-01"
+  },
+  "0.4.4": {
+    "commit": "ae451ddbe4ba33b9c5096f35ac2b6326b31f4d2a",
+    "released": "2025-02-09"
+  },
+  "0.4.5": {
+    "commit": "2ca3961b8d9b6affdf8264ae7fd4d1a698c77b0e",
+    "released": "2025-02-19"
+  },
+  "0.4.6": {
+    "commit": "6219b82980129d9708a55eb78916ba72b76a86dc",
+    "released": "2025-03-07"
+  },
+  "0.5.0": {
+    "commit": "a2a289f373273c9d700e0fcf1cf402cdf9a44a79",
+    "released": "2025-03-08"
+  },
+  "0.6.0": {
+    "commit": "eb0cbd11c46005b56c62a23af62fcd6bb3514b1b",
+    "released": "2025-03-16"
+  },
+  "0.6.1": {
+    "commit": "4e559f47cb11944e17f88860b9ed8ed8dc39f1e5",
+    "released": "2025-03-18"
+  },
+  "0.6.2": {
+    "commit": "782d5fc66f4004272f94322c8f3daec352e89d01",
+    "released": "2025-03-18"
+  },
+  "0.6.3": {
+    "commit": "f979b1d3def8bcc8e2594fb26756f642d63a32ee",
+    "released": "2025-03-28"
+  },
+  "0.6.4": {
+    "commit": "566bd046ca8e574041cc2684388dfc9db64d163d",
+    "released": "2025-03-29"
+  },
+  "0.6.5": {
+    "commit": "8e9b387be7ff414a59d7a2ac563b468272a0f841",
+    "released": "2025-04-02"
+  },
+  "0.6.6": {
+    "commit": "bb784492d46ed88ff72c82b8facb38c042dba105",
+    "released": "2025-04-02"
+  },
+  "0.6.7": {
+    "commit": "e9973cf213c941699b7db3cb6c052b97a142d2d2",
+    "released": "2025-04-04"
+  },
+  "0.6.8": {
+    "commit": "a051e4a52b455b7091326964aec75ece19e2a2c8",
+    "released": "2025-04-25"
+  },
+  "0.7.0": {
+    "commit": "75bb4c038428d448594b89c6bb1c16183d68836b",
+    "released": "2025-04-27"
+  },
+  "0.7.1": {
+    "commit": "14d85e3352364569b03cf32b6ba3323b233d589e",
+    "released": "2025-05-01"
+  },
+  "0.8.0": {
+    "commit": "039f8df05f34f0eacd4b0214108ca49670b1a27a",
+    "released": "2025-05-05"
+  },
+  "0.8.1": {
+    "commit": "fbe73e2653ccbb9c79f972781ebac68c20dc9b7c",
+    "released": "2025-05-07"
+  },
+  "0.8.2": {
+    "commit": "a97403dd4d02e403bd9b64397647e33c2c7dfe68",
+    "released": "2025-05-08"
+  },
+  "0.8.3": {
+    "commit": "e4e17da2edb28b9a3c72c661a7f099e927e4ec6d",
+    "released": "2025-05-08"
+  },
+  "0.8.4": {
+    "commit": "338dcf78218e2ab67f10a84c5e64ed339f1ab4a7",
+    "released": "2025-05-13"
+  },
+  "0.8.5": {
+    "commit": "82275f81d444a9e2a52f0b6068090849c01aed63",
+    "released": "2025-05-13"
+  },
+  "0.8.6": {
+    "commit": "b07a87189301735a516aec0c4f43b506b5c01513",
+    "released": "2025-05-14"
+  },
+  "0.9.0": {
+    "commit": "b9bc6209a658cda481d0a648cdb33ad6acf5a55a",
+    "released": "2025-05-27"
+  },
+  "0.9.1": {
+    "commit": "91d01f4a3c49d02901c615ba855512b3ae17976e",
+    "released": "2025-05-28"
+  },
+  "0.9.2": {
+    "commit": "23fbc03be14c80adedb2d46e979b269258dade7c",
+    "released": "2025-05-31"
+  },
+  "0.9.3": {
+    "commit": "d5343791f8b2bc4ee4dfa4a07757aab1e6c4f6fa",
+    "released": "2025-06-04"
+  },
+  "0.9.4": {
+    "commit": "30875ae508dc2ef65fb140c104d3e226acffd0b8",
+    "released": "2025-06-05"
+  },
+  "1.0.0": {
+    "commit": "98dcefa8e6f3392551d5844df2f9f8a5c1a85c6f",
+    "released": "2025-06-20"
+  },
+  "1.0.1": {
+    "commit": "3c111c2a6108afd19476f5726f1e341509e237bc",
+    "released": "2025-06-21"
+  },
+  "1.0.2": {
+    "commit": "33cf873b3132212198f7b33235ddab1228c61412",
+    "released": "2025-06-27"
+  },
+  "1.1.0": {
+    "commit": "ebce3232f0c427aa8e185adbc7df2c99847cfa6d",
+    "released": "2025-07-07"
+  },
+  "1.1.1": {
+    "commit": "93a29894d4d39b4b5d8055f35138475c6869ffdf",
+    "released": "2025-07-09"
+  },
+  "1.1.2": {
+    "commit": "1ef6c5feb0edb09285c439a7b8009891972c6267",
+    "released": "2025-07-09"
+  },
+  "1.1.3": {
+    "commit": "efeaa3e02fab1945de8ab28e514dfeda02a0e4b3",
+    "released": "2025-07-22"
+  },
+  "1.2.0": {
+    "commit": "a6960a7d026324179457f8ae08924c2c0026a459",
+    "released": "2025-09-24"
+  },
+  "1.2.1": {
+    "commit": "cfb70952d532991c7ff86c366d882ebb2ac44f08",
+    "released": "2025-09-25"
+  },
+  "1.2.2": {
+    "commit": "47a425c7dfa8154e7f10c3e7c652d8b8da689801",
+    "released": "2025-11-04"
+  }
+}
