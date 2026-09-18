@@ -60,6 +60,7 @@ test set evolves over time.
 | `CLEAN_RUNS` | runs that must be all green (no failures, flags forced on) or yellow (no failures, skips kept) |
 | `BAD_RUNS` | runs with an outage: extra failures with shared messages, more exceptions |
 | `EXCEPTION_RATES` / `EXCEPTION_MESSAGES` | keywords inside `TRY` blocks raise caught exceptions (Keyword Exceptions graph / exceptions table) |
+| `RERUNS` (in `generate.py`) | runs whose failed tests are re-executed with `robot --rerunfailed` (1 or 2 times) and merged with `rebot --merge`, giving tests an attempt history (Reruns select, blue borders, `attempts` column) |
 | `FAILURE_MESSAGES` / `OUTAGE_MESSAGES` | message pools per leaf keyword; placeholders come from keyword arguments |
 | `STEP_WEIGHTS` | which keywords a planned failure prefers to surface in (Keyword Most Failed) |
 
@@ -77,7 +78,12 @@ only durations carry a little real-time noise.
 3. **Shift** – every `start`/`time` attribute is moved so the run starts at the
    scheduled time and every `elapsed` is multiplied by `SIM_SCALE`, giving realistic
    multi-minute runs from a ~25 s execution.
-4. **Log** – `rebot` renders `log-<stamp>.html` from the shifted output so `--uselogs`
+4. **Rerun** – for runs in `RERUNS`, `robot --rerunfailed` re-executes the failed tests
+   (different `SEED`, so flaky/outage failures can recover) starting two minutes after
+   the previous attempt ended, and `rebot --merge` combines the attempts into the final
+   output. The merged file keeps the scheduled start as `generated` so the run identity
+   is stable.
+5. **Log** – `rebot` renders `log-<stamp>.html` from the shifted output so `--uselogs`
    / `-l` linking works.
 
 ## Adding tests or keywords

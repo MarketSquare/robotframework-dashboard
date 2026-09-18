@@ -12,7 +12,10 @@ libraries under libraries/, then post-processed:
 * every duration is multiplied by SIM_SCALE (the libraries sleep 1/SIM_SCALE of
   the intended time so generation stays fast),
 * log-<stamp>.html is rebuilt from the shifted output with rebot so log linking
-  (--uselogs) keeps working.
+  (--uselogs) keeps working,
+* runs listed in RERUNS re-execute their failed tests with `robot --rerunfailed`
+  (one or two times) and the attempts are merged with `rebot --merge`, the way a
+  CI pipeline with retries produces its output.xml.
 
 Behaviour of the tests (failures, flakiness, exceptions, skips, slowness) is
 declared in libraries/profiles.py.
@@ -24,7 +27,7 @@ import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -61,6 +64,16 @@ SCHEDULE = [
     ("WebshopAPI", 8, datetime(2026, 9, 10, 6, 0, 11), "production"),
 ]
 
+# (project, run_index) -> number of reruns of the failed tests (robot --rerunfailed), merged
+# into one output.xml with rebot --merge. Reruns use a different SEED so flaky and outage
+# failures can recover while profile failures (always-fail, broken-since) keep failing.
+RERUNS = {
+    ("WebshopUI", 7): 1,
+    ("WebshopAPI", 5): 2,
+}
+# pause between the end of an attempt and the start of the next one
+RERUN_GAP = timedelta(minutes=2)
+
 # Suite files that only exist from a given run index onwards (tests added over time)
 # or that disappear from a given run index (tests removed). Paths relative to HERE.
 ADDED_FILES = {
@@ -71,7 +84,7 @@ REMOVED_FILES = {
 }
 
 
-def run_robot(project, project_dir, outdir, variables, metadata=None):
+def run_robot(project, project_dir, outdir, variables, metadata=None, rerun_failed=None):
     cmd = [
         sys.executable, "-m", "robot",
         "--name", project,
@@ -80,6 +93,8 @@ def run_robot(project, project_dir, outdir, variables, metadata=None):
         "--log", "NONE", "--report", "NONE",
         "--consolecolors", "off", "--consolewidth", "100",
     ]
+    if rerun_failed:
+        cmd += ["--rerunfailed", str(rerun_failed)]
     for key, value in variables.items():
         cmd += ["--variable", f"{key}:{value}"]
     for key, value in (metadata or {}).items():
@@ -149,6 +164,52 @@ def shift_timestamps(xml_path, new_start, project, source_dir):
     return root
 
 
+def run_end(root):
+    """End of the run according to the (shifted) output.xml: generated + elapsed of the root suite."""
+    start = datetime.strptime(root.get("generated"), TIME_FORMAT)
+    return start + timedelta(seconds=float(root.find("suite").find("status").get("elapsed")))
+
+
+def rebot_merge(inputs, merged, generated):
+    """rebot --merge the attempts into one output; `generated` (the run identity in robotdashboard)
+    is the scheduled start instead of the wall clock rebot stamps in."""
+    result = subprocess.run(
+        [sys.executable, "-m", "robot.rebot", "--merge", "--output", str(merged),
+         "--log", "NONE", "--report", "NONE", *map(str, inputs)],
+        capture_output=True, text=True,
+    )
+    if not merged.exists() or "[ ERROR ]" in result.stderr:
+        print(result.stdout)
+        print(result.stderr)
+        raise SystemExit(f"rebot --merge failed for {merged}")
+    tree = ET.parse(merged)
+    tree.getroot().set("generated", generated.strftime(TIME_FORMAT))
+    tree.write(merged, encoding="UTF-8", xml_declaration=True)
+
+
+def rerun_failed_tests(project, run_index, source, workdir, variables, metadata, xml_path, start, summary):
+    """Re-execute the failed tests of xml_path RERUNS times and merge every attempt into one output."""
+    root = ET.parse(xml_path).getroot()
+    attempts = [xml_path]
+    next_start = run_end(root) + RERUN_GAP
+    for attempt in range(1, RERUNS[(project, run_index)] + 1):
+        rerun_xml, rerun_summary = run_robot(
+            project,
+            source,
+            workdir / f"rerun-{project}-{run_index}-{attempt}",
+            dict(variables, SEED=SEED + 100 * attempt),
+            metadata=metadata,
+            rerun_failed=attempts[-1],
+        )
+        rerun_root = shift_timestamps(rerun_xml, next_start, project, source)
+        summary += f", rerun {attempt}: {rerun_summary}"
+        attempts.append(rerun_xml)
+        next_start = run_end(rerun_root) + RERUN_GAP
+    merged = workdir / f"merged-{project}-{run_index}.xml"
+    rebot_merge(attempts, merged, start)
+    return merged, summary
+
+
 def rebot_log(xml_path, log_path):
     # rebot exits with the number of failed tests, so check the output instead of the code
     result = subprocess.run(
@@ -178,6 +239,12 @@ def generate(schedule, outdir, workdir):
             metadata={"Environment": environment},
         )
         shift_timestamps(xml_path, start, project, source)
+        if (project, run_index) in RERUNS:
+            xml_path, summary = rerun_failed_tests(
+                project, run_index, source, workdir,
+                {"SEED": SEED, "RUN_INDEX": run_index, "SIM_SCALE": SIM_SCALE, "STEP_COUNTS": counts[project]},
+                {"Environment": environment}, xml_path, start, summary,
+            )
         stamp = start.strftime("%Y%m%d-%H%M%S")
         final_xml = outdir / f"output-{stamp}.xml"
         shutil.copy(xml_path, final_xml)

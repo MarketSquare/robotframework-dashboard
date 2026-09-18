@@ -58,7 +58,8 @@ The check will have a failed status if any tests has failed.
 The `output.xml` / `log.html` files in `tests/robot/resources/outputs/` (also used by the python unit tests and the
 example dashboard) are **generated** by `tests/robot/resources/generator/generate.py` from two simulated projects
 (`WebshopUI`, `WebshopAPI`) with fake browser/API libraries. Do not edit the fixtures by hand; change the generator
-(`libraries/profiles.py` decides which tests fail, are flaky, skip, throw exceptions or get slower) and run
+(`libraries/profiles.py` decides which tests fail, are flaky, skip, throw exceptions or get slower; `RERUNS` in
+`generate.py` decides which runs get their failed tests re-executed and merged with `rebot --merge`) and run
 
 ```
 python tests/robot/resources/generator/generate.py
