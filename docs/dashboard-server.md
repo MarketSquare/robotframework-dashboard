@@ -162,7 +162,7 @@ The admin page supports four methods for adding test results:
 | **By Index** | Supports single values, colon-separated ranges, and semicolon-separated lists (e.g., `1:3;9;13`). |
 | **By Alias** | Comma-separated alias names. |
 | **By Tag** | Comma-separated tags — removes all runs matching any of the specified tags. |
-| **By Limit** | Keep only the N most recent runs; all older runs are deleted. |
+| **By Limit** | Keep only the N most recent runs; all older runs are deleted. `limit` must be at least 1 (lower values are rejected with a 422). |
 | **By Limit + Tag(s)** | Supply `limit` together with `tags` to scope the limit: the N most recent runs matching any given tag are kept, older matching runs are deleted, and runs without those tags are left untouched (e.g. `{"limit": 10, "tags": ["nightly"]}`). Only `limit` supports this tag scoping — `age` + `tags` together just run as two independent operations. |
 | **By Age** | Remove runs by age threshold. `"10d"` removes runs **older** than 10 days; a leading minus `"-10d"` removes runs **younger** than 10 days. Units: (y)ear, (d)ay, (h)our, (m)inute, (s)econd. |
 | **Remove All** | Irreversibly deletes all runs from the database. |

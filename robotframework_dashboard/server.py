@@ -2,7 +2,7 @@ from fastapi_offline import FastAPIOffline
 from fastapi import Body, Depends, HTTPException, status, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from uvicorn import run
 
 from os.path import join, abspath, dirname, exists
@@ -270,7 +270,7 @@ class RemoveOutputs(BaseModel):
     aliases: Optional[List[str]] = None
     tags: Optional[List[str]] = None
     all: Optional[bool] = False
-    limit: Optional[int] = None
+    limit: Optional[int] = Field(default=None, ge=1)
     age: Optional[str] = None
     model_config = remove_outputs_model_config
 

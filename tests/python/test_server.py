@@ -507,6 +507,16 @@ def test_remove_outputs_by_limit():
     assert response.json()["success"] == "1"
 
 
+def test_remove_outputs_by_limit_below_one_is_rejected():
+    """Issue #333: a limit < 1 must be refused before it reaches the database."""
+    server = _make_server()
+    client = _client(server)
+    for limit in (0, -1):
+        response = client.request("DELETE", "/remove-outputs", json={"limit": limit})
+        assert response.status_code == 422
+        server.robotdashboard.remove_outputs.assert_not_called()
+
+
 def test_remove_outputs_by_limit_and_tags_builds_scoped_query():
     """limit + tags -> single scoped 'limit=N;tag=...' query, no standalone tag removals."""
     server = _make_server()
