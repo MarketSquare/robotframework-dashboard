@@ -1,3 +1,16 @@
+/* Offset for VitePress' fixed navbar/sidebar while the VersionBanner is shown.
+   config.mts emits the same values in <head> when the banner is known at build
+   time; the class is set at runtime by VersionBanner.vue (theme/versions.ts). */
+:root.has-version-banner {
+  --vp-layout-top-height: 36px;
+}
+
+@media (max-width: 640px) {
+  :root.has-version-banner {
+    --vp-layout-top-height: 56px;
+  }
+}
+
 /* =========================
    Complete Dark Mode Overrides
    ========================= */
@@ -13,6 +26,8 @@ html.dark {
   --vp-c-link: #5f67ee; /* link color */
   --vp-c-link-hover: #7c82ff; /* link hover */
   --vp-c-code-bg: rgba(30, 41, 59, 0.9); /* inline code background */
+  --vp-sidebar-bg-color: var(--vp-c-bg); /* also paints the .curtain strip behind the navbar */
+  --vp-nav-bg-color: var(--vp-c-bg);
 }
 
 /* Page and layout backgrounds */

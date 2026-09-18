@@ -1,5 +1,8 @@
+import { h } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import { inBrowser, type Theme } from 'vitepress'
+import VersionBanner from './VersionBanner.vue'
+import VersionSwitcher from './VersionSwitcher.vue'
 import './vars.css'
 
 // mermaid needs a real DOM, so it's only ever imported/run client-side
@@ -26,6 +29,13 @@ async function renderMermaidDiagrams() {
 
 export default {
   ...DefaultTheme,
+  // banner above the navbar on dev / old-version builds, version switcher in the
+  // navbar; both read /versions.json at runtime (theme/versions.ts)
+  Layout: () =>
+    h(DefaultTheme.Layout, null, {
+      'layout-top': () => h(VersionBanner),
+      'nav-bar-content-after': () => h(VersionSwitcher),
+    }),
   enhanceApp({ router }) {
     if (inBrowser) {
       router.onAfterRouteChange = () => {
