@@ -10,11 +10,11 @@
   created database: '*.db'
 ======================================================================================
  2. Processing output XML(s)
-  Processing output XML 'output-20250313-002222.xml'
-  Processed output XML 'output-20250313-002222.xml' in * seconds
+  Processing output XML 'output-20260818-021545.xml'
+  Processed output XML 'output-20260818-021545.xml' in * seconds
 ======================================================================================
  3. Listing all available runs in the database
-  Run 0   | 2025-03-13 00:22:22.304104+??:?? | Testsuites
+  Run 0   | 2026-08-18 02:15:45.246914+??:?? | WebshopUI
 ======================================================================================
  4. Removing runs from the database
   skipping step

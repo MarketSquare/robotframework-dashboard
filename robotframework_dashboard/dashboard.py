@@ -97,9 +97,11 @@ class DashboardGenerator:
                     f"Robot Framework Dashboard - {str(generation_datetime)[:-7]}",
                 )
             if message_config:
+                # the placeholder sits inside a single-quoted JS string literal that is
+                # JSON.parse'd at runtime, so escape backslashes and single quotes
                 dashboard_data = dashboard_data.replace(
                     '"placeholder_message_config"',
-                    str(message_config).replace("'", '"'),
+                    dumps(message_config).replace("\\", "\\\\").replace("'", "\\'"),
                 )
             if json_config:
                 dashboard_data = dashboard_data.replace(

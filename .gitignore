@@ -44,3 +44,6 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 # Claude Code per-user settings
 .claude/settings.local.json
+
+# copied into the docs site by scripts/copy-static.mjs (npm run docs:build)
+docs/public/example/

@@ -1,4 +1,4 @@
-The test Normal Test ${number} has failed for some strange reason :(
-The test Very Large Test ${number} has failed for some strange reason :(
-The test Small Test ${number} has failed for some strange reason :(
-The test Very Large Test ${number} has been skipped!
+Expected status ${expected} but got 500 (request-id ${id})
+Request to ${endpoint} timed out after ${ms}ms
+Page '${url}' did not finish loading within ${ms}ms
+Timeout ${ms}ms exceeded waiting for '${selector}' to be visible

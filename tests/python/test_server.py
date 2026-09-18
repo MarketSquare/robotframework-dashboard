@@ -14,7 +14,8 @@ from fastapi.testclient import TestClient
 from robotframework_dashboard.server import ApiServer, ResponseMessage
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
-SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
+SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
+SAMPLE_LOG_NAME = SAMPLE_XML.name.replace("output-", "log-").replace(".xml", ".html")
 
 
 # ---------------------------------------------------------------------------
@@ -580,11 +581,11 @@ def test_remove_outputs_removes_associated_log_file(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     log_dir = tmp_path / "robot_logs"
     log_dir.mkdir()
-    log_file = log_dir / "log-20250313-002134.html"
+    log_file = log_dir / SAMPLE_LOG_NAME
     log_file.write_text("<html>log</html>")
 
     run_start = "2025-03-13 00:21:34.707148+01:00"
-    output_path = str(OUTPUTS_DIR / "output-20250313-002134.xml")
+    output_path = str(SAMPLE_XML)
 
     server = _make_server()
     server.log_dir = str(log_dir)
@@ -977,7 +978,7 @@ def test_remove_outputs_no_log_file_found_logs_message(tmp_path, monkeypatch):
     """When a run is removed but no log file exists, console notes the skip."""
     monkeypatch.chdir(tmp_path)
     run_start = "2025-03-13 00:21:34+01:00"
-    output_path = str(OUTPUTS_DIR / "output-20250313-002134.xml")
+    output_path = str(SAMPLE_XML)
     server = _make_server(no_autoupdate=True)
     server.log_dir = str(tmp_path / "robot_logs")
     server.robotdashboard.get_runs.return_value = ([run_start], ["Suite"], ["alias"], [""])

@@ -5,7 +5,7 @@ import pytest
 from robotframework_dashboard.processors import OutputProcessor, ExceptionProcessor
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
-SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
+SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
 
 
 # --- get_run_start ---
@@ -248,7 +248,11 @@ def test_exception_processor_only_counts_leaf_keyword():
 def test_exception_processor_get_output_data_includes_exceptions_key(processed_output):
     """get_output_data() wires ExceptionProcessor's results into the returned dict."""
     data = processed_output.get_output_data()
-    assert data["exceptions"] == []  # SAMPLE_XML has no TRY/EXCEPT blocks
+    # the fixtures contain keywords failing inside TRY/EXCEPT blocks: (run_start, message, count) rows
+    assert len(data["exceptions"]) > 0
+    for row in data["exceptions"]:
+        assert len(row) == 3
+        assert row[2] >= 1
 
 
 def test_calculate_keyword_averages_from_real_xml(processed_output):
@@ -317,6 +321,15 @@ def test_merge_run_and_suite_metadata_deduplicates():
     new_run_list, _ = _make_processor().merge_run_and_suite_metadata(run_list, suite_list)
     metadata_str = new_run_list[0][-1]
     assert metadata_str.count("shared: value") == 1
+
+
+def test_merge_run_and_suite_metadata_keeps_document_order():
+    # order must be deterministic (run metadata first, then suites) so DB references are stable
+    run_list, suite_list = _make_run_suite(
+        run_metadata={"Team": "Storefront", "Browser": "chromium"}, suite_metadata={"Environment": "staging"}
+    )
+    new_run_list, _ = _make_processor().merge_run_and_suite_metadata(run_list, suite_list)
+    assert new_run_list[0][-1] == "['Team: Storefront', 'Browser: chromium', 'Environment: staging']"
 
 
 def test_merge_run_and_suite_metadata_empty_metadata():

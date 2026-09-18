@@ -27,7 +27,7 @@ The robot suites call the `robotdashboard` **CLI** (see `Generate Dashboard` in 
 # Build the image once (also rebuild after dependency changes)
 bash scripts/docker/create-test-image.sh robot
 
-# Full suite, same as CI
+# Full suite, same as CI (failed tests are rerun once and merged, see robot-tests.md)
 bash scripts/docker/run-in-robot-container.sh bash scripts/robot-tests.sh
 
 # One suite
@@ -70,7 +70,9 @@ Targeted runs are fine for iteration (see the deep references), but run the proj
 
 ## CI
 
-`.github/workflows/tests.yml` ("Robotdashboard Tests"): `unit-tests` and `js-unit-tests` jobs run first; `robot-tests` declares `needs: [unit-tests, js-unit-tests]` and is skipped if either fails. The robot job always uploads its `results/` folder as artifact **`robot-results`**.
+`.github/workflows/tests.yml` ("Robotdashboard Tests"): `python-tests`, `javascript-tests` and `robot-tests` jobs. The robot job runs inside the prebuilt image `ghcr.io/marketsquare/robotframework-dashboard-test-robot` (built from `scripts/docker/test-dashboard-robot.dockerfile` by `.github/workflows/test-image.yml` — automatically when `requirements-test.txt` or the Dockerfile change on `main`, or via *Run workflow*), so the only setup step is `pip install ".[all]"`. Same image as the local Docker runs. The robot job always uploads its `results/` folder as artifact **`robot-results`**; `scripts/robot-tests.sh` reruns failed tests once and merges (`first_output.xml` / `rerun_output.xml` keep the attempts).
+
+When bumping a test dependency: the PR still runs against the old image; the image is rebuilt when the bump lands on `main`. Build locally with `bash scripts/docker/create-test-image.sh robot` to verify before merging.
 
 ### Diagnosing a red CI run
 

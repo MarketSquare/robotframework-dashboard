@@ -1,4 +1,5 @@
 import json
+import re
 import zlib
 import base64
 import pytest
@@ -155,6 +156,19 @@ def test_generate_dashboard_with_message_config(tmp_path):
     output = _call_generate(tmp_path, message_config=["Template: ${name}", "Alert: ${value}"])
     content = output.read_text(encoding="utf-8")
     assert "Template" in content
+
+
+def test_generate_dashboard_message_config_with_quotes(tmp_path):
+    # quotes in a pattern must survive the round trip through the JS string literal
+    patterns = ["Page '${url}' failed", 'Element "${sel}" not found', "back\\slash"]
+    output = _call_generate(tmp_path, message_config=patterns)
+    content = output.read_text(encoding="utf-8")
+    match = re.search(r"var message_config = '(.*?)'\n", content)
+    assert match, "message_config literal not found"
+    js_literal = match.group(1)
+    # undo the JS single-quote string escaping, then the JSON encoding
+    decoded = js_literal.replace("\\'", "'").replace("\\\\", "\\")
+    assert json.loads(decoded) == patterns
 
 
 def test_generate_dashboard_with_json_config(tmp_path):

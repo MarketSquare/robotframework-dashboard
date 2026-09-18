@@ -7,8 +7,8 @@ Resource    ../resources/keywords/general-keywords.resource
 
 Suite Setup    Start Browser
 Suite Teardown    Stop Browser
-Test Setup    Run Keywords    Generate Dashboard    Open Dashboard
-Test Teardown    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+Test Setup    Run Keywords    Generate Shared Dashboard    Open Dashboard
+Test Teardown    Close Dashboard
 
 
 *** Test Cases ***
@@ -38,17 +38,12 @@ Validate Total Statistics Use Run Tags
     Click    selector=id=collapsegridOverviewTotal
     Validate Component    id=overviewTotalStatsSection    name=totalStatisticsRunTags    folder=overview
 
-Validate Project Tests
+Validate Project WebshopUI
     Open Overview Page
-    Click    selector=id=collapseTestsBody
-    Validate Component    id=TestsSection    name=prjTests    folder=overview
+    Click    selector=id=collapseWebshopUIBody
+    Validate Component    id=WebshopUISection    name=prjWebshopUI    folder=overview
 
-Validate Project Testsuites
+Validate Project WebshopAPI
     Open Overview Page
-    Click    selector=id=collapseTestsuitesBody
-    Validate Component    id=TestsuitesSection    name=prjTestsuites    folder=overview
-
-Validate Project Other
-    Open Overview Page
-    Click    selector=id=collapseTestsuitesBody
-    Validate Component    id=TestsuitesSection    name=prjOther    folder=overview
+    Click    selector=id=collapseWebshopAPIBody
+    Validate Component    id=WebshopAPISection    name=prjWebshopAPI    folder=overview

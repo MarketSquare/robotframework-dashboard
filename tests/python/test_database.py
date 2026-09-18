@@ -7,8 +7,9 @@ from robotframework_dashboard.processors import OutputProcessor
 from robotframework_dashboard.arguments import LogRemovedConfig
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
-SAMPLE_XML = OUTPUTS_DIR / "output-20250313-002134.xml"
-SAMPLE_XML_2 = OUTPUTS_DIR / "output-20250313-002151.xml"
+ALL_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))
+SAMPLE_XML, SAMPLE_XML_2, SAMPLE_XML_3, SAMPLE_XML_4 = ALL_XML[:4]
+SAMPLE_LOG = OUTPUTS_DIR / SAMPLE_XML.name.replace("output-", "log-").replace(".xml", ".html")
 
 
 # --- open / close ---
@@ -76,17 +77,23 @@ def test_run_start_not_in_empty_db(db):
     db.close_database()
 
 
+def _sample_run_start():
+    """run_start of SAMPLE_XML as stored in the DB, without timezone suffix."""
+    processor = OutputProcessor(SAMPLE_XML)
+    return str(processor.get_run_start())
+
+
 def test_run_start_exists_after_insert(populated_db):
     populated_db.open_database()
     # The fixture stores with +01:00; startswith check in run_start_exists handles this
-    result = populated_db.run_start_exists("2025-03-13 00:21:34.707148")
+    result = populated_db.run_start_exists(_sample_run_start())
     populated_db.close_database()
     assert result is True
 
 
 def test_run_start_with_full_tz_also_found(populated_db):
     populated_db.open_database()
-    result = populated_db.run_start_exists("2025-03-13 00:21:34.707148+01:00")
+    result = populated_db.run_start_exists(_sample_run_start() + "+01:00")
     populated_db.close_database()
     assert result is True
 
@@ -222,10 +229,10 @@ def _run_starts(db):
 def test_remove_by_limit_with_single_tag_keeps_newest_matching(db):
     db.open_database()
     # oldest -> newest; three "nightly" runs + one unrelated "release" run
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002222.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002257.xml", ["release"])
+    _insert_run(db, SAMPLE_XML, ["nightly"])
+    _insert_run(db, SAMPLE_XML_2, ["nightly"])
+    _insert_run(db, SAMPLE_XML_3, ["nightly"])
+    _insert_run(db, SAMPLE_XML_4, ["release"])
     starts_before = _run_starts(db)  # ordered oldest -> newest
     db.remove_runs(["limit=2;tag=nightly"])
     starts_after = _run_starts(db)
@@ -238,10 +245,10 @@ def test_remove_by_limit_with_single_tag_keeps_newest_matching(db):
 
 def test_remove_by_limit_with_multiple_tags(db):
     db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["alpha"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["beta"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002222.xml", ["alpha"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002257.xml", ["gamma"])
+    _insert_run(db, SAMPLE_XML, ["alpha"])
+    _insert_run(db, SAMPLE_XML_2, ["beta"])
+    _insert_run(db, SAMPLE_XML_3, ["alpha"])
+    _insert_run(db, SAMPLE_XML_4, ["gamma"])
     starts_before = _run_starts(db)
     # candidates = union of alpha+beta = 3 oldest runs; keep 2 newest of those
     db.remove_runs(["limit=2;tag=alpha;tag=beta"])
@@ -254,9 +261,9 @@ def test_remove_by_limit_with_multiple_tags(db):
 
 def test_remove_by_limit_with_tag_higher_than_count_is_noop(db):
     db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002222.xml", ["other"])
+    _insert_run(db, SAMPLE_XML, ["nightly"])
+    _insert_run(db, SAMPLE_XML_2, ["nightly"])
+    _insert_run(db, SAMPLE_XML_3, ["other"])
     console = db.remove_runs(["limit=5;tag=nightly"])
     assert len(db.get_data()["runs"]) == 3
     assert "WARNING" in console
@@ -265,9 +272,9 @@ def test_remove_by_limit_with_tag_higher_than_count_is_noop(db):
 
 def test_remove_by_limit_only_ignores_tags(db):
     db.open_database()
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002134.xml", ["nightly"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002151.xml", ["release"])
-    _insert_run(db, OUTPUTS_DIR / "output-20250313-002222.xml", ["nightly"])
+    _insert_run(db, SAMPLE_XML, ["nightly"])
+    _insert_run(db, SAMPLE_XML_2, ["release"])
+    _insert_run(db, SAMPLE_XML_3, ["nightly"])
     starts_before = _run_starts(db)
     # no tag scope -> global limit, keep 1 newest regardless of tag
     db.remove_runs(["limit=1"])
@@ -313,8 +320,8 @@ def test_vacuum_database_returns_console(populated_db):
 
 def test_update_output_path_found(populated_db):
     populated_db.open_database()
-    # SAMPLE_XML is stored as path; its corresponding log is log-20250313-002134.html
-    log_path = str(OUTPUTS_DIR / "log-20250313-002134.html")
+    # SAMPLE_XML is stored as path; its corresponding log has the same stamp
+    log_path = str(SAMPLE_LOG)
     console = populated_db.update_output_path(log_path)
     populated_db.close_database()
     assert "Executed query" in console
