@@ -54,3 +54,12 @@ jobs:
             ${{ env.IMAGE }}:${{ github.sha }}
           # zstd layers decompress several times faster than gzip when the CI runner pulls the image
           outputs: type=image,push=true,compression=zstd,compression-level=3,force-compression=true
+
+      # Every push adds a package version (tags: latest + sha); keep the newest three so a rollback
+      # stays possible and drop the rest. Safe because pushes are single manifests (see above).
+      - name: Remove old image versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: robotframework-dashboard-test-robot
+          package-type: container
+          min-versions-to-keep: 3
