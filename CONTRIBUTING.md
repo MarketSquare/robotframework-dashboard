@@ -195,7 +195,19 @@ C:> scripts\docker\create-test-image.bat python --no-cache
 
 ## 📖 Docs
 
-The docs are hosted through the main branch. Only this branch will actually deploy the change you make. To locally test the documentation you can do the following:
+The docs site is versioned. `.github/workflows/deploy.yml` builds and deploys it on every push to `main`, on every `vX.Y.Z` tag push and on manual dispatch:
+
+| URL | Built from |
+|---|---|
+| `/robotframework-dashboard/` | the latest release tag |
+| `/robotframework-dashboard/dev/` | `main` (unreleased changes, `noindex`) |
+| `/robotframework-dashboard/vX.Y.Z/` | every release tag from `v1.3.0` on (`noindex`) |
+| `/robotframework-dashboard/vX.Y.Z/` | every PyPI release before `v1.3.0` (0.1.1 – 1.2.2): the README of that release as a single page (`noindex`) |
+| `/robotframework-dashboard/versions.json` | list of all versions, feeds the version switcher in the nav bar |
+
+So a docs change merged to `main` shows up under `/dev/` right away and reaches `/` with the next release tag. The version switcher and the "old version" banner read `versions.json` at runtime, so a new release appears in every version without rebuilding them; CI keeps the finished builds of released versions in an `actions/cache` (`.docs-dist-cache/`) and only rebuilds `/dev/` on a normal push, or everything once when `docs/.vitepress/`, the build scripts or `package-lock.json` change. Old tags are immutable: their markdown is built as-is, only the current `docs/.vitepress/` (config, theme, banner) and `scripts/docs/copy-static.mjs` are copied over each checkout by `scripts/docs/build-versioned-docs.mjs`. If an old tag breaks the build (e.g. a dead link), add a text replacement for that tag to the `PATCHES` table in that script. The releases before `v1.3.0` were never tagged; `scripts/docs/legacy-docs-versions.json` maps each of them to the commit that introduced its version string, and the build turns that commit's `README.md` into the page (images copied along, repo-relative links pointed at GitHub at that commit). This list is closed — nothing needs to be added to it for new releases. The demo videos under `docs/public/` are only shipped with the root build; every other version references them from there to stay well below the 1 GB GitHub Pages limit. Each version's example dashboard gets a small shim (`DOCS_STORAGE_NAMESPACE` in `scripts/docs/copy-static.mjs`) that prefixes its localStorage keys, so the settings saved by one version cannot break the dashboard of another.
+
+To locally test the documentation you can do the following:
 1. Install node.js
 2. Run below to install the vitepress plugin and all other dependencies
 ```
@@ -204,4 +216,12 @@ npm install
 3. Run below to start the dev server on which you can see the docs. This will provide live updates.
 ```
 npm run docs:dev
+```
+4. To build the versioned site the way CI does (all tags, ~1 min) or only a few versions, and preview it under the same `/robotframework-dashboard/` prefix as GitHub Pages:
+```
+npm run docs:build:versions
+npm run docs:build:versions -- --only latest,dev,v1.3.0
+npm run docs:build:versions -- --only latest,legacy       # latest + all README-only releases
+npm run docs:build:versions -- --cache-dir .docs-dist-cache   # reuse finished builds between runs, like CI
+npm run docs:preview:versions
 ```

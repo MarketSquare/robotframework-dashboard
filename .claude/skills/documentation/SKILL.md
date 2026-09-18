@@ -24,6 +24,8 @@ Whenever a user-facing feature is added or changed, check **all four** of these 
 
 Served at `https://marketsquare.github.io/robotframework-dashboard/`. Source is in `docs/`. Built with VitePress (`package.json` at root — this is the **only** purpose of `package.json`). The `docs/index.md` is the home page (hero + feature cards).
 
+The site is **versioned** (`scripts/docs/build-versioned-docs.mjs`, see `dev-workflow` skill): `/` is the latest release tag, `/dev/` is `main`, `/vX.Y.Z/` every tag, and every pre-1.3.0 PyPI release as a single README page. Docs merged to `main` are therefore only visible under `/dev/` until the next release. Old tags are built as-is — never plan on "fixing" an old version's docs; only `docs/.vitepress/` is shared across versions. The sidebar in `config.mts` drops entries whose `.md` file does not exist in the checkout, so a new page just needs its sidebar entry added once.
+
 ### Page Map
 
 | File | Title | Contents |

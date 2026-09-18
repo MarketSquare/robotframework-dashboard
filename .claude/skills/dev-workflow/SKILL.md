@@ -56,8 +56,13 @@ Endpoints, auth model, and admin page: `server-api` skill and `docs/dashboard-se
 
 ```bash
 npm run docs:dev       # local dev server
-npm run docs:build     # production build
+npm run docs:build     # production build (single version, current checkout)
 npm run docs:preview   # preview the build
+npm run docs:build:versions -- --only latest,dev,v1.3.0   # versioned site as CI builds it (omit --only for all tags)
+npm run docs:preview:versions                             # serve dist under /robotframework-dashboard/ like Pages
+npm run docs:build:versions -- --cache-dir .docs-dist-cache   # skip versions whose build is already cached (CI does this)
 ```
 
 `package.json` exists **only** for the docs site — it has nothing to do with bundling dashboard JS.
+
+The deployed site is versioned: `/` = latest tag, `/dev/` = `main`, `/vX.Y.Z/` = each tag, plus every untagged pre-1.3.0 PyPI release as a README-only page (`scripts/docs/legacy-docs-versions.json`, `--only legacy`). `scripts/docs/build-versioned-docs.mjs` checks each ref out into a git worktree, overlays the current `docs/.vitepress/` + `scripts/docs/copy-static.mjs`, and runs VitePress per version into `docs/.vitepress/dist/<prefix>`. `docs/.vitepress/config.mts` reads `DOCS_BASE` / `DOCS_VERSION` / `DOCS_LATEST` from the environment; without them it behaves as a plain single-version build. The switcher (`theme/VersionSwitcher.vue`) and banner (`theme/VersionBanner.vue`) fetch `/versions.json` at runtime via `theme/versions.ts`, so the built HTML of a version does not depend on which other versions exist — that is what makes the build cache valid across releases. Old tags that break the build get a text replacement in the script's `PATCHES` table. Use `docs:preview:versions` to click through the version switcher.

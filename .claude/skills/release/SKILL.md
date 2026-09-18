@@ -156,6 +156,16 @@ If a **new skill** was created under `.claude/skills/` as part of this release, 
 
 ---
 
+## Step 7 — Verify the versioned docs deploy (after the tag is pushed)
+
+Pushing the `vX.Y.Z` tag triggers `.github/workflows/deploy.yml`, which rebuilds the docs for every tag (`scripts/docs/build-versioned-docs.mjs`). Once the run is green, check:
+
+- `https://marketsquare.github.io/robotframework-dashboard/` shows `vX.Y.Z` in the nav bar (the root is always the latest tag)
+- `https://marketsquare.github.io/robotframework-dashboard/vX.Y.Z/` exists
+- `https://marketsquare.github.io/robotframework-dashboard/versions.json` lists the new version with `"latest": true`
+
+---
+
 ## Quick checklist
 
 - [ ] `robotframework_dashboard/version.py` — version updated
@@ -165,3 +175,4 @@ If a **new skill** was created under `.claude/skills/` as part of this release, 
 - [ ] `example/robot_results.db` — regenerated
 - [ ] `CHANGELOG.md` — new section added at the top
 - [ ] Slack release notes produced
+- [ ] After the tag push: `/`, `/vX.Y.Z/` and `versions.json` on the docs site show the new version
