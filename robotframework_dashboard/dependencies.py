@@ -29,7 +29,7 @@ DEPENDENCIES = {
     },
     "matrix": {
         "type": "js",
-        "cdn": "https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js",
+        "cdn": "https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.1.0/dist/chartjs-chart-matrix.min.js",
         "local": "dependencies/chartjs-chart-matrix.js",
         "admin_page": False,
     },
