@@ -35,13 +35,13 @@ DEPENDENCIES = {
     },
     "gridstack_css": {
         "type": "css",
-        "cdn": "https://cdn.jsdelivr.net/npm/gridstack@12.2.1/dist/gridstack.min.css",
+        "cdn": "https://cdn.jsdelivr.net/npm/gridstack@13.3.0/dist/gridstack.min.css",
         "local": "dependencies/gridstack.css",
         "admin_page": False,
     },
     "gridstack_js": {
         "type": "js",
-        "cdn": "https://cdn.jsdelivr.net/npm/gridstack@12.2.1/dist/gridstack-all.min.js",
+        "cdn": "https://cdn.jsdelivr.net/npm/gridstack@13.3.0/dist/gridstack-all.min.js",
         "local": "dependencies/gridstack.js",
         "admin_page": False,
     },
