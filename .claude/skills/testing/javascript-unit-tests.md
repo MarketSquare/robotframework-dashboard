@@ -24,9 +24,9 @@ npx vitest run --reporter=verbose -t "sorts by total failures"
 
 ## Framework and config
 
-- **Vitest 4.1.1** — test runner and assertion library (`describe`, `it`, `expect`, `vi`).
-- **jsdom 29.0.1** — available as a devDependency for DOM-dependent tests (not currently used; environment is `node`).
-- Config is in `vitest.config.js`. Key setting: the `@js` path alias resolves to `robotframework_dashboard/js/`, so `import '@js/variables/settings.js'` works the same in tests as in source modules.
+- **Vitest 5** (on Vite 8) — test runner and assertion library (`describe`, `it`, `expect`, `vi`).
+- Environment is `node`; there is no jsdom. Tests that need `document`/`window` build a small hand-written mock (see `dashboard_idle.test.js`).
+- Config is in `vitest.config.mjs`. Key setting: the `@js` path alias resolves to `robotframework_dashboard/js/`, so `import '@js/variables/settings.js'` works the same in tests as in source modules.
 
 ## Test layout
 
@@ -194,5 +194,5 @@ JS unit tests run as a separate `js-unit-tests` job in `.github/workflows/tests.
 | `TypeError: X is not a function` | Mock doesn't export the needed function | Update the mock factory to include it |
 | `AssertionError` on a changed value | Source logic changed intentionally | Verify the change is correct; update expected values |
 | `AssertionError` on a value that shouldn't change | Regression in source code | Fix the source code |
-| `Cannot find module '@js/...'` | Path alias issue or renamed file | Check `vitest.config.js` alias and source file paths |
+| `Cannot find module '@js/...'` | Path alias issue or renamed file | Check `vitest.config.mjs` alias and source file paths |
 | Mock state leaking between tests | Mutable mock object not reset | Add `beforeEach` to reset mock state |
