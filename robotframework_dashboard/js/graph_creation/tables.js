@@ -75,6 +75,7 @@ function create_data_table(tableId, columns, getDataFn) {
         columns,
         data: getDataFn(),
         scrollX: true,
+        autoWidth: false,
     });
 }
 function create_run_table() { create_data_table("runTable", runColumns, _get_run_table_data); }

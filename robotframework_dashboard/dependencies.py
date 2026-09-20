@@ -53,7 +53,7 @@ DEPENDENCIES = {
     },
     "datatables_css": {
         "type": "css",
-        "cdn": "https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.css",
+        "cdn": "https://cdn.datatables.net/v/bs5/dt-3.0.4/datatables.min.css",
         "local": "dependencies/datatables.css",
         "admin_page": True,
     },
@@ -63,9 +63,15 @@ DEPENDENCIES = {
         "local": "dependencies/bootstrap.js",
         "admin_page": True,
     },
+    "jquery": {
+        "type": "js",
+        "cdn": "https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js",
+        "local": "dependencies/jquery.js",
+        "admin_page": True,
+    },
     "datatables_js": {
         "type": "js",
-        "cdn": "https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js",
+        "cdn": "https://cdn.datatables.net/v/bs5/dt-3.0.4/datatables.min.js",
         "local": "dependencies/datatables.js",
         "admin_page": True,
     },
