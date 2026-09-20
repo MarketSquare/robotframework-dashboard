@@ -209,7 +209,7 @@ The following dependencies are bundled with the package and will be used offline
 | **datatables_css** | CSS | https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.css | Table component styling |
 | **bootstrap_js** | JS | https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.8/js/bootstrap.bundle.min.js | Bootstrap interactive components |
 | **datatables_js** | JS | https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js | DataTables functionality |
-| **pako** | JS | https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js | Compression/decompression used for smaller dashboard file sizes |
+| **pako** | JS | https://cdn.jsdelivr.net/npm/pako@3.0.2/dist/browser/pako_inflate.umd.min.js | Compression/decompression used for smaller dashboard file sizes |
 
 ### Behaviour
 

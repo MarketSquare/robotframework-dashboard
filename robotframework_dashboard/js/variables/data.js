@@ -8,7 +8,7 @@ const exceptions = decode_and_decompress("placeholder_exceptions");
 function decode_and_decompress(base64Str) {
     if (base64Str.includes("placeholder_")) return [];
     const compressedData = Uint8Array.from(atob(base64Str), c => c.charCodeAt(0));
-    const decompressedData = pako.inflate(compressedData, { to: 'string' });
+    const decompressedData = pako.inflate(compressedData, { toText: true });
     return JSON.parse(decompressedData);
 }
 
