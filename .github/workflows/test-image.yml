@@ -22,17 +22,17 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -42,7 +42,7 @@ jobs:
         run: echo "IMAGE=${IMAGE,,}" >> "$GITHUB_ENV"
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: scripts/docker/test-dashboard-robot.dockerfile
@@ -57,9 +57,16 @@ jobs:
 
       # Every push adds a package version (tags: latest + sha); keep the newest three so a rollback
       # stays possible and drop the rest. Safe because pushes are single manifests (see above).
+      # Done with the REST API directly: actions/delete-package-versions is unmaintained and still
+      # runs on the deprecated Node.js 20. A single page suffices because this step runs on every
+      # push, so the package never holds more than a handful of versions.
       - name: Remove old image versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: robotframework-dashboard-test-robot
-          package-type: container
-          min-versions-to-keep: 3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE: orgs/${{ github.repository_owner }}/packages/container/robotframework-dashboard-test-robot
+        run: |
+          gh api "$PACKAGE/versions?per_page=100" --jq 'sort_by(.created_at) | reverse | .[3:] | .[].id' |
+          while read -r id; do
+            echo "Deleting package version $id"
+            gh api --method DELETE "$PACKAGE/versions/$id"
+          done
