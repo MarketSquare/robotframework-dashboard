@@ -72,6 +72,8 @@ The `DEPENDENCIES` dict in `dependencies.py` declares every third-party library.
 - Whether it is CSS or JS
 - Whether it is also needed on the admin page (`admin_page: True` — Bootstrap and DataTables). **Every** entry is loaded by the dashboard itself; the flag only selects the admin bundle's subset
 
+**Upgrading a library** — always change all four together: the CDN URL in `DEPENDENCIES`, the offline copy in `dependencies/` (download the exact CDN file), the URL table in `docs/advanced-cli-examples.md`, and the entry in `robotframework_dashboard/licenses/THIRD_PARTY_LICENSES.txt` (upstream LICENSE text at the pinned version, with the version recorded; shipped in the wheel via `MANIFEST.in`). A bundle that embeds another library (the date-fns adapter embeds date-fns, the old DataTables bundle embedded jQuery) needs an entry for the embedded library too.
+
 ### Online Mode (default)
 Emits `<script src="cdn-url">` or `<link rel="stylesheet" href="cdn-url">` tags that replace `<!-- placeholder_dependencies -->`. The browser fetches these from the CDN.
 
