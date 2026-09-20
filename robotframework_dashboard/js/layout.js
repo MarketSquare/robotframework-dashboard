@@ -254,7 +254,7 @@ function setup_section_order() {
             if (topAnchorId === "topDashboardSection") {
                 sectionEl.hidden = false;
             }
-            $(`#${sectionId}`).insertAfter(prevId);
+            document.querySelector(prevId).after(sectionEl);
             prevId = `#${sectionId}`;
         }
         // Hide
@@ -264,7 +264,7 @@ function setup_section_order() {
             if (!sectionEl) continue;
             if (gridEditMode) {
                 sectionEl.hidden = false;
-                $(`#${sectionId}`).insertAfter(prevId);
+                document.querySelector(prevId).after(sectionEl);
                 prevId = `#${sectionId}`;
             } else {
                 sectionEl.hidden = true;

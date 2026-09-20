@@ -10,21 +10,22 @@ describe('dashboard_idle.js (test hook)', () => {
     const state = {};
     let win;
     const reset = () => Object.assign(state, {
-        visible: {}, animated: 0, overlayOrModal: null, chartsRunning: false,
+        visible: {}, fading: false, overlayOrModal: null, chartsRunning: false,
     });
     beforeEach(() => {
         reset();
         state.now = 1000;
         win = {};
-        const $ = (selector) => ({
-            is: () => !!state.visible[selector],
-            length: selector === ':animated' ? state.animated : 0,
-        });
-        const document = { querySelector: () => state.overlayOrModal };
+        // an element "takes up layout space" (jQuery's old :visible test) when it has client rects
+        const element = (id) => ({ getClientRects: () => (state.visible[id] ? [{}] : []) });
+        const document = {
+            getElementById: (id) => (id in state.visible ? element(id) : null),
+            querySelector: () => state.overlayOrModal ?? (state.fading ? {} : null),
+        };
         const Chart = { instances: { a: {} }, animator: { running: () => state.chartsRunning } };
         const performance = { now: () => state.now };
-        const install = new Function('window', '$', 'document', 'Chart', 'performance', `return (${SCRIPT});`);
-        install(win, $, document, Chart, performance)();
+        const install = new Function('window', 'document', 'Chart', 'performance', `return (${SCRIPT});`);
+        install(win, document, Chart, performance)();
     });
     // first quiet call after a busy one
     const settle = () => { state.now += 100; return win.dashboard_is_idle(); };
@@ -42,10 +43,10 @@ describe('dashboard_idle.js (test hook)', () => {
     });
 
     it.each([
-        ['page spinner', () => { state.visible['#loading'] = true; }],
-        ['filter overlay', () => { state.visible['#filterLoadingOverlay'] = true; }],
+        ['page spinner', () => { state.visible['loading'] = true; }],
+        ['filter overlay', () => { state.visible['filterLoadingOverlay'] = true; }],
         ['graph overlay / modal / backdrop', () => { state.overlayOrModal = {}; }],
-        ['jQuery fade', () => { state.animated = 1; }],
+        ['fade_in/fade_out (.fading)', () => { state.fading = true; }],
         ['Chart.js animation', () => { state.chartsRunning = true; }],
     ])('is busy while %s is active and idle again 50 ms after it ends', (_, makeBusy) => {
         makeBusy();

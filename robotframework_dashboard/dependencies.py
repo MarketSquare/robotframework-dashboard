@@ -63,12 +63,6 @@ DEPENDENCIES = {
         "local": "dependencies/bootstrap.js",
         "admin_page": True,
     },
-    "jquery": {
-        "type": "js",
-        "cdn": "https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js",
-        "local": "dependencies/jquery.js",
-        "admin_page": True,
-    },
     "datatables_js": {
         "type": "js",
         "cdn": "https://cdn.datatables.net/v/bs5/dt-3.0.4/datatables.min.js",

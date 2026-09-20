@@ -92,7 +92,7 @@ Current third-party libraries:
 | GridStack | Drag-and-drop dashboard layout |
 | Pako | `pako.inflate()` — decompress embedded data in the browser |
 | Bootstrap | Modals, layout, admin page UI |
-| DataTables (bundles jQuery) | Tables page, admin page tables |
+| DataTables (3.x, no jQuery) | Tables page, admin page tables |
 
 ---
 

@@ -1,6 +1,6 @@
 import { setup_filtered_data_and_filters } from "./filter.js";
 import { areGroupedProjectsPrepared, overviewNavStore } from "./variables/globals.js";
-import { space_to_camelcase } from "./common.js";
+import { space_to_camelcase, fade_in, fade_out } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
 import { create_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
@@ -176,21 +176,15 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
 
 // function to add a spinner for slow loads
 function setup_spinner(hide) {
+    const pages = ["overview", "unified", "dashboard", "compare", "tables"].map(id => document.getElementById(id));
+    const loading = document.getElementById("loading");
     if (hide) {
         // Instant transition - hide spinner and show all content immediately
-        $("#loading").fadeOut(200);
-        $("#overview").fadeIn(200);
-        $("#unified").fadeIn(200);
-        $("#dashboard").fadeIn(200);
-        $("#compare").fadeIn(200);
-        $("#tables").fadeIn(200);
+        fade_out(loading);
+        pages.forEach(page => fade_in(page));
     } else {
-        $("#overview").hide()
-        $("#unified").hide()
-        $("#dashboard").hide()
-        $("#compare").hide()
-        $("#tables").hide()
-        $("#loading").show();
+        pages.forEach(page => { page.style.display = "none"; });
+        loading.style.display = "";
     }
 }
 

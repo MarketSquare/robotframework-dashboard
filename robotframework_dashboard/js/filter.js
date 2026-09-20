@@ -321,23 +321,23 @@ function filter_amount(filteredRuns) {
     var selectedAmount = document.getElementById("amount").value;
     // Handle weird selectedAmountValues:
     if (selectedAmount == "") {
-        $("#amount").val(10).trigger("change.amount");
+        document.getElementById("amount").value = 10;
         selectedAmount = document.getElementById("amount").value;
     }
     if (selectedAmount > runs.length) {
-        $("#amount").val(runs.length).trigger("change.amount");
+        document.getElementById("amount").value = runs.length;
         selectedAmount = document.getElementById("amount").value;
     }
     if (selectedAmount < 0) {
-        $("#amount").val(0).trigger("change.amount");
+        document.getElementById("amount").value = 0;
         selectedAmount = document.getElementById("amount").value;
     }
     if (selectedAmount.includes(",")) {
-        $("#amount").val(selectedAmount.split(",")[0]).trigger("change.amount");
+        document.getElementById("amount").value = selectedAmount.split(",")[0];
         selectedAmount = document.getElementById("amount").value;
     }
     if (selectedAmount.includes(".")) {
-        $("#amount").val(selectedAmount.split(".")[0]).trigger("change.amount");
+        document.getElementById("amount").value = selectedAmount.split(".")[0];
         selectedAmount = document.getElementById("amount").value;
     }
     filteredAmount = filteredRuns.length

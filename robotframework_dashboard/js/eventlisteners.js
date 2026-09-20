@@ -170,7 +170,7 @@ function update_filters_button_indicator() {
 function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
     // Only recompute filtered data and update graphs in-place (no layout rebuild needed)
-    $("#filtersModal").on("hide.bs.modal", function () {
+    document.getElementById("filtersModal").addEventListener("hide.bs.modal", function () {
         show_loading_overlay();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -432,11 +432,11 @@ function setup_filter_modal() {
 // function to create customized view eventlisteners
 function setup_settings_modal() {
     // function to catch the closing of the settings modal
-    $("#settingsModal").on("hidden.bs.modal", function () {
+    document.getElementById("settingsModal").addEventListener("hidden.bs.modal", function () {
         setup_data_and_graphs();
     });
     // function to catch the closing of the settings modal
-    $("#settingsModal").on("shown.bs.modal", function () {
+    document.getElementById("settingsModal").addEventListener("shown.bs.modal", function () {
         const libraries = [...new Set(
             keywords
                 .map(item => item.owner)
@@ -610,7 +610,7 @@ function setup_settings_modal() {
     const textColorHandler = create_theme_color_handler('text', 'themeTextColor');
 
     // Load colors on modal open
-    $("#settingsModal").on("shown.bs.modal", function () {
+    document.getElementById("settingsModal").addEventListener("shown.bs.modal", function () {
         backgroundColorHandler.load_color();
         cardColorHandler.load_color();
         highlightColorHandler.load_color();
@@ -1178,13 +1178,13 @@ function setup_graph_view_buttons() {
         document.getElementById(fullscreenId).addEventListener("click", () => {
             inFullscreenGraph = fullscreenId;
             lastScrollY = window.scrollY;
-            $("#navigation").hide();
+            document.getElementById("navigation").style.display = "none";
             toggleFullscreen(true);
         });
 
         document.getElementById(closeId).addEventListener("click", () => {
             inFullscreenGraph = ""
-            $("#navigation").show();
+            document.getElementById("navigation").style.display = "";
             toggleFullscreen(false);
             window.scrollTo({ top: lastScrollY, behavior: "auto" });
         });
@@ -1385,7 +1385,7 @@ function setup_graph_view_buttons() {
     });
 
     // Handle modal show event - move section filters into modal card bodies
-    $("#sectionFiltersModal").on("show.bs.modal", function () {
+    document.getElementById("sectionFiltersModal").addEventListener("show.bs.modal", function () {
         ["suite", "test", "keyword"].forEach(section => {
             const filters = document.getElementById(`${section}SectionFilters`);
             const cardBody = document.getElementById(`${section}SectionFiltersCardBody`);
@@ -1394,7 +1394,7 @@ function setup_graph_view_buttons() {
     });
 
     // Handle modal hide event - return section filters to original containers
-    $("#sectionFiltersModal").on("hide.bs.modal", function () {
+    document.getElementById("sectionFiltersModal").addEventListener("hide.bs.modal", function () {
         ["suite", "test", "keyword"].forEach(section => {
             const filters = document.getElementById(`${section}SectionFilters`);
             const container = document.getElementById(`${section}SectionFiltersContainer`);
