@@ -67,10 +67,10 @@ This block replaces `<!-- placeholder_javascript -->` in `templates/dashboard.ht
 ## Third-Party Dependencies
 
 The `DEPENDENCIES` dict in `dependencies.py` declares every third-party library. Each entry specifies:
-- A CDN URL (jsdelivr, cdnjs, unpkg, datatables.net)
+- A CDN URL (jsdelivr, cdnjs, datatables.net) — always version-pinned
 - A local file path under `dependencies/` for offline fallback
 - Whether it is CSS or JS
-- Whether it is `admin_page`-only (Bootstrap, DataTables, jQuery — excluded from the standalone dashboard)
+- Whether it is also needed on the admin page (`admin_page: True` — Bootstrap and DataTables). **Every** entry is loaded by the dashboard itself; the flag only selects the admin bundle's subset
 
 ### Online Mode (default)
 Emits `<script src="cdn-url">` or `<link rel="stylesheet" href="cdn-url">` tags that replace `<!-- placeholder_dependencies -->`. The browser fetches these from the CDN.
@@ -89,8 +89,8 @@ Current third-party libraries:
 | chartjs-chart-matrix | Matrix/heatmap chart type |
 | GridStack | Drag-and-drop dashboard layout |
 | Pako | `pako.inflate()` — decompress embedded data in the browser |
-| Bootstrap *(admin only)* | Admin page UI |
-| DataTables *(admin only)* | Admin page tables |
+| Bootstrap | Modals, layout, admin page UI |
+| DataTables (bundles jQuery) | Tables page, admin page tables |
 
 ---
 

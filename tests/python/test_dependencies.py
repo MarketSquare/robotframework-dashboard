@@ -25,7 +25,7 @@ def test_get_css_block_returns_style_tag():
 
 def test_get_dependencies_block_online_contains_cdn():
     result = DependencyProcessor().get_dependencies_block(offline=False)
-    assert "cdn.jsdelivr.net" in result or "cdnjs.cloudflare.com" in result or "unpkg.com" in result
+    assert "cdn.jsdelivr.net" in result or "cdnjs.cloudflare.com" in result
 
 
 def test_get_dependencies_block_online_returns_script_and_link_tags():

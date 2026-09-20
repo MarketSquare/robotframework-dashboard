@@ -62,6 +62,27 @@ describe('get_graph_config', () => {
         });
     });
 
+    // Chart.js >= 4.5 turns its automatic palette off when the global color defaults are themed
+    describe('colors plugin', () => {
+        it('forces the automatic palette for datasets without colors', () => {
+            const config = get_graph_config('line', [{ label: 'A', data: [] }, { label: 'B', data: [] }], '', 'X', 'Y');
+            expect(config.options.plugins.colors.forceOverride).toBe(true);
+        });
+
+        it('keeps dataset colors when any dataset defines one', () => {
+            const data = { labels: ['Run 1'], datasets: [{ data: [1] }, { data: [2], backgroundColor: '#97bd61' }] };
+            const config = get_graph_config('bar', data, '', 'X', 'Y');
+            expect(config.options.plugins.colors.forceOverride).toBe(false);
+        });
+
+        it('is inherited by every graph type', () => {
+            for (const type of ['bar', 'timeline', 'boxplot', 'radar']) {
+                const config = get_graph_config(type, sampleBarData, '', 'X', 'Y');
+                expect(config.options.plugins.colors.forceOverride).toBe(true);
+            }
+        });
+    });
+
     describe('line type', () => {
         it('returns type "line" and wraps data in datasets when dataSets=true', () => {
             const lineData = [{ label: 'Set 1', data: [1, 2, 3] }];

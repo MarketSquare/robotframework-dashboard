@@ -35,6 +35,12 @@ function get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle, data
             datalabels: {
                 display: false,
             },
+            // Chart.js >= 4.5 switches its automatic dataset palette off as soon as the global
+            // borderColor/backgroundColor defaults are changed, which theme.js does for the dark
+            // theme; keep the palette for datasets that carry no colors of their own (line graphs)
+            colors: {
+                forceOverride: !(graphData.datasets ?? []).some((dataset) => dataset.borderColor || dataset.backgroundColor),
+            },
         },
     };
 
