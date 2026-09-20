@@ -11,6 +11,11 @@ Test Teardown    Close Dashboard
 
 
 *** Test Cases ***
+Validate Filters Modal Buttons Are Right Aligned
+    Open Filter Dialog
+    Modal Buttons Should Be Right Aligned    modal=filtersModal    last_button=closeFilters
+    Close Filter Dialog
+
 Validate Dashboard Run Name Filter
     Set Run Filter    value=WebshopUI
     Validate Component    id=runStatisticsSection    name=runNameFilter    folder=run

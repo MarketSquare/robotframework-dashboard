@@ -108,6 +108,17 @@ Open Filter Dialog
 Close Filter Dialog
     Click    selector=id=closeFilters
 
+Modal Buttons Should Be Right Aligned
+    [Documentation]    The dashboard modals use their own button group instead of Bootstrap's .btn-close;
+    ...    the last button must sit at the right edge of the modal header (Bootstrap 5.3.1+ stopped
+    ...    spacing the header itself, see components.css).
+    [Arguments]    ${modal}    ${last_button}
+    Wait For Elements State    selector=id=${last_button}    state=visible
+    ${header}    Get BoundingBox    selector=id=${modal} >> .modal-header
+    ${button}    Get BoundingBox    selector=id=${last_button}
+    ${gap}    Evaluate    (${header}[x] + ${header}[width]) - (${button}[x] + ${button}[width])
+    Should Be True    0 <= ${gap} <= 32    msg=Last modal button ends ${gap}px before the header edge
+
 Set Run Filter
     [Arguments]    ${value}
     Open Filter Dialog

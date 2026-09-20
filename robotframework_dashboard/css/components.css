@@ -588,6 +588,13 @@ canvas {
   filter: brightness(0.5);
 }
 
+/* Bootstrap >= 5.3.1 no longer spaces the modal header itself (only its .btn-close gets
+   margin-left: auto); the dashboard modals use their own button groups, so keep the
+   title left and the buttons right */
+.modal-header {
+  justify-content: space-between;
+}
+
 #runTag {
   max-height: 400px;
   overflow: auto;

@@ -53,6 +53,8 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 
 All browser tests (02–07) use identical inputs, so `Generate Shared Dashboard` (test setup) builds `robotresults_shared.db` + `robotdashboard_shared.html` **once per run** under a pabot lock and every test opens that file; each test gets its own browser context (own `localStorage`), so parallel tests cannot influence each other. The files are removed by the `__init__.robot` teardown (`Run Teardown Only Once`). Parsing the 18 fixtures per test used to be the biggest cost of the suite.
 
+**Trap when running a single suite/test:** `__init__.robot` (which deletes `robotdashboard_shared.html` + `robotresults_shared.db` in its teardown) is only loaded when the whole `testsuites/` directory runs. A single-suite run leaves the shared dashboard behind in the repo root and the next run - single or full - silently reuses it, i.e. tests an old build. Delete both files before any run that must reflect a source change (a stash/unstash proof, a CSS/JS fix). Same idea for `build/`: `pip install .` in the container reuses `build/lib` and only copies source files that are newer, so after `git stash`/checkout of an older file delete `build/` too.
+
 ### Parallel-safe index system (CLI/DB tests)
 
 When a test needs its **own** database or generated files (`01_database.robot`), `Get Dashboard Index` uses a pabot lock to atomically bump `index.txt`; the test gets integer N and works with `robotresults_N.db` + `robotdashboard_N.html`; `Remove Database And Dashboard With Index` cleans both up in teardown.
