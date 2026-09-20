@@ -23,7 +23,7 @@ DEPENDENCIES = {
     },
     "boxplot": {
         "type": "js",
-        "cdn": "https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js",
+        "cdn": "https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js",
         "local": "dependencies/chartjs-chart-boxplot.js",
         "admin_page": False,
     },

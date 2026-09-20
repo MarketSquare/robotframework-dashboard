@@ -201,7 +201,7 @@ The following dependencies are bundled with the package and will be used offline
 | **chartjs** | JS | https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js | Core charting library |
 | **datalabels** | JS | https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0 | Chart.js plugin for data labels |
 | **adapter_date_fns** | JS | https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js | Date handling adapter for time-based charts |
-| **boxplot** | JS | https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js | Boxplot chart support |
+| **boxplot** | JS | https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js | Boxplot chart support |
 | **matrix** | JS | https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js | Matrix/heatmap charts |
 | **gridstack_css** | CSS | https://cdn.jsdelivr.net/npm/gridstack@12.2.1/dist/gridstack.min.css | Layout grid styling |
 | **gridstack_js** | JS | https://cdn.jsdelivr.net/npm/gridstack@12.2.1/dist/gridstack-all.min.js | Grid-based dashboard layout engine |
