@@ -16,7 +16,7 @@ The project includes several reference implementations. These demonstrate how to
 **Available examples:**
 
 - [abstractdb.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
-- [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
+- [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): reference copy of the built-in SQLite implementation (`robotframework_dashboard/database.py`), the best starting point for your own class
 - [mysql.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation
 
 These files define the required structure and show how each method should behave. If you create your own custom database implementation, you are encouraged to submit it via pull request or github issue so it can be added to the example folder to help others.
@@ -236,5 +236,5 @@ If not implemented, the default returns `{}` and no log files will be automatica
 
 - Look at the examples before implementing your own:
   - [abstractdb.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
-  - [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
+  - [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): reference copy of the built-in SQLite implementation (`robotframework_dashboard/database.py`), the best starting point for your own class
   - [mysql.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation

@@ -284,6 +284,8 @@ function clear_project_filter() {
         input.parentElement.classList.remove("d-none"); //show filtered rows
         if (input.id == "runTagCheckBoxAll") input.checked = true;
     }
+    const tagModeEl = document.getElementById("tagMode");
+    if (tagModeEl) tagModeEl.value = "AND";
     update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
 }
 
