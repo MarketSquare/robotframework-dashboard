@@ -198,7 +198,7 @@ The following dependencies are bundled with the package and will be used offline
 
 | Name | Type | CDN URL | Used For |
 |------|------|---------|----------|
-| **chartjs** | JS | https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js | Core charting library |
+| **chartjs** | JS | https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js | Core charting library |
 | **datalabels** | JS | https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0 | Chart.js plugin for data labels |
 | **adapter_date_fns** | JS | https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js | Date handling adapter for time-based charts |
 | **boxplot** | JS | https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js | Boxplot chart support |

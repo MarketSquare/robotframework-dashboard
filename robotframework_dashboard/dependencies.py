@@ -5,7 +5,11 @@ from pathlib import Path
 DEPENDENCIES = {
     "chartjs": {
         "type": "js",
-        "cdn": "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js",
+        # pinned below 4.5.1: its retinaScale rounds the canvas size to 0.1px but a canvas attribute
+        # is an integer, so every responsive resize check reports a change and fires a zero-duration
+        # update('resize') that cancels the draw animation of charts in fractional-width GridStack cells
+        # (chartjs/Chart.js#12256, fixed on master by #12142 but not released yet)
+        "cdn": "https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js",
         "local": "dependencies/chart.js",
         "admin_page": False,
     },
