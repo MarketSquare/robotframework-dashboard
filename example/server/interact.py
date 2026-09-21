@@ -17,7 +17,7 @@ AUTH = (USER, PASS)  # passed to every mutation request; ignored by server when 
 SINGLE_OUTPUT_PATH = Path("D:/robotframework-dashboard/tests/robot/resources/outputs/output-20260818-021545.xml")
 OUTPUT_FOLDER_PATH = Path("D:/robotframework-dashboard/tests/robot/resources/outputs/")
 
-# --- read-only endpoints (no auth required) ---
+# read-only endpoints (no auth required)
 
 # get the outputs currently in the database
 response = requests.get(f"{BASE_URL}/get-outputs")
@@ -30,7 +30,7 @@ print("get-logs:", response.json())
 print()
 
 
-# --- mutation endpoints (auth required when server credentials are set) ---
+# mutation endpoints (auth required when server credentials are set)
 
 # add an output by absolute path with tags, version, alias, and custom filters
 body = {

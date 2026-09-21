@@ -11,7 +11,6 @@ const viewOptionClassMap = {
     "Radar": "radar-graph",
 };
 
-// Generate standard graph HTML template
 function _graphHtml(key, title, viewOptions, { hasVertical = false, titleId = true, viewClassOverrides = {} } = {}) {
     const controls = viewOptions.map(opt => {
         const cls = viewClassOverrides[opt] || viewOptionClassMap[opt];
@@ -38,7 +37,6 @@ function _graphHtml(key, title, viewOptions, { hasVertical = false, titleId = tr
                 </div>`;
 }
 
-// Generate a single-value stat KPI widget HTML template
 function _statWidgetHtml(key, title, valueClass) {
     return `<div class="graph-header">
                 <h6 id="${key}Title">${title}</h6>
@@ -54,7 +52,6 @@ function _statWidgetHtml(key, title, valueClass) {
             </div>`;
 }
 
-// Generate standard table HTML template
 function _tableHtml(key, displayName) {
     return `<div class="col table-section" id="${key}Canvas">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -116,7 +113,6 @@ const graphMetadata = [
         hasFullscreenButton: false,
         information: null,
     },
-    // --- Run Stat Widgets (individual KPI cards) — managed via Add Stat Widget modal ---
     { key: "runStatExecutedRuns",     label: "Run Stat Executed Runs",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("runStatExecutedRuns",     "Executed Runs",      "blue-text") },
     { key: "runStatExecutedSuites",   label: "Run Stat Executed Suites",   defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("runStatExecutedSuites",   "Executed Suites",    "blue-text") },
     { key: "runStatExecutedTests",    label: "Run Stat Executed Tests",    defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("runStatExecutedTests",    "Executed Tests",     "blue-text") },
@@ -602,7 +598,6 @@ const graphMetadata = [
         hasFullscreenButton: true,
         html: _graphHtml("keywordExceptions", "Exceptions", ["Bar", "Timeline"], { hasVertical: true }),
     },
-    // --- Suite Stat Widgets — managed via Add Stat Widget modal ---
     { key: "suiteStatExecuted",  label: "Suite Stat Executed",   defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatExecuted",  "Executed Suites",  "blue-text") },
     { key: "suiteStatUnique",    label: "Suite Stat Unique",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatUnique",    "Unique Suites",    "white-text") },
     { key: "suiteStatPassed",    label: "Suite Stat Passed",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatPassed",    "Passed Suites",    "green-text") },
@@ -611,7 +606,6 @@ const graphMetadata = [
     { key: "suiteStatPassRate",  label: "Suite Stat Pass Rate",  defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatPassRate",  "Suite Pass Rate",  "green-text") },
     { key: "suiteStatTotalTime", label: "Suite Stat Total Time", defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatTotalTime", "Total Suite Time", "white-text") },
     { key: "suiteStatAvgTime",   label: "Suite Stat Avg Time",   defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("suiteStatAvgTime",   "Avg Suite Time",   "white-text") },
-    // --- Test Stat Widgets — managed via Add Stat Widget modal ---
     { key: "testStatExecuted",  label: "Test Stat Executed",   defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("testStatExecuted",  "Executed Tests",  "blue-text") },
     { key: "testStatUnique",    label: "Test Stat Unique",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("testStatUnique",    "Unique Tests",    "white-text") },
     { key: "testStatPassed",    label: "Test Stat Passed",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("testStatPassed",    "Passed Tests",    "green-text") },
@@ -620,7 +614,6 @@ const graphMetadata = [
     { key: "testStatPassRate",  label: "Test Stat Pass Rate",  defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("testStatPassRate",  "Test Pass Rate",  "green-text") },
     { key: "testStatTotalTime", label: "Test Stat Total Time", defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("testStatTotalTime", "Total Test Time", "white-text") },
     { key: "testStatAvgTime",   label: "Test Stat Avg Time",   defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("testStatAvgTime",   "Avg Test Time",   "white-text") },
-    // --- Keyword Stat Widgets — managed via Add Stat Widget modal ---
     { key: "keywordStatExecutions", label: "Keyword Stat Executions", defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("keywordStatExecutions", "Keyword Executions",  "blue-text") },
     { key: "keywordStatUnique",     label: "Keyword Stat Unique",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("keywordStatUnique",     "Unique Keywords",     "white-text") },
     { key: "keywordStatPassed",     label: "Keyword Stat Passed",     defaultType: "stats", viewOptions: ["Stats"], hasFullscreenButton: false, isStatWidget: true, defaultSize: { w: 2, h: 2 }, minSize: { w: 1, h: 1 }, html: _statWidgetHtml("keywordStatPassed",     "Passed Keywords",     "green-text") },

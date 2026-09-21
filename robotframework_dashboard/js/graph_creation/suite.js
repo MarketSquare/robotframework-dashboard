@@ -14,7 +14,6 @@ import { build_most_failed_config, build_most_time_consuming_config } from './co
 import { update_graphs_with_loading } from '../common.js';
 import { get_suite_stats_data } from '../graph_data/stats.js';
 
-// build functions
 function _build_suite_folder_donut_config(folder) {
     const data = get_donut_folder_graph_data("suite", filteredSuites, folder);
     const graphData = data[0]
@@ -210,7 +209,6 @@ function _build_suite_most_time_consuming_config() {
     return build_most_time_consuming_config("suiteMostTimeConsuming", "suite", "Suite", _get_suite_most_filtered_data(), "onlyLastRunSuite");
 }
 
-// create functions
 function create_suite_folder_donut_graph(folder) {
     const suiteFolder = document.getElementById("suiteFolder")
     suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
@@ -233,7 +231,6 @@ function create_suite_duration_graph() { create_chart("suiteDurationGraph", _bui
 function create_suite_most_failed_graph() { create_chart("suiteMostFailedGraph", _build_suite_most_failed_config); }
 function create_suite_most_time_consuming_graph() { create_chart("suiteMostTimeConsumingGraph", _build_suite_most_time_consuming_config); }
 
-// update functions
 function update_suite_folder_donut_graph(folder) {
     const suiteFolder = document.getElementById("suiteFolder")
     suiteFolder.innerText = folder == "" || folder == undefined ? "All" : folder;
@@ -272,7 +269,6 @@ function create_suite_stat_widgets() {
     setVal('suiteStatAvgTimeValue',   format_duration(data.avgTime));
 }
 function update_suite_stat_widgets() { create_suite_stat_widgets(); }
-
 
 export {
     create_suite_statistics_graph,

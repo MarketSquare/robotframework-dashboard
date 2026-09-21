@@ -36,7 +36,6 @@ let layoutHistory = [];
 let layoutHistoryIndex = -1;
 let applyingSnapshot = false;
 
-// Capture relevant layout settings as a deep-copy snapshot (from settings object)
 function capture_settings_snapshot() {
     return {
         layouts: JSON.parse(JSON.stringify(settings.layouts || {})),
@@ -81,7 +80,6 @@ function capture_settings_snapshot() {
     };
 }
 
-// Capture layout state from the live DOM during edit mode
 function capture_dom_snapshot() {
     const snapshot = {
         layouts: {},
@@ -177,7 +175,6 @@ function capture_dom_snapshot() {
     return snapshot;
 }
 
-// Push a snapshot onto the history stack (truncates any redo branch)
 function push_layout_snapshot(snapshot) {
     if (applyingSnapshot) return;
     layoutHistory = layoutHistory.slice(0, layoutHistoryIndex + 1);
@@ -186,7 +183,6 @@ function push_layout_snapshot(snapshot) {
     update_history_buttons();
 }
 
-// Apply a snapshot to settings (without persisting) and re-render in edit mode
 function apply_layout_snapshot(snapshot) {
     applyingSnapshot = true;
     settings.layouts = JSON.parse(JSON.stringify(snapshot.layouts));
@@ -212,7 +208,6 @@ function apply_layout_snapshot(snapshot) {
     document.addEventListener("graphs-finalized", on_finalized);
 }
 
-// Update the enabled/disabled visual state of undo and redo buttons
 function update_history_buttons() {
     const undoBtn = document.getElementById("undoLayout");
     const redoBtn = document.getElementById("redoLayout");
@@ -223,7 +218,6 @@ function update_history_buttons() {
     redoBtn.classList.toggle("layout-history-disabled", !canRedo);
 }
 
-// Capture current DOM state and push to history (no-op when applying a snapshot)
 function capture_dom_snapshot_and_push() {
     if (applyingSnapshot) return;
     push_layout_snapshot(capture_dom_snapshot());
@@ -359,14 +353,12 @@ function setup_grid_graphs(section) {
         window[grid] = initialize_grid();
     }
 
-    // Disable grid if not in edit mode
     if (!gridEditMode) {
         window[grid].disable();
     } else {
         window[grid].on('dragstop resizestop', () => capture_dom_snapshot_and_push());
     }
 
-    // Clear hidden section data
     const sectionDataHidden = document.getElementById(`${section.toLowerCase()}DataHidden`);
     if (sectionDataHidden?.children.length > 0) {
         sectionDataHidden.innerHTML = "";
@@ -399,7 +391,6 @@ function setup_grid_graphs(section) {
     let current_x = 0;
     let current_y = 0;
 
-    // Helper function to get next position for default layout
     const get_next_position = (w = default_size.w) => {
         const pos = { x: current_x, y: current_y };
         current_x += w;
@@ -410,10 +401,9 @@ function setup_grid_graphs(section) {
         return pos;
     };
 
-    // Helper function to process graphs with layout
     const process_graphs_with_layout = (graphs, is_visible) => {
         graphs
-            .filter(graph => graph.startsWith(section === "Unified" ? "" : section)) // Simple filter: all graphs for unified, section-specific otherwise
+            .filter(graph => graph.startsWith(section === "Unified" ? "" : section))
             .forEach(graph => {
                 const graphMeta = graphMetadata.find(g => g.label === graph);
                 const size = graphMeta?.defaultSize || default_size;
@@ -427,14 +417,13 @@ function setup_grid_graphs(section) {
             });
     };
 
-    // Process graphs based on mode
     if (gridEditMode) {
         process_graphs_with_layout(graph_show, true);
         process_graphs_with_layout(graph_hide, false);
     } else {
         process_graphs_with_layout(graph_show, true);
         graph_hide
-            .filter(graph => graph.startsWith(section === "Unified" ? "" : section)) // Same simple filter
+            .filter(graph => graph.startsWith(section === "Unified" ? "" : section))
             .forEach(graph => add_hidden_graph(graph));
     }
 
@@ -483,21 +472,18 @@ function setup_grid_graphs(section) {
         sectionDataHidden.insertAdjacentHTML("beforeend", graphMetadata.find(g => g.label == id).html);
     }
 
-    // Render custom stat widgets for this section
     if (section !== "Compare") {
         const sectionKey = section.toLowerCase();
         render_custom_stat_widgets(window[grid], sectionKey, gridEditMode);
         if (gridEditMode) {
             wire_delete_buttons(window[grid], sectionKey);
         }
-        // Render custom link widgets for this section
         render_custom_link_widgets(window[grid], sectionKey, gridEditMode);
         if (gridEditMode) {
             wire_link_delete_buttons(window[grid], sectionKey);
         }
     }
 
-    // Render custom section dividers (unified grid only)
     if (section === "Unified") {
         render_custom_sections(window[grid], gridEditMode);
         if (gridEditMode) {
@@ -700,7 +686,6 @@ function setup_edit_mode_icons(hidden) {
     }
 }
 
-// Repacks all widgets in a grid, placing the given item first (toFirst) or last (toLast)
 function move_widget_in_grid(gridStack, itemEl, toFirst) {
     const target = gridStack.engine.nodes.find(n => n.el === itemEl);
     if (!target) return;
@@ -744,7 +729,6 @@ function move_widget_in_grid(gridStack, itemEl, toFirst) {
     capture_dom_snapshot_and_push();
 }
 
-// Reusable handler to wire show/hide and move controls within a container
 function attach_section_order_buttons(containerId) {
     const root = `#${containerId}`;
     // Toggle shown/hidden buttons
@@ -858,11 +842,8 @@ function setup_dashboard_section_layout_buttons() {
         }
     });
 
-    // Setup the add stat widget modal (populate dropdowns, wire confirm/cancel)
     setup_add_stat_widget_modal();
-    // Setup the add link widget modal (populate color pickers, wire confirm/cancel)
     setup_add_link_widget_modal();
-    // Setup the add custom section modal (populate color pickers, wire confirm/cancel)
     setup_add_custom_section_modal();
 }
 

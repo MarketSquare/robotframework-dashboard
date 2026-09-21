@@ -10,7 +10,6 @@ import { build_most_failed_config, build_most_time_consuming_config } from "./co
 import { get_keyword_stats_data } from "../graph_data/stats.js";
 import { update_height } from "../graph_data/helpers.js";
 
-// build functions
 function _build_keyword_statistics_config() {
     const data = get_statistics_graph_data("keyword", settings.graphTypes.keywordStatisticsGraphType, filteredKeywords);
     const graphData = data[0]
@@ -144,7 +143,6 @@ function _build_keyword_exceptions_config() {
     return config;
 }
 
-// create functions
 function create_keyword_statistics_graph() { create_chart("keywordStatisticsGraph", _build_keyword_statistics_config); }
 function create_keyword_times_run_graph() { create_chart("keywordTimesRunGraph", _build_keyword_times_run_config); }
 function create_keyword_total_duration_graph() { create_chart("keywordTotalDurationGraph", _build_keyword_total_duration_config); }
@@ -156,7 +154,6 @@ function create_keyword_most_time_consuming_graph() { create_chart("keywordMostT
 function create_keyword_most_used_graph() { create_chart("keywordMostUsedGraph", _build_keyword_most_used_config); }
 function create_keyword_exceptions_graph() { create_chart("keywordExceptionsGraph", _build_keyword_exceptions_config); }
 
-// update functions
 function update_keyword_statistics_graph() { update_chart("keywordStatisticsGraph", _build_keyword_statistics_config); }
 function update_keyword_times_run_graph() { update_chart("keywordTimesRunGraph", _build_keyword_times_run_config); }
 function update_keyword_total_duration_graph() { update_chart("keywordTotalDurationGraph", _build_keyword_total_duration_config); }

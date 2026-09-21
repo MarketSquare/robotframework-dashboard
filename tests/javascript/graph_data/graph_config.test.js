@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock dependencies
 vi.mock('@js/variables/settings.js', () => ({
     settings: {
         show: {
@@ -182,7 +181,7 @@ describe('get_graph_config', () => {
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.animation).toBeDefined();
             expect(config.options.animation).not.toBe(false);
-            settings.show.animation = false; // restore
+            settings.show.animation = false;
         });
 
         it('sets x/y axis titles', () => {
@@ -216,7 +215,7 @@ describe('get_graph_config', () => {
             settings.show.legends = false;
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.plugins.legend.display).toBe(false);
-            settings.show.legends = true; // restore
+            settings.show.legends = true;
         });
 
         it('hides axis titles when settings.show.axisTitles is false', () => {
@@ -224,7 +223,7 @@ describe('get_graph_config', () => {
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.scales.x.title.display).toBe(false);
             expect(config.options.scales.y.title.display).toBe(false);
-            settings.show.axisTitles = true; // restore
+            settings.show.axisTitles = true;
         });
     });
 

@@ -15,7 +15,6 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
     const useLibraryNames = settings?.switch?.useLibraryNames === true;
     const limit = inFullscreen && inFullscreenGraph.includes("Duration") ? 100 : 30;
     const should_include = (value) => {
-        // --- keyword filtering ---
         if (dataType === "keyword") {
             const keywordKey = useLibraryNames && value.owner
                 ? `${value.owner}.${value.name}`
@@ -23,7 +22,6 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
 
             if (keywordKey !== keywordSelect) return false;
         }
-        // --- suite/test filtering ---
         if (exclude_from_suite_data(dataType, value)) return false;
         if (settings.switch.suitePathsTestSection) {
             if (dataType === "test" && suiteSelectTests !== "All" &&

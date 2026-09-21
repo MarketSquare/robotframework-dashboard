@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock dependencies
 vi.mock('@js/variables/settings.js', () => ({
     settings: {
         switch: { suitePathsSuiteSection: false },

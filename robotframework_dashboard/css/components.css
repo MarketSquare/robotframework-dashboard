@@ -326,8 +326,6 @@
 .grid-stack-item-content.red-bg    { background-color: rgba(206, 62, 1, 0.2);    }
 .grid-stack-item-content.yellow-bg { background-color: rgba(254, 216, 79, 0.2);  }
 
-/* ─── Custom link widget ─────────────────────────────────────────────────── */
-
 /* Inner layout — mirrors stat-widget-inner */
 .link-widget-inner {
   position: relative;
@@ -409,8 +407,6 @@
   max-width: calc(40% - 96px);
   margin-right: 96px;
 }
-
-/* ─────────────────────────────────────────────────────────────────────────── */
 
 .fullscreen .stat-value {
   font-size: 4rem;

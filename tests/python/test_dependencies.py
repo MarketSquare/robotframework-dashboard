@@ -2,8 +2,6 @@ import pytest
 from robotframework_dashboard.dependencies import DependencyProcessor
 
 
-# --- get_js_block ---
-
 def test_get_js_block_returns_script_tag():
     result = DependencyProcessor().get_js_block()
     assert "<script>" in result
@@ -14,14 +12,10 @@ def test_get_js_block_contains_merged_modules():
     assert "MERGED MODULES" in result
 
 
-# --- get_css_block ---
-
 def test_get_css_block_returns_style_tag():
     result = DependencyProcessor().get_css_block()
     assert "<style>" in result
 
-
-# --- get_dependencies_block offline=False (CDN) ---
 
 def test_get_dependencies_block_online_contains_cdn():
     result = DependencyProcessor().get_dependencies_block(offline=False)
@@ -32,8 +26,6 @@ def test_get_dependencies_block_online_returns_script_and_link_tags():
     result = DependencyProcessor().get_dependencies_block(offline=False)
     assert "<script" in result or "<link" in result
 
-
-# --- get_dependencies_block offline=True (local files) ---
 
 def test_get_dependencies_block_offline_contains_inline_content():
     result = DependencyProcessor().get_dependencies_block(offline=True)
@@ -46,8 +38,6 @@ def test_get_dependencies_block_offline_contains_comments():
     assert "<!--" in result
 
 
-# --- admin_page variant ---
-
 def test_get_dependencies_block_admin_online_includes_bootstrap():
     result = DependencyProcessor(admin_page=True).get_dependencies_block(offline=False)
     # Bootstrap is an admin-page dependency
@@ -58,8 +48,6 @@ def test_get_dependencies_block_admin_offline_contains_inline():
     result = DependencyProcessor(admin_page=True).get_dependencies_block(offline=True)
     assert "<script>" in result or "<style>" in result
 
-
-# --- _gather_files ---
 
 def test_gather_files_js_not_empty():
     dp = DependencyProcessor()

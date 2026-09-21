@@ -199,10 +199,10 @@ function filter_runtags(runs) {
     const selectedTags = Array.from(tagElements)
         .filter(tagElement => tagElement.checked)
         .map(tagElement => tagElement.id.replace(/^runTagCheckBox/, ""));
-    if (selectedTags.includes("All")) { // If "All" is selected, return all runs (no filter)
+    if (selectedTags.includes("All")) {
         return runs;
     }
-    if (selectedTags.length === 0) { // If no tags are selected, return an empty list
+    if (selectedTags.length === 0) {
         return [];
     }
     return runs.filter(run => {
@@ -245,7 +245,6 @@ function filter_custom_filters(filteredRuns) {
     return filteredRuns;
 }
 
-// Parse "key=value:key2=value2" string → { key: value, key2: value2 }
 function parse_custom_filters(cfStr) {
     if (!cfStr) return {};
     const result = {};
@@ -258,7 +257,6 @@ function parse_custom_filters(cfStr) {
     return result;
 }
 
-// Collect all unique custom filter dimensions and their values from all runs
 function collect_custom_filter_dimensions() {
     const dimensions = {};
     for (const run of runs) {
@@ -295,14 +293,14 @@ function filter_dates(runs) {
     const fromTime = document.getElementById("fromTime").value;
     const toDate = document.getElementById("toDate").value;
     const toTime = document.getElementById("toTime").value;
-    if (!fromDate || !fromTime || !toDate || !toTime) { // Return all runs if any date/time values are missing
+    if (!fromDate || !fromTime || !toDate || !toTime) {
         return runs;
     }
     const fromDateTime = new Date(`${fromDate} ${fromTime}:00`);
     const toDateTime = new Date(`${toDate} ${toTime}:00`);
-    if (fromDateTime > toDateTime) { // Check for valid date range
+    if (fromDateTime > toDateTime) {
         alert("Filter error: The selected from date + time is later than your selected to date + time. Date filter has not been applied!");
-        return runs;  // Return all runs if invalid range
+        return runs;
     }
     return runs.filter(run => {
         // When not converting timezones, strip any timezone offset so the run_start is treated
@@ -361,10 +359,8 @@ function filter_metadata(filteredRuns) {
 
 // function to filter suites/tests/keywords based on the already filtered runs
 function filter_data(data) {
-    // Step 1: Only include entries that match filteredRuns
     const validRunStarts = filteredRuns.map(v => v.run_start);
     let filteredData = data.filter(v => validRunStarts.includes(v.run_start));
-    // Step 2: Check if the first element has an "owner" key
     if (filteredData.length > 0 && "owner" in filteredData[0]) {
         const libraries = settings.libraries || {};
         filteredData = filteredData.filter(item => {
@@ -524,7 +520,6 @@ function setup_keywords_in_select() {
     keywordSelect.innerHTML = "";
     const useLibraryNames = settings?.switch?.useLibraryNames === true;
 
-    // Build display names depending on the setting
     const keywordNames = [
         ...new Set(
             filteredKeywords.map(keyword =>
@@ -535,11 +530,9 @@ function setup_keywords_in_select() {
         )
     ].sort();
 
-    // Add options to select
     keywordNames.forEach(keywordName => {
         keywordSelect.options.add(new Option(keywordName, keywordName));
     });
-    // Optionally select the last one
     if (keywordNames.length > 0) {
         keywordSelect.selectedIndex = keywordNames.length - 1;
     }
@@ -582,7 +575,6 @@ function setup_lowest_highest_dates() {
             const rs = run.run_start;
             const suffix = rs.slice(-6);
             const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
-            // Take only YYYY-MM-DD HH:MM:SS (first 19 chars)
             return hasTz ? rs.slice(0, 19) : rs.slice(0, 19);
         });
         wallClocks.sort();
@@ -645,7 +637,7 @@ function setup_runtags_in_select_filter_buttons() {
     const tags = new Set();
     runs.forEach(run => {
         run.tags.split(",").forEach(tag => {
-            if (tag) { // Avoid adding empty tags
+            if (tag) {
                 tags.add(tag);
             }
         });
@@ -715,7 +707,6 @@ function setup_project_versions_in_select_filter_buttons() {
     setup_filter_checkbox_handler_listeners(projectVersionList, allVersionsCheckBox, filterVersionSelectedIndicatorId);
 }
 
-// Returns the direct child paths of parentPath from the raw suites data
 function get_suite_path_children(parentPath) {
     const isRoot = !parentPath || parentPath === "All";
     const depth = isRoot ? 0 : parentPath.split(".").length;
@@ -733,7 +724,6 @@ function get_suite_path_children(parentPath) {
     return [...childPaths].sort();
 }
 
-// Render the suite path breadcrumb + child buttons for the given path and wire click handlers
 function setup_suite_path_navigator(path) {
     const normalized = (!path || path === "") ? "All" : path;
     document.getElementById("suitePathValue").value = normalized;
@@ -742,7 +732,6 @@ function setup_suite_path_navigator(path) {
     const indicator = document.getElementById("filterSuitePathSelectedIndicator");
     if (indicator) indicator.style.display = normalized === "All" ? "none" : "";
 
-    // Breadcrumb
     const breadcrumbEl = document.getElementById("suitePathBreadcrumb");
     if (normalized === "All") {
         breadcrumbEl.innerHTML = `<span class="text-muted">All</span>`;
@@ -763,7 +752,6 @@ function setup_suite_path_navigator(path) {
         });
     }
 
-    // Child buttons
     const childrenEl = document.getElementById("suitePathChildren");
     const children = get_suite_path_children(normalized);
     if (children.length === 0) {
@@ -778,7 +766,6 @@ function setup_suite_path_navigator(path) {
         });
     }
 
-    // Show/hide the filter row
     document.getElementById("suitePathFilter").hidden = suites.length === 0;
 }
 
@@ -1031,20 +1018,16 @@ function set_filter_show_current_version(version) {
     update_filter_active_indicator("projectVersionInputItemAll", "filterVersionSelectedIndicator");
 }
 
-// ============ Filter Profiles ============
-
 // Track the currently active profile name (null if none applied)
 let activeProfileName = null;
 
 // Snapshot of the filter state at dashboard load time (used to determine checkbox defaults when creating a profile)
 let defaultFilters = null;
 
-// Capture the current filter state as the baseline default (called once after filters are initialized)
 function capture_default_filters() {
     defaultFilters = capture_current_filters();
 }
 
-// Returns true when the current value of a single filter key differs from the default snapshot
 function filter_key_differs_from_default(key) {
     if (!defaultFilters) return false;
     const current = capture_current_filters();
@@ -1067,8 +1050,6 @@ function filter_key_differs_from_default(key) {
     return String(current[key] ?? '') !== String(defaultFilters[key] ?? '');
 }
 
-// Returns an object mapping each profile checkbox id to whether it should be checked
-// (i.e. the corresponding filter(s) currently differ from the default state)
 function compute_profile_check_states() {
     const checkKeyMap = {
         profileCheckRuns: ['runs'],
@@ -1089,30 +1070,21 @@ function compute_profile_check_states() {
     return result;
 }
 
-// Read the current state of all filter controls into a plain object
 function capture_current_filters() {
     const profile = {};
-    // Runs select
     profile.runs = document.getElementById("runs").value;
-    // Run tags checkboxes
     const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
     profile.runTags = Array.from(tagInputs).map(el => ({ id: el.id.replace(/^runTagCheckBox/, ""), checked: el.checked }));
     profile.tagMode = document.getElementById("tagMode")?.value ?? "AND";
-    // Project version checkboxes
     const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
     profile.projectVersions = Array.from(versionInputs).map(el => ({ value: el.value, checked: el.checked }));
-    // Date/time
     profile.fromDate = document.getElementById("fromDate").value;
     profile.fromTime = document.getElementById("fromTime").value;
     profile.toDate = document.getElementById("toDate").value;
     profile.toTime = document.getElementById("toTime").value;
-    // Metadata
     profile.metadata = document.getElementById("metadata").value;
-    // Amount
     profile.amount = document.getElementById("amount").value;
-    // Suite path
     profile.suitePath = document.getElementById("suitePathValue").value;
-    // Custom filters (one entry per dimension)
     const dimensions = collect_custom_filter_dimensions();
     if (Object.keys(dimensions).length > 0) {
         profile.customFilters = {};
@@ -1129,7 +1101,6 @@ function capture_current_filters() {
     return profile;
 }
 
-// Build a profile object from current filters, filtered by which checkboxes are checked
 function build_profile_from_checks() {
     const full = capture_current_filters();
     const profile = {};
@@ -1155,7 +1126,6 @@ function build_profile_from_checks() {
             }
         }
     }
-    // Handle dynamic custom filter dimensions
     const dimensions = collect_custom_filter_dimensions();
     const customFiltersResult = {};
     for (const dimName of Object.keys(dimensions)) {
@@ -1176,7 +1146,6 @@ function build_profile_from_checks() {
     return profile;
 }
 
-// Compare two profile objects for equality (only keys present in the saved profile)
 function profiles_match(saved, current) {
     for (const key of Object.keys(saved)) {
         const s = saved[key];
@@ -1193,7 +1162,6 @@ function profiles_match(saved, current) {
     return true;
 }
 
-// Find the name of a saved profile that exactly matches the current filters
 function find_matching_profile() {
     const profiles = load_filter_profiles();
     const current = capture_current_filters();
@@ -1203,7 +1171,6 @@ function find_matching_profile() {
     return null;
 }
 
-// Update the profile select display to reflect current state
 function update_profile_select_display() {
     const selectEl = document.getElementById("selectFilterProfile");
     const selectInner = selectEl.querySelector("select");
@@ -1231,12 +1198,10 @@ function update_profile_select_display() {
     }
 }
 
-// Clear the active profile tracking
 function clear_active_profile() {
     activeProfileName = null;
 }
 
-// Update the active profile with current filter values
 function update_active_profile() {
     if (!activeProfileName) return;
     const profileData = capture_current_filters();
@@ -1252,7 +1217,6 @@ function update_active_profile() {
     update_profile_select_display();
 }
 
-// Apply a saved profile's filter values to the filter controls
 function apply_filter_profile(profile, name) {
     if (name) activeProfileName = name;
     if (profile.runs !== undefined) {
@@ -1336,26 +1300,22 @@ function apply_filter_profile(profile, name) {
             runsVal && runsVal !== "All" ? "inline-block" : "none";
 }
 
-// Load filter profiles from settings (cumulative — never deletes existing ones)
 function load_filter_profiles() {
     return settings.filterProfiles || {};
 }
 
-// Save a filter profile to settings/localStorage (cumulative merge)
 function save_filter_profile_to_storage(name, profileData) {
     const profiles = load_filter_profiles();
     profiles[name] = profileData;
     set_local_storage_item("filterProfiles", profiles);
 }
 
-// Delete a filter profile from settings/localStorage
 function delete_filter_profile(name) {
     const profiles = load_filter_profiles();
     delete profiles[name];
     set_local_storage_item("filterProfiles", profiles);
 }
 
-// Populate the profile dropdown list from settings
 function populate_filter_profile_select() {
     const list = document.getElementById("filterProfileList");
     const profiles = load_filter_profiles();
@@ -1374,14 +1334,12 @@ function populate_filter_profile_select() {
     }
 }
 
-// Show the profile editor checkboxes and name input
 function enter_profile_edit_mode() {
     document.getElementById("addFilterProfile").style.display = "none";
     document.getElementById("cancelFilterProfile").style.display = "";
     document.getElementById("filterProfileEditorInline").style.display = "";
     document.getElementById("filterProfileEditorInline").classList.add("d-flex");
     document.getElementById("filterProfileName").value = "";
-    // Show all profile checkboxes
     document.querySelectorAll(".filter-profile-check").forEach(el => {
         el.style.display = "";
     });
@@ -1393,7 +1351,6 @@ function enter_profile_edit_mode() {
     }
 }
 
-// Hide the profile editor checkboxes and name input
 function exit_profile_edit_mode() {
     document.getElementById("cancelFilterProfile").style.display = "none";
     document.getElementById("addFilterProfile").style.display = "";
@@ -1414,7 +1371,6 @@ function exit_profile_edit_mode() {
 function merge_two_profiles(profileA, profileB) {
     const result = {};
 
-    // runs: same → keep; otherwise "All"
     if (profileA.runs !== undefined && profileB.runs !== undefined) {
         result.runs = profileA.runs === profileB.runs ? profileA.runs : "All";
     } else if (profileA.runs !== undefined) {
@@ -1423,7 +1379,6 @@ function merge_two_profiles(profileA, profileB) {
         result.runs = profileB.runs;
     }
 
-    // runTags: union of checked states
     if (profileA.runTags !== undefined || profileB.runTags !== undefined) {
         const tagsA = profileA.runTags || [];
         const tagsB = profileB.runTags || [];
@@ -1433,7 +1388,6 @@ function merge_two_profiles(profileA, profileB) {
         result.runTags = Object.entries(merged).map(([id, checked]) => ({ id, checked }));
     }
 
-    // tagMode: most permissive wins (OR > AND > NOT)
     if (profileA.tagMode !== undefined || profileB.tagMode !== undefined ||
         profileA.useOrTags !== undefined || profileB.useOrTags !== undefined) {
         const permissiveness = { "OR": 2, "AND": 1, "NOT": 0 };
@@ -1443,7 +1397,6 @@ function merge_two_profiles(profileA, profileB) {
         result.tagMode = (permissiveness[modeA] ?? 1) >= (permissiveness[modeB] ?? 1) ? modeA : modeB;
     }
 
-    // projectVersions: union of checked states
     if (profileA.projectVersions !== undefined || profileB.projectVersions !== undefined) {
         const versA = profileA.projectVersions || [];
         const versB = profileB.projectVersions || [];
@@ -1453,7 +1406,6 @@ function merge_two_profiles(profileA, profileB) {
         result.projectVersions = Object.entries(merged).map(([value, checked]) => ({ value, checked }));
     }
 
-    // fromDate + fromTime: take the earlier combination (widest horizon)
     if (profileA.fromDate !== undefined && profileB.fromDate !== undefined) {
         const dtA = `${profileA.fromDate}T${profileA.fromTime || "00:00"}`;
         const dtB = `${profileB.fromDate}T${profileB.fromTime || "00:00"}`;
@@ -1468,7 +1420,6 @@ function merge_two_profiles(profileA, profileB) {
         if (profileB.fromTime !== undefined) result.fromTime = profileB.fromTime;
     }
 
-    // toDate + toTime: take the later combination (widest horizon)
     if (profileA.toDate !== undefined && profileB.toDate !== undefined) {
         const dtA = `${profileA.toDate}T${profileA.toTime || "23:59"}`;
         const dtB = `${profileB.toDate}T${profileB.toTime || "23:59"}`;
@@ -1483,7 +1434,6 @@ function merge_two_profiles(profileA, profileB) {
         if (profileB.toTime !== undefined) result.toTime = profileB.toTime;
     }
 
-    // metadata: same → keep; otherwise "All"
     if (profileA.metadata !== undefined && profileB.metadata !== undefined) {
         result.metadata = profileA.metadata === profileB.metadata ? profileA.metadata : "All";
     } else if (profileA.metadata !== undefined) {
@@ -1492,7 +1442,6 @@ function merge_two_profiles(profileA, profileB) {
         result.metadata = profileB.metadata;
     }
 
-    // amount: take the larger value
     if (profileA.amount !== undefined && profileB.amount !== undefined) {
         result.amount = String(Math.max(Number(profileA.amount), Number(profileB.amount)));
     } else if (profileA.amount !== undefined) {
@@ -1501,14 +1450,12 @@ function merge_two_profiles(profileA, profileB) {
         result.amount = profileB.amount;
     }
 
-    // suitePath: keep if both profiles agree, otherwise reset to "All"
     if (profileA.suitePath !== undefined || profileB.suitePath !== undefined) {
         const a = profileA.suitePath ?? "All";
         const b = profileB.suitePath ?? "All";
         result.suitePath = a === b ? a : "All";
     }
 
-    // customFilters: per-dimension union of checked states
     if (profileA.customFilters !== undefined || profileB.customFilters !== undefined) {
         const cfA = profileA.customFilters || {};
         const cfB = profileB.customFilters || {};
@@ -1525,7 +1472,6 @@ function merge_two_profiles(profileA, profileB) {
         result.customFilters = mergedCF;
     }
 
-    // customFilterModes: per-dimension mode — most permissive wins (OR > AND > NOT)
     if (profileA.customFilterModes !== undefined || profileB.customFilterModes !== undefined) {
         const modesA = profileA.customFilterModes || {};
         const modesB = profileB.customFilterModes || {};

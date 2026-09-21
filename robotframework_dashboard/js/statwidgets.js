@@ -17,7 +17,6 @@ import {
 } from './graph_data/stats.js';
 import { STAT_WIDGET_DEFS, STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS, TIME_PROPS } from './variables/statwidgetdefs.js';
 
-// Computes the display value for a given statKey (e.g. "run.totalRuns")
 function get_stat_value(statKey) {
     const dot = statKey.indexOf('.');
     const scope = statKey.slice(0, dot);
@@ -39,7 +38,6 @@ function get_stat_value(statKey) {
     return val;
 }
 
-// Builds the inner HTML for one custom stat widget card slot
 function build_widget_html(widget, editMode) {
     const deleteBtn = editMode
         ? `<a class="delete-custom-stat-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${widget.id}"></a>`
@@ -52,7 +50,6 @@ function build_widget_html(widget, editMode) {
             </div>`;
 }
 
-// Adds all custom stat widgets that belong to sectionKey (lowercase, e.g. "run") to the provided GridStack
 function render_custom_stat_widgets(gridStack, sectionKey, editMode) {
     const capSection = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
     const gridId     = `grid${capSection}`;
@@ -84,7 +81,6 @@ function render_custom_stat_widgets(gridStack, sectionKey, editMode) {
     update_values_for_section(sectionKey);
 }
 
-// Updates the displayed values of all rendered custom stat widgets for one section
 function update_values_for_section(sectionKey) {
     const widgets = (settings.statWidgets || []).filter(w => w.section === sectionKey);
     for (const widget of widgets) {
@@ -93,14 +89,12 @@ function update_values_for_section(sectionKey) {
     }
 }
 
-// Updates the displayed values of ALL rendered custom stat widgets (all sections)
 function update_custom_stat_widgets() {
     for (const section of ['run', 'suite', 'test', 'keyword', 'unified']) {
         update_values_for_section(section);
     }
 }
 
-// Saves a new custom stat widget to localStorage and returns it
 function add_custom_stat_widget(section, statKey, title, color, bgColor) {
     const id     = generate_id();
     const widget = { id, section, statKey, title, color, bgColor };
@@ -110,13 +104,11 @@ function add_custom_stat_widget(section, statKey, title, color, bgColor) {
     return widget;
 }
 
-// Removes a custom stat widget from localStorage by its id
 function remove_custom_stat_widget(id) {
     const list = (settings.statWidgets || []).filter(w => w.id !== id);
     set_local_storage_item('statWidgets', list);
 }
 
-// Populates the stat dropdown in the Add Stat Widget modal with optgroups per section
 function populate_stat_widget_select() {
     const select = document.getElementById('addStatWidgetStat');
     if (!select) return;
@@ -136,21 +128,18 @@ function populate_stat_widget_select() {
     }
 }
 
-// Populates the text color picker buttons in the Add Stat Widget modal
 function populate_stat_widget_colors() {
     const picker = document.getElementById('addStatWidgetColorPicker');
     if (!picker) return;
     fill_color_picker(picker, STAT_WIDGET_COLORS, 'white-text');
 }
 
-// Populates the background color picker buttons in the Add Stat Widget modal
 function populate_stat_widget_bg_colors() {
     const picker = document.getElementById('addStatWidgetBgColorPicker');
     if (!picker) return;
     fill_color_picker(picker, STAT_WIDGET_BG_COLORS, '');
 }
 
-// Pre-selects a stat by section key (lowercase) and updates title / color accordingly
 function preselectStatSection(sectionKey) {
     const select = document.getElementById('addStatWidgetStat');
     if (!select) return;
@@ -162,20 +151,17 @@ function preselectStatSection(sectionKey) {
     }
 }
 
-// Reads the selected option and updates the title default only (color is not auto-changed)
 function sync_modal_defaults_from_stat(opt) {
     const titleEl = document.getElementById('addStatWidgetTitle');
     if (titleEl && !titleEl.dataset.userEdited) titleEl.value = opt.textContent;
 }
 
-// Returns all stat widget definitions available for the given section ("run"/"suite"/"test"/"keyword"/"unified")
 function get_all_stat_defs(sectionKey) {
     return sectionKey === 'unified'
         ? STAT_WIDGET_DEFS
         : STAT_WIDGET_DEFS.filter(d => d.section.toLowerCase() === sectionKey);
 }
 
-// Populates the "All" tab list with one toggle + title input row per available stat for the given section
 function populate_all_widgets_list(sectionKey) {
     const container = document.getElementById('addAllWidgetsList');
     if (!container) return;
@@ -232,7 +218,6 @@ function populate_all_widgets_list(sectionKey) {
     if (toggleAll) toggleAll.checked = true;
 }
 
-// Adds a stat widget for every toggled-on row in the "All" tab list
 function add_selected_stat_widgets(sectionKey, randomColors, color, bgColor) {
     const container = document.getElementById('addAllWidgetsList');
     if (!container) return 0;
@@ -259,7 +244,6 @@ function add_selected_stat_widgets(sectionKey, randomColors, color, bgColor) {
     return added;
 }
 
-// Wires all events inside the Add Stat Widget modal (call once after DOM ready)
 function setup_add_stat_widget_modal() {
     populate_stat_widget_select();
     populate_stat_widget_colors();
@@ -301,7 +285,6 @@ function setup_add_stat_widget_modal() {
         });
     });
 
-    // Add All confirm button
     allConfirm?.addEventListener('click', () => {
         const modal      = document.getElementById('addStatWidgetModal');
         const sectionKey = modal.dataset.pendingSection || 'run';
@@ -330,7 +313,6 @@ function setup_add_stat_widget_modal() {
         sync_modal_defaults_from_stat(opt);
     });
 
-    // Mark title as user-edited once typed
     titleInput?.addEventListener('input', () => {
         if (titleInput.value.trim()) {
             titleInput.dataset.userEdited = '1';
@@ -339,7 +321,6 @@ function setup_add_stat_widget_modal() {
         }
     });
 
-    // Confirm button
     document.getElementById('addStatWidgetConfirm')?.addEventListener('click', () => {
         const modal      = document.getElementById('addStatWidgetModal');
         const rawSection = modal.dataset.pendingSection || 'run';
@@ -355,7 +336,6 @@ function setup_add_stat_widget_modal() {
 
         const widget = add_custom_stat_widget(section, statKey, title, color, bgColor);
 
-        // Add to the live GridStack if it exists
         const capSection = section.charAt(0).toUpperCase() + section.slice(1);
         const grid       = window[`grid${capSection}`];
         if (grid) {
@@ -372,7 +352,6 @@ function setup_add_stat_widget_modal() {
             grid.makeWidget(item);
             apply_bg_class(item, widget.bgColor);
             apply_widget_control_icons(item);
-            // Wire delete on the newly created widget
             const deleteBtn = item.querySelector(`.delete-custom-stat-widget[data-widget-id="${widget.id}"]`);
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', () => handle_delete_widget(widget.id, grid));
@@ -383,7 +362,6 @@ function setup_add_stat_widget_modal() {
         // Push a history snapshot so undo/redo can reverse the add
         document.dispatchEvent(new CustomEvent("layout-user-action"));
 
-        // Reset title user-edited flag and close modal
         if (titleInput) {
             titleInput.value = '';
             titleInput.dataset.userEdited = '';
@@ -403,7 +381,6 @@ function setup_add_stat_widget_modal() {
     });
 }
 
-// Wires delete buttons on all currently rendered custom stat widgets in a grid
 function wire_delete_buttons(gridStack, sectionKey) {
     const widgets = (settings.statWidgets || []).filter(w => w.section === sectionKey);
     for (const widget of widgets) {
@@ -415,7 +392,6 @@ function wire_delete_buttons(gridStack, sectionKey) {
 }
 
 function handle_delete_widget(id, gridStack) {
-    // Remove from GridStack DOM
     const el = gridStack?.el?.querySelector(`[data-gs-id="customStatWidget-${id}"]`);
     if (el && gridStack) {
         gridStack.removeWidget(el);
@@ -425,7 +401,6 @@ function handle_delete_widget(id, gridStack) {
     document.dispatchEvent(new CustomEvent("layout-user-action"));
 }
 
-// Opens the Add Stat Widget modal, pre-selecting the given section (lowercase)
 function open_add_stat_widget_modal(sectionKey) {
     const modal = document.getElementById('addStatWidgetModal');
     if (!modal) return;

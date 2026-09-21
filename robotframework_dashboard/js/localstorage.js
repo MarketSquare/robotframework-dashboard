@@ -102,14 +102,11 @@ function isObject(v) {
 function merge_objects_base(local, defaults) {
     const merged = {};
     for (const key of new Set([...Object.keys(defaults), ...Object.keys(local)])) {
-        // Remove keys missing from defaults
         if (!(key in defaults)) continue;
-        // Add missing defaults
         if (!(key in local)) {
             merged[key] = structuredClone(defaults[key]);
             continue;
         }
-        // Both exist
         if (isObject(local[key]) && isObject(defaults[key])) {
             merged[key] = merge_objects_base(local[key], defaults[key]);
         } else {
@@ -202,11 +199,8 @@ function merge_layout(localLayout, mergedDefaults) {
             // keep only entries whose IDs still exist
             const filtered = arr.filter(item =>
                 allowedGraphs.has(item.id) ||
-                // Preserve saved positions for user-created custom stat widgets
                 (typeof item.id === 'string' && item.id.startsWith('customStatWidget-')) ||
-                // Preserve saved positions for user-created custom link widgets
                 (typeof item.id === 'string' && item.id.startsWith('customLinkWidget-')) ||
-                // Preserve saved positions for user-created custom section dividers
                 (typeof item.id === 'string' && item.id.startsWith('customSection-'))
             );
             result[key] = JSON.stringify(filtered);
@@ -243,10 +237,10 @@ function update_switch_local_storage(key, state, firstLoad = false) {
     const currentState = key.split('.').reduce((o, i) => o[i], settings)
     if (firstLoad) {
         if (currentState !== undefined) {
-            set_local_storage_item(key, currentState); // Ensure internal settings var is updated
+            set_local_storage_item(key, currentState);
             document.getElementById(id).checked = currentState;
         } else {
-            set_local_storage_item(key, state); // If no value exists yet, default to current 'state' and save it
+            set_local_storage_item(key, state);
             document.getElementById(id).checked = state;
         }
     } else {
@@ -274,7 +268,7 @@ function setup_overview_localstorage() {
             projectNames.push(tagName);
         });
     }
-    // Populate overviewSections used elsewhere)(
+    // Populate overviewSections used elsewhere
     projectNames.forEach(name => overviewSections.push(name));
 
     const isSameRef = settings.view.overview.sections.show === overviewSections;

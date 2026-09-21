@@ -78,9 +78,8 @@ class ArgumentParser:
         lets users write the combo with the regular comma separator (e.g.
         '-r "limit=10,tag=nightly"') instead of ';'.
 
-        Scope note (matches issue #309): only 'limit' can be scoped by tags.
-        'age' + 'tags' is intentionally NOT supported here — combining them
-        just runs as two independent operations, same as on main.
+        Only 'limit' can be scoped by tags; 'age' + 'tags' run as two
+        independent operations.
 
         Rules:
         - No tags, or tags without a 'limit' partner -> no combination, every

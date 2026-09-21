@@ -10,7 +10,6 @@ import { setup_section_order, setup_graph_order, setup_overview_section_layout_b
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";
 
-// ---- Shared helpers for menu buttons ----
 function get_sticky_height() {
     const stickyTop = document.getElementById("navigation");
     return stickyTop ? stickyTop.offsetHeight : 0;
@@ -72,8 +71,6 @@ function neighbor_indices(bestIndex, length) {
     return indices;
 }
 
-// ---- Menu setup and navigation ----
-
 function update_menu(item) {
     ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
         const id = `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`;
@@ -130,11 +127,9 @@ function setup_menu() {
     update_menu(selectedMenu);
 }
 
-// ---- Data loading and spinner ----
-
 // function to update all graph data, function is called when updating filters and when the page loads
 function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = false) {
-    setup_spinner(false); // show spinner immediately
+    setup_spinner(false);
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             setup_filtered_data_and_filters();
@@ -161,7 +156,6 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
                 // rebuilds all GridStack grids and canvas DOM elements above
                 create_dashboard_graphs();
 
-                // Ensure overview titles reflect current prefix setting
                 update_overview_prefix_display();
 
                 document.dispatchEvent(new Event("graphs-finalized"));
@@ -179,7 +173,6 @@ function setup_spinner(hide) {
     const pages = ["overview", "unified", "dashboard", "compare", "tables"].map(id => document.getElementById(id));
     const loading = document.getElementById("loading");
     if (hide) {
-        // Instant transition - hide spinner and show all content immediately
         fade_out(loading);
         pages.forEach(page => fade_in(page));
     } else {
@@ -187,8 +180,6 @@ function setup_spinner(hide) {
         loading.style.display = "";
     }
 }
-
-// ---- Section menu buttons ----
 
 // function to update the section (menu) buttons with the correct eventlisteners
 // also sets up the automatic highlighting of the section that is most visible in the top
@@ -219,7 +210,6 @@ function setup_dashboard_section_menu_buttons() {
     function update_active_section() {
         const bestIndex = compute_best_visible_index(sections);
         const bestMatch = sections[bestIndex];
-        // Highlight the matching button
         sectionButtons.forEach(btn => btn.classList.remove("active"));
         if (bestMatch && sectionMap[bestMatch.id]) {
             sectionMap[bestMatch.id].classList.add("active");
@@ -227,7 +217,6 @@ function setup_dashboard_section_menu_buttons() {
     }
 
     window.addEventListener("scroll", update_active_section);
-    // Initial call to set active on load
     update_active_section();
 
     sectionButtons.forEach(btn => {
@@ -250,11 +239,9 @@ function setup_overview_section_menu_buttons() {
     const overviewMenuLink = document.getElementById("menuOverview");
     if (!navbar || !overviewMenuLink) return;
 
-    // Cleanup any previously created overview dynamic buttons
     const existingOverviewButtons = Array.from(navbar.querySelectorAll('a[id^="overview-"][id$="Nav"]'));
     if (!isOverviewActive) {
         existingOverviewButtons.forEach(el => el.remove());
-        // Detach listeners if still attached
         if (overviewNavStore.scrollHandler) {
             window.removeEventListener("scroll", overviewNavStore.scrollHandler);
             overviewNavStore.scrollHandler = null;
@@ -270,7 +257,6 @@ function setup_overview_section_menu_buttons() {
         .filter(el => el.offsetParent !== null);
     if (sections.length === 0) return;
 
-    // Helper to insert after Overview menu item
     const insertAfter = (newNode, referenceNode) => {
         if (referenceNode.nextSibling) {
             referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
@@ -279,7 +265,6 @@ function setup_overview_section_menu_buttons() {
         }
     };
 
-    // Build a map of sectionId -> button (anchor) in navbar
     const buttonMap = new Map();
     const makeButtonForSection = (sectionEl) => {
         const sectionId = sectionEl.id || "";
@@ -336,7 +321,6 @@ function setup_overview_section_menu_buttons() {
             }
             return;
         }
-        // Refresh labels to reflect current prefix setting
         sections.forEach(section => {
             const btn = buttonMap.get(section.id);
             if (!btn) return;
@@ -347,7 +331,6 @@ function setup_overview_section_menu_buttons() {
             const label = btn.querySelector('i');
             if (label) label.textContent = name;
         });
-        // Determine most visible section and neighboring indices
         const bestIndex = compute_best_visible_index(sections);
         const indices = neighbor_indices(bestIndex, sections.length);
 
@@ -361,7 +344,6 @@ function setup_overview_section_menu_buttons() {
             last = btn;
         });
 
-        // Update active state and hide non-selected buttons
         sections.forEach((section, idx) => {
             const btn = buttonMap.get(section.id);
             if (!btn) return;
@@ -427,8 +409,6 @@ function get_most_visible_section() {
     return bestMatchId;
 }
 
-// ---- Responsive navbar / sidebar ----
-//
 // Level 1: page-menu items (Overview, Dashboard, …) move into the sidebar
 // Level 2: icon items also move into the sidebar
 //
@@ -485,7 +465,6 @@ function setup_navbar_overflow() {
         const items = [];
         const byId = id => document.getElementById(id);
 
-        // Helper: create an entry for a nav element (if it exists and should show)
         const push = (el, forceShow) => {
             if (!el) return;
             const isOverviewSub = el.id && el.id.startsWith('overview-') && el.id.endsWith('Nav');
@@ -602,7 +581,6 @@ function setup_navbar_overflow() {
         if (updating) return;
         updating = true;
 
-        // Reset to level 0 for fresh measurement
         apply_icons_to_sidebar(false);
         apply_nav_to_sidebar(false);
 

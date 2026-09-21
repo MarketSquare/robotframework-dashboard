@@ -13,7 +13,6 @@ import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_flaky_config, build_most_time_consuming_config } from "./config_helpers.js";
 import { get_test_stats_data } from "../graph_data/stats.js";
 
-// build functions
 function _build_test_statistics_config() {
     const graphType = settings.graphTypes.testStatisticsGraphType || "timeline";
 
@@ -336,7 +335,6 @@ function _build_test_most_time_consuming_config() {
     return build_most_time_consuming_config("testMostTimeConsuming", "test", "Test", _get_test_most_filtered_data(), "onlyLastRunTest");
 }
 
-// create functions
 function create_test_statistics_graph() { create_chart("testStatisticsGraph", _build_test_statistics_config); }
 function create_test_duration_graph() { create_chart("testDurationGraph", _build_test_duration_config); }
 function create_test_messages_graph() { create_chart("testMessagesGraph", _build_test_messages_config); }
@@ -347,7 +345,6 @@ function create_test_most_failed_graph() { create_chart("testMostFailedGraph", _
 function create_test_recent_most_failed_graph() { create_chart("testRecentMostFailedGraph", _build_test_recent_most_failed_config); }
 function create_test_most_time_consuming_graph() { create_chart("testMostTimeConsumingGraph", _build_test_most_time_consuming_config); }
 
-// update functions
 function update_test_statistics_graph() { update_chart("testStatisticsGraph", _build_test_statistics_config); }
 function update_test_duration_graph() { update_chart("testDurationGraph", _build_test_duration_config); }
 function update_test_messages_graph() { update_chart("testMessagesGraph", _build_test_messages_config); }

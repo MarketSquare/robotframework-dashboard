@@ -596,9 +596,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         return console
 
     def _remove_by_age(self, run_query: str, run_starts: list):
-        # NOTE: issue #309 / PR #313 only asked for tag-scoped retention on
-        # "limit" (see _remove_by_limit); age intentionally has no tag scoping
-        # here, matching the original issue's proposed direction.
         console = ""
         try:
             clean_query = run_query.replace("age=", "")

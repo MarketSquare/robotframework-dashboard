@@ -213,7 +213,6 @@ body.lock-scroll {
   cursor: pointer;
 }
 
-/* ── Info label + small icon (tooltip on label hover) ── */
 .info-label {
   display: inline-flex !important;
   align-items: center;
@@ -283,7 +282,6 @@ body.lock-scroll {
   display: block;
 }
 
-/* ── Sidebar (off-canvas menu for overflowed items) ── */
 .sidenav-backdrop {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;

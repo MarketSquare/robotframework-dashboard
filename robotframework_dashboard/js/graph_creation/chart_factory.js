@@ -1,6 +1,5 @@
 import { open_log_from_label } from "../log.js";
 
-// Generic chart create function - replaces boilerplate create_X_graph() pattern
 function create_chart(chartId, buildConfigFn, addLogClickHandler = true) {
     if (window[chartId]) window[chartId].destroy();
     window[chartId] = new Chart(chartId, buildConfigFn());
@@ -11,7 +10,6 @@ function create_chart(chartId, buildConfigFn, addLogClickHandler = true) {
     }
 }
 
-// Generic chart update function - replaces boilerplate update_X_graph() pattern
 function update_chart(chartId, buildConfigFn, addLogClickHandler = true) {
     if (!window[chartId]) { create_chart(chartId, buildConfigFn, addLogClickHandler); return; }
     const config = buildConfigFn();

@@ -8,7 +8,6 @@ import { filteredRuns, filteredSuites, filteredTests } from "../variables/global
 import { settings } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 
-// build functions
 function _build_compare_statistics_config() {
     const graphData = get_compare_statistics_graph_data(filteredRuns);
     const config = get_graph_config("bar", graphData, "", "Run", "Amount");
@@ -72,12 +71,10 @@ function _build_compare_tests_config() {
     return config;
 }
 
-// create functions
 function create_compare_statistics_graph() { create_chart("compareStatisticsGraph", _build_compare_statistics_config, false); }
 function create_compare_suite_duration_graph() { create_chart("compareSuiteDurationGraph", _build_compare_suite_duration_config, false); }
 function create_compare_tests_graph() { create_chart("compareTestsGraph", _build_compare_tests_config); }
 
-// update functions
 function update_compare_statistics_graph() { update_chart("compareStatisticsGraph", _build_compare_statistics_config, false); }
 function update_compare_suite_duration_graph() { update_chart("compareSuiteDurationGraph", _build_compare_suite_duration_config, false); }
 function update_compare_tests_graph() { update_chart("compareTestsGraph", _build_compare_tests_config); }

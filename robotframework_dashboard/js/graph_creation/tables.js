@@ -1,7 +1,6 @@
 import { filteredRuns, filteredSuites, filteredTests, filteredKeywords, filteredExceptions } from "../variables/globals.js";
 import { parse_test_attempts } from "../graph_data/helpers.js";
 
-// data builder functions
 function _get_run_table_data() {
     return filteredRuns.map(run => [
         run.run_start, run.full_name, run.name, run.total, run.passed, run.failed,
@@ -39,7 +38,6 @@ function _get_exception_table_data() {
     ]);
 }
 
-// column definitions
 const runColumns = [
     { title: "run" }, { title: "full_name" }, { title: "name" }, { title: "total" },
     { title: "passed" }, { title: "failed" }, { title: "skipped" }, { title: "elapsed_s" },
@@ -67,7 +65,6 @@ const exceptionColumns = [
     { title: "run" }, { title: "message" }, { title: "amount" }, { title: "alias" },
 ];
 
-// create functions
 function create_data_table(tableId, columns, getDataFn) {
     if (window[tableId]) window[tableId].destroy();
     window[tableId] = new DataTable(`#${tableId}`, {
@@ -84,7 +81,6 @@ function create_test_table() { create_data_table("testTable", testColumns, _get_
 function create_keyword_table() { create_data_table("keywordTable", keywordColumns, _get_keyword_table_data); }
 function create_exception_table() { create_data_table("exceptionTable", exceptionColumns, _get_exception_table_data); }
 
-// update functions
 function update_data_table(tableId, columns, getDataFn) {
     if (!window[tableId]) { create_data_table(tableId, columns, getDataFn); return; }
     window[tableId].clear();

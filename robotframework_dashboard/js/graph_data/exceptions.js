@@ -15,7 +15,6 @@ function get_exceptions_data(graphType, filteredData) {
         data.get(value.message).push(value);
     }
     const limit = inFullscreen && inFullscreenGraph.includes("keywordExceptions") ? 50 : 10;
-    // Sort messages by total count descending
     const sortedData = [...data.entries()].sort((a, b) => {
         const totalB = b[1].reduce((sum, v) => sum + v.amount, 0);
         const totalA = a[1].reduce((sum, v) => sum + v.amount, 0);

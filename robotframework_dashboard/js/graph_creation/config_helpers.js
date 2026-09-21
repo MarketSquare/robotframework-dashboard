@@ -8,7 +8,6 @@ import { format_duration } from "../common.js";
 import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 
-// Shared timeline scale/tooltip config used by most failed, flaky, and time consuming graphs
 function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataType = null, callbackLookup = null) {
     const lookupFn = callbackLookup || ((val) => callbackData[val]);
     config.options.plugins.tooltip = {
@@ -60,7 +59,6 @@ function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataTy
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false; }
 }
 
-// Build config for "most failed" graphs (test/suite/keyword, regular and recent)
 function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, isRecent) {
     const graphType = settings.graphTypes[`${graphKey}GraphType`];
     const data = get_most_failed_data(dataType, graphType, filteredData, isRecent);
@@ -90,7 +88,6 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
     return config;
 }
 
-// Build config for "most flaky" graphs (test regular and recent)
 function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVal, isRecent) {
     const graphType = settings.graphTypes[`${graphKey}GraphType`];
     const limit = inFullscreen && inFullscreenGraph === `${graphKey}Fullscreen` ? 50 : 10;
@@ -113,7 +110,6 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
     return config;
 }
 
-// Build config for "most time consuming" / "most used" graphs (test/suite/keyword)
 function build_most_time_consuming_config(graphKey, dataType, dataLabel, filteredData, checkboxId, barYLabel = "Most Time Consuming", isMostUsed = false, formatDetail = null) {
     const onlyLastRun = document.getElementById(checkboxId).checked;
     const graphType = settings.graphTypes[`${graphKey}GraphType`];

@@ -156,9 +156,6 @@ remove_outputs_model_config = {
                 "description": "Remove runs older than a threshold (e.g., '10d') or younger than a threshold (e.g., '-10d'). Supports (y)ear/(d)ay/(h)our/(m)inute/(s)econd.",
                 "value": {"age": "10d"},
             },
-            # NOTE: 'age' intentionally has no tag-scoped variant — see issue #309,
-            # which only asked for tag-scoped retention on 'limit' (below).
-            # 'age' + 'tags' together just run as two independent operations.
             "limit": {
                 "summary": "Remove all but the N most recent runs",
                 "description": "Keep only the specified number of most recent runs, deleting the rest.",
@@ -644,11 +641,9 @@ class ApiServer:
                 # Because the argparser makes use of the format: [[outputtoremove1], [outputtoremove2]]
                 # We have to create a list of lists with 1 item to match the handling of the API
                 remove_runs = []
-                # Handle 'all' flag: when True, delete all outputs; when False, do nothing special
                 if remove_output.all:
                     runs, _, _, _, _ = self.robotdashboard.get_runs()
                     if len(runs) > 0:
-                        # Use index range to remove all runs efficiently
                         remove_runs = [f"index=0:{len(runs) - 1}"]
                 else:
                     if remove_output.run_starts != None:
@@ -663,9 +658,6 @@ class ApiServer:
                     # When tags are combined with limit, scope the limit to the
                     # tagged runs (keep/remove only matching runs, leave others
                     # alone) instead of removing all tagged runs outright.
-                    # NOTE: 'age' has no tag-scoped variant (see issue #309,
-                    # which only requested this for 'limit') — 'age' + 'tags'
-                    # together just run as two independent operations below.
                     scope_tags = remove_output.tags != None and remove_output.limit != None
                     tag_suffix = (
                         "".join(f";tag={tag}" for tag in remove_output.tags)

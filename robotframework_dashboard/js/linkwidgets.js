@@ -5,12 +5,10 @@ import { gridEditMode } from './variables/globals.js';
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
 import { apply_widget_control_icons } from './theme.js';
 
-// Strips the protocol from a URL for compact display (https://foo.com/x → foo.com/x)
 function strip_protocol(url) {
     return url.replace(/^https?:\/\//, '');
 }
 
-// Builds the inner HTML for one custom link widget card
 function build_link_widget_html(widget, editMode) {
     const deleteBtn = editMode
         ? `<a class="delete-custom-link-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${widget.id}"></a>`
@@ -26,7 +24,6 @@ function build_link_widget_html(widget, editMode) {
             </div>`;
 }
 
-// Adds all custom link widgets that belong to sectionKey to the provided GridStack
 function render_custom_link_widgets(gridStack, sectionKey, editMode) {
     const capSection = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
     const gridId     = `grid${capSection}`;
@@ -55,14 +52,12 @@ function render_custom_link_widgets(gridStack, sectionKey, editMode) {
         gridStack.makeWidget(item);
         apply_bg_class(item, widget.bgColor);
 
-        // Wire click navigation on non-edit tiles
         if (!editMode) {
             wire_link_click(item, widget);
         }
     }
 }
 
-// Wires a click handler on a rendered link widget item that navigates to widget.url
 function wire_link_click(itemEl, widget) {
     const inner = itemEl.querySelector('.link-widget-clickable');
     if (!inner) return;
@@ -79,7 +74,6 @@ function wire_link_click(itemEl, widget) {
     });
 }
 
-// Saves a new custom link widget to localStorage and returns it
 function add_custom_link_widget(section, label, url, newTab, color, bgColor) {
     const id     = generate_id();
     const widget = { id, section, label, url, newTab, color, bgColor };
@@ -89,13 +83,11 @@ function add_custom_link_widget(section, label, url, newTab, color, bgColor) {
     return widget;
 }
 
-// Removes a custom link widget from localStorage by its id
 function remove_custom_link_widget(id) {
     const list = (settings.linkWidgets || []).filter(w => w.id !== id);
     set_local_storage_item('linkWidgets', list);
 }
 
-// Populates the text + bg color pickers in the Add Link Widget modal
 function populate_link_widget_colors() {
     const colorPicker = document.getElementById('addLinkWidgetColorPicker');
     const bgPicker    = document.getElementById('addLinkWidgetBgColorPicker');
@@ -103,13 +95,11 @@ function populate_link_widget_colors() {
     if (bgPicker)    fill_color_picker(bgPicker,    STAT_WIDGET_BG_COLORS, '');
 }
 
-// Wires all events inside the Add Link Widget modal (call once after DOM ready)
 function setup_add_link_widget_modal() {
     populate_link_widget_colors();
 
     const labelInput = document.getElementById('addLinkWidgetLabel');
 
-    // Confirm button
     document.getElementById('addLinkWidgetConfirm')?.addEventListener('click', () => {
         const modal    = document.getElementById('addLinkWidgetModal');
         const section  = modal.dataset.pendingSection || 'run';
@@ -125,7 +115,6 @@ function setup_add_link_widget_modal() {
 
         const widget = add_custom_link_widget(section, label, url, newTab, color, bgColor);
 
-        // Add to the live GridStack if it exists
         const capSection = section.charAt(0).toUpperCase() + section.slice(1);
         const grid       = window[`grid${capSection}`];
         if (grid) {
@@ -142,7 +131,6 @@ function setup_add_link_widget_modal() {
             grid.makeWidget(item);
             apply_bg_class(item, widget.bgColor);
             apply_widget_control_icons(item);
-            // Wire delete on the newly created widget
             const deleteBtn = item.querySelector(`.delete-custom-link-widget[data-widget-id="${widget.id}"]`);
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', () => handle_delete_link_widget(widget.id, grid));
@@ -152,7 +140,6 @@ function setup_add_link_widget_modal() {
         // Push a history snapshot so undo/redo can reverse the add
         document.dispatchEvent(new CustomEvent("layout-user-action"));
 
-        // Reset inputs and close modal
         if (labelInput) labelInput.value = '';
         const urlInput = document.getElementById('addLinkWidgetUrl');
         if (urlInput) urlInput.value = '';
@@ -160,7 +147,6 @@ function setup_add_link_widget_modal() {
     });
 }
 
-// Wires delete buttons on all currently rendered custom link widgets in a grid
 function wire_link_delete_buttons(gridStack, sectionKey) {
     const widgets = (settings.linkWidgets || []).filter(w => w.section === sectionKey);
     for (const widget of widgets) {
@@ -180,7 +166,6 @@ function handle_delete_link_widget(id, gridStack) {
     document.dispatchEvent(new CustomEvent("layout-user-action"));
 }
 
-// Opens the Add Link Widget modal for the given section (lowercase)
 function open_add_link_widget_modal(sectionKey) {
     const modal = document.getElementById('addLinkWidgetModal');
     if (!modal) return;

@@ -3,8 +3,6 @@ import pytest
 from robotframework_dashboard.arguments import dotdict, ArgumentParser
 
 
-# --- dotdict ---
-
 def test_dotdict_attribute_access():
     d = dotdict({"key": "value"})
     assert d.key == "value"
@@ -31,8 +29,6 @@ def test_dotdict_nested():
     d = dotdict({"outer": dotdict({"inner": 42})})
     assert d.outer.inner == 42
 
-
-# --- _normalize_bool ---
 
 def test_normalize_bool_lowercase_true():
     assert ArgumentParser()._normalize_bool("true", "test") is True
@@ -73,8 +69,6 @@ def test_normalize_bool_numeric_exits():
         ArgumentParser()._normalize_bool("1", "test")
 
 
-# --- _check_project_version_usage ---
-
 def test_check_project_version_no_tags_ok():
     args = argparse.Namespace(project_version=None)
     # must not raise or exit
@@ -109,8 +103,6 @@ def test_check_project_version_project_version_without_tag_ok():
     args = argparse.Namespace(project_version="2.0")
     ArgumentParser()._check_project_version_usage(["dev", "prod"], args)
 
-
-# --- _process_arguments ---
 
 def _make_namespace(**kwargs):
     """Create an argparse.Namespace with sane defaults for _process_arguments tests."""
@@ -198,8 +190,6 @@ def test_process_arguments_with_removeruns():
     assert result.remove_runs == ["index=0", "index=1"]
 
 
-# --- _process_remove_runs: scoped retention combinations ---
-
 def test_remove_runs_passthrough_without_combination():
     # No tags -> nothing combined
     assert ArgumentParser()._process_remove_runs(["index=0", "limit=10"]) == [
@@ -220,8 +210,6 @@ def test_remove_runs_limit_and_tag_combined():
 
 
 def test_remove_runs_age_and_tag_not_combined():
-    # issue #309 only asked for tag-scoped retention on "limit" — "age" + "tag"
-    # is intentionally left as two independent operations, unchanged from main
     assert ArgumentParser()._process_remove_runs(["age=10d", "tag=dev"]) == [
         "age=10d",
         "tag=dev",
@@ -458,8 +446,6 @@ def test_process_arguments_ssl_certfile_and_keyfile_valid(tmp_path):
     assert result.ssl_keyfile == str(key_file)
 
 
-# --- get_arguments (full pipeline via mocked sys.argv) ---
-
 def test_get_arguments_minimal_argv():
     """Exercises _parse_arguments() to cover all parser.add_argument() setup."""
     from unittest.mock import patch
@@ -498,8 +484,6 @@ def test_get_arguments_parse_exception_prints_error(capsys):
     assert "ERROR" in captured.out
     assert "bad parse" in captured.out
 
-
-# --- _check_argument_warnings ---
 
 def test_check_argument_warnings_logurl_no_outputs(capsys):
     args = _make_namespace(logurl="https://ci.example.com/log.html")

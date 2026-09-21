@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock dependencies
 vi.mock('@js/variables/settings.js', () => {
     const settings = {
         show: { aliases: 'run_start' },

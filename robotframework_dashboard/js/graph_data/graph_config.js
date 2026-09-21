@@ -4,7 +4,6 @@ import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 
 // function to retrieve the required graph config for chartjs, based on the different type of graphs
-// Generate a Chart.js config object based on the graph type and data
 function get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle, dataSets = true) {
     if (dataSets && graphType === "line") {
         graphData = { datasets: graphData };

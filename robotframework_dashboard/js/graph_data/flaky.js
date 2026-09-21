@@ -100,7 +100,6 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
                 for (value of filteredData) {
                     const compareKey = settings.switch.suitePathsTestSection ? value.full_name : value.name;
                     if (compareKey == label && value.run_start == runStart) {
-                        // if (value.name == label && value.run_start == runStart) {
                         foundValues.push(value);
                         const runLabel = get_run_label(value);
                         if (!run_labels.includes(runLabel)) { run_labels.push(runLabel) }

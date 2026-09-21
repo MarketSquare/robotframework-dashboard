@@ -35,7 +35,7 @@ function setup_information_popups() {
     for (const id in customInfoMap) {
         const title = customInfoMap[id];
         const element = document.getElementById(id);
-        if (!element) continue;  // safety check if element not found
+        if (!element) continue;
         element.setAttribute("data-title", title);
     }
 

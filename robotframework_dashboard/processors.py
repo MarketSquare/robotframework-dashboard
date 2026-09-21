@@ -202,7 +202,6 @@ class OutputProcessor:
             run_metadata_items.append(f"{cleaned_key}: {cleaned_value}")
         run_metadata_items += suite_metadata_items
 
-        # Convert tuple to list, update last element, then back to tuple
         run = list(run_list[0])
         # dedupe while keeping document order; a set would reorder per process (hash seed)
         run[-1] = str(list(dict.fromkeys(run_metadata_items)))

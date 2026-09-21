@@ -126,7 +126,7 @@ class DependencyProcessor():
         strips imports/exports, and returns one merged <script type="module"> block.
         """
         base = Path(dirname(abspath(__file__)))
-        # Step 1 — Load all module sources using absolute paths
+        # Load all module sources using absolute paths
         modules = {}
         for rel_path in js_files:
             abs_path = base / rel_path
@@ -134,7 +134,7 @@ class DependencyProcessor():
                 raise FileNotFoundError(f"JS module not found: {abs_path}")
             modules[str(abs_path)] = abs_path.read_text(encoding="utf-8")
 
-        # Step 2 — Build dependency graph
+        # Build dependency graph
         import_pattern = compile(r'import\s+.*?from\s+[\'"](.*?)[\'"];?', DOTALL)
         dependencies = {path: [] for path in modules.keys()}
         for abs_path, code in modules.items():
@@ -143,7 +143,7 @@ class DependencyProcessor():
                 dep_abs = normpath(join(current_dir, match))
                 dependencies[abs_path].append(dep_abs)
 
-        # Step 3 — Topological sort
+        # Topological sort
         resolved = []
         visited = set()
 
@@ -158,23 +158,23 @@ class DependencyProcessor():
         for path in modules.keys():
             visit(path)
 
-        # Step 4 — Merge + strip import/export
+        # Merge + strip import/export
         merged = "// MERGED MODULES\n"
         for abs_path in resolved:
             file_name = basename(abs_path)
             code = modules[abs_path]
-            # 1. Remove multi-line export blocks first
+            # Remove multi-line export blocks first
             code = sub(r"\s*export\s*\{[\s\S]*?\};\s*", "", code)
-            # 2. Remove export default statements
+            # Remove export default statements
             code = sub(r"\s*export\s+default\s+[\s\S]*?;?\s*", "", code)
-            # 3. Remove import statements (single or multi-line)
+            # Remove import statements (single or multi-line)
             code = sub(r"^\s*import\s+[\s\S]*?;\s*", "", code, flags=MULTILINE)
-            # 4. Remove inline export before function declarations
+            # Remove inline export before function declarations
             code = sub(r"^\s*export\s+", "", code, flags=MULTILINE)
             merged += f"\n// === {file_name} ===\n"
             merged += code + "\n"
 
-        # Step 5 — Wrap in a single script tag
+        # Wrap in a single script tag
         return f"<script>{merged}</script>"
 
     def _inline_css_files(self, css_files):
@@ -205,21 +205,21 @@ class DependencyProcessor():
 
         files = []
 
-        # --- CASE 1: Only admin files ---
+        # only admin files
         if self.admin_page and folder == "js":
             if admin_dir.exists():
                 for p in sorted(admin_dir.rglob(f"*.{folder}")):
                     files.append(str(relpath(p, base)))
             return files
 
-        # --- CASE 2: Everything EXCEPT admin files ---
+        # everything except admin files
         for p in sorted(root.rglob(f"*.{folder}")):
             # Skip admin_page subtree
             try:
                 p.relative_to(admin_dir)
-                continue  # If relative_to succeeds → inside admin → skip
+                continue
             except ValueError:
-                pass  # Not in admin_page → keep
+                pass
 
             files.append(str(relpath(p, base)))
 

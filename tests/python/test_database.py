@@ -12,8 +12,6 @@ SAMPLE_XML, SAMPLE_XML_2, SAMPLE_XML_3, SAMPLE_XML_4 = ALL_XML[:4]
 SAMPLE_LOG = OUTPUTS_DIR / SAMPLE_XML.name.replace("output-", "log-").replace(".xml", ".html")
 
 
-# --- open / close ---
-
 def test_open_database_creates_connection(db):
     db.open_database()
     assert db.connection is not None
@@ -26,8 +24,6 @@ def test_close_database_closes_connection(db):
     with pytest.raises(Exception):
         db.connection.cursor()
 
-
-# --- _create_tables ---
 
 def test_create_tables_results_in_four_tables(db):
     db.open_database()
@@ -69,8 +65,6 @@ def test_keywords_table_column_count(db):
     assert len(cols) == 12
 
 
-# --- run_start_exists ---
-
 def test_run_start_not_in_empty_db(db):
     db.open_database()
     assert db.run_start_exists("2025-03-13 00:21:34.707148") is False
@@ -97,8 +91,6 @@ def test_run_start_with_full_tz_also_found(populated_db):
     populated_db.close_database()
     assert result is True
 
-
-# --- insert_output_data / get_data ---
 
 def test_insert_and_get_data_round_trip(populated_db):
     populated_db.open_database()
@@ -143,8 +135,6 @@ def test_project_version_stored(tmp_path):
     db.close_database()
     assert result["runs"][0]["project_version"] == "2.5.0"
 
-
-# --- remove_runs ---
 
 def _insert_second_run(populated_db):
     """Helper: insert a second run from a different XML into populated_db."""
@@ -207,8 +197,6 @@ def test_remove_by_limit_higher_than_count_is_noop(populated_db):
     populated_db.remove_runs(["limit=100"])
     assert len(populated_db.get_data()["runs"]) == 1
 
-
-# --- remove_runs by limit scoped to tag(s) (issue #309) ---
 
 def _insert_run(db, xml, tags):
     """Helper: insert a run from the given XML with the given tags."""
@@ -283,14 +271,6 @@ def test_remove_by_limit_only_ignores_tags(db):
     db.close_database()
 
 
-# NOTE: issue #309 only asked for tag-scoped retention on "limit"
-# (see the block above). "age" intentionally has no tag-scoped variant:
-# db.remove_runs(["age=10d", "tag=nightly"]) runs as two independent
-# operations, same as before this feature — no dedicated test needed here
-# beyond the existing plain "age=10d" / "tag=x" coverage.
-
-# --- list_runs ---
-
 def test_list_runs_empty_prints_warning(db, capsys):
     db.open_database()
     db.list_runs()
@@ -307,16 +287,12 @@ def test_list_runs_populated_prints_run_info(populated_db, capsys):
     assert "Run 0" in captured.out
 
 
-# --- vacuum_database ---
-
 def test_vacuum_database_returns_console(populated_db):
     populated_db.open_database()
     console = populated_db.vacuum_database()
     populated_db.close_database()
     assert "Vacuumed" in console
 
-
-# --- update_output_path ---
 
 def test_update_output_path_found(populated_db):
     populated_db.open_database()
@@ -333,8 +309,6 @@ def test_update_output_path_not_found(populated_db):
     populated_db.close_database()
     assert "ERROR" in console
 
-
-# --- remove_runs by run_start ---
 
 def test_remove_runs_by_run_start(populated_db):
     populated_db.open_database()
@@ -368,8 +342,6 @@ def test_remove_runs_semicolon_separated_indexes(populated_db):
     populated_db.close_database()
 
 
-# --- get_data with duplicate aliases ---
-
 def test_get_data_duplicate_aliases(tmp_path):
     """Two runs with the same alias → second gets a counter suffix."""
     db = DatabaseProcessor(tmp_path / "dup.db")
@@ -393,8 +365,6 @@ def test_get_data_duplicate_aliases(tmp_path):
     assert any(a != "same_alias" and "same_alias" in a for a in aliases)
 
 
-# --- get_data without timezone stored (adds local tz) ---
-
 def test_get_data_run_without_timezone_gets_tz_appended(tmp_path):
     db = DatabaseProcessor(tmp_path / "notz.db")
     processor = OutputProcessor(SAMPLE_XML)
@@ -409,8 +379,6 @@ def test_get_data_run_without_timezone_gets_tz_appended(tmp_path):
     assert re.match(r".*[+-]\d{2}:\d{2}$", result["runs"][0]["run_start"])
 
 
-# --- _has_timezone_offset (static) ---
-
 @pytest.mark.parametrize("run_start,expected", [
     ("2025-03-13 00:21:34.707148+01:00", True),
     ("2025-03-13 00:21:34.707148-05:30", True),
@@ -423,14 +391,10 @@ def test_has_timezone_offset(run_start, expected):
     assert DatabaseProcessor._has_timezone_offset(run_start) is expected
 
 
-# --- _get_local_timezone_offset (static) ---
-
 def test_get_local_timezone_offset_format():
     result = DatabaseProcessor._get_local_timezone_offset()
     assert re.match(r"^[+-]\d{2}:\d{2}$", result), f"Unexpected format: {result}"
 
-
-# --- _dict_from_row (static) ---
 
 def test_dict_from_row():
     conn = sqlite3.connect(":memory:")
@@ -438,14 +402,11 @@ def test_dict_from_row():
     conn.execute("CREATE TABLE t (a TEXT, b INTEGER)")
     conn.execute("INSERT INTO t VALUES ('hello', 42)")
     row = conn.execute("SELECT * FROM t").fetchone()
-    # _dict_from_row is an instance method (no @staticmethod decorator)
     db_inst = DatabaseProcessor.__new__(DatabaseProcessor)
     result = db_inst._dict_from_row(row)
     conn.close()
     assert result == {"a": "hello", "b": 42}
 
-
-# --- schema migration ---
 
 def test_schema_migration_runs_table_from_10_to_14(tmp_path):
     """A legacy runs table with 10 columns should be migrated to 15 columns."""
@@ -498,8 +459,6 @@ def test_schema_migration_runs_table_from_10_to_14(tmp_path):
     assert len(keywords_cols) == 12
 
 
-# --- insert_output_data exception path ---
-
 def test_insert_output_data_exception_prints_error(db, capsys):
     """insert_output_data catches exceptions from _insert_runs and prints an error."""
     from unittest.mock import patch
@@ -511,8 +470,6 @@ def test_insert_output_data_exception_prints_error(db, capsys):
     captured = capsys.readouterr()
     assert "ERROR" in captured.out
 
-
-# --- get_data backward-compatibility branches ---
 
 def test_get_data_null_run_alias_generates_auto_alias(db):
     """get_data() assigns 'Alias 1' when run_alias is NULL (pre-0.6.0 compat)."""
@@ -596,7 +553,6 @@ def test_get_data_null_test_tags_and_id(db):
     assert data["tests"][0]["attempts"] == ""
 
 
-# --- _get_run_data ---
 def test_get_run_data_returns_dict_for_existing_run(populated_db):
     populated_db.open_database()
     run_start = populated_db.get_data()["runs"][0]["run_start"]
@@ -612,8 +568,6 @@ def test_get_run_data_returns_none_for_missing_run(populated_db):
     populated_db.close_database()
     assert result is None
 
-
-# --- _log_run_jsonl ---
 
 def test_log_run_jsonl_creates_file_and_writes_entry(tmp_path):
     import json
@@ -641,8 +595,6 @@ def test_log_run_jsonl_serializes_datetime(tmp_path):
     parsed = json.loads(logpath.read_text())
     assert "2025-01-01" in parsed["run_start"]
 
-
-# --- _remove_run with logging ---
 
 def test_remove_run_with_logging_writes_jsonl_and_deletes(tmp_path):
     import json
@@ -676,8 +628,6 @@ def test_remove_run_logging_failure_rolls_back_delete(tmp_path):
     db.close_database()
 
 
-# --- remove_runs bare except branch ---
-
 def test_remove_runs_exception_branch_logs_error(populated_db):
     """remove_runs() catches exceptions (e.g. index parse error) in its bare except."""
     populated_db.open_database()
@@ -687,8 +637,6 @@ def test_remove_runs_exception_branch_logs_error(populated_db):
     populated_db.close_database()
     assert "ERROR" in console
 
-
-# --- _insert_exceptions / get_data exceptions / _remove_run exceptions ---
 
 def test_insert_and_get_exceptions(tmp_path):
     """Exceptions inserted via _insert_exceptions appear in get_data()."""
@@ -793,8 +741,6 @@ def test_remove_run_without_exceptions_table(tmp_path):
     assert len(db.get_data()["runs"]) == 0
     db.close_database()
 
-
-# --- test attempts (rebot --merge rerun history, issue #310) ---
 
 def test_insert_and_get_data_round_trips_test_attempts(db):
     attempts = '[{"status": "FAIL", "message": "boom"}, {"status": "PASS", "message": ""}]'

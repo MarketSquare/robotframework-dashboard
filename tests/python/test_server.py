@@ -18,10 +18,6 @@ SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
 SAMPLE_LOG_NAME = SAMPLE_XML.name.replace("output-", "log-").replace(".xml", ".html")
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _make_server(
     server_user: str = "",
     server_pass: str = "",
@@ -51,10 +47,6 @@ def _client(server: ApiServer) -> TestClient:
     return TestClient(server.app, raise_server_exceptions=False)
 
 
-# ---------------------------------------------------------------------------
-# ApiServer initialisation
-# ---------------------------------------------------------------------------
-
 def test_init_sets_expected_attributes():
     server = _make_server(server_user="u", server_pass="p")
     assert server.server_host == "127.0.0.1"
@@ -81,10 +73,6 @@ def test_set_robotdashboard_stores_instance():
     assert server.robotdashboard is mock_rd
 
 
-# ---------------------------------------------------------------------------
-# _get_admin_page
-# ---------------------------------------------------------------------------
-
 def test_get_admin_page_returns_html_string():
     server = _make_server()
     html = server._get_admin_page()
@@ -104,10 +92,6 @@ def test_get_admin_page_no_autoupdate_false_hides_refresh_card():
     html = server._get_admin_page()
     assert "hidden" in html
 
-
-# ---------------------------------------------------------------------------
-# GET /admin
-# ---------------------------------------------------------------------------
 
 def test_admin_no_auth_required_returns_200():
     server = _make_server()
@@ -138,10 +122,6 @@ def test_admin_with_auth_no_credentials_returns_401():
     assert response.status_code == 401
 
 
-# ---------------------------------------------------------------------------
-# GET /
-# ---------------------------------------------------------------------------
-
 def test_dashboard_page_serves_html(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "robot_dashboard.html").write_text("<html><body>dash</body></html>")
@@ -151,10 +131,6 @@ def test_dashboard_page_serves_html(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert "dash" in response.text
 
-
-# ---------------------------------------------------------------------------
-# POST /refresh-dashboard
-# ---------------------------------------------------------------------------
 
 def test_refresh_dashboard_calls_create_dashboard():
     server = _make_server()
@@ -176,10 +152,6 @@ def test_refresh_dashboard_returns_error_on_exception():
     assert data["success"] == "0"
     assert "oops" in data["message"]
 
-
-# ---------------------------------------------------------------------------
-# GET /get-outputs
-# ---------------------------------------------------------------------------
 
 def test_get_outputs_empty_database():
     server = _make_server()
@@ -209,10 +181,6 @@ def test_get_outputs_with_data():
     assert data[0]["tags"] == "dev,prod"
     assert data[0]["custom_filters"] == "ComponentA=1.0"
 
-
-# ---------------------------------------------------------------------------
-# POST /add-outputs — by output_path
-# ---------------------------------------------------------------------------
 
 def test_add_outputs_by_path_success(tmp_path):
     server = _make_server()
@@ -271,10 +239,6 @@ def test_add_outputs_no_log_url_clears_log_url():
     assert server.robotdashboard.log_url is None
 
 
-# ---------------------------------------------------------------------------
-# POST /add-outputs — by output_folder_path
-# ---------------------------------------------------------------------------
-
 def test_add_outputs_by_folder():
     server = _make_server()
     client = _client(server)
@@ -310,10 +274,6 @@ def test_add_outputs_by_folder_with_log_url_without_placeholder_rejected():
     server.robotdashboard.process_outputs.assert_not_called()
 
 
-# ---------------------------------------------------------------------------
-# POST /add-outputs — by output_data
-# ---------------------------------------------------------------------------
-
 def test_add_outputs_by_data_no_alias(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     server = _make_server()
@@ -335,10 +295,6 @@ def test_add_outputs_by_data_with_alias(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert response.json()["success"] == "1"
 
-
-# ---------------------------------------------------------------------------
-# POST /add-outputs — mutual exclusion errors
-# ---------------------------------------------------------------------------
 
 def test_add_outputs_path_and_folder_rejected():
     server = _make_server()
@@ -365,10 +321,6 @@ def test_add_outputs_path_and_data_rejected(tmp_path, monkeypatch):
     assert response.json()["success"] == "0"
 
 
-# ---------------------------------------------------------------------------
-# POST /add-outputs — autoupdate triggers create_dashboard
-# ---------------------------------------------------------------------------
-
 def test_add_outputs_autoupdate_calls_create_dashboard():
     server = _make_server(no_autoupdate=False)
     client = _client(server)
@@ -384,10 +336,6 @@ def test_add_outputs_no_autoupdate_skips_create_dashboard():
     client.post("/add-outputs", json=payload)
     server.robotdashboard.create_dashboard.assert_not_called()
 
-
-# ---------------------------------------------------------------------------
-# POST /add-output-file — multipart upload
-# ---------------------------------------------------------------------------
 
 def test_add_output_file_plain_xml(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -460,10 +408,6 @@ def test_add_output_file_no_log_url_clears_log_url(tmp_path, monkeypatch):
     assert server.robotdashboard.log_url is None
 
 
-# ---------------------------------------------------------------------------
-# DELETE /remove-outputs
-# ---------------------------------------------------------------------------
-
 def test_remove_outputs_by_index():
     server = _make_server()
     server.robotdashboard.get_runs.return_value = (
@@ -525,8 +469,7 @@ def test_remove_outputs_by_limit_and_tags_builds_scoped_query():
 
 
 def test_remove_outputs_by_age_and_tags_stay_independent():
-    """age + tags -> issue #309 only scoped 'limit' by tags; 'age' + 'tags'
-    together still run as two independent operations, unchanged from main."""
+    """age + tags run as two independent operations; only 'limit' is scoped by tags."""
     server = _make_server()
     client = _client(server)
     response = client.request(
@@ -600,10 +543,6 @@ def test_remove_outputs_removes_associated_log_file(tmp_path, monkeypatch):
     assert not log_file.exists()
 
 
-# ---------------------------------------------------------------------------
-# GET /get-logs
-# ---------------------------------------------------------------------------
-
 def test_get_logs_no_log_dir_returns_empty(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     server = _make_server()
@@ -626,10 +565,6 @@ def test_get_logs_with_files(tmp_path):
     names = [item["log_name"] for item in response.json()]
     assert "log-abc.html" in names
 
-
-# ---------------------------------------------------------------------------
-# POST /add-log
-# ---------------------------------------------------------------------------
 
 def test_add_log_success(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -664,10 +599,6 @@ def test_add_log_autoupdate(tmp_path, monkeypatch):
     client.post("/add-log", json=payload)
     server.robotdashboard.create_dashboard.assert_called()
 
-
-# ---------------------------------------------------------------------------
-# POST /add-log-file — multipart upload
-# ---------------------------------------------------------------------------
 
 def test_add_log_file_plain(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -711,10 +642,8 @@ def test_add_log_file_update_path_error(tmp_path, monkeypatch):
     assert response.json()["success"] == "0"
 
 
-# ---------------------------------------------------------------------------
 # POST /add-log-file — report files (#308: saved without DB matching, warn
 # instead of error when no matching log is found)
-# ---------------------------------------------------------------------------
 
 def test_add_log_file_report_without_matching_log_warns_but_succeeds(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -769,10 +698,6 @@ def test_add_log_file_report_gzipped(tmp_path, monkeypatch):
     server.robotdashboard.update_output_path.assert_not_called()
 
 
-# ---------------------------------------------------------------------------
-# DELETE /remove-log
-# ---------------------------------------------------------------------------
-
 def test_remove_log_specific_file(tmp_path):
     log_dir = tmp_path / "robot_logs"
     log_dir.mkdir()
@@ -825,10 +750,6 @@ def test_remove_log_missing_file_returns_error(tmp_path):
     assert response.json()["success"] == "0"
 
 
-# ---------------------------------------------------------------------------
-# GET /log
-# ---------------------------------------------------------------------------
-
 def test_log_page_serves_existing_file(tmp_path):
     log_file = tmp_path / "log-abc.html"
     log_file.write_text("<html>log</html>")
@@ -847,10 +768,6 @@ def test_log_page_missing_file_returns_404_html():
     assert response.status_code == 200  # returns HTML error page, not HTTP 404
     assert "404" in response.text or "not found" in response.text.lower()
 
-
-# ---------------------------------------------------------------------------
-# GET /{full_path} — catch-all resource route
-# ---------------------------------------------------------------------------
 
 def test_catch_all_no_log_opened_returns_404(tmp_path):
     server = _make_server()
@@ -892,10 +809,6 @@ def test_catch_all_missing_resource_returns_404(tmp_path):
     response = client.get("/nonexistent_resource.txt")
     assert response.status_code == 404
 
-
-# ---------------------------------------------------------------------------
-# Additional coverage: autoupdate and exception branches
-# ---------------------------------------------------------------------------
 
 def test_add_output_file_autoupdate_calls_create_dashboard(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)

@@ -181,12 +181,6 @@ class robotdashboardlistener:
         if (
             self.last_execution and self.last_execution == "1"
         ):  # pabot usage and it's the very last execution
-            # Original code caused issues on Linux due to hardcoded Windows-style path resulting in invalid escape sequences error for linux users:
-            ## self.path = self.path.rsplit("\\", 1)[0] + f"\..\..\{self.output}"
-
-            # The revised code below uses pathlib for cross-platform path handling written by siddharthsinghchaudhari.
-            # It navigates three levels up from the current path and appends the output file name.
-            # This approach works correctly on both Windows and Linux systems.
             self.path = str(Path(self.path).parent.parent.parent / self.output)
             # added to make sure the output file is created, make this longer if the output generation is longer!
             timeout = 0

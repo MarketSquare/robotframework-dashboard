@@ -280,7 +280,6 @@ Validate Selected Run Tags Of Filter Profile ${profile_name}
     END
 
 Validate Filter Settings
-    #TODO
     [Arguments]    ${runs}=${EMPTY}
     ...    ${runTags}=${EMPTY}
     ...    ${versions}=${EMPTY}

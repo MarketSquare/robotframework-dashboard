@@ -50,7 +50,7 @@ function makeBarClickEvent(label, graphId = 'runStatisticsGraph') {
     };
 }
 
-describe('open_log_file (issue #311)', () => {
+describe('open_log_file', () => {
     it('resolves log path against filteredRuns when timezone is converted to local time', () => {
         // The DB / unfiltered runs hold the original UTC run_start.
         const utcStart = '2025-01-15 10:00:00';
@@ -67,7 +67,6 @@ describe('open_log_file (issue #311)', () => {
 
         open_log_file(event, chartElement);
 
-        // Before the fix: lookup happened against `runs` (UTC), no match, alert fired.
         expect(globalThis.alert).not.toHaveBeenCalled();
         expect(globalThis.window.open).toHaveBeenCalledTimes(1);
         const openedUrl = globalThis.window.open.mock.calls[0][0];

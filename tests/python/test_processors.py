@@ -8,8 +8,6 @@ OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
 
 
-# --- get_run_start ---
-
 def test_get_run_start_returns_datetime(xml_output):
     processor = OutputProcessor(xml_output)
     result = processor.get_run_start()
@@ -27,8 +25,6 @@ def test_get_run_start_all_xml_files(all_xml_outputs):
         result = processor.get_run_start()
         assert isinstance(result, datetime), f"Expected datetime for {xml_path.name}"
 
-
-# --- get_output_data ---
 
 def test_get_output_data_returns_expected_keys(processed_output):
     data = processed_output.get_output_data()
@@ -63,8 +59,6 @@ def test_get_output_data_all_xml_files(all_xml_outputs):
         assert len(data["runs"]) == 1, f"Expected 1 run for {xml_path.name}"
         assert len(data["tests"]) > 0, f"Expected tests for {xml_path.name}"
 
-
-# --- calculate_keyword_averages ---
 
 def _make_processor():
     """Return an OutputProcessor instance without parsing a real XML."""
@@ -128,8 +122,6 @@ def test_calculate_keyword_averages_skipped_counted():
     result = _make_processor().calculate_keyword_averages(keyword_list)
     assert result[0][4] == 3    # skipped
 
-
-# --- ExceptionProcessor ---
 
 def _branch(branch_type):
     return SimpleNamespace(type=branch_type)
@@ -265,8 +257,6 @@ def test_calculate_keyword_averages_from_real_xml(processed_output):
         assert kw[8] <= kw[7] <= kw[9], "min <= avg <= max must hold"
 
 
-# --- merge_run_and_suite_metadata ---
-
 def _make_run_suite(run_metadata=None, suite_metadata=None):
     run_start = datetime(2025, 1, 1)
     run_list = [
@@ -348,8 +338,6 @@ def test_merge_run_and_suite_metadata_all_real_xmls(all_xml_outputs):
         assert len(data["runs"]) == 1, f"Unexpected run count for {xml_path.name}"
 
 
-# --- get_run_start legacy path (no generation_time attribute) ---
-
 from datetime import timedelta
 from robotframework_dashboard.processors import (
     RunProcessor, SuiteProcessor, TestProcessor as RF_TestProcessor, KeywordProcessor,
@@ -387,8 +375,6 @@ def test_get_run_start_legacy_no_t_format(tmp_path):
     assert result.year == 2025
     assert result.month == 5
 
-
-# --- Old-style ResultVisitor processors (pre-RF 6 compat) ---
 
 class _OldSuiteStats:
     total = 4
@@ -460,8 +446,6 @@ def test_test_processor_old_style_test():
     assert row[1] == "Old.Test.Name"
     assert row[6] == 1.0   # 1000ms → 1s
 
-
-# --- KeywordProcessor old/new style ---
 
 class _NewStyleKeywordNoOwner:
     """New-style keyword but with no owner (e.g. defined in a test suite file)."""
@@ -550,8 +534,6 @@ def test_keyword_processor_old_style_lib_no_dot_in_name():
     assert row[1] == "PlainKeyword"   # name unchanged
     assert row[6] == "MyLib"
 
-
-# --- rebot --merge attempt history (issue #310) ---
 
 import json
 from robotframework_dashboard.processors import parse_merged_message
