@@ -140,3 +140,108 @@ Applied Filter Profile Adds New Filter
     Validate Filter Settings    runs=WebshopUI    runTags=prod project_1    versions=1.2
     ...    fromDate=2025-03-10    fromTime=22:10    toDate=2025-03-14    toTime=02:45
     ...    amount=13
+
+Validate Dashboard Run Tags Filter OR Mode
+    [Documentation]    AND needs every selected tag on a run (no fixture run has both), OR any of them.
+    Set Run Tags Filter    prod    amount    strict=True
+    Should Show 0 Of 0 Runs
+    Set Run Tags Mode    OR
+    Should Show 5 Of 5 Runs
+
+Validate Dashboard Run Tags Filter NOT Mode
+    Set Run Tags Filter    prod    amount    strict=True
+    Set Run Tags Mode    NOT
+    Should Show 13 Of 13 Runs
+
+Validate Dashboard Metadata Filter
+    [Documentation]    The four prod runs carry the metadata "Environment: production".
+    Set Metadata Filter    Environment: production
+    Should Show 4 Of 4 Runs
+
+Validate Dashboard Suite Path Filter
+    [Documentation]    Selecting a top-level suite keeps only the runs that contain it and narrows the
+    ...    suite data to that path.
+    Select Suite Path    WebshopAPI
+    Should Show 8 Of 8 Runs
+    ${roots}    Evaluate JavaScript    ${None}    () => [...new Set(filteredSuites.map(suite => suite.full_name.split(".")[0]))]
+    Should Be Equal    ${roots}    ${{ ["WebshopAPI"] }}
+
+Reset Filters Restores Defaults
+    Set Run Filter    value=WebshopUI
+    Set Run Tags Filter    project_1    strict=True
+    Set Run Tags Mode    NOT
+    Set Metadata Filter    Environment: production
+    Select Suite Path    WebshopAPI
+    Set Amount Filter    amount=3
+    Should Show 0 Of 0 Runs
+    Reset Filters
+    Should Show 18 Of 18 Runs
+    # the amount input is clamped to the number of available runs once the filters are applied
+    Validate Filter Settings    runs=All    runTags=All    amount=18
+    Get Selected Options    id=metadata    value    ==    All
+    Get Selected Options    id=tagMode    value    ==    AND
+    Get Property    selector=id=suitePathValue    property=value    assertion_operator===    assertion_expected=All
+
+Deleting A Filter Profile Removes It
+    Set Run Filter    value=WebshopUI
+    Add Filter Profile PrfKeep For    Runs
+    Add Filter Profile PrfDelete For    Runs
+    Delete Filter Profile    PrfDelete
+    Filter Profile PrfDelete Should Not Exist
+    Filter Profile PrfKeep Should Be    {'runs': 'WebshopUI'}
+    Reload Dashboard
+    Filter Profile PrfDelete Should Not Exist
+
+Update Filter Profile After Changing Filters
+    [Documentation]    Once an applied profile is modified the profile select shows a dot and an Update
+    ...    button; updating re-saves only the keys the profile already had.
+    Set Run Filter    value=WebshopUI
+    Add Filter Profile PrfUpdate For    Runs
+    Reset Filters
+    Apply Filter Profile    profile_name=PrfUpdate
+    Set Run Filter    value=WebshopAPI
+    Update Active Filter Profile
+    Filter Profile PrfUpdate Should Be    {'runs': 'WebshopAPI'}
+
+Merge Two Filter Profiles Into A New One
+    [Documentation]    Fields that exist on one side only pass through, so the merge of a runs-only and
+    ...    an amount-only profile carries both.
+    Set Run Filter    value=WebshopUI
+    Add Filter Profile PrfLeft For    Runs
+    Set Amount Filter    amount=5    close_filter_dialog=False
+    Add Filter Profile PrfRight For    Amount    open_filter_dialog=False
+    Merge Filter Profiles Into    PrfLeft    PrfRight    PrfMerged
+    Filter Profile PrfMerged Should Be    {'runs': 'WebshopUI', 'amount': '5'}
+    Reset Filters
+    Apply Filter Profile    profile_name=PrfMerged
+    Validate Filter Settings    runs=WebshopUI    amount=5
+    Should Show 5 Of 10 Runs
+
+Validate Dashboard Custom Filters
+    [Documentation]    --customfilters key=value pairs become one dropdown per key; runs processed without
+    ...    the key are listed under "None". Dimensions combine with AND, values within one dimension with
+    ...    the dropdown's mode.
+    [Setup]    Run Keywords    Generate Dashboard With Custom Filters    Open Dashboard
+    [Teardown]    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+    Should Show 5 Of 5 Runs
+    Open Filter Dialog
+    ${dimensions}    Get Custom Filter Dimensions
+    Should Be Equal    ${dimensions}    ${{ ["Browser", "Env"] }}
+    ${values}    Get Custom Filter Values    Browser
+    Should Be Equal    ${values}    ${{ ["All", "None", "chrome", "firefox"] }}
+    Close Filter Dialog
+    Set Custom Filter    Browser    chrome
+    Should Show 3 Of 3 Runs
+    Set Custom Filter Mode    Browser    NOT
+    Should Show 2 Of 2 Runs
+    Set Custom Filter    Browser    None    strict=True
+    Set Custom Filter Mode    Browser    OR
+    Should Show 1 Of 1 Runs
+    Reset Filters
+    Should Show 5 Of 5 Runs
+    Set Custom Filter    Env    prod
+    Should Show 1 Of 1 Runs
+    Set Custom Filter    Browser    firefox
+    Should Show 1 Of 1 Runs
+    Set Custom Filter    Browser    chrome    strict=True
+    Should Show 0 Of 0 Runs

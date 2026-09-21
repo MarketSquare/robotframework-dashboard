@@ -21,7 +21,7 @@ docker build --tag %IMAGE% -f scripts/docker/%IMAGE%.dockerfile %1 %2 %3 %4 %5 %
 REM To run the container in an interactive mode:
 REM   docker run -it --rm --ipc=host -v.:/robotframework-dashboard test-dashboard-robot
 REM Within the container install the current code from the working directory
-REM   pip install .
+REM   pip install .[all]
 REM add the ~/.local/bin to your path
 REM   export PATH=$PATH:~/.local/bin
 REM and run the tests, e.g.

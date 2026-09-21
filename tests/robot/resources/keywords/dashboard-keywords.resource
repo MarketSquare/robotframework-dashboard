@@ -23,6 +23,28 @@ Stop Browser
 Open Dashboard
     New Context    colorScheme=dark    viewport={"width": 1920, "height": 2000}
     New Page    url=file:${ROOT_FOLDER}/robotdashboard_${DASHBOARD_INDEX}.html
+    Wait For Dashboard Ready
+
+Reload Dashboard
+    [Documentation]    Reloads the page the way a user would (F5) and re-injects the test-only idle hook,
+    ...    which a reload drops. Use to prove that a change survived in localStorage.
+    Reload
+    Wait For Dashboard Ready
+
+Wait For Dashboard Reload
+    [Documentation]    For actions that call location.reload() themselves (apply/reset settings): waits
+    ...    until the old document is gone - the injected idle hook disappears with it - before waiting
+    ...    for the new one, otherwise the ready check can pass on the page that is about to unload.
+    Wait Until Keyword Succeeds    10s    200ms    Idle Hook Should Be Gone
+    Wait For Dashboard Ready
+
+Idle Hook Should Be Gone
+    ${gone}    Evaluate JavaScript    ${None}    () => window.dashboard_is_idle === undefined
+    Should Be True    ${gone}
+
+Wait For Dashboard Ready
+    [Documentation]    Waits for the initial render of a freshly loaded dashboard page and installs the
+    ...    test-only idle hook. Shared by Open Dashboard, Reload Dashboard and the server suite.
     Wait For Elements State    selector=id=loading    state=hidden
     # the relative run times on the overview cards ("2 hours ago") change as time passes,
     # hide them so the screenshot comparisons stay deterministic
@@ -126,20 +148,23 @@ Set Run Filter
     Close Filter Dialog
 
 Set Run Tags Filter
+    [Documentation]    Checks the given run tags; strict=True also unchecks every other tag. The wanted
+    ...    tags are checked first because "All" refuses to be unchecked while it is the only selection.
     [Arguments]    @{tags}    ${strict}=False
     Open Filter Dialog
     Click    selector=id=selectRunTags
+    FOR    ${tag}    IN    @{tags}
+        Check Checkbox    selector=id=runTagCheckBox${tag}
+    END
     IF    ${strict}
         ${elements}    Get Elements    selector=id=runTag >> css=input.form-check-input
         FOR    ${element}    IN    @{elements}
             ${id}    Get Attribute    ${element}    id
-            IF    "${id}".startswith("runTagCheckBox")
+            ${tag}    Replace String    string=${id}    search_for=runTagCheckBox    replace_with=${EMPTY}
+            IF    "${id}".startswith("runTagCheckBox") and $tag not in $tags
                 Uncheck Checkbox    selector=id=${id}
             END
         END
-    END
-    FOR    ${tag}    IN    @{tags}
-        Check Checkbox    selector=id=runTagCheckBox${tag}
     END
     Close Filter Dialog
 
@@ -207,12 +232,21 @@ Apply Filter Profile
     Take Screenshot
     Close Filter Dialog
 
-Get Filter Profile Settings
-    [Arguments]    ${profile_name}
+Get Settings From Local Storage
+    [Documentation]    The persisted settings object (localStorage key `settings`) as a dictionary.
     ${settings_str}    LocalStorage Get Item    key=settings
     ${settings}    Loads    ${settings_str}
+    RETURN    ${settings}
+
+Get Filter Profile Settings
+    [Arguments]    ${profile_name}
+    ${settings}    Get Settings From Local Storage
     VAR    ${filter_profile}     ${settings}[filterProfiles][${profile_name}]
     RETURN    ${filter_profile}
+
+Filter Profile ${profile_name} Should Not Exist
+    ${settings}    Get Settings From Local Storage
+    Dictionary Should Not Contain Key    ${settings}[filterProfiles]    ${profile_name}
 
 Reset Filters
     Open Filter Dialog
@@ -301,3 +335,380 @@ Validate Filter Settings
 
 Should Show ${runs} Of ${total_runs} Runs
     Get Property    selector=id=runTitle >> h6    property=innerText    assertion_operator===    assertion_expected=showing ${runs} of ${total_runs} runs
+
+Set Run Tags Mode
+    [Documentation]    Tag Mode select (AND/OR/NOT) inside the collapsed run tags filter.
+    [Arguments]    ${mode}
+    Open Filter Dialog
+    Click    selector=id=selectRunTags
+    Select Options By    id=tagMode    value    ${mode}
+    Close Filter Dialog
+
+Set Metadata Filter
+    [Arguments]    ${value}
+    Open Filter Dialog
+    Select Options By    id=metadata    value    ${value}
+    Close Filter Dialog
+
+Select Suite Path
+    [Documentation]    Clicks one child button of the suite path navigator (breadcrumb + children).
+    [Arguments]    ${name}
+    Open Filter Dialog
+    Click    selector=id=suitePathChildren >> text="${name}"
+    Get Property    selector=id=suitePathValue    property=value    assertion_operator===    assertion_expected=${name}
+    Close Filter Dialog
+
+Delete Filter Profile
+    [Documentation]    The x behind a profile in the profile list, followed by the confirm dialog.
+    ...    The delete span id is profileCheck<name>, the same prefix as the field checkboxes.
+    [Arguments]    ${profile_name}
+    Open Filter Dialog
+    Click    selector=id=selectFilterProfile
+    Click    selector=id=profileCheck${profile_name}
+    Confirm Action
+    Close Filter Dialog
+
+Update Active Filter Profile
+    [Documentation]    The Update button that appears next to the profile select once the filters
+    ...    differ from the applied profile (together with the modified dot).
+    Open Filter Dialog
+    Wait For Elements State    selector=id=profileModifiedDot    state=visible
+    Click    selector=id=updateFilterProfile
+    Wait For Elements State    selector=id=profileModifiedDot    state=hidden
+    Close Filter Dialog
+
+Merge Filter Profiles Into
+    [Arguments]    ${left}    ${right}    ${new_name}
+    Open Filter Dialog
+    Click    selector=id=mergeFilterProfiles
+    Select Options By    id=mergeProfileLeft    value    ${left}
+    Select Options By    id=mergeProfileRight    value    ${right}
+    Fill Text    selector=id=mergeProfileNewName    txt=${new_name}
+    Click    selector=id=saveMergeProfile
+    Wait For Elements State    selector=id=mergeProfilesModal    state=hidden
+    Close Filter Dialog
+
+Confirm Action
+    [Documentation]    Presses OK in the confirm dialog (confirm_action in eventlisteners.js). Waits for the
+    ...    fade-in to finish first: Bootstrap ignores hide() while the modal is still transitioning, so an
+    ...    early click would leave the dialog open. wait_for_hidden=False for actions that reload the page.
+    [Arguments]    ${wait_for_hidden}=True
+    Wait For Function    () => getComputedStyle(document.getElementById("confirmModal")).opacity === "1"    timeout=5s
+    Click    selector=id=confirmOk
+    IF    ${wait_for_hidden}    Wait For Elements State    selector=id=confirmModal    state=hidden
+
+Open Settings Tab
+    [Arguments]    ${tab}
+    Click    selector=id=settings
+    Click    selector=id=${tab}-tab
+
+Close Settings
+    Click    selector=id=closeSettings
+    Wait For Dashboard Idle
+
+Toggle Setting
+    [Documentation]    Clicks one switch in the settings modal; ${tab} is the settings tab it lives on.
+    [Arguments]    ${element_id}    ${tab}=appearance
+    Open Settings Tab    ${tab}
+    Click    selector=id=${element_id}
+    Close Settings
+
+Select Setting
+    [Arguments]    ${element_id}    ${value}    ${tab}=appearance
+    Open Settings Tab    ${tab}
+    Select Options By    id=${element_id}    value    ${value}
+    Close Settings
+
+Setting Should Be
+    [Documentation]    Compares one dot-path of the persisted settings (e.g. show.legends) with a value.
+    [Arguments]    ${path}    ${expected}
+    ${value}    Evaluate JavaScript    ${None}    () => JSON.parse(localStorage.getItem("settings")).${path}
+    Should Be Equal    ${value}    ${expected}
+
+Apply Settings JSON
+    [Documentation]    Edits the settings JSON in the settings modal JSON tab through ${patch}, a JS
+    ...    statement that receives the parsed settings as `s`, then applies it (reloads the page).
+    [Arguments]    ${patch}
+    Open Settings Tab    json
+    Evaluate JavaScript    ${None}
+    ...    () => { const area = document.getElementById("settingsTextArea"); const s = JSON.parse(area.value); ${patch}; area.value = JSON.stringify(s); }
+    Click    selector=id=applySettings
+    Confirm Action    wait_for_hidden=False
+    Wait For Dashboard Reload
+
+Reset Settings To Default
+    Open Settings Tab    json
+    Click    selector=id=resetSettings
+    Confirm Action    wait_for_hidden=False
+    Wait For Dashboard Reload
+
+Enter Layout Edit Mode
+    Click    selector=id=customizeLayout
+    Wait For Dashboard Idle
+
+Save Layout
+    Click    selector=id=saveLayout
+    Wait For Dashboard Idle
+
+Undo Layout Change
+    Click    selector=id=undoLayout
+    Wait For Dashboard Idle
+
+Redo Layout Change
+    Click    selector=id=redoLayout
+    Wait For Dashboard Idle
+
+Hide Graph In Layout Editor
+    [Documentation]    ${graph_key} is the graphmetadata key (runDonut), the buttons are <key>Shown/<key>Hidden.
+    [Arguments]    ${graph_key}
+    Click    selector=id=${graph_key}Shown
+    Wait For Dashboard Idle
+
+Show Graph In Layout Editor
+    [Arguments]    ${graph_key}
+    Click    selector=id=${graph_key}Hidden
+    Wait For Dashboard Idle
+
+Graph Should Be Marked Hidden In Layout Editor
+    [Arguments]    ${graph_key}
+    Get Property    selector=id=${graph_key}Hidden    property=hidden    assertion_operator===    assertion_expected=${False}
+    Get Property    selector=id=${graph_key}Shown    property=hidden    assertion_operator===    assertion_expected=${True}
+
+Graph Should Be Marked Shown In Layout Editor
+    [Arguments]    ${graph_key}
+    Get Property    selector=id=${graph_key}Shown    property=hidden    assertion_operator===    assertion_expected=${False}
+    Get Property    selector=id=${graph_key}Hidden    property=hidden    assertion_operator===    assertion_expected=${True}
+
+Grid Should Contain Graph
+    [Documentation]    ${label} is the graphmetadata label (Run Donut), used as data-gs-id of the tile.
+    [Arguments]    ${grid}    ${label}
+    Get Element Count    selector=css=#${grid} [data-gs-id="${label}"]    assertion_operator===    assertion_expected=1
+
+Grid Should Not Contain Graph
+    [Arguments]    ${grid}    ${label}
+    Get Element Count    selector=css=#${grid} [data-gs-id="${label}"]    assertion_operator===    assertion_expected=0
+
+Resize Graph In Layout Editor
+    [Documentation]    Resizes through the GridStack API (a mouse drag of the resize handle is not
+    ...    deterministic in headless runs); what is under test is that save/restore keeps the size.
+    [Arguments]    ${grid}    ${label}    ${w}    ${h}
+    Evaluate JavaScript    ${None}
+    ...    () => { window.${grid}.update(document.querySelector('#${grid} [data-gs-id="${label}"]'), { w: ${w}, h: ${h} }); }
+    Wait For Dashboard Idle
+
+Get Graph Size In Grid
+    [Arguments]    ${grid}    ${label}
+    ${w}    Get Attribute    selector=css=#${grid} [data-gs-id="${label}"]    attribute=gs-w
+    ${h}    Get Attribute    selector=css=#${grid} [data-gs-id="${label}"]    attribute=gs-h
+    RETURN    ${w}    ${h}
+
+Get Saved Graph Layout
+    [Documentation]    The {x, y, w, h, id} entry of one graph in settings.layouts.<grid> (a JSON string).
+    [Arguments]    ${grid}    ${label}
+    ${settings}    Get Settings From Local Storage
+    ${layout}    Loads    ${settings}[layouts][${grid}]
+    FOR    ${entry}    IN    @{layout}
+        IF    $entry["id"] == $label    RETURN    ${entry}
+    END
+    Fail    msg=No saved layout entry for graph "${label}" in ${grid}
+
+Get Dashboard Section Order
+    [Documentation]    Ids of the dashboard page sections in DOM order, hidden ones suffixed with ":hidden".
+    ${order}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll("#dashboard [id$=StatisticsSection]")].map(el => el.hidden ? el.id + ":hidden" : el.id)
+    RETURN    ${order}
+
+Hide Section In Layout Editor
+    [Arguments]    ${section}
+    Click    selector=id=${section}SectionShown
+    Wait For Dashboard Idle
+
+Move Section Down In Layout Editor
+    [Arguments]    ${section}
+    Click    selector=id=${section}SectionMoveDown
+    Wait For Dashboard Idle
+
+Add Stat Widget
+    [Documentation]    Adds a custom stat widget through the "+" in the section header (edit mode only).
+    ...    ${stat} is the statwidgetdefs key, e.g. run.passedRuns.
+    [Arguments]    ${section}    ${stat}    ${title}
+    Click    selector=id=${section}AddStatWidgetHeader
+    Select Options By    id=addStatWidgetStat    value    ${stat}
+    Fill Text    selector=id=addStatWidgetTitle    txt=${title}
+    Click    selector=id=addStatWidgetConfirm
+    Wait For Dashboard Idle
+
+Add Link Widget
+    [Arguments]    ${section}    ${label}    ${url}
+    Click    selector=id=${section}AddLinkWidgetHeader
+    Fill Text    selector=id=addLinkWidgetLabel    txt=${label}
+    Fill Text    selector=id=addLinkWidgetUrl    txt=${url}
+    Click    selector=id=addLinkWidgetConfirm
+    Wait For Dashboard Idle
+
+Delete First Custom Widget
+    [Documentation]    The x on a custom widget tile, shown in edit mode only. ${type} is stat or link.
+    [Arguments]    ${type}
+    Click    selector=css=.delete-custom-${type}-widget
+    Wait For Dashboard Idle
+
+Get Stat Widgets In Grid
+    [Documentation]    [title, value] of every custom stat widget tile in the grid.
+    [Arguments]    ${grid}
+    ${widgets}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#${grid} [data-gs-id^="customStatWidget-"]')].map(el => [el.querySelector(".stat-widget-title").innerText, el.querySelector(".stat-value").innerText])
+    RETURN    ${widgets}
+
+Get Link Widgets In Grid
+    [Documentation]    [label, href] of every custom link widget tile in the grid.
+    [Arguments]    ${grid}
+    ${widgets}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#${grid} [data-gs-id^="customLinkWidget-"] .link-widget-inner')].map(el => [el.querySelector(".link-widget-label").innerText, el.dataset.href])
+    RETURN    ${widgets}
+
+Select Suite In Suite Statistics
+    [Arguments]    ${suite}
+    Select Options By    id=suiteSelectSuites    value    ${suite}
+    Wait For Dashboard Idle
+
+Select Suite In Test Statistics
+    [Arguments]    ${suite}
+    Select Options By    id=suiteSelectTests    value    ${suite}
+    Wait For Dashboard Idle
+
+Select Test In Test Statistics
+    [Arguments]    ${test}
+    Select Options By    id=testSelect    value    ${test}
+    Wait For Dashboard Idle
+
+Select Test Tag In Test Statistics
+    [Arguments]    ${tag}
+    Select Options By    id=testTagsSelect    value    ${tag}
+    Wait For Dashboard Idle
+
+Select Keyword In Keyword Statistics
+    [Arguments]    ${keyword}
+    Select Options By    id=keywordSelect    value    ${keyword}
+    Wait For Dashboard Idle
+
+Get Graph Labels
+    [Documentation]    The x-axis labels of a Chart.js graph (window.<graphId>).
+    [Arguments]    ${graph}
+    ${labels}    Evaluate JavaScript    ${None}    () => window.${graph}.data.labels
+    RETURN    ${labels}
+
+Get Graph Dataset Labels
+    [Documentation]    The dataset (legend) labels of a Chart.js graph (window.<graphId>).
+    [Arguments]    ${graph}
+    ${labels}    Evaluate JavaScript    ${None}    () => window.${graph}.data.datasets.map(dataset => dataset.label)
+    RETURN    ${labels}
+
+Graph Legend Should Be Hidden
+    [Arguments]    ${graph}
+    ${display}    Evaluate JavaScript    ${None}    () => window.${graph}.options.plugins.legend.display
+    Should Not Be True    ${display}
+
+Get Select Options
+    [Arguments]    ${select_id}
+    ${options}    Evaluate JavaScript    ${None}    () => [...document.querySelectorAll("#${select_id} option")].map(option => option.value)
+    RETURN    ${options}
+
+# compare page section filters
+Select Compare Run
+    [Documentation]    Picks the option of compareRun<n> whose value starts with ${run_start}: the run_start
+    ...    labels carry a timezone offset that differs per machine, so only the wall-clock part is given.
+    ...    "None" clears the slot. Returns the selected option value.
+    [Arguments]    ${n}    ${run_start}
+    ${options}    Get Select Options    compareRun${n}
+    ${matches}    Evaluate    [option for option in $options if option.startswith("""${run_start}""")]
+    Length Should Be    ${matches}    1    msg=No unique compareRun${n} option starts with ${run_start}: ${options}
+    Select Options By    id=compareRun${n}    value    ${matches}[0]
+    Wait For Dashboard Idle
+    RETURN    ${matches}[0]
+
+Set Compare Tests Status Filter
+    [Documentation]    The Status select on the compare Tests graph: All / Passed / Failed / Skipped.
+    [Arguments]    ${status}
+    Select Options By    id=compareNoChanges    value    ${status}
+    Wait For Dashboard Idle
+
+Toggle Compare Tests Only Changes
+    Click    selector=id=compareOnlyChanges
+    Wait For Dashboard Idle
+
+Toggle Compare Suite Paths
+    Click    selector=id=switchSuitePathsCompareSection
+    Wait For Dashboard Idle
+
+# custom filters (--customfilters key=value pairs, one dropdown per key)
+Get Custom Filter Dimensions
+    [Documentation]    The custom filter keys shown in the filter modal, in display order.
+    ${dimensions}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#customFiltersList > .list-group-item')].map(el => el.id.replace("customFilter_", ""))
+    RETURN    ${dimensions}
+
+Get Custom Filter Values
+    [Documentation]    The checkbox values of one custom filter dropdown (All, None and the run values).
+    [Arguments]    ${dimension}
+    ${values}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#customFilter_${dimension}_List input.form-check-input')].map(input => input.value)
+    RETURN    ${values}
+
+Set Custom Filter
+    [Documentation]    Checks the given values of one custom filter; strict=True also unchecks every other
+    ...    value ("All" refuses to be unchecked while it is the only selection, so the wanted values go first).
+    [Arguments]    ${dimension}    @{values}    ${strict}=False
+    Open Filter Dialog
+    Click    selector=id=selectCustomFilter_${dimension}
+    FOR    ${value}    IN    @{values}
+        Check Checkbox    selector=id=customFilter_${dimension}_List_${value}
+    END
+    IF    ${strict}
+        ${all_values}    Get Custom Filter Values    ${dimension}
+        FOR    ${value}    IN    @{all_values}
+            IF    $value not in $values
+                Uncheck Checkbox    selector=id=customFilter_${dimension}_List_${value}
+            END
+        END
+    END
+    Close Filter Dialog
+
+Set Custom Filter Mode
+    [Documentation]    Mode select (OR/AND/NOT) inside one custom filter dropdown.
+    [Arguments]    ${dimension}    ${mode}
+    Open Filter Dialog
+    Click    selector=id=selectCustomFilter_${dimension}
+    Select Options By    id=customFilter_${dimension}_Mode    value    ${mode}
+    Close Filter Dialog
+
+# "All" tab of the Add Stat Widget modal
+Open Add All Stat Widgets Tab
+    [Documentation]    Opens the Add Stat Widget modal of a section (edit mode only) on its "All" tab and
+    ...    waits for the toggle list, which is built on the tab's shown event.
+    [Arguments]    ${section}
+    Click    selector=id=${section}AddStatWidgetHeader
+    Click    selector=id=addStatWidgetAllTab-tab
+    Wait For Elements State    selector=css=#addAllWidgetsList .add-all-widgets-toggle >> nth=0    state=visible
+
+Confirm Add All Stat Widgets
+    Click    selector=id=addAllWidgetsConfirm
+    Wait For Dashboard Idle
+
+# custom sections (unified view only)
+Add Custom Section
+    [Documentation]    Adds a section divider through the "+" section button in the unified grid header
+    ...    (edit mode only).
+    [Arguments]    ${title}
+    Click    selector=id=unifiedAddSectionHeader
+    Fill Text    selector=id=addCustomSectionTitle    txt=${title}
+    Click    selector=id=addCustomSectionConfirm
+    Wait For Dashboard Idle
+
+Get Custom Section Titles In Grid
+    ${titles}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#gridUnified [data-gs-id^="customSection-"] .custom-section-title')].map(el => el.innerText)
+    RETURN    ${titles}
+
+Delete First Custom Section
+    Click    selector=css=.delete-custom-section
+    Wait For Dashboard Idle

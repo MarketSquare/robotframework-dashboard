@@ -19,7 +19,7 @@ Read the deep reference for the tier you are touching before adding or fixing te
 
 ## Hard rule: Robot tests run in Docker, never locally
 
-The robot suites call the `robotdashboard` **CLI** (see `Generate Dashboard` in `tests/robot/resources/keywords/general-keywords.resource`). That CLI is whatever version is `pip install`-ed on the machine — **not** the source tree. A local `robot`/`pabot` run therefore silently tests stale code and produces screenshots that don't match the Linux-rendered references. The Docker wrapper does `pip install .` first and matches the CI environment exactly.
+The robot suites call the `robotdashboard` **CLI** (see `Generate Dashboard` in `tests/robot/resources/keywords/general-keywords.resource`). That CLI is whatever version is `pip install`-ed on the machine — **not** the source tree. A local `robot`/`pabot` run therefore silently tests stale code and produces screenshots that don't match the Linux-rendered references. The Docker wrapper does `pip install '.[all]'` first (the server suite needs the `server` extras) and matches the CI environment exactly.
 
 ### Commands (Git Bash, works on Windows too — the wrapper detects a missing TTY)
 
