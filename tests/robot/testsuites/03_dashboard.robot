@@ -10,6 +10,12 @@ Test Setup    Run Keywords    Generate Shared Dashboard    Open Dashboard
 Test Teardown    Close Dashboard
 
 
+*** Variables ***
+# every test graph whose timeline view marks re-executed tests with the rerun border
+@{RERUN_MARKING_GRAPHS}    testStatisticsGraph    testMessagesGraph    testMostFlakyGraph    testRecentMostFlakyGraph
+...    testMostFailedGraph    testRecentMostFailedGraph
+
+
 *** Test Cases ***
 Validate Dashboard Run Statistics
     Validate Component    id=runStatisticsSection    name=baseRunSection    folder=run
@@ -32,12 +38,23 @@ Validate Dashboard Test Statistics Rerun View
     Should Be True    ${withAttempts} > 0
     ${marked}    Get Rerun Marked Bar Count
     Should Be True    ${marked} > 0    # default view marks re-executed tests
+    # the section filter defaults to the first suite, which has no re-executed test in this fixture
+    Select Suite In Test Statistics    All
+    # the select drives every test graph that marks re-executed tests, not only the statistics graph
+    FOR    ${graph}    IN    @{RERUN_MARKING_GRAPHS}
+        ${marked}    Get Rerun Marked Bar Count    graph=${graph}
+        Should Be True    ${marked} > 0    msg=${graph} should mark re-executed tests in the default view
+    END
     Set Test Statistics Rerun View    final
-    ${marked}    Get Rerun Marked Bar Count
-    Should Be Equal As Integers    ${marked}    0
+    FOR    ${graph}    IN    @{RERUN_MARKING_GRAPHS}
+        ${marked}    Get Rerun Marked Bar Count    graph=${graph}
+        Should Be Equal As Integers    ${marked}    0    msg=${graph} should not mark re-executed tests in the final view
+    END
     Set Test Statistics Rerun View    first
-    ${marked}    Get Rerun Marked Bar Count
-    Should Be True    ${marked} > 0
+    FOR    ${graph}    IN    @{RERUN_MARKING_GRAPHS}
+        ${marked}    Get Rerun Marked Bar Count    graph=${graph}
+        Should Be True    ${marked} > 0    msg=${graph} should mark re-executed tests in the first attempt view
+    END
     Set Test Statistics Rerun View    reruns
     ${marked}    Get Rerun Marked Bar Count
     Should Be True    ${marked} > 0

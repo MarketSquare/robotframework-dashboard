@@ -1276,7 +1276,6 @@ function setup_graph_view_buttons() {
         ["heatMapTestType", "runHeatmapGraph", update_run_heatmap_graph, "switch.heatmapStatus", "select"],
         ["testOnlyChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testOnlyChanges", "checkbox"],
         ["testNoChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testStatusFilter", "select"],
-        ["testRerunView", "testStatisticsGraph", update_test_statistics_graph, "switch.testRerunView", "select"],
         ["compareOnlyChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareOnlyChanges", "checkbox"],
         ["compareNoChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareStatusFilter", "select"],
         ["compareRerunView", "compareTestsGraph", update_compare_tests_graph, "switch.compareRerunView", "select"],
@@ -1291,6 +1290,23 @@ function setup_graph_view_buttons() {
             set_local_storage_item(settingsKey, newValue);
             update_graphs_with_loading([graphId], updateFn);
         });
+    });
+    // the rerun view (mark reruns / final result / first attempt) is read by every test graph that
+    // marks re-executed tests or resolves their status, not only by the test statistics graph
+    document.getElementById("testRerunView").addEventListener("change", () => {
+        set_local_storage_item("switch.testRerunView", document.getElementById("testRerunView").value);
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
+                "testMostFailedGraph", "testRecentMostFailedGraph"],
+            () => {
+                update_test_statistics_graph();
+                update_test_messages_graph();
+                update_test_most_flaky_graph();
+                update_test_recent_most_flaky_graph();
+                update_test_most_failed_graph();
+                update_test_recent_most_failed_graph();
+            }
+        );
     });
     document.getElementById("heatMapHour").addEventListener("change", () => {
         heatMapHourAll = document.getElementById("heatMapHour").value === "All";

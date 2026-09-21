@@ -61,7 +61,7 @@ Attempts: FAIL → PASS
   2. PASS
 ```
 
-The setting is persisted like the other section filters and also drives the Most Flaky and Messages graphs below. The Compare page has its own **Reruns** select in its filter bar for the Tests graph.
+The setting is persisted like the other section filters and also drives the Messages, Most Flaky and Most Failed graphs below (and their Recent variants): changing it re-renders all of them at once. The Compare page has its own **Reruns** select in its filter bar for the Tests graph.
 
 ::: tip Combining with Only Changes / Status
 In the **Mark Reruns** and **First Attempt** views a re-executed test is a change in itself (its bar differs from a normal one), so *Only Changes* also lists tests that were green in every run but needed a retry once, and *Status* drops them.
