@@ -98,3 +98,20 @@ Remove Database And Dashboard
 Remove Database And Dashboard With Index
     Remove File    path=robotresults_${DASHBOARD_INDEX}.db
     Remove File    path=robotdashboard_${DASHBOARD_INDEX}.html
+
+Generate Dashboard With Custom Filters
+    [Documentation]    Own dashboard with --customfilters, which applies to every output of one CLI call:
+    ...    three chrome/staging runs, one firefox/prod run and one run without custom filters (shown as "None").
+    ${index}    Get Dashboard Index
+    Release Lock    name=dashboard_index
+    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
+    VAR    ${database}    -d robotresults_${DASHBOARD_INDEX}.db
+    ${output}    Run
+    ...    command=robotdashboard ${database} -o ${CURDIR}/../outputs/output-20260817-021512.xml -o ${CURDIR}/../outputs/output-20260818-021545.xml -o ${CURDIR}/../outputs/output-20260819-144031.xml --customfilters Browser=chrome:Env=staging -g false
+    Log    ${output}
+    ${output}    Run
+    ...    command=robotdashboard ${database} -o ${CURDIR}/../outputs/output-20260821-021503.xml --customfilters Browser=firefox:Env=prod -g false
+    Log    ${output}
+    ${output}    Run
+    ...    command=robotdashboard ${database} -o ${CURDIR}/../outputs/output-20260910-060011.xml -n robotdashboard_${DASHBOARD_INDEX}.html -j ${CURDIR}/../test_config.json
+    Log    ${output}

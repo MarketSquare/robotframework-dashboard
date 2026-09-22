@@ -28,7 +28,7 @@ function open_log_file(event, chartElement, callbackData = undefined, directRunS
     // Match against filteredRuns: its run_start has been timezone-converted/stripped to
     // match what the chart actually displays. Falling back to the original `runs` global
     // (UTC strings) breaks when the user has the "convert to local timezone" toggle on,
-    // since the chart label no longer equals the UTC run_start. See issue #311.
+    // since the chart label no longer equals the UTC run_start.
     var output = filteredRuns.find(run => run.run_start.slice(0, 19) === runStart.slice(0, 19))
     if (!output) { output = filteredRuns.find(run => get_run_label(run) === runStart) }
     // Fallback to the raw runs array for safety (e.g. if the run was filtered out)

@@ -4,7 +4,7 @@ import { resolve } from 'path';
 export default defineConfig({
     resolve: {
         alias: {
-            '@js': resolve(__dirname, 'robotframework_dashboard/js'),
+            '@js': resolve(import.meta.dirname, 'robotframework_dashboard/js'),
         },
     },
     test: {

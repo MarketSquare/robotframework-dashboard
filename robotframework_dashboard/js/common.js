@@ -217,7 +217,6 @@ function debounce(func, delay) {
     };
 }
 
-// Show a loading overlay on an individual graph's container
 function show_graph_loading(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return;
@@ -231,7 +230,6 @@ function show_graph_loading(elementId) {
     container.appendChild(overlay);
 }
 
-// Hide the loading overlay from an individual graph's container
 function hide_graph_loading(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return;
@@ -241,7 +239,6 @@ function hide_graph_loading(elementId) {
     if (overlay) overlay.remove();
 }
 
-// Show loading overlays on multiple graphs, run updateFn, then hide overlays
 function update_graphs_with_loading(elementIds, updateFn) {
     elementIds.forEach(id => show_graph_loading(id));
     requestAnimationFrame(() => {
@@ -266,22 +263,36 @@ function show_loading_overlay() {
     overlay.style.display = "flex";
 }
 
-// Hide the filter loading overlay
 function hide_loading_overlay() {
-    const overlay = document.getElementById("filterLoadingOverlay");
-    if (overlay) {
-        $(overlay).fadeOut(200);
-    }
+    fade_out(document.getElementById("filterLoadingOverlay"));
 }
 
-// Strips the ±HH:MM timezone offset suffix from a run_start string.
-// Returns the wall-clock portion (YYYY-MM-DD HH:MM:SS[.fff]) without the tz offset.
+// Fade an element in or out with the Web Animations API.
+// A visible element is left alone by fade_in, a hidden one by fade_out, like jQuery did. The
+// element carries the "fading" class while the tween runs so the test-only idle hook can wait for it.
+function fade_in(element, duration = 200) {
+    if (!element || getComputedStyle(element).display !== "none") return;
+    element.style.display = ""; // also for a [hidden] element, so a later hidden = false shows it
+    if (element.hidden) return;
+    element.classList.add("fading");
+    const animation = element.animate([{ opacity: 0 }, { opacity: 1 }], { duration });
+    animation.finished.finally(() => element.classList.remove("fading"));
+}
+function fade_out(element, duration = 200) {
+    if (!element || getComputedStyle(element).display === "none") return;
+    element.classList.add("fading");
+    const animation = element.animate([{ opacity: 1 }, { opacity: 0 }], { duration, fill: "forwards" });
+    animation.finished.then(() => {
+        element.style.display = "none";
+        animation.cancel(); // drop the forwards fill so the element is not stuck transparent when shown again
+    }).finally(() => element.classList.remove("fading"));
+}
+
 function strip_tz_suffix(s) {
     const suffix = s.slice(-6);
     return /^[+-]\d{2}:\d{2}$/.test(suffix) ? s.slice(0, -6) : s;
 }
 
-// Generates a short random ID (safe across all modern browsers)
 function generate_id() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
@@ -289,7 +300,6 @@ function generate_id() {
     return Math.random().toString(36).slice(2, 14);
 }
 
-// Applies (or updates) the bg color class on the grid-stack-item-content of a widget item el
 function apply_bg_class(itemEl, bgColor) {
     const content = itemEl.querySelector('.grid-stack-item-content');
     if (!content) return;
@@ -297,8 +307,6 @@ function apply_bg_class(itemEl, bgColor) {
     if (bgColor) content.classList.add(bgColor);
 }
 
-// Builds the "Move to First" / "Move to Last" controls (and optional delete button) shared by
-// custom widgets/sections in edit mode — pinned together in the top-right corner
 function build_move_controls_html(deleteBtnHtml = '') {
     return `<div class="custom-widget-move-controls">
                 <a class="move-to-first-graph information" data-title="Move to First"></a>
@@ -307,7 +315,6 @@ function build_move_controls_html(deleteBtnHtml = '') {
             </div>`;
 }
 
-// Populates a color picker container with button-per-color entries
 function fill_color_picker(picker, colors, defaultValue) {
     picker.innerHTML = '';
     for (const c of colors) {
@@ -346,6 +353,8 @@ export {
     update_graphs_with_loading,
     show_loading_overlay,
     hide_loading_overlay,
+    fade_in,
+    fade_out,
     strip_tz_suffix,
     generate_id,
     apply_bg_class,

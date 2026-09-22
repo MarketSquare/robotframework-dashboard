@@ -142,7 +142,6 @@ var settings = {
     }
 };
 
-// Returns the run label for an item (run/suite/test/keyword) based on the current aliases mode.
 function get_run_label(item) {
     const mode = settings.show.aliases;
     if (mode === "alias") return item.run_alias;

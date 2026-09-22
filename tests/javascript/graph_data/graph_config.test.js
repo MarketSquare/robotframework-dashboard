@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock dependencies
 vi.mock('@js/variables/settings.js', () => ({
     settings: {
         show: {
@@ -59,6 +58,27 @@ describe('get_graph_config', () => {
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.plugins.datalabels).toBeDefined();
             expect(config.options.plugins.datalabels.color).toBe('#000');
+        });
+    });
+
+    // Chart.js >= 4.5 turns its automatic palette off when the global color defaults are themed
+    describe('colors plugin', () => {
+        it('forces the automatic palette for datasets without colors', () => {
+            const config = get_graph_config('line', [{ label: 'A', data: [] }, { label: 'B', data: [] }], '', 'X', 'Y');
+            expect(config.options.plugins.colors.forceOverride).toBe(true);
+        });
+
+        it('keeps dataset colors when any dataset defines one', () => {
+            const data = { labels: ['Run 1'], datasets: [{ data: [1] }, { data: [2], backgroundColor: '#97bd61' }] };
+            const config = get_graph_config('bar', data, '', 'X', 'Y');
+            expect(config.options.plugins.colors.forceOverride).toBe(false);
+        });
+
+        it('is inherited by every graph type', () => {
+            for (const type of ['bar', 'timeline', 'boxplot', 'radar']) {
+                const config = get_graph_config(type, sampleBarData, '', 'X', 'Y');
+                expect(config.options.plugins.colors.forceOverride).toBe(true);
+            }
         });
     });
 
@@ -161,7 +181,7 @@ describe('get_graph_config', () => {
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.animation).toBeDefined();
             expect(config.options.animation).not.toBe(false);
-            settings.show.animation = false; // restore
+            settings.show.animation = false;
         });
 
         it('sets x/y axis titles', () => {
@@ -195,7 +215,7 @@ describe('get_graph_config', () => {
             settings.show.legends = false;
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.plugins.legend.display).toBe(false);
-            settings.show.legends = true; // restore
+            settings.show.legends = true;
         });
 
         it('hides axis titles when settings.show.axisTitles is false', () => {
@@ -203,7 +223,7 @@ describe('get_graph_config', () => {
             const config = get_graph_config('bar', sampleBarData, '', 'X', 'Y');
             expect(config.options.scales.x.title.display).toBe(false);
             expect(config.options.scales.y.title.display).toBe(false);
-            settings.show.axisTitles = true; // restore
+            settings.show.axisTitles = true;
         });
     });
 

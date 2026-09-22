@@ -23,14 +23,16 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 
 | Suite | What it tests | Method |
 |---|---|---|
-| `00_cli.robot` | Every CLI flag (short + long form) | Runs `robotdashboard` as a subprocess, checks stdout/files against `tests/robot/resources/cli_output/` |
+| `00_cli.robot` | Every CLI flag (short + long form); `--databaseclass` is exercised with `example/database/sqlite3.py`, the reference copy of the built-in class (`--server` is covered by `09_server.robot`, MySQL cannot run in CI) | Runs `robotdashboard` as a subprocess, checks stdout/files against `tests/robot/resources/cli_output/` |
 | `01_database.robot` | SQLite table contents after parsing | Queries the DB via DatabaseLibrary, compares rows against `tests/robot/resources/database_output/` |
 | `02_overview.robot` | Overview page rendering | Screenshot diff vs. reference images |
-| `03_dashboard.robot` | Dashboard tab charts/layout | Screenshot diff |
+| `03_dashboard.robot` | Dashboard tab charts/layout, section filters (suite/test/tag/keyword selects), compare page run selects, suite-path switch, Status + Only Changes filters | Screenshot diff + Chart.js data assertions (`Get Graph Labels`, `Get Graph Dataset Labels`) |
 | `04_compare.robot` | Compare page | Screenshot diff |
 | `05_tables.robot` | Tables page | Screenshot diff |
-| `06_filters.robot` | Filter modal behaviour, filter profiles | Browser interactions + screenshot diff + DOM assertions |
+| `06_filters.robot` | Filter modal behaviour (run tags AND/OR/NOT, metadata, suite path, reset, `--customfilters` dropdowns), filter profiles | Browser interactions + screenshot diff + DOM assertions; the custom filters test builds its own dashboard (`Generate Dashboard With Custom Filters`) |
 | `07_settings.robot` | Settings modal behaviour | Browser interactions + screenshot diff |
+| `08_layout.robot` | Layout editor: hide/resize/reorder graphs and sections, undo/redo, stat + link widgets, the "All" tab of the stat widget modal, custom section dividers in the unified view | DOM + localStorage assertions, each proven across a `Reload Dashboard` |
+| `09_server.robot` | `--server` mode end to end: REST API, hosted dashboard, log linking, auth, `--noautoupdate`, the packaged listener | One `robotdashboard --server` process per test (`server-keywords.resource`), driven with the Browser `Http` keyword |
 
 `tests/robot/testsuites/__init__.robot` is the suite init — detects the OS at suite setup, sets a 60-second global test timeout, and runs `Remove Index` + `Move All Screenshots` once as teardown.
 
@@ -40,9 +42,11 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 
 | File | Contents |
 |---|---|
-| `tests/robot/resources/keywords/general-keywords.resource` | `Generate Shared Dashboard` (browser suites), `Get Dashboard Index` + `Generate Dashboard` + `Remove Database And Dashboard With Index` (CLI/DB suites), `Output Arguments` (the 18 `-o file:tags` arguments) |
+| `tests/robot/resources/keywords/general-keywords.resource` | `Generate Shared Dashboard` (browser suites), `Get Dashboard Index` + `Generate Dashboard` + `Generate Dashboard With Merged Output` + `Generate Dashboard With Custom Filters` + `Remove Database And Dashboard With Index` (own dashboard per test), `Output Arguments` (the 18 `-o file:tags` arguments) |
 | `tests/robot/resources/keywords/database-keywords.resource` | DB connection helpers, normalisation, row comparison |
-| `tests/robot/resources/keywords/dashboard-keywords.resource` | Browser lifecycle (`Open Dashboard`, `Wait For Dashboard Idle`), page navigation (`Open Overview Page`, …), filter helpers (`Set Run Filter`, `Set Run Tags Filter`, `Set Date Filter`, `Set Amount Filter`, `Set Versions Filter`), profile helpers, `Validate Component`, `Validate Filter Settings`, `Should Show N Of M Runs`, `Change Settings` |
+| `tests/robot/resources/keywords/dashboard-keywords.resource` | Browser lifecycle (`Open Dashboard`, `Reload Dashboard`, `Wait For Dashboard Idle`), page navigation (`Open Overview Page`, …), filter helpers (`Set Run Filter`, `Set Run Tags Filter`, `Set Run Tags Mode`, `Set Date Filter`, `Set Amount Filter`, `Set Versions Filter`, `Set Metadata Filter`, `Select Suite Path`, `Set Custom Filter`, `Set Custom Filter Mode`), profile helpers (add/apply/delete/update/merge), settings helpers (`Toggle Setting`, `Setting Should Be`, `Apply Settings JSON`, `Reset Settings To Default`), layout editor + widget helpers (`Enter Layout Edit Mode`, `Hide Graph In Layout Editor`, `Add Stat Widget`, `Open Add All Stat Widgets Tab`, `Add Custom Section`, …), section filter helpers (`Select Suite In Suite Statistics`, `Select Compare Run`, `Set Compare Tests Status Filter`, `Get Graph Dataset Labels`, …), `Confirm Action`, `Validate Component`, `Validate Filter Settings`, `Should Show N Of M Runs`, `Change Settings` |
+| `tests/robot/resources/keywords/server-keywords.resource` | `Start Dashboard Server` / `Stop Dashboard Server` (one server process per test on port 8600+index, cwd under `results/`), `Server Request`, `Add Output Via Server`, `Remove Outputs Via Server`, `Add Log Via Server`, `Open Served Dashboard`, `Run Robot With Dashboard Listener` |
+| `tests/robot/resources/listener/listener_suite.robot` | Fixture suite (one passing, one failing test) that `09_server.robot` runs with `--listener robotframework_dashboard.robotdashboardlistener` against the test's server; not collected by the test run |
 | `tests/robot/resources/outputs/` | The 18 `output.xml` + `log.html` fixtures — **generated** by `tests/robot/resources/generator/generate.py` (see its README), never edited by hand. `Generate Dashboard` tags them `prod`/`dev`, `project_1`/`project_2`, `version_1.0`–`1.2` |
 | `tests/robot/resources/cli_output/` | Expected CLI output reference files |
 | `tests/robot/resources/database_output/` | Expected DB row reference files |
@@ -52,6 +56,8 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 ### Shared dashboard for browser tests
 
 All browser tests (02–07) use identical inputs, so `Generate Shared Dashboard` (test setup) builds `robotresults_shared.db` + `robotdashboard_shared.html` **once per run** under a pabot lock and every test opens that file; each test gets its own browser context (own `localStorage`), so parallel tests cannot influence each other. The files are removed by the `__init__.robot` teardown (`Run Teardown Only Once`). Parsing the 18 fixtures per test used to be the biggest cost of the suite.
+
+**Trap when running a single suite/test:** `__init__.robot` (which deletes `robotdashboard_shared.html` + `robotresults_shared.db` in its teardown) is only loaded when the whole `testsuites/` directory runs. A single-suite run leaves the shared dashboard behind in the repo root and the next run - single or full - silently reuses it, i.e. tests an old build. Delete both files before any run that must reflect a source change (a stash/unstash proof, a CSS/JS fix). Same idea for `build/`: `pip install .` in the container reuses `build/lib` and only copies source files that are newer, so after `git stash`/checkout of an older file delete `build/` too.
 
 ### Parallel-safe index system (CLI/DB tests)
 
@@ -70,11 +76,17 @@ After regenerating fixtures: rerun **all** robot suites in Docker and refresh `c
 ## Browser tests (02–07)
 
 - Headless Chromium via `robotframework-browser`; `Open Dashboard` opens `robotdashboard_shared.html` over `file://` and hides the relative run-time labels so screenshots stay deterministic.
-- **Never `Sleep` before a screenshot.** `Wait For Dashboard Idle` polls `window.dashboard_is_idle()`, a **test-only** hook that `Open Dashboard` injects from `tests/robot/resources/scripts/dashboard_idle.js` (`Evaluate JavaScript`; the shipped dashboard contains no test code): false while the page spinner, filter overlay, graph overlays, an open/closing modal or backdrop, a jQuery fade or a Chart.js animation is active, and true only after 50 ms without any of those. `Validate Component` and `Open Dashboard` call it; call it yourself before DOM assertions that follow a filter/settings change. If a new async render path is added to the dashboard (a `setTimeout`, a fade, a new overlay), extend `dashboard_idle.js` rather than sleeping in the tests (unit-tested in `tests/javascript/dashboard_idle.test.js`; the file must start with the arrow function or Browser evaluates it as an expression).
+- **Never `Sleep` before a screenshot.** `Wait For Dashboard Idle` polls `window.dashboard_is_idle()`, a **test-only** hook that `Open Dashboard` injects from `tests/robot/resources/scripts/dashboard_idle.js` (`Evaluate JavaScript`; the shipped dashboard contains no test code): false while the page spinner, filter overlay, graph overlays, an open/closing modal or backdrop, a `fade_in`/`fade_out` from common.js (`.fading` class) or a Chart.js animation is active, and true only after 50 ms without any of those. `Validate Component` and `Open Dashboard` call it; call it yourself before DOM assertions that follow a filter/settings change. If a new async render path is added to the dashboard (a `setTimeout`, a fade, a new overlay), extend `dashboard_idle.js` rather than sleeping in the tests (unit-tested in `tests/javascript/dashboard_idle.test.js`; the file must start with the arrow function or Browser evaluates it as an expression).
 - Note: the settings UI "animation duration" only scales the stagger delay in `graph_config.js`; Chart.js's default 1000 ms draw still runs. That is why the test config turns animations off instead.
 - `Validate Component    id=<sectionId>    name=<refName>    folder=<refFolder>` takes a screenshot of one element and compares it with `tests/robot/resources/dashboard_output/<refFolder>/<refName>.png` at 99.5 % accuracy by default (`threshold=0.005`); pass `threshold=` to loosen.
 - Prefer DOM assertions (`Should Show 8 Of 8 Runs`, `Validate Filter Settings    runTags=project_1`) over screenshots when the behaviour under test is a state, not a rendering — they need no reference image.
+- Anything persisted in localStorage (settings, layouts, widgets, profiles) is asserted with `Get Settings From Local Storage` / `Setting Should Be` and proven with `Reload Dashboard` (a real reload; re-injects the idle hook).
+- Confirm dialogs (`confirm_action`) go through `Confirm Action`: it waits for the fade-in to finish first, because Bootstrap ignores `hide()` while the modal is still transitioning and an early click leaves the dialog open.
+- The Browser `Http` keyword runs `fetch()` inside the current page, so a page must be on the server's origin before calling the API (the server sends no CORS headers) — `Start Dashboard Server` parks the page on `/get-outputs`.
 - Put multi-step UI interactions into a named keyword in `dashboard-keywords.resource` (e.g. `Enable Run Tags On Overview Page`) rather than inlining raw `Click` sequences in the test case.
+- `${var}` inside a Python expression (`Evaluate`, `${{ }}`) can raise "variable is used in a scope where it cannot be seen" for keyword arguments such as `$run_start`; interpolate the string instead (`option.startswith("""${run_start}""")`), like `Select Compare Run` does.
+- Run labels (`run_start`) carry a timezone offset that differs per machine; match them with `startswith` on the wall-clock part, never on the full value.
+- `scripts/docker/run-in-robot-container.sh` flattens its arguments (`${*}`), so quoted `-t "Name With Spaces"` breaks; use `-t 'Validate*RobotDashboard*c'` style glob patterns without spaces instead.
 
 ---
 

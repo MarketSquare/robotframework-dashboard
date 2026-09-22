@@ -16,7 +16,7 @@ Profile syntax (value of PROFILES):
 """
 
 PROFILES = {
-    # ---------------------------------------------------------------- WebshopUI
+    # WebshopUI
     "Product Page Share Buttons": "always-fail",
     "Cart Quantity Limit Per Product": "always-fail",
     "Checkout Order Confirmation Email": "always-fail",
@@ -42,7 +42,7 @@ PROFILES = {
     "Order History Shows Recent Orders": "slower-every-run:0.25",
     "Filter Combination Category And Price": "slower-every-run:0.2",
     "Cart Shows Correct Total": "faster-every-run:0.2",
-    # --------------------------------------------------------------- WebshopAPI
+    # WebshopAPI
     "Customer Merge Duplicates": "always-fail",
     "Inventory Report Export": "always-fail",
     "Token Rate Limit": "flaky:0.5",

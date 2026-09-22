@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project are documented in this file.
-From v1.3.0 onwards, detailed release notes are also available on [GitHub Releases](https://github.com/MarketSquare/robotframework-dashboard/releases).
+Every version is also available as a [GitHub Release](https://github.com/MarketSquare/robotframework-dashboard/releases).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
@@ -220,7 +220,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.3.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.3.0) - 2025-11-28
 
-First official [GitHub Release](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.3.0).
+First version published as a GitHub Release at release time; releases for older versions were backfilled from this changelog.
 
 ### Added
 - Dedicated [documentation website](https://marketsquare.github.io/robotframework-dashboard/) built with VitePress
@@ -236,7 +236,7 @@ First official [GitHub Release](https://github.com/MarketSquare/robotframework-d
 
 ---
 
-## [1.2.2] - 2025-11-04
+## [1.2.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.2.2) - 2025-11-04
 
 ### Added
 - Keyword library owner filter in Settings — ignore specific libraries in the keyword section; display keyword owner/library on graphs
@@ -244,19 +244,20 @@ First official [GitHub Release](https://github.com/MarketSquare/robotframework-d
 
 ### Fixed
 - First row of bar graphs was not displayed correctly when bar rounding was enabled
+- Times Run graph axis
 
 > **Note:** The keyword owner column is not backward compatible — you need to re-add existing outputs for this data to be populated.
 
 ---
 
-## [1.2.1] - 2025-09-25
+## [1.2.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.2.1) - 2025-09-25
 
 ### Changed
 - Duration unit auto-conversion (d/h/m/s) now also applied in the run statistics graph
 
 ---
 
-## [1.2.0] - 2025-09-24
+## [1.2.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.2.0) - 2025-09-24
 
 ### Added
 - Bar graph edge rounding configurable from 0 to 8 pixels in Settings
@@ -264,19 +265,22 @@ First official [GitHub Release](https://github.com/MarketSquare/robotframework-d
 - Server admin page authentication: `--server default:username:password` or `--server host:port:user:pass`
 - URL page parameter for direct tab linking: `?page=overview`, `?page=dashboard`, `?page=compare`, `?page=tables`
 - Duration graphs now auto-convert units to d/h/m/s
+- Relative file paths in log links are now handled
 
 ### Fixed
 - Run tags no longer overflow when many tags are present
+- Opening the dashboard through the overview page did not work
 - Python 3.8 support restored (incompatible syntax removed; uvicorn pinned to ≥0.33)
 
 ---
 
-## [1.1.3] - 2025-07-22
+## [1.1.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.1.3) - 2025-07-22
 
 ### Fixed
 - Scroll-into-view behavior when entering/exiting edit mode no longer causes disorienting jumps when many graphs are hidden
 - Resizing graphs in edit mode now always triggers an immediate chart redraw
 - Fullscreen mode page scrollbar no longer appears
+- `output_tags` is now actually optional in server POST messages
 
 ### Changed
 - Settings gear icon split into two tabs: Graphs and JSON
@@ -284,30 +288,38 @@ First official [GitHub Release](https://github.com/MarketSquare/robotframework-d
 
 ---
 
-## [1.1.2] - 2025-07-09
+## [1.1.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.1.2) - 2025-07-09
 
 ### Fixed
-- Server crash when `admin_json_config` was empty caused the dashboard to get stuck on load
+- Admin localStorage config is now applied on the server on load; previously the dashboard could get stuck on load
 
 ---
 
-## [1.1.1] - 2025-07-09
+## [1.1.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.1.1) - 2025-07-09
 
-Patch release.
+### Fixed
+- Server crash when `admin_json_config` was empty
+- Scrollbar width twitching when the layout changed
+
+### Changed
+- README documents the GridStack-based layout; example screenshot updated
 
 ---
 
-## [1.1.0] - 2025-07-07
+## [1.1.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.1.0) - 2025-07-07
 
 ### Added
 - Customizable layout completely reworked with an edit mode (powered by GridStack): show/hide sections and graphs directly on the page, drag-and-drop resize to any size
 - `--jsonconfig` / `-j` CLI option for setting a default config (layout, settings, theme); applied only when no existing localStorage config is present
 - Section filters remain visible in fullscreen mode
 - Graph type buttons replaced with icons to save canvas space in the customized layout
+- Alert and confirmation popups
 
 ### Fixed
 - Use Suite Path toggles now apply correctly across all relevant graphs
 - Donut Total Status graph sometimes mixed up passed/failed/skipped statuses
+- Event listeners were added repeatedly on redraw
+- Suite names and fullscreen edge cases
 
 ### Changed
 - All settings unified into a single localStorage settings object accessible via the Settings icon (copy, edit, update)
@@ -315,7 +327,7 @@ Patch release.
 
 ---
 
-## [1.0.2] - 2025-06-27
+## [1.0.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.0.2) - 2025-06-27
 
 ### Added
 - "Set Amount to All Runs" button in the run amount filter popup
@@ -328,21 +340,25 @@ Patch release.
 ### Changed
 - Suite folder bars now have a hover effect to indicate drill-down is available
 - Section filters on small screens no longer break to the next row
+- Initial grid view and icon changes
 
 ---
 
-## [1.0.1] - 2025-06-21
+## [1.0.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.0.1) - 2025-06-21
 
 ### Fixed
 - Log file links on the overview page were not opening correctly
 
+### Changed
+- Compare graph default order
+
 ---
 
-## [1.0.0] - 2025-06-20
+## [1.0.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v1.0.0) - 2025-06-20
 
 ### Added
 - **Overview Page** — new top-level page showing all projects; projects determined by root suite name or `project_` run tags
-- **Compare Page** — three new comparison graphs; compare up to 4 runs side by side
+- **Compare Page** — three new comparison graphs (including a radar graph); compare up to 4 runs side by side
 - Icons throughout the UI: filters, customize view, graph settings, theme, database summary, version, bug report, GitHub/docs links
 - Metadata filter — supports both run-level and suite-level metadata key/value pairs; treated as run-level when used in filters
 - Complete menu overhaul for easier navigation
@@ -350,10 +366,11 @@ Patch release.
 ### Fixed
 - Dashboard printing now renders at the correct scale (recommended: 75–90%, landscape mode)
 - Log file opening from graphs and labels fixed in various edge cases
+- Admin page menu and version display
 
 ---
 
-## [0.9.4] - 2025-06-05
+## [0.9.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.9.4) - 2025-06-05
 
 ### Added
 - Graph animation enable/disable toggle in Settings
@@ -364,10 +381,10 @@ Patch release.
 
 ---
 
-## [0.9.3] - 2025-06-04
+## [0.9.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.9.3) - 2025-06-04
 
 ### Added
-- Heatmap graph in the Run section
+- Heatmap graph in the Run section (with minute-level detail)
 
 ### Fixed
 - Clicking donut graphs didn't always trigger a redraw — now fixed
@@ -378,24 +395,24 @@ Patch release.
 
 ---
 
-## [0.9.2] - 2025-05-31
+## [0.9.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.9.2) - 2025-05-31
 
 ### Added
 - `AbstractDatabaseProcessor` abstract base class for custom database implementations
 - Maximum Graphs Per Row setting (1–4) in Settings
 - Numerical run statistics block added to the Run section
-- Top navigation menu for switching between and scrolling to sections
+- Top navigation menu for switching between and scrolling to sections, with section indication
 
 ---
 
-## [0.9.1] - 2025-05-28
+## [0.9.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.9.1) - 2025-05-28
 
 ### Fixed
 - Donut charts not rendering correctly in Firefox
 
 ---
 
-## [0.9.0] - 2025-05-27
+## [0.9.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.9.0) - 2025-05-27
 
 ### Added
 - New donut graphs: Last Run Status and Total Run Status in the Run section; All Folder Statistics and Last Run Failed Folders (with drill-down) in the Suite section
@@ -406,14 +423,19 @@ Patch release.
 - Dashboard HTML now encoded as base64 + gzip (~80% size reduction compared to previous versions)
 - Graph animations
 
+### Fixed
+- Log file opening for the new graphs
+- Scrolling and aliases in the Most Failed graphs
+
 ### Changed
 - Major UI styling and theme makeover
 - Label length capped at 40 characters
 - Customize View renamed to Settings
+- Acceptance tests now run with pabot
 
 ---
 
-## [0.8.6] - 2025-05-14
+## [0.8.6](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.6) - 2025-05-14
 
 ### Added
 - Top 10 Recent Most Failed Tests graph
@@ -430,7 +452,7 @@ Patch release.
 
 ---
 
-## [0.8.5] - 2025-05-13
+## [0.8.5](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.5) - 2025-05-13
 
 ### Added
 - Log file deep linking — clicking a suite or test in any graph opens `log.html` at the correct suite/test location (requires re-adding outputs to populate the new ID columns)
@@ -443,25 +465,35 @@ Patch release.
 
 ---
 
-## [0.8.4] - 2025-05-13
+## [0.8.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.4) - 2025-05-13
 
-Patch release (suite and test `id` columns added to the database).
+### Added
+- Suite and test `id` columns in the database (used for log deep linking in 0.8.5)
 
----
-
-## [0.8.3] - 2025-05-08
-
-Patch release.
+### Fixed
+- Improvements for opening log files from the dashboard
 
 ---
 
-## [0.8.2] - 2025-05-08
+## [0.8.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.3) - 2025-05-08
 
-Patch release.
+### Fixed
+- Log file paths when the dashboard is hosted on a file server
 
 ---
 
-## [0.8.1] - 2025-05-07
+## [0.8.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.2) - 2025-05-08
+
+### Fixed
+- Relative log paths on file servers and better handling of backslashes in Windows paths
+- Small bugs found while improving CLI logging
+
+### Changed
+- Improved CLI logging output
+
+---
+
+## [0.8.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.1) - 2025-05-07
 
 ### Added
 - `--uselogs true` flag (replaces `--userlogfolder`) — output path saved in the database and used to automatically locate `log.html`
@@ -470,16 +502,20 @@ Patch release.
 
 ---
 
-## [0.8.0] - 2025-05-05
+## [0.8.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.8.0) - 2025-05-05
 
 ### Added
 - `-u` / `--userlogfolder` argument — links Robot Framework `log.html` files from within the dashboard
 - Log linking works in server mode, file hosting mode, and direct file usage
 - Log file naming convention: based on the run alias, replacing `output` with `log` and using `.html` extension
 
+### Changed
+- Improved localStorage handling, also on the server
+- Updated Robot Framework compatibility details
+
 ---
 
-## [0.7.1] - 2025-05-01
+## [0.7.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.7.1) - 2025-05-01
 
 ### Added
 - Sticky top navigation menu — always visible while scrolling
@@ -488,32 +524,54 @@ Patch release.
 - Run amount filter at the top of the page (default: 20 runs; configurable with `-q` / `--quantity`)
 - Run count indicator in each section showing how many runs are currently displayed
 
+### Fixed
+- Sections that were hidden in the customized view were sometimes still shown
+
 ---
 
-## [0.7.0] - 2025-04-27
+## [0.7.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.7.0) - 2025-04-27
 
 ### Added
 - Dashboard sections can now be rearranged (drag-and-drop) in addition to being hidden or shown; graphs stay grouped when moved
 - Top 10 Recent Most Flaky Tests graph — ranks by most recent failure; supports the ignore-skips toggle
-- `--messageconfig` / `-m` argument — path to a text file with message templates using `${variable}` placeholders to group similar failure messages in the Top 10 Fail Messages graph
 - Improved version link in the dashboard: now links to documentation and the GitHub issue tracker
+
+### Fixed
+- First load with an empty localStorage
+- Ignore-skips event listeners; enabled graphs are highlighted better in the customize view
+
+### Changed
+- Server admin config can set customization defaults for all users
+- Server types coerced to strings to prevent `None` type issues
+
+---
+
+## [0.6.8](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.8) - 2025-04-25
+
+### Added
+- `--messageconfig` / `-m` argument — path to a text file with message templates using `${variable}` placeholders to group similar failure messages in the Top 10 Fail Messages graph
+- GitHub link on the server admin page
 
 ### Changed
 - When a section is hidden, its graphs are disabled for performance
-- Server admin config can set customization defaults for all users
+- Listener example updated for pabot usage; README gained a working listener example
 
 ---
 
-## [0.6.8] - 2025-04-25
+## [0.6.7](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.7) - 2025-04-04
 
-Patch release.
+### Changed
+- Reworked the admin localStorage implementation for customization defaults
+- Code cleanup and performance improvements
+
+### Fixed
+- Small bug in the customization view
 
 ---
 
-## [0.6.7] - 2025-04-04
+## [0.6.6](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.6) - 2025-04-02
 
 ### Added
-- Dashboard customization — show/hide individual sections and graphs; configuration saved to localStorage and applied on every load
 - Admin can pre-set customization defaults in server usage
 - Dashboard version displayed in the top-right corner of the HTML
 
@@ -522,52 +580,52 @@ Patch release.
 
 ---
 
-## [0.6.6] - 2025-04-02
+## [0.6.5](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.5) - 2025-04-02
 
-Patch release.
+### Added
+- Dashboard customization — show/hide individual sections and graphs; configuration saved to localStorage and applied on every load
 
----
-
-## [0.6.5] - 2025-04-02
-
-Patch release.
+### Changed
+- Acceptance tests run headless
 
 ---
 
-## [0.6.4] - 2025-03-29
+## [0.6.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.4) - 2025-03-29
 
 ### Added
 - Multiple run tag filtering — filter by more than one tag simultaneously (AND logic)
+
+---
+
+## [0.6.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.3) - 2025-03-28
+
+### Added
+- Robot Framework listener example (`example/listener/`) with `robot.toml` — uploads results to the server automatically after a run
 - `--removerun` / `-r` extended: delete runs by index, `run_start` timestamp, alias, or tag
 - Server: `/get-outputs` now returns aliases and tags for each run
 - Server: `/add-outputs` now supports setting an alias
 - Server: `/remove-outputs` now has the same selection capabilities as the CLI
 
----
-
-## [0.6.3] - 2025-03-28
-
-Patch release (listener integration improvements).
+### Changed
+- Legend removed from the Most Flaky Tests bar graph
 
 ---
 
-## [0.6.2] - 2025-03-18
+## [0.6.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.2) - 2025-03-18
 
 ### Added
 - "Ignore Skips" checkbox in the Most Flaky Test graph — excludes status flips caused by skips from the flakiness count
+
+---
+
+## [0.6.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.1) - 2025-03-18
 
 ### Fixed
 - Python 3.9.x compatibility issues (e.g., `str | None` type union syntax)
 
 ---
 
-## [0.6.1] - 2025-03-18
-
-Patch release.
-
----
-
-## [0.6.0] - 2025-03-16
+## [0.6.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.6.0) - 2025-03-16
 
 ### Added
 - Server mode: `robotdashboard --server default` or `robotdashboard --server yourhost:yourport`
@@ -578,79 +636,256 @@ Patch release.
 - Top 10 Most Flaky Tests graph — tests with the most pass/fail status flips across runs
 - Duration Deviation (BoxPlot) graph — shows test duration distributions to identify outliers
 - `--aliases true` / `-a true` — use output-filename-derived aliases instead of `run_start` timestamps across all graphs
+- Server interaction examples and an sqlite3 custom database example
+
+### Fixed
+- Filtering of suites with similar names
+- Encoding issue when processing outputs
+
+### Changed
+- Default server port lowered
+- Default test graphs changed
 
 ---
 
-## [0.5.0] - 2025-03-08
+## [0.5.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.5.0) - 2025-03-08
 
 ### Added
-- "All" option in the suite selection dropdowns (Suite section and Tests section)
 - Custom database class support via `--databaseclass ./path/to/db.py` — implement `AbstractDatabaseProcessor` to use any backend
 - MySQL example implementation added to the GitHub repository
 
 ---
 
-## [0.4.6] - 2025-03-07
+## [0.4.6](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.6) - 2025-03-07
 
-Patch release.
+### Added
+- "All" option in the suite selection dropdowns (Suite section and Tests section)
 
----
-
-## [0.4.5] - 2025-02-19
-
-Patch release.
+### Changed
+- README and PyPI description updated with the newest features
 
 ---
 
-## [0.4.4] - 2025-02-09
+## [0.4.5](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.5) - 2025-02-19
 
-Patch release.
+### Added
+- `--excludemilliseconds` / `-e` — hide milliseconds in duration graphs
+- `--dashboardtitle` / `-t` — custom title for the generated dashboard
+- Example dashboard, database and screenshot linked from the README
+
+### Changed
+- Acceptance tests made portable across machines; filter tests added
 
 ---
 
-## [0.4.3] - 2025-02-01
+## [0.4.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.4) - 2025-02-09
+
+### Added
+- Robot Framework acceptance test suite (CLI, database and dashboard tests) and batch scripts to run it
+
+No user-facing changes.
+
+---
+
+## [0.4.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.3) - 2025-02-01
 
 ### Added
 - Tag-based filter in the Test section
-
-### Fixed
-- Pathing issues on macOS
-- Python 3.8 compatibility issues
 
 > **Note:** The tests table is extended with a `tags` column. Databases from v0.4.2 and earlier are automatically migrated on first run.
 
 ---
 
-## [0.4.2] - 2025-02-01
+## [0.4.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.2) - 2025-02-01
 
-Patch release.
+### Added
+- ASCII art banner in the CLI output
 
----
-
-## [0.4.1] - 2024-11-15
-
-Patch release.
-
----
-
-## [0.4.0] - 2024-11-14
-
-Patch release.
+### Fixed
+- Pathing issues on macOS
+- Python 3.8 compatibility issues
 
 ---
 
-## [0.3.x] - 2024-10-30 to 2024-11-02
+## [0.4.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.1) - 2024-11-15
 
-Early development releases (0.3.0–0.3.8). No detailed release notes.
-
----
-
-## [0.2.x] - 2024-10-25 to 2024-10-30
-
-Early development releases (0.2.0–0.2.6). No detailed release notes.
+### Fixed
+- Output paths with run tags (`path:tag1:tag2`) are now parsed with a regex, fixing paths that contain colons
 
 ---
 
-## [0.1.x] - 2024-10-21 to 2024-10-22
+## [0.4.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.4.0) - 2024-11-14
 
-Initial releases (0.1.1–0.1.5). No detailed release notes.
+### Added
+- `--outputfolderpath` / `-f` — recursively process all `output.xml` files in a folder
+
+---
+
+## [0.3.8](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.8) - 2024-11-02
+
+### Changed
+- Test status graph capped at 30 bars for performance
+
+---
+
+## [0.3.7](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.7) - 2024-11-02
+
+### Changed
+- Axis label rotation limited with min/max values
+- Graph animations disabled for performance
+
+---
+
+## [0.3.6](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.6) - 2024-11-02
+
+### Fixed
+- Test message data
+- Graph sizing
+
+### Changed
+- Simplified test status graph implementation; code cleanup
+
+---
+
+## [0.3.5](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.5) - 2024-11-01
+
+### Changed
+- Performance improvement for the test status graph
+
+---
+
+## [0.3.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.4) - 2024-11-01
+
+### Added
+- Vertical test status graph with vertical scroll
+- Fullscreen improvements
+
+---
+
+## [0.3.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.3) - 2024-10-31
+
+### Changed
+- Test messages truncated to 40 characters on the x and y axes
+
+---
+
+## [0.3.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.2) - 2024-10-30
+
+### Added
+- Fullscreen option for graphs
+
+---
+
+## [0.3.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.1) - 2024-10-30
+
+### Added
+- Support for older Robot Framework versions (6.0 and up)
+
+---
+
+## [0.3.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.3.0) - 2024-10-30
+
+### Added
+- Test message graph
+
+---
+
+## [0.2.6](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.6) - 2024-10-30
+
+### Added
+- Collapsible tables
+- Test messages stored in the database
+
+### Fixed
+- Suite filtering
+- README paths
+
+---
+
+## [0.2.5](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.5) - 2024-10-29
+
+### Changed
+- README links to the dedicated `#robotframework-dashboard` Slack channel
+
+---
+
+## [0.2.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.4) - 2024-10-29
+
+### Changed
+- Durations rounded to 3 decimals
+
+---
+
+## [0.2.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.3) - 2024-10-28
+
+### Fixed
+- Active state of the bar view button
+
+---
+
+## [0.2.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.2) - 2024-10-28
+
+### Fixed
+- Test status labels
+
+---
+
+## [0.2.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.1) - 2024-10-28
+
+### Added
+- Timeline graphs for most failed tests and suites
+
+---
+
+## [0.2.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.2.0) - 2024-10-25
+
+### Added
+- Most failed tests and most failed suites graphs
+- Collapsible sections
+
+---
+
+## [0.1.5](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.1.5) - 2024-10-22
+
+### Fixed
+- Data fixes for the test graphs
+
+---
+
+## [0.1.4](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.1.4) - 2024-10-22
+
+### Fixed
+- Test filtering based on suites
+
+### Changed
+- Performance improvements
+
+---
+
+## [0.1.3](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.1.3) - 2024-10-21
+
+### Added
+- DataTables for the tables section
+- Database summary
+- Improved buttons
+
+---
+
+## [0.1.2](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.1.2) - 2024-10-21
+
+### Changed
+- Large JavaScript refactor and code improvements
+- Release scripts added
+
+---
+
+## [0.1.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v0.1.1) - 2024-10-21
+
+First release published to PyPI.
+
+### Added
+- `robotdashboard` CLI: `-o` / `--outputpath`, `-d` / `--databasepath`, `-n` / `--namedashboard`, `-r` / `--removeruns`, `-l` / `--listruns`, `-g` / `--generatedashboard`
+- `output.xml` processing into an SQLite database (runs, suites, tests, keywords)
+- Single self-contained HTML dashboard with Run, Suite, Test and Keyword sections: status and duration graphs, tests over time, timeline chart
+- Run tag and date filters
+- Bootstrap styling

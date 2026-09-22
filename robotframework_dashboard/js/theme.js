@@ -185,13 +185,10 @@ function apply_theme_colors() {
     const isDarkMode = root.classList.contains("dark-mode");
     const themeMode = isDarkMode ? 'dark' : 'light';
     
-    // Get default colors for current theme mode
     const defaultColors = settings.theme_colors[themeMode];
     
-    // Get custom colors if they exist
     const customColors = settings.theme_colors?.custom?.[themeMode] || {};
     
-    // Apply colors (custom overrides default)
     const finalColors = {
         background: customColors.background || defaultColors.background,
         card: customColors.card || defaultColors.card,
@@ -199,23 +196,19 @@ function apply_theme_colors() {
         text: customColors.text || defaultColors.text,
     };
     
-    // Set CSS custom properties - background color
     root.style.setProperty('--color-bg', finalColors.background);
     // Use an opaque version of the card color for fullscreen background
     const opaqueCard = finalColors.card.replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/, 'rgba($1,$2,$3, 1)');
     root.style.setProperty('--color-fullscreen-bg', opaqueCard);
     root.style.setProperty('--color-modal-bg', finalColors.background);
     
-    // Set CSS custom properties - card color (propagate to all card-like surfaces)
     root.style.setProperty('--color-card', finalColors.card);
     // In light mode, section cards match background; in dark mode they use card color
     root.style.setProperty('--color-section-card-bg', finalColors.card);
     root.style.setProperty('--color-tooltip-bg', finalColors.card);
     
-    // Set CSS custom properties - highlight color
     root.style.setProperty('--color-highlight', finalColors.highlight);
     
-    // Set CSS custom properties - text color (propagate to all text)
     root.style.setProperty('--color-text', finalColors.text);
     root.style.setProperty('--color-menu-text', finalColors.text);
     root.style.setProperty('--color-table-text', finalColors.text);
@@ -236,7 +229,6 @@ function restore_default_favicon() {
 
 // function to apply custom branding (logo and title) from settings / localStorage
 function apply_custom_branding() {
-    // --- Custom title ---
     // Priority: --dashboardtitle (unified_dashboard_title) > settings.branding.title
     const titleEl = document.getElementById("menuCustomTitle");
     const cliTitle = (unified_dashboard_title
@@ -253,7 +245,6 @@ function apply_custom_branding() {
         }
     }
 
-    // --- Custom logo ---
     const rflogoEl = document.getElementById("rflogo");
     const storedLogo = settings.branding?.logo;
     if (storedLogo) {

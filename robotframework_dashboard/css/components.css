@@ -326,8 +326,6 @@
 .grid-stack-item-content.red-bg    { background-color: rgba(206, 62, 1, 0.2);    }
 .grid-stack-item-content.yellow-bg { background-color: rgba(254, 216, 79, 0.2);  }
 
-/* ─── Custom link widget ─────────────────────────────────────────────────── */
-
 /* Inner layout — mirrors stat-widget-inner */
 .link-widget-inner {
   position: relative;
@@ -409,8 +407,6 @@
   max-width: calc(40% - 96px);
   margin-right: 96px;
 }
-
-/* ─────────────────────────────────────────────────────────────────────────── */
 
 .fullscreen .stat-value {
   font-size: 4rem;
@@ -586,6 +582,13 @@ canvas {
 .modal.dimmed {
   pointer-events: none;
   filter: brightness(0.5);
+}
+
+/* Bootstrap >= 5.3.1 no longer spaces the modal header itself (only its .btn-close gets
+   margin-left: auto); the dashboard modals use their own button groups, so keep the
+   title left and the buttons right */
+.modal-header {
+  justify-content: space-between;
 }
 
 #runTag {

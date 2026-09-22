@@ -61,7 +61,6 @@ function get_rerun_summary_for_run(runStart) {
     return rerunSummaryByRun.get(String(runStart ?? "").slice(0, 19)) || { reran: 0, recovered: 0, failedAllAttempts: 0 };
 }
 
-// Data prep/aggregation
 function prepare_projects_grouped_data() {
     for (const run of filteredRuns) {
         const tags = run.tags.split(",");
@@ -104,9 +103,6 @@ function prepare_latest_run_by_project() {
     Object.assign(latestRunByProjectTag, map_latest_run_by_project(projects_by_tag));
 }
 
-// Section/bar builders
-
-// Helper function to generate common overview section HTML structure
 function generate_overview_section_html(sectionId, prefix, filtersHtml = '') {
     return `
         <div class="card overview-bar" id="${sectionId}">
@@ -284,6 +280,8 @@ function clear_project_filter() {
         input.parentElement.classList.remove("d-none"); //show filtered rows
         if (input.id == "runTagCheckBoxAll") input.checked = true;
     }
+    const tagModeEl = document.getElementById("tagMode");
+    if (tagModeEl) tagModeEl.value = "AND";
     update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
 }
 
@@ -445,8 +443,6 @@ function create_project_cards_container(projectName, projectRuns, percent = null
     });
 }
 
-// Card/graph builders
-
 // function to create overview latest runs statistics
 function create_overview_latest_graphs(preFilteredRuns = null) {
     const orderEl = document.getElementById("overviewLatestSectionOrder");
@@ -469,7 +465,6 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
     }
     // default order by newest (keep current insertion order)
     if (order === 'oldest') {
-        // Reverse current order while preserving the same key->value pairs
         latestRunByProject = Object.fromEntries(
             Object.entries(latestRunByProject).reverse()
         );
@@ -702,7 +697,6 @@ function update_donut_charts() {
     });
 }
 
-// Updates project bars in-place after a filter change — avoids recreating Chart.js canvases.
 function update_grouped_data_for_filter() {
     Object.keys(projects_by_tag).forEach(k => delete projects_by_tag[k]);
     Object.keys(projects_by_name).forEach(k => delete projects_by_name[k]);
@@ -756,7 +750,6 @@ function update_projectbar_visibility() {
     toggleVisibility(untagged, settings.switch.runName);
 }
 
-// Update displayed project names to show/hide the 'project_' prefix everywhere
 function update_overview_prefix_display() {
     const showPrefixes = !!(settings && settings.show && settings.show.prefixes);
     // Update Overview Statistics card titles

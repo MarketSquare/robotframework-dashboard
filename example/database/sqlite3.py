@@ -1,59 +1,24 @@
+# Reference copy of the built-in SQLite implementation (robotframework_dashboard/database.py) so it can
+# be used as a starting point for a custom --databaseclass. Only the imports differ from the built-in file.
+# Refresh it from database.py when the AbstractDatabaseProcessor interface changes.
 import sqlite3
+import re
 from pathlib import Path
-from time import time
+from robotframework_dashboard.queries import *
 from robotframework_dashboard.abstractdb import AbstractDatabaseProcessor
+from time import time
+from datetime import datetime, timezone, timedelta
+from typing import Union
+from json import dumps
 
-CREATE_RUNS = """ CREATE TABLE IF NOT EXISTS runs ("run_start" TEXT, "full_name" TEXT, "name" TEXT, "total" INTEGER, "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER, "elapsed_s" TEXT, "start_time" TEXT, "tags" TEXT, "run_alias" TEXT, "path" TEXT, "metadata" TEXT, "project_version" TEXT, unique(run_start, full_name)); """
-CREATE_SUITES = """ CREATE TABLE IF NOT EXISTS suites ("run_start" TEXT, "full_name" TEXT, "name" TEXT, "total" INTEGER, "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER, "elapsed_s" TEXT, "start_time" TEXT, "run_alias" TEXT, "id" TEXT); """
-CREATE_TESTS = """ CREATE TABLE IF NOT EXISTS tests ("run_start" TEXT, "full_name" TEXT, "name" TEXT, "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER, "elapsed_s" TEXT, "start_time" TEXT, "message" TEXT, "tags" TEXT, "run_alias" TEXT, "id" TEXT); """
-CREATE_KEYWORDS = """ CREATE TABLE IF NOT EXISTS keywords ("run_start" TEXT, "name" TEXT, "passed" INTEGER, "failed" INTEGER, "skipped" INTEGER, "times_run" TEXT, "total_time_s" TEXT, "average_time_s" TEXT, "min_time_s" TEXT, "max_time_s" TEXT, "run_alias" TEXT, "owner" TEXT); """
-
-RUN_TABLE_EXISTS = (
-    """SELECT name FROM sqlite_master WHERE type='table' AND name='runs';"""
-)
-RUN_TABLE_LENGTH = """PRAGMA table_info(runs);"""
-RUN_TABLE_UPDATE_ALIAS = """ALTER TABLE runs ADD COLUMN run_alias TEXT;"""
-RUN_TABLE_UPDATE_PATH = """ALTER TABLE runs ADD COLUMN path TEXT;"""
-RUN_TABLE_UPDATE_METADATA = """ALTER TABLE runs ADD COLUMN metadata TEXT;"""
-RUN_TABLE_UPDATE_PROJECT_VERSION = """ALTER TABLE runs ADD COLUMN project_version TEXT;"""
-
-SUITE_TABLE_LENGTH = """PRAGMA table_info(suites);"""
-SUITE_TABLE_UPDATE_ALIAS = """ALTER TABLE suites ADD COLUMN run_alias TEXT;"""
-SUITE_TABLE_UPDATE_ID = """ALTER TABLE suites ADD COLUMN id TEXT;"""
-
-TEST_TABLE_LENGTH = """PRAGMA table_info(tests);"""
-TEST_TABLE_UPDATE_TAGS = """ALTER TABLE tests ADD COLUMN tags TEXT;"""
-TEST_TABLE_UPDATE_ALIAS = """ALTER TABLE tests ADD COLUMN run_alias TEXT;"""
-TEST_TABLE_UPDATE_ID = """ALTER TABLE tests ADD COLUMN id TEXT;"""
-
-KEYWORD_TABLE_LENGTH = """PRAGMA table_info(keywords);"""
-KEYWORD_TABLE_UPDATE_ALIAS = """ALTER TABLE keywords ADD COLUMN run_alias TEXT;"""
-KEYWORD_TABLE_UPDATE_OWNER = """ALTER TABLE keywords ADD COLUMN owner TEXT;"""
-
-INSERT_INTO_RUNS = """ INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) """
-INSERT_INTO_SUITES = """ INSERT INTO suites VALUES (?,?,?,?,?,?,?,?,?,?,?) """
-INSERT_INTO_TESTS = """ INSERT INTO tests VALUES (?,?,?,?,?,?,?,?,?,?,?,?) """
-INSERT_INTO_KEYWORDS = """ INSERT INTO keywords VALUES (?,?,?,?,?,?,?,?,?,?,?,?) """
-
-SELECT_FROM_RUNS = """ SELECT * FROM runs """
-SELECT_RUN_STARTS_FROM_RUNS = """ SELECT run_start FROM runs """
-SELECT_RUN_DATA = """ SELECT name, run_start, run_alias, tags FROM runs """
-SELECT_FROM_SUITES = """ SELECT * FROM suites """
-SELECT_FROM_TESTS = """ SELECT * FROM tests """
-SELECT_FROM_KEYWORDS = """ SELECT * FROM keywords """
-
-DELETE_FROM_RUNS = """ DELETE FROM runs WHERE run_start="{run_start}" """
-DELETE_FROM_SUITES = """ DELETE FROM suites WHERE run_start="{run_start}" """
-DELETE_FROM_TESTS = """ DELETE FROM tests WHERE run_start="{run_start}" """
-DELETE_FROM_KEYWORDS = """ DELETE FROM keywords WHERE run_start="{run_start}" """
-
-UPDATE_RUN_PATH = """ UPDATE runs SET path="{path}" WHERE run_start="{run_start}" """
-
-VACUUM_DATABASE = """ VACUUM """
+# Explicit adapter for datetime -> ISO string, replacing the deprecated default
+# behaviour removed in Python 3.12+. Compatible with Python 3.8+.
+# See: https://docs.python.org/3/library/sqlite3.html#adapter-and-converter-recipes
+sqlite3.register_adapter(datetime, lambda val: val.isoformat(sep=" "))
 
 
 class DatabaseProcessor(AbstractDatabaseProcessor):
-    def __init__(self, database_path: Path):
+    def __init__(self, database_path: Path, log_removed=None):
         """This function should handle the connection to the database
         And if required the creation of the tables"""
         self.database_path = database_path
@@ -61,6 +26,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         path = Path(self.database_path)
         path.parent.mkdir(exist_ok=True, parents=True)
         self.connection: sqlite3.Connection
+        self.log_removed_path = log_removed.path if log_removed else None
+        self.log_removed_types = log_removed.types if log_removed else []
         # create tables if required
         self.open_database()
         self._create_tables()
@@ -72,12 +39,17 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         self.connection.row_factory = sqlite3.Row
 
     def run_start_exists(self, run_start: str):
-        run_rows = self.connection.cursor().execute(SELECT_RUN_STARTS_FROM_RUNS).fetchall()
+        run_rows = (
+            self.connection.cursor().execute(SELECT_RUN_STARTS_FROM_RUNS).fetchall()
+        )
         rows = []
         for row in run_rows:
             rows.append(self._dict_from_row(row))
-        run_starts = [item['run_start'] for item in rows]
-        return f'{run_start}' in run_starts
+        run_starts = [item["run_start"] for item in rows]
+        # Use startswith to handle TZ-aware run_starts in DB (e.g. "2025-03-13 00:21:34.123456+02:00")
+        # when the incoming run_start has no timezone suffix (e.g. "2025-03-13 00:21:34.123456")
+        run_start_str = str(run_start)
+        return any(rs == run_start_str or rs.startswith(run_start_str) for rs in run_starts)
 
     def _create_tables(self):
         """Helper function to create the tables (they use IF NOT EXISTS to not override)"""
@@ -106,6 +78,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             # run: metadata was added in 1.0.0
             # keyword: owner was added in 1.2.0
             # run: project_version was added in 1.3.0
+            # test: attempts (rebot --merge rerun history) was added in 2.3.0
             run_table_length = get_runs_length()
             if run_table_length == 10:  # -> column alias not present
                 self.connection.cursor().execute(RUN_TABLE_UPDATE_ALIAS)
@@ -121,6 +94,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 run_table_length = get_runs_length()
             if run_table_length == 13:  # -> column project_version not present
                 self.connection.cursor().execute(RUN_TABLE_UPDATE_PROJECT_VERSION)
+                self.connection.commit()
+                run_table_length = get_runs_length()
+            if run_table_length == 14:  # -> column custom_filters not present
+                self.connection.cursor().execute(RUN_TABLE_UPDATE_CUSTOM_FILTERS)
                 self.connection.commit()
 
             suite_table_length = get_suites_length()
@@ -146,6 +123,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 self.connection.cursor().execute(TEST_TABLE_UPDATE_ID)
                 self.connection.commit()
                 test_table_length = get_tests_length()
+            if test_table_length == 12:
+                self.connection.cursor().execute(TEST_TABLE_UPDATE_ATTEMPTS)
+                self.connection.commit()
+                test_table_length = get_tests_length()
 
             keyword_table_length = get_keywords_length()
             if keyword_table_length == 10:
@@ -156,135 +137,260 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 self.connection.cursor().execute(KEYWORD_TABLE_UPDATE_OWNER)
                 self.connection.commit()
                 keyword_table_length = get_keywords_length()
+            # exceptions table: added later, safe to create if missing
+            self.connection.cursor().execute(CREATE_EXCEPTIONS)
+            self.connection.commit()
         else:
             self.connection.cursor().execute(CREATE_RUNS)
             self.connection.cursor().execute(CREATE_SUITES)
             self.connection.cursor().execute(CREATE_TESTS)
             self.connection.cursor().execute(CREATE_KEYWORDS)
+            self.connection.cursor().execute(CREATE_EXCEPTIONS)
             self.connection.commit()
 
     def close_database(self):
         """This function is called to close the connection to the database"""
         self.connection.close()
+        self.connection = None
 
     def insert_output_data(
-        self, output_data: dict, tags: list, run_alias: str, path: Path, project_version: str
+        self,
+        output_data: dict,
+        tags: list,
+        run_alias: str,
+        path: Union[Path, str],
+        project_version: str,
+        custom_filters: str = "",
+        timezone: str = "",
     ):
         """This function inserts the data of an output file into the database"""
         try:
-            self._insert_runs(output_data["runs"], tags, run_alias, path, project_version)
-            self._insert_suites(output_data["suites"], run_alias)
-            self._insert_tests(output_data["tests"], run_alias)
-            self._insert_keywords(output_data["keywords"], run_alias)
-        except Exception as error:
-            print(
-                f"   ERROR: something went wrong with the database: {error}"
+            self._insert_runs(
+                output_data["runs"], tags, run_alias, path, project_version, custom_filters, timezone
             )
+            self._insert_suites(output_data["suites"], run_alias, timezone)
+            self._insert_tests(output_data["tests"], run_alias, timezone)
+            self._insert_keywords(output_data["keywords"], run_alias, timezone)
+            self._insert_exceptions(output_data.get("exceptions", []), run_alias, timezone)
+        except Exception as error:
+            print(f"   ERROR: something went wrong with the database: {error}")
 
-    def _insert_runs(self, runs: list, tags: list, run_alias: str, path: Path, project_version):
+    def _insert_runs(
+        self, runs: list, tags: list, run_alias: str, path: Union[Path, str], project_version, custom_filters, timezone
+    ):
         """Helper function to insert the run data with the run tags"""
         full_runs = []
         for run in runs:
             *rest, metadata = run
+            # Append timezone offset to run_start (first element)
+            run_start_with_tz = f"{rest[0]}{timezone}" if timezone else str(rest[0])
             new_run = (
-                *rest,
+                run_start_with_tz,
+                *rest[1:],
                 ",".join(tags),
                 run_alias,
                 str(path),
                 metadata,
                 project_version,
+                custom_filters,
             )
             full_runs.append(new_run)
         self.connection.executemany(INSERT_INTO_RUNS, full_runs)
         self.connection.commit()
 
-    def _insert_suites(self, suites: list, run_alias: str):
+    def _insert_suites(self, suites: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the suite data"""
         full_suites = []
         for suite in suites:
             suite = list(suite)
+            # Append timezone offset to run_start (first element)
+            if timezone:
+                suite[0] = f"{suite[0]}{timezone}"
             suite.insert(9, run_alias)
             suite = tuple(suite)
             full_suites.append(suite)
         self.connection.executemany(INSERT_INTO_SUITES, full_suites)
         self.connection.commit()
 
-    def _insert_tests(self, tests: list, run_alias: str):
+    def _insert_tests(self, tests: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the test data"""
         full_tests = []
         for test in tests:
             test = list(test)
+            # Append timezone offset to run_start (first element)
+            if timezone:
+                test[0] = f"{test[0]}{timezone}"
             test.insert(10, run_alias)
             test = tuple(test)
             full_tests.append(test)
         self.connection.executemany(INSERT_INTO_TESTS, full_tests)
         self.connection.commit()
 
-    def _insert_keywords(self, keywords: list, run_alias: str):
+    def _insert_keywords(self, keywords: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the keyword data"""
         full_keywords = []
         for keyword in keywords:
             keyword = list(keyword)
+            # Append timezone offset to run_start (first element)
+            if timezone:
+                keyword[0] = f"{keyword[0]}{timezone}"
             keyword.insert(10, run_alias)
             keyword = tuple(keyword)
             full_keywords.append(keyword)
         self.connection.executemany(INSERT_INTO_KEYWORDS, full_keywords)
         self.connection.commit()
 
+    def _insert_exceptions(self, exceptions: list, run_alias: str, timezone: str = ""):
+        """Helper function to insert the exception data"""
+        full_exceptions = []
+        for exc in exceptions:
+            exc = list(exc)
+            if timezone:
+                exc[0] = f"{exc[0]}{timezone}"
+            exc.append(run_alias)
+            full_exceptions.append(tuple(exc))
+        self.connection.executemany(INSERT_INTO_EXCEPTIONS, full_exceptions)
+        self.connection.commit()
+
+    @staticmethod
+    def _get_local_timezone_offset():
+        """Helper function to get the local machine's timezone offset as a string like +01:00"""
+        now = datetime.now(timezone.utc).astimezone()
+        offset = now.utcoffset()
+        total_seconds = int(offset.total_seconds())
+        sign = "+" if total_seconds >= 0 else "-"
+        hours, remainder = divmod(abs(total_seconds), 3600)
+        minutes = remainder // 60
+        return f"{sign}{hours:02d}:{minutes:02d}"
+
+    @staticmethod
+    def _has_timezone_offset(run_start: str):
+        """Helper function to check if the run_start string already contains a timezone offset like +02:00 or -05:00"""
+        if len(run_start) < 6:
+            return False
+        # Check for +HH:MM or -HH:MM at the end of the string
+        suffix = run_start[-6:]
+        return (suffix[0] in ('+', '-') and suffix[3] == ':' and
+                suffix[1:3].isdigit() and suffix[4:6].isdigit())
+
     def get_data(self):
         """This function gets all the data in the database"""
-        data, runs, suites, tests, keywords, aliases = {}, [], [], [], [], {}
-        counter = 1
+        data, runs, suites, tests, keywords, exceptions, aliases = {}, [], [], [], [], [], {}
+        name_labels = {}
+        local_tz = self._get_local_timezone_offset()
+        alias_counter = 1
+        run_name_counter = 1
         # Get runs from run table
         run_rows = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
         for run_row in run_rows:
             row = self._dict_from_row(run_row)
             # exception made for versions before 0.6.0 without run_aliases
             if row["run_alias"] == None or row["run_alias"] == "":
-                alias = f"Alias {counter}"
+                alias = f"Alias {alias_counter}"
                 aliases[row["run_start"]] = alias
                 row["run_alias"] = alias
-                counter += 1
+                alias_counter += 1
             else:
                 if row["run_alias"] in aliases.values():
-                    alias = f"{row['run_alias']} {counter}"
+                    alias = f"{row['run_alias']} {alias_counter}"
                     aliases[row["run_start"]] = alias
                     row["run_alias"] = alias
-                    counter += 1
+                    alias_counter += 1
                 else:
                     aliases[row["run_start"]] = row["run_alias"]
+            # Build a deduplicated run_name for display (separate from name, same pattern as aliases)
+            run_name = row["name"] or ""
+            if run_name in name_labels.values():
+                dedup_name = f"{run_name} {run_name_counter}"
+                name_labels[row["run_start"]] = dedup_name
+                row["run_name"] = dedup_name
+                run_name_counter += 1
+            else:
+                name_labels[row["run_start"]] = run_name
+                row["run_name"] = run_name
             # exception made from versions before 0.8.1 without path
             if row["path"] == None:
                 row["path"] = ""
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
             runs.append(row)
         data["runs"] = runs
+        # Build a lookup for run_start -> alias/name that works for both old and new data
+        # Old data: aliases dict keys are "run_start+tz" (timezone added during runs loop)
+        # New data: aliases dict keys are "run_start+tz" (timezone already in DB)
+        # Suites/tests/keywords will also get timezone appended, so direct match works
+        # For edge cases, also build a prefix lookup (first 19 chars)
+        alias_prefix_lookup = {}
+        for key, alias in aliases.items():
+            prefix = key[:19]
+            alias_prefix_lookup[prefix] = alias
+        name_prefix_lookup = {}
+        for key, name in name_labels.items():
+            prefix = key[:19]
+            name_prefix_lookup[prefix] = name
         # Get suites from run table
         suite_rows = self.connection.cursor().execute(SELECT_FROM_SUITES).fetchall()
         for suite_row in suite_rows:
             row = self._dict_from_row(suite_row)
-            row["run_alias"] = aliases[row["run_start"]]
             if row["id"] == None:
                 row["id"] == ""
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["run_alias"] = aliases.get(row["run_start"],
+                alias_prefix_lookup.get(row["run_start"][:19], ""))
+            row["run_name"] = name_labels.get(row["run_start"],
+                name_prefix_lookup.get(row["run_start"][:19], ""))
             suites.append(row)
         data["suites"] = suites
         # Get tests from run table
         test_rows = self.connection.cursor().execute(SELECT_FROM_TESTS).fetchall()
         for test_row in test_rows:
             row = self._dict_from_row(test_row)
-            row["run_alias"] = aliases[row["run_start"]]
             if row["tags"] == None:
                 row["tags"] = ""
             if row["id"] == None:
                 row["id"] == ""
+            if row.get("attempts") == None:
+                row["attempts"] = ""
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["run_alias"] = aliases.get(row["run_start"],
+                alias_prefix_lookup.get(row["run_start"][:19], ""))
+            row["run_name"] = name_labels.get(row["run_start"],
+                name_prefix_lookup.get(row["run_start"][:19], ""))
             tests.append(row)
         data["tests"] = tests
         # Get keywords from run table
         keyword_rows = self.connection.cursor().execute(SELECT_FROM_KEYWORDS).fetchall()
         for keyword_row in keyword_rows:
             row = self._dict_from_row(keyword_row)
-            row["run_alias"] = aliases[row["run_start"]]
+            # For older entries without timezone in run_start, append current local timezone
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["run_alias"] = aliases.get(row["run_start"],
+                alias_prefix_lookup.get(row["run_start"][:19], ""))
+            row["run_name"] = name_labels.get(row["run_start"],
+                name_prefix_lookup.get(row["run_start"][:19], ""))
             keywords.append(row)
         data["keywords"] = keywords
+        # Get exceptions from exceptions table
+        try:
+            exception_rows = self.connection.cursor().execute(SELECT_FROM_EXCEPTIONS).fetchall()
+            for exception_row in exception_rows:
+                row = self._dict_from_row(exception_row)
+                if not self._has_timezone_offset(row["run_start"]):
+                    row["run_start"] = f"{row['run_start']}{local_tz}"
+                row["run_alias"] = aliases.get(row["run_start"],
+                    alias_prefix_lookup.get(row["run_start"][:19], ""))
+                row["run_name"] = name_labels.get(row["run_start"],
+                    name_prefix_lookup.get(row["run_start"][:19], ""))
+                exceptions.append(row)
+        except Exception:
+            pass  # table may not exist in older/custom databases
+        data["exceptions"] = exceptions
         return data
 
     def _dict_from_row(self, row: sqlite3.Row):
@@ -294,27 +400,19 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
     def _get_runs(self):
         """Helper function to get the run data"""
         data = self.connection.cursor().execute(SELECT_RUN_DATA).fetchall()
-        runs, names, aliases, tags = [], [], [], []
+        runs, names, aliases, tags, custom_filters = [], [], [], [], []
         for entry in data:
             entry = self._dict_from_row(entry)
             runs.append(entry["run_start"])
             names.append(entry["name"])
             aliases.append(entry["run_alias"])
             tags.append(entry["tags"])
-        return runs, names, aliases, tags
-
-    def _get_run_paths(self) -> dict:
-        """Returns a dict mapping run_start -> path for all runs"""
-        data = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
-        run_paths = {}
-        for entry in data:
-            entry = self._dict_from_row(entry)
-            run_paths[entry["run_start"]] = entry.get("path") or ""
-        return run_paths
+            custom_filters.append(entry.get("custom_filters") or "")
+        return runs, names, aliases, tags, custom_filters
 
     def list_runs(self):
         """This function gets all available runs and prints them to the console"""
-        run_starts, run_names, run_aliases, run_tags = self._get_runs()
+        run_starts, run_names, run_aliases, run_tags, _ = self._get_runs()
         for index, run_start in enumerate(run_starts):
             print(
                 f"  Run {str(index).ljust(3, ' ')} | {run_start} | {run_names[index]}"
@@ -322,9 +420,52 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         if len(run_starts) == 0:
             print(f"  WARNING: There are no runs so the dashboard will be empty!")
 
+    def _get_run_paths(self):
+        """Helper function to get a mapping of run_start to path for all runs"""
+        data = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
+        run_paths = {}
+        for entry in data:
+            entry = self._dict_from_row(entry)
+            run_paths[entry["run_start"]] = entry.get("path") or ""
+        return run_paths
+
+    def _get_run_data(self, run_start):
+        cursor = self.connection.cursor()
+        cursor.execute(GET_RUN_INFO_BY_RUN_START, (run_start,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        columns = [col[0] for col in cursor.description]
+        return dict(zip(columns, row))
+
+    def _get_rows_for_run_start(self, table, run_start):
+        cursor = self.connection.cursor()
+        cursor.execute(f"SELECT * FROM {table} WHERE run_start = ?", (run_start,))
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in rows]
+
+    def _collect_log_entry(self, run_start):
+        entry = {}
+        types = self.log_removed_types
+        include_all = "all" in types
+        if include_all or "run" in types:
+            entry["run"] = self._get_run_data(run_start)
+        if include_all or "suite" in types:
+            entry["suites"] = self._get_rows_for_run_start("suites", run_start)
+        if include_all or "test" in types:
+            entry["tests"] = self._get_rows_for_run_start("tests", run_start)
+        if include_all or "keyword" in types:
+            entry["keywords"] = self._get_rows_for_run_start("keywords", run_start)
+        return entry
+
+    def _log_run_jsonl(self, logpath, entry):
+        with Path(logpath).open("a", encoding="utf-8") as f:
+            _ = f.write(dumps(entry, default=str) + "\n")
+
     def remove_runs(self, remove_runs: list):
         """This function removes all provided runs and all their corresponding data"""
-        run_starts, run_names, run_aliases, run_tags = self._get_runs()
+        run_starts, run_names, run_aliases, run_tags, _ = self._get_runs()
         console = ""
         for run in remove_runs:
             try:
@@ -334,20 +475,25 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                     console += self._remove_by_index(run, run_starts)
                 elif "alias=" in run:
                     console += self._remove_by_alias(run, run_starts, run_aliases)
+                elif "limit=" in run:
+                    # checked before "tag=" because a scoped combo ("limit=10;tag=x")
+                    # still contains the substring "tag=" and would otherwise be
+                    # misrouted to _remove_by_tag
+                    console += self._remove_by_limit(run, run_starts, run_tags)
                 elif "tag=" in run:
                     console += self._remove_by_tag(run, run_starts, run_tags)
-                elif "limit=" in run:
-                    console += self._remove_by_limit(run, run_starts)
+                elif "age=" in run:
+                    console += self._remove_by_age(run, run_starts)
                 else:
                     print(
                         f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions"
                     )
                     console += f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions\n"
-            except:
+            except Exception as error:
                 print(
-                    f"  ERROR: Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions"
+                    f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions"
                 )
-                console += f"  ERROR: Could not find run to remove from the database: {run}, check out robotdashboard --help for instructions\n"
+                console += f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions\n"
         return console
 
     def _remove_by_run_start(self, run: str, run_starts: list):
@@ -412,16 +558,39 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             console += f"  WARNING: no runs were removed as no runs were found with tag: {tag}\n"
         return console
 
-    def _remove_by_limit(self, run: str, run_starts: list):
+    def _remove_by_limit(self, run: str, run_starts: list, run_tags: list = None):
+        """Keep the N newest runs, removing older ones.
+
+        When tag filters are appended (e.g. 'limit=10;tag=nightly;tag=prod'),
+        the limit is scoped to runs matching any of those tags: the N newest
+        matching runs are kept, older matching runs are removed, and runs that
+        do not match any tag are left untouched.
+        """
         console = ""
-        limit = int(run.replace("limit=", ""))
-        if limit >= len(run_starts):
+        parts = run.split(";")
+        limit = int(parts[0].replace("limit=", ""))
+        tag_filters = [
+            part.replace("tag=", "") for part in parts[1:] if part.startswith("tag=")
+        ]
+        # run_starts are ordered oldest -> newest, so keeping the N newest means
+        # dropping the leading (oldest) candidates.
+        if tag_filters and run_tags is not None:
+            candidates = [
+                index
+                for index, run_tag in enumerate(run_tags)
+                if any(tag in run_tag for tag in tag_filters)
+            ]
+            scope = f" with tag(s) {', '.join(tag_filters)}"
+        else:
+            candidates = list(range(len(run_starts)))
+            scope = ""
+        if limit >= len(candidates):
             print(
-                f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs ({len(run_starts)})"
+                f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs{scope} ({len(candidates)})"
             )
-            console += f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs ({len(run_starts)})\n"
+            console += f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs{scope} ({len(candidates)})\n"
             return console
-        for index in range(len(run_starts) - limit):
+        for index in candidates[: len(candidates) - limit]:
             self._remove_run(run_starts[index])
             print(
                 f"  Removed run from the database: index={index}, run_start={run_starts[index]}"
@@ -429,15 +598,59 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
         return console
 
+    def _remove_by_age(self, run_query: str, run_starts: list):
+        console = ""
+        try:
+            clean_query = run_query.replace("age=", "")
+            mod, delta = self.parse_time_range(clean_query)
+        except ValueError as e:
+            print(f"  ERROR: {e}")
+            return f"  ERROR: {e}\n"
+        cutoff = datetime.now(timezone.utc)-delta
+        targets = []
+        for r in run_starts:
+            try:
+                run_dt = datetime.fromisoformat(r)
+                if run_dt.tzinfo is None:
+                    run_dt = run_dt.replace(tzinfo=timezone.utc)
+                if mod == "+":
+                    if run_dt < cutoff:
+                        targets.append(r)
+                elif mod == "-":
+                    if run_dt > cutoff:
+                        targets.append(r)
+            except ValueError as e:
+                print(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
+        if not targets:
+            print(
+                f"  WARNING: no runs were removed as no runs were within range {clean_query}"
+            )
+            console += f"  WARNING: no runs were removed as no runs were within range {clean_query}\n"
+            return console
+        for run_to_remove in targets:
+            self._remove_run(run_to_remove)
+            print(f"  Removed run from the database: run_start={run_to_remove}")
+            console += f"  Removed run from the database: run_start={run_to_remove}\n"
+        return console
+
     def _remove_run(self, run_start: str):
         """Helper function to remove the data from all tables"""
-        self.connection.cursor().execute(DELETE_FROM_RUNS.format(run_start=run_start))
-        self.connection.cursor().execute(DELETE_FROM_SUITES.format(run_start=run_start))
-        self.connection.cursor().execute(DELETE_FROM_TESTS.format(run_start=run_start))
-        self.connection.cursor().execute(
-            DELETE_FROM_KEYWORDS.format(run_start=run_start)
-        )
-        self.connection.commit()
+        entry = self._collect_log_entry(run_start) if self.log_removed_path else None
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(DELETE_FROM_RUNS.format(run_start=run_start))
+            if cursor.rowcount > 0:
+                cursor.execute(DELETE_FROM_SUITES.format(run_start=run_start))
+                cursor.execute(DELETE_FROM_TESTS.format(run_start=run_start))
+                cursor.execute(DELETE_FROM_KEYWORDS.format(run_start=run_start))
+                try:
+                    cursor.execute(DELETE_FROM_EXCEPTIONS.format(run_start=run_start))
+                except Exception:
+                    pass  # table may not exist in older/custom databases
+                # Log inside the transaction: if the write fails, the transaction
+                # rolls back and the run is not deleted.
+                if self.log_removed_path and entry:
+                    self._log_run_jsonl(self.log_removed_path, entry)
 
     def vacuum_database(self):
         """This function vacuums the database to reduce the size after removing runs"""
@@ -448,6 +661,25 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         console = f"  Vacuumed the database in {round(end - start, 2)} seconds\n"
         print(f"  Vacuumed the database in {round(end - start, 2)} seconds")
         return console
+
+    def parse_time_range(self, range_str: str):
+        # Regex groups : [modifier] [value] [unit]
+        # e.g., +10d, -4h, 1y
+        match = re.match(r"([+-])?(\d+)([smhdy])", range_str)
+        if not match:
+            raise ValueError("Invalid format. Use e.g., 10d, +5h, -1y")
+        modifier, value, unit = match.groups()
+        value = int(value)
+        units = {
+            's': 'seconds',
+            'm': 'minutes',
+            'h': 'hours',
+            'd': 'days',
+            'y': 'days'
+        }
+        # assume year is 365 days
+        delta_kwargs = {units[unit]: value * (365 if unit == 'y' else 1)}
+        return modifier or '+', timedelta(**delta_kwargs)
 
     def update_output_path(self, log_path: str):
         """Function to update the output_path using the log path that the server has used"""

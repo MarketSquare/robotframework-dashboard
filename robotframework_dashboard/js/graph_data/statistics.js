@@ -230,10 +230,8 @@ function get_test_statistics_data(filteredTests) {
             labelsToKeep = new Set(Object.keys(countMap).filter(label => {
                 // Only keep tests that appear once (no status changes)
                 if (countMap[label] !== 1) return false;
-                // Find the dataset for this label to check its status
                 const dataset = finalDatasets.find(ds => ds.label === label);
                 if (!dataset) return false;
-                // Check if the dataset's status matches testNoChanges
                 const isPassedTest = dataset.backgroundColor === passedBackgroundColor;
                 const isFailedTest = dataset.backgroundColor === failedBackgroundColor;
                 const isSkippedTest = dataset.backgroundColor === skippedBackgroundColor;

@@ -97,9 +97,6 @@ import {
     update_compare_tests_graph,
 } from "./graph_creation/compare.js";
 
-// ---- Merge profiles modal helpers ----
-
-// Render the per-field checkbox list for one side of the merge modal
 function render_merge_profile_settings(profile, side) {
     const rows = filterRows
         .filter(def => def.present(profile))
@@ -118,7 +115,6 @@ function render_merge_profile_settings(profile, side) {
         : '<p class="text-muted small mb-0">No settings in this profile.</p>';
 }
 
-// Extract only the fields whose checkboxes are checked for a given side
 function get_checked_partial_profile(side, fullProfile) {
     const result = {};
     for (const def of filterRows) {
@@ -132,7 +128,6 @@ function get_checked_partial_profile(side, fullProfile) {
     return result;
 }
 
-// Render the "Resulting Filters" preview section
 function render_merge_result_html(result) {
     if (!Object.keys(result).length) {
         return '<span class="text-muted small">Select profiles and settings above to preview.</span>';
@@ -143,7 +138,6 @@ function render_merge_result_html(result) {
     return `<dl class="row mb-0">${rows.join('')}</dl>`;
 }
 
-// Recompute and re-render the preview whenever selections or checkboxes change
 function update_merge_result_preview() {
     const leftName = document.getElementById("mergeProfileLeft").value;
     const rightName = document.getElementById("mergeProfileRight").value;
@@ -155,8 +149,6 @@ function update_merge_result_preview() {
     lastMergeResult = merge_two_profiles(leftPartial, rightPartial);
     document.getElementById("mergeResultPreview").innerHTML = render_merge_result_html(lastMergeResult);
 }
-
-// ---- end of merge profiles helpers ----
 
 function update_filters_button_indicator() {
     const indicator = document.getElementById("filtersActiveIndicator");
@@ -170,7 +162,7 @@ function update_filters_button_indicator() {
 function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
     // Only recompute filtered data and update graphs in-place (no layout rebuild needed)
-    $("#filtersModal").on("hide.bs.modal", function () {
+    document.getElementById("filtersModal").addEventListener("hide.bs.modal", function () {
         show_loading_overlay();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -329,13 +321,11 @@ function setup_filter_modal() {
             }
         }
     });
-    // Update Profile button
     document.getElementById("updateFilterProfile").addEventListener("click", function () {
         update_active_profile();
         populate_filter_profile_select();
         add_alert(`Filter profile updated!`, "success");
     });
-    // Merge Profiles button — populates and opens the merge modal
     document.getElementById("mergeFilterProfiles").addEventListener("click", function () {
         const profiles = settings.filterProfiles || {};
         const names = Object.keys(profiles).sort();
@@ -363,7 +353,6 @@ function setup_filter_modal() {
         });
         mergeModal.show();
     });
-    // Left / right profile selects: render per-field checkboxes for the chosen side
     function setup_merge_side_listener(selectId, settingsDivId, side) {
         document.getElementById(selectId).addEventListener("change", function () {
             const profiles = settings.filterProfiles || {};
@@ -381,13 +370,11 @@ function setup_filter_modal() {
     }
     setup_merge_side_listener("mergeProfileLeft", "mergeLeftSettings", "left");
     setup_merge_side_listener("mergeProfileRight", "mergeRightSettings", "right");
-    // Any setting checkbox toggled: refresh preview
     document.getElementById("mergeProfilesModal").addEventListener("change", function (event) {
         if (event.target.classList.contains("merge-setting-check")) {
             update_merge_result_preview();
         }
     });
-    // Add Merged Profile button
     document.getElementById("saveMergeProfile").addEventListener("click", function () {
         const leftName = document.getElementById("mergeProfileLeft").value;
         const rightName = document.getElementById("mergeProfileRight").value;
@@ -411,13 +398,11 @@ function setup_filter_modal() {
         add_alert(`Filter profile "${newName}" saved!`, "success");
         bootstrap.Modal.getInstance(document.getElementById("mergeProfilesModal")).hide();
     });
-    // Show indicator dot when a specific run is selected in the dropdown
     document.getElementById("runs").addEventListener("change", function () {
         const indicator = document.getElementById("filterRunSelectedIndicator");
         if (indicator) indicator.style.display = this.value !== "All" ? "inline-block" : "none";
         update_filters_button_indicator();
     });
-    // Listen for filter changes to update the profile display and the navbar dot
     const filterModal = document.getElementById("filtersModal");
     filterModal.addEventListener("change", function () {
         update_profile_select_display();
@@ -432,15 +417,15 @@ function setup_filter_modal() {
 // function to create customized view eventlisteners
 function setup_settings_modal() {
     // function to catch the closing of the settings modal
-    $("#settingsModal").on("hidden.bs.modal", function () {
+    document.getElementById("settingsModal").addEventListener("hidden.bs.modal", function () {
         setup_data_and_graphs();
     });
     // function to catch the closing of the settings modal
-    $("#settingsModal").on("shown.bs.modal", function () {
+    document.getElementById("settingsModal").addEventListener("shown.bs.modal", function () {
         const libraries = [...new Set(
             keywords
                 .map(item => item.owner)
-                .filter(owner => owner) // remove null, undefined, or empty string
+                .filter(owner => owner)
         )];
         const keywordPrefs = settings.libraries ?? {};
         function render_keyword_libraries() {
@@ -501,7 +486,6 @@ function setup_settings_modal() {
         };
     }
 
-    // Data-driven toggle handlers: create handler, load initial value, attach event listener
     [
         { key: "show.unified", elementId: "toggleUnified" },
         { key: "show.dateLabels", elementId: "toggleLabels" },
@@ -533,9 +517,7 @@ function setup_settings_modal() {
     document.getElementById("themeLight").addEventListener("click", () => toggle_theme());
     document.getElementById("themeDark").addEventListener("click", () => toggle_theme());
 
-    // Convert any CSS color string to #rrggbb hex for <input type="color">
     function to_hex_color(color) {
-        // Handle rgba/rgb strings by parsing components directly
         const rgbaMatch = color.match(/^rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);
         if (rgbaMatch) {
             const [, r, g, b] = rgbaMatch.map(Number);
@@ -553,14 +535,12 @@ function setup_settings_modal() {
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
 
-            // Check if user has custom colors for this theme mode
             const customColors = settings.theme_colors?.custom?.[themeMode];
             const storedColor = customColors?.[colorKey];
 
             if (storedColor) {
                 element.value = to_hex_color(storedColor);
             } else {
-                // Use default from settings for current theme mode
                 const defaults = settings.theme_colors[themeMode];
                 element.value = to_hex_color(defaults[colorKey]);
             }
@@ -589,7 +569,6 @@ function setup_settings_modal() {
             const isDarkMode = document.documentElement.classList.contains("dark-mode");
             const themeMode = isDarkMode ? 'dark' : 'light';
 
-            // Reset to default from settings
             const defaults = settings.theme_colors[themeMode];
             element.value = to_hex_color(defaults[colorKey]);
 
@@ -609,32 +588,27 @@ function setup_settings_modal() {
     const highlightColorHandler = create_theme_color_handler('highlight', 'themeHighlightColor');
     const textColorHandler = create_theme_color_handler('text', 'themeTextColor');
 
-    // Load colors on modal open
-    $("#settingsModal").on("shown.bs.modal", function () {
+    document.getElementById("settingsModal").addEventListener("shown.bs.modal", function () {
         backgroundColorHandler.load_color();
         cardColorHandler.load_color();
         highlightColorHandler.load_color();
         textColorHandler.load_color();
-        // Load branding state
         document.getElementById('customBrandingTitle').value = settings.branding?.title || "";
         const hasLogo = !!settings.branding?.logo;
         document.getElementById('removeCustomLogo').disabled = !hasLogo;
         document.getElementById('customLogoUpload').value = "";
     });
 
-    // Add event listeners for color inputs
     document.getElementById('themeBackgroundColor').addEventListener('change', () => backgroundColorHandler.update_color());
     document.getElementById('themeCardColor').addEventListener('change', () => cardColorHandler.update_color());
     document.getElementById('themeHighlightColor').addEventListener('change', () => highlightColorHandler.update_color());
     document.getElementById('themeTextColor').addEventListener('change', () => textColorHandler.update_color());
 
-    // Add event listeners for reset buttons
     document.getElementById('resetBackgroundColor').addEventListener('click', () => backgroundColorHandler.reset_color());
     document.getElementById('resetCardColor').addEventListener('click', () => cardColorHandler.reset_color());
     document.getElementById('resetHighlightColor').addEventListener('click', () => highlightColorHandler.reset_color());
     document.getElementById('resetTextColor').addEventListener('click', () => textColorHandler.reset_color());
 
-    // Custom title handler
     document.getElementById('customBrandingTitle').addEventListener('input', function () {
         const title = this.value.trim();
         set_local_storage_item('branding.title', title);
@@ -647,7 +621,6 @@ function setup_settings_modal() {
         apply_custom_branding();
     });
 
-    // Custom logo handler
     document.getElementById('customLogoUpload').addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
@@ -1074,7 +1047,6 @@ function setup_sections_filters() {
 // helper functions to save and restore section filter values across fullscreen transitions
 function save_section_filter_values() {
     const saved = {};
-    // Suite section
     const suiteFolder = document.getElementById("suiteFolder");
     if (suiteFolder) saved.suiteFolder = suiteFolder.innerText;
     ["suiteSelectSuites", "suiteSelectTests", "testSelect", "testTagsSelect", "keywordSelect",
@@ -1092,7 +1064,6 @@ function restore_section_filter_values(saved) {
         "compareRun1", "compareRun2", "compareRun3", "compareRun4"].forEach(id => {
             const el = document.getElementById(id);
             if (el && saved[id] !== undefined) {
-                // Only restore if the saved value still exists as an option
                 const optionExists = Array.from(el.options).some(opt => opt.value === saved[id]);
                 if (optionExists) el.value = saved[id];
             }
@@ -1113,7 +1084,6 @@ function setup_graph_view_buttons() {
             const content = fullscreen.closest(".grid-stack-item-content");
             const canvasId = `${fullscreenButton}Graph`;
 
-            // Save filter values before fullscreen transition to restore after graph updates
             const savedFilterValues = save_section_filter_values();
 
             show_graph_loading(canvasId);
@@ -1168,7 +1138,6 @@ function setup_graph_view_buttons() {
                     update_run_donut_total_graph();
                 }
 
-                // Restore filter values after graph updates
                 restore_section_filter_values(savedFilterValues);
 
                 hide_graph_loading(canvasId);
@@ -1178,13 +1147,13 @@ function setup_graph_view_buttons() {
         document.getElementById(fullscreenId).addEventListener("click", () => {
             inFullscreenGraph = fullscreenId;
             lastScrollY = window.scrollY;
-            $("#navigation").hide();
+            document.getElementById("navigation").style.display = "none";
             toggleFullscreen(true);
         });
 
         document.getElementById(closeId).addEventListener("click", () => {
             inFullscreenGraph = ""
-            $("#navigation").show();
+            document.getElementById("navigation").style.display = "";
             toggleFullscreen(false);
             window.scrollTo({ top: lastScrollY, behavior: "auto" });
         });
@@ -1210,7 +1179,6 @@ function setup_graph_view_buttons() {
         });
     });
     // ignore skip button eventlisteners
-    // Load initial states from settings
     document.getElementById("ignoreSkips").checked = settings.switch.ignoreSkips;
     ignoreSkips = settings.switch.ignoreSkips;
     document.getElementById("ignoreSkipsRecent").checked = settings.switch.ignoreSkipsRecent;
@@ -1240,7 +1208,6 @@ function setup_graph_view_buttons() {
         });
     });
 
-    // Load initial states for checkbox switches
     [
         ["onlyLastRunSuite", "switch.onlyLastRunSuite"],
         ["onlyLastRunTest", "switch.onlyLastRunTest"],
@@ -1255,7 +1222,6 @@ function setup_graph_view_buttons() {
         }
     });
 
-    // Load initial states for select switches
     [
         ["heatMapTestType", "switch.heatmapStatus"],
         ["heatMapHour", "switch.heatmapHour"],
@@ -1271,12 +1237,10 @@ function setup_graph_view_buttons() {
     });
     heatMapHourAll = document.getElementById("heatMapHour").value === "All";
 
-    // Simple graph update listeners: element change triggers single graph update
     [
         ["heatMapTestType", "runHeatmapGraph", update_run_heatmap_graph, "switch.heatmapStatus", "select"],
         ["testOnlyChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testOnlyChanges", "checkbox"],
         ["testNoChanges", "testStatisticsGraph", update_test_statistics_graph, "switch.testStatusFilter", "select"],
-        ["testRerunView", "testStatisticsGraph", update_test_statistics_graph, "switch.testRerunView", "select"],
         ["compareOnlyChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareOnlyChanges", "checkbox"],
         ["compareNoChanges", "compareTestsGraph", update_compare_tests_graph, "switch.compareStatusFilter", "select"],
         ["compareRerunView", "compareTestsGraph", update_compare_tests_graph, "switch.compareRerunView", "select"],
@@ -1291,6 +1255,23 @@ function setup_graph_view_buttons() {
             set_local_storage_item(settingsKey, newValue);
             update_graphs_with_loading([graphId], updateFn);
         });
+    });
+    // the rerun view (mark reruns / final result / first attempt) is read by every test graph that
+    // marks re-executed tests or resolves their status, not only by the test statistics graph
+    document.getElementById("testRerunView").addEventListener("change", () => {
+        set_local_storage_item("switch.testRerunView", document.getElementById("testRerunView").value);
+        update_graphs_with_loading(
+            ["testStatisticsGraph", "testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
+                "testMostFailedGraph", "testRecentMostFailedGraph"],
+            () => {
+                update_test_statistics_graph();
+                update_test_messages_graph();
+                update_test_most_flaky_graph();
+                update_test_recent_most_flaky_graph();
+                update_test_most_failed_graph();
+                update_test_recent_most_failed_graph();
+            }
+        );
     });
     document.getElementById("heatMapHour").addEventListener("change", () => {
         heatMapHourAll = document.getElementById("heatMapHour").value === "All";
@@ -1374,7 +1355,6 @@ function setup_graph_view_buttons() {
     Object.entries(graphChangeButtons).forEach(([graphChangeButton, buttonTypes]) => {
         add_graph_eventlisteners(graphChangeButton, buttonTypes);
     });
-    // Initialize active states for all graph types on first load
     Object.entries(graphChangeButtons).forEach(([graphChangeButton, buttonTypes]) => {
         if (graphChangeButton.includes("table")) { return; }
         const camelButtonName = underscore_to_camelcase(graphChangeButton);
@@ -1384,8 +1364,7 @@ function setup_graph_view_buttons() {
         update_active_graph_type_buttons(graphChangeButton, activeGraphType);
     });
 
-    // Handle modal show event - move section filters into modal card bodies
-    $("#sectionFiltersModal").on("show.bs.modal", function () {
+    document.getElementById("sectionFiltersModal").addEventListener("show.bs.modal", function () {
         ["suite", "test", "keyword"].forEach(section => {
             const filters = document.getElementById(`${section}SectionFilters`);
             const cardBody = document.getElementById(`${section}SectionFiltersCardBody`);
@@ -1393,8 +1372,7 @@ function setup_graph_view_buttons() {
         });
     });
 
-    // Handle modal hide event - return section filters to original containers
-    $("#sectionFiltersModal").on("hide.bs.modal", function () {
+    document.getElementById("sectionFiltersModal").addEventListener("hide.bs.modal", function () {
         ["suite", "test", "keyword"].forEach(section => {
             const filters = document.getElementById(`${section}SectionFilters`);
             const container = document.getElementById(`${section}SectionFiltersContainer`);
@@ -1453,10 +1431,9 @@ function setup_overview_order_filters() {
     };
 
     const reorderProjectCards = (projectId, order) => {
-        // Determine correct container for both overview and project sections
         const containerId = `${projectId}RunCardsContainer`;
         const container = document.getElementById(containerId);
-        if (!container) return; // guard against missing containers
+        if (!container) return;
         const cards = Array.from(container.querySelectorAll('.overview-card'));
         if (cards.length === 0) return;
         const enriched = cards.map(card => ({ el: card, stats: parseRunStatsFromCard(card) }));

@@ -131,7 +131,7 @@ class Simulation:
         self.recorded_counts = {}
         self._configured = False
 
-    # ------------------------------------------------------------------ setup
+    # setup
     def _configure(self):
         if self._configured:
             return
@@ -147,7 +147,7 @@ class Simulation:
                 self.step_counts = json.load(f)
         self._configured = True
 
-    # --------------------------------------------------------------- listener
+    # listener
     def start_test(self, data, result):
         # Both fake libraries register this object as listener: build the plan once.
         if self.plan is not None and self.plan.longname == data.longname:
@@ -205,7 +205,7 @@ class Simulation:
             with open(self.counts_out, "w") as f:
                 json.dump(self.recorded_counts, f, indent=2, sort_keys=True)
 
-    # ------------------------------------------------------------------- steps
+    # steps
     def step(self, keyword, base_duration, **fmt):
         """Execute one simulated leaf keyword.
 

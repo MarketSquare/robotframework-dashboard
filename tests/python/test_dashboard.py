@@ -6,8 +6,6 @@ import pytest
 from robotframework_dashboard.dashboard import DashboardGenerator
 
 
-# --- _compress_and_encode ---
-
 def test_compress_and_encode_returns_string():
     result = DashboardGenerator()._compress_and_encode({"key": "value"})
     assert isinstance(result, str)
@@ -52,8 +50,6 @@ def test_compress_and_encode_unicode():
     assert decoded == obj
 
 
-# --- _minify_text ---
-
 def test_minify_text_removes_blank_lines():
     text = "line1\n\nline2\n\nline3\n"
     result = DashboardGenerator()._minify_text(text)
@@ -91,8 +87,6 @@ def test_minify_text_no_trailing_newline():
     result = DashboardGenerator()._minify_text("a\nb\n")
     assert not result.endswith("\n")
 
-
-# --- generate_dashboard ---
 
 from datetime import datetime
 from pathlib import Path
@@ -207,8 +201,6 @@ def test_generate_dashboard_subdirectory_created(tmp_path):
     )
     assert subdir_output.exists()
 
-
-# --- _make_paths_relative ---
 
 import os
 

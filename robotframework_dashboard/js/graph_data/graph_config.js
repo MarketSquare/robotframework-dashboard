@@ -4,7 +4,6 @@ import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 
 // function to retrieve the required graph config for chartjs, based on the different type of graphs
-// Generate a Chart.js config object based on the graph type and data
 function get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle, dataSets = true) {
     if (dataSets && graphType === "line") {
         graphData = { datasets: graphData };
@@ -34,6 +33,12 @@ function get_graph_config(graphType, graphData, graphTitle, xTitle, yTitle, data
             },
             datalabels: {
                 display: false,
+            },
+            // Chart.js >= 4.5 switches its automatic dataset palette off as soon as the global
+            // borderColor/backgroundColor defaults are changed, which theme.js does for the dark
+            // theme; keep the palette for datasets that carry no colors of their own (line graphs)
+            colors: {
+                forceOverride: !(graphData.datasets ?? []).some((dataset) => dataset.borderColor || dataset.backgroundColor),
             },
         },
     };

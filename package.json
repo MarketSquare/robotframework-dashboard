@@ -1,13 +1,9 @@
 {
   "devDependencies": {
-    "jsdom": "^29.0.1",
-    "mermaid": "^11.17.2",
-    "vite": "^7.3.6",
+    "mermaid": "^12.0.0",
+    "vite": "^8.3.0",
     "vitepress": "^2.0.0-alpha.20",
-    "vitest": "^4.1.1"
-  },
-  "overrides": {
-    "esbuild": "^0.28.1"
+    "vitest": "^5.0.1"
   },
   "scripts": {
     "test:js": "vitest run --reporter=verbose",
@@ -18,5 +14,8 @@
     "docs:build:versions": "node scripts/docs/build-versioned-docs.mjs",
     "docs:preview:versions": "node scripts/docs/serve-versioned-docs.mjs",
     "docs:preview": "vitepress preview docs"
+  },
+  "overrides": {
+    "lodash-es": "^4.18.1"
   }
 }

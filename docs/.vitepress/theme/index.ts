@@ -12,7 +12,12 @@ async function renderMermaidDiagrams() {
   const { default: mermaid } = await import('mermaid')
   mermaid.initialize({
     startOnLoad: false,
-    theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default'
+    theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+    // mermaid 12 defaults to a new layout engine and look that wraps flowchart labels into
+    // narrow, clipped nodes; the classic dagre layout sizes nodes to their labels
+    layout: 'dagre',
+    look: 'classic',
+    flowchart: { htmlLabels: true, wrappingWidth: 300 }
   })
   for (const block of blocks) {
     block.setAttribute('data-processed', 'true')

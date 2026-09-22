@@ -19,7 +19,6 @@ import {
 } from '../variables/globals.js';
 import { create_chart, update_chart } from './chart_factory.js';
 
-// build functions
 function _build_run_statistics_config() {
     const data = get_statistics_graph_data("run", settings.graphTypes.runStatisticsGraphType, filteredRuns);
     const graphData = data[0]
@@ -117,7 +116,6 @@ function _build_run_heatmap_config() {
     return config;
 }
 
-// create functions
 function create_run_statistics_graph() { create_chart("runStatisticsGraph", _build_run_statistics_config); }
 function create_run_donut_graph() { create_chart("runDonutGraph", _build_run_donut_config, false); }
 function create_run_donut_total_graph() { create_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
@@ -146,7 +144,6 @@ function create_run_stat_widgets() {
 function create_run_duration_graph() { create_chart("runDurationGraph", _build_run_duration_config); }
 function create_run_heatmap_graph() { create_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
-// update functions
 function update_run_statistics_graph() { update_chart("runStatisticsGraph", _build_run_statistics_config); }
 function update_run_donut_graph() { update_chart("runDonutGraph", _build_run_donut_config, false); }
 function update_run_donut_total_graph() { update_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }

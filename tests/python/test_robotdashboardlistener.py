@@ -54,10 +54,6 @@ def _sent_request(mock_urlopen):
     return mock_urlopen.call_args.args[0]
 
 
-# ---------------------------------------------------------------------------
-# __init__ / argument parsing
-# ---------------------------------------------------------------------------
-
 def test_init_defaults():
     rd = _make_listener()
     assert rd.host == "127.0.0.1"
@@ -96,10 +92,6 @@ def test_init_custom_output_name():
     assert rd.output == "custom.xml"
 
 
-# ---------------------------------------------------------------------------
-# _parse_ssl_verify
-# ---------------------------------------------------------------------------
-
 def test_parse_ssl_verify_true():
     assert _make_listener(sslverify="true").ssl_verify is True
 
@@ -112,10 +104,6 @@ def test_parse_ssl_verify_ca_bundle_path():
     rd = _make_listener(sslverify="/path/to/ca-bundle.pem")
     assert rd.ssl_verify == "/path/to/ca-bundle.pem"
 
-
-# ---------------------------------------------------------------------------
-# _base_url — #317: allow building a URL without a port
-# ---------------------------------------------------------------------------
 
 def test_base_url_default_includes_port():
     rd = _make_listener()
@@ -132,10 +120,6 @@ def test_base_url_omits_port_when_not_provided(port_value):
     rd = _make_listener(host="dashboard.example.com", port=port_value)
     assert rd._base_url() == "http://dashboard.example.com"
 
-
-# ---------------------------------------------------------------------------
-# _ssl_context — no 'requests' dependency, built on stdlib ssl
-# ---------------------------------------------------------------------------
 
 def test_ssl_context_http_returns_none():
     rd = _make_listener(protocol="http")
@@ -166,10 +150,6 @@ def test_ssl_context_https_ca_bundle_path(monkeypatch):
     mock_create.assert_called_once_with(cafile="/path/to/ca-bundle.pem")
 
 
-# ---------------------------------------------------------------------------
-# _headers
-# ---------------------------------------------------------------------------
-
 def test_headers_no_auth_no_content_type():
     assert _make_listener()._headers() == {}
 
@@ -182,10 +162,6 @@ def test_headers_with_auth():
     headers = _make_listener(user="admin", password="secret")._headers()
     assert headers["Authorization"] == "Basic " + b64encode(b"admin:secret").decode("ascii")
 
-
-# ---------------------------------------------------------------------------
-# _build_multipart
-# ---------------------------------------------------------------------------
 
 def test_build_multipart_contains_fields_and_file():
     body, content_type = robotdashboardlistener._build_multipart(
@@ -206,10 +182,6 @@ def test_build_multipart_no_fields_only_file():
     assert b'name="file"; filename="log.html.gz"' in body
     assert b"logbytes" in body
 
-
-# ---------------------------------------------------------------------------
-# _request
-# ---------------------------------------------------------------------------
 
 def test_request_success_returns_status_and_json(monkeypatch):
     monkeypatch.setattr(
@@ -256,10 +228,6 @@ def test_request_builds_expected_request_object(monkeypatch):
     assert req.get_header("Authorization") == "Basic " + b64encode(b"admin:secret").decode("ascii")
 
 
-# ---------------------------------------------------------------------------
-# end_suite
-# ---------------------------------------------------------------------------
-
 def test_end_suite_reads_pabot_variable(monkeypatch):
     mock_builtin_instance = MagicMock()
     mock_builtin_instance.get_variable_value.return_value = "1"
@@ -272,10 +240,6 @@ def test_end_suite_reads_pabot_variable(monkeypatch):
     )
 
 
-# ---------------------------------------------------------------------------
-# output_file / log_file
-# ---------------------------------------------------------------------------
-
 def test_output_file_and_log_file_setters():
     rd = _make_listener()
     rd.output_file("/tmp/output.xml")
@@ -283,10 +247,6 @@ def test_output_file_and_log_file_setters():
     assert rd.path == "/tmp/output.xml"
     assert rd.log_path == "/tmp/log.html"
 
-
-# ---------------------------------------------------------------------------
-# close() — normal (non-pabot) usage
-# ---------------------------------------------------------------------------
 
 def test_close_normal_usage_processes_output(tmp_path):
     output_path = tmp_path / "output.xml"
@@ -349,10 +309,6 @@ def test_close_pabot_last_execution_missing_merged_output_exits(tmp_path, monkey
         rd.close()
 
 
-# ---------------------------------------------------------------------------
-# _add_output_to_database
-# ---------------------------------------------------------------------------
-
 def test_add_output_to_database_success(tmp_path, monkeypatch, capsys):
     output_path = tmp_path / "output.xml"
     output_path.write_text("<robot/>")
@@ -410,10 +366,6 @@ def test_add_output_to_database_generic_exception_exits(tmp_path, monkeypatch, c
     assert "ERROR something went wrong while compressing or sending" in capsys.readouterr().out
 
 
-# ---------------------------------------------------------------------------
-# _upload_log_file
-# ---------------------------------------------------------------------------
-
 def test_upload_log_file_disabled_is_noop(monkeypatch):
     mock_urlopen = MagicMock()
     monkeypatch.setattr(listener_module, "urlopen", mock_urlopen)
@@ -454,7 +406,7 @@ def test_upload_log_file_connection_error_does_not_raise(tmp_path, monkeypatch, 
     monkeypatch.setattr(listener_module, "urlopen", MagicMock(side_effect=URLError("refused")))
     rd = _make_listener(uploadlog=True)
     rd.log_path = str(log_path)
-    rd._upload_log_file()  # should not raise
+    rd._upload_log_file()
     assert "ERROR the server is not running" in capsys.readouterr().out
 
 
@@ -464,7 +416,7 @@ def test_upload_log_file_generic_exception_does_not_raise(tmp_path, monkeypatch,
     monkeypatch.setattr(listener_module, "compress", MagicMock(side_effect=ValueError("boom")))
     rd = _make_listener(uploadlog=True)
     rd.log_path = str(log_path)
-    rd._upload_log_file()  # should not raise
+    rd._upload_log_file()
     assert "ERROR something went wrong while compressing or sending log" in capsys.readouterr().out
 
 
@@ -479,10 +431,6 @@ def test_upload_log_file_non_200_prints_error(tmp_path, monkeypatch, capsys):
     rd._upload_log_file()
     assert "ERROR something went wrong while sending the log file" in capsys.readouterr().out
 
-
-# ---------------------------------------------------------------------------
-# _remove_runs_over_limit
-# ---------------------------------------------------------------------------
 
 def test_remove_runs_over_limit_zero_is_noop(monkeypatch):
     mock_urlopen = MagicMock()

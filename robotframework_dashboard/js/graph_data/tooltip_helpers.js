@@ -35,7 +35,6 @@ function build_tooltip_meta(filteredData, durationField = 'elapsed_s', aggregate
     return { byLabel, byTime };
 }
 
-// Look up metadata from Chart.js tooltip items (works for bar, line, scatter charts)
 function lookup_tooltip_meta(meta, tooltipItems) {
     if (!tooltipItems || !tooltipItems.length) return null;
     const item = tooltipItems[0];

@@ -37,8 +37,6 @@ def _make_rd(tmp_path, **kwargs):
     return RobotDashboard(**defaults)
 
 
-# --- __init__ ---
-
 def test_init_stores_attributes(tmp_path):
     rd = _make_rd(tmp_path)
     assert rd.database_path == tmp_path / "test.db"
@@ -46,15 +44,11 @@ def test_init_stores_attributes(tmp_path):
     assert rd.server is False
 
 
-# --- _print_console ---
-
 def test_print_console_returns_message_with_newline(tmp_path):
     rd = _make_rd(tmp_path)
     result = rd._print_console("Hello World")
     assert result == "Hello World\n"
 
-
-# --- initialize_database ---
 
 def test_initialize_database_creates_database_instance(tmp_path):
     rd = _make_rd(tmp_path)
@@ -81,8 +75,6 @@ def test_initialize_database_valid_log_path_succeeds(tmp_path):
     rd.initialize_database()
     assert rd.database is not None
 
-
-# --- process_outputs ---
 
 def test_process_outputs_no_outputs_returns_skip(tmp_path):
     rd = _make_rd(tmp_path)
@@ -140,8 +132,6 @@ def test_process_outputs_with_version_tag_in_tags(tmp_path):
     assert "Processing output XML" in console
 
 
-# --- print_runs ---
-
 def test_print_runs_enabled(tmp_path):
     rd = _make_rd(tmp_path, list_runs=True)
     rd.initialize_database()
@@ -156,8 +146,6 @@ def test_print_runs_disabled(tmp_path):
     console = rd.print_runs()
     assert "skipping" in console.lower()
 
-
-# --- remove_outputs ---
 
 def test_remove_outputs_none_returns_skip(tmp_path):
     rd = _make_rd(tmp_path)
@@ -174,8 +162,6 @@ def test_remove_outputs_with_runs(tmp_path):
     assert "4. Removing" in console
 
 
-# --- create_dashboard ---
-
 def test_create_dashboard_disabled_returns_skip(tmp_path):
     rd = _make_rd(tmp_path, generate_dashboard=False)
     rd.initialize_database()
@@ -190,8 +176,6 @@ def test_create_dashboard_enabled_creates_file(tmp_path):
     assert Path(rd.dashboard_name).exists()
 
 
-# --- get_runs ---
-
 def test_get_runs_returns_expected_counts(tmp_path):
     rd = _make_rd(tmp_path)
     rd.initialize_database()
@@ -201,8 +185,6 @@ def test_get_runs_returns_expected_counts(tmp_path):
     assert len(names) == 1
 
 
-# --- get_run_paths ---
-
 def test_get_run_paths_returns_dict(tmp_path):
     rd = _make_rd(tmp_path)
     rd.initialize_database()
@@ -211,8 +193,6 @@ def test_get_run_paths_returns_dict(tmp_path):
     assert len(run_paths) == 1
 
 
-# --- update_output_path ---
-
 def test_update_output_path_returns_string(tmp_path):
     rd = _make_rd(tmp_path)
     rd.initialize_database()
@@ -220,8 +200,6 @@ def test_update_output_path_returns_string(tmp_path):
     console = rd.update_output_path(SAMPLE_XML.name.replace("output-", "log-").replace(".xml", ".html"))
     assert isinstance(console, str)
 
-
-# --- initialize_database with custom database_class ---
 
 def test_initialize_database_with_custom_database_class(tmp_path):
     """initialize_database() uses importlib to load a custom DatabaseProcessor."""
@@ -247,8 +225,6 @@ def test_initialize_database_with_custom_database_class(tmp_path):
     assert rd.database is not None
     assert not isinstance(rd.database, BuiltInDB)
 
-
-# --- process_outputs folder scan exception path ---
 
 def test_process_outputs_folder_scan_corrupt_xml_logs_error(tmp_path):
     """process_outputs() logs an error for files that fail to parse in folder scan."""

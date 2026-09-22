@@ -5,14 +5,14 @@ on:
 
 jobs:
   python-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -26,20 +26,20 @@ jobs:
           bash scripts/python-tests.sh
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: results/coverage.xml
 
   javascript-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
 
@@ -51,7 +51,7 @@ jobs:
           bash scripts/javascript-tests.sh
 
   robot-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Prebuilt image with pip, requirements-test.txt and rfbrowser init already done
     # (built by test-image.yml from scripts/docker/test-dashboard-robot.dockerfile, same image
     # as the local Docker test runs). Saves ~1.5 minutes of setup per run.
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install/Build project
         run: |
@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload Robot logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: robot-results
           path: results/

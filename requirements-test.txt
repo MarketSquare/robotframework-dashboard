@@ -1,5 +1,5 @@
 robotframework==7.5
 robotframework-pabot==5.2.2
-robotframework-browser==20.4.0
-robotframework-databaselibrary==2.4.1
+robotframework-browser==20.5.0
+robotframework-databaselibrary==2.5.0
 robotframework-doctestlibrary==0.33.0

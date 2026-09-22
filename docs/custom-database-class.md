@@ -16,7 +16,7 @@ The project includes several reference implementations. These demonstrate how to
 **Available examples:**
 
 - [abstractdb.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
-- [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
+- [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): reference copy of the built-in SQLite implementation (`robotframework_dashboard/database.py`), the best starting point for your own class
 - [mysql.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation
 
 These files define the required structure and show how each method should behave. If you create your own custom database implementation, you are encouraged to submit it via pull request or github issue so it can be added to the example folder to help others.
@@ -69,16 +69,18 @@ Your custom database class must implement the following methods:
 
 ---
 
-### `insert_output_data(self, output_data: dict, tags: list, run_alias: str, path: Path, project_version: str)`
+### `insert_output_data(self, output_data: dict, tags: list, run_alias: str, path: Path, project_version: str, custom_filters: str = "", timezone: str = "")`
 This method handles the actual insertion of all run-related data.
 
 You must process:
 
-- `output_data` — contains runs, suites, tests, and keywords  
+- `output_data` — contains `runs`, `suites`, `tests`, `keywords` and `exceptions` (lists of tuples, see the examples for the column order)  
 - `tags` — list of tags associated with the run  
 - `run_alias` — a human-friendly alias chosen by the user or system  
 - `path` — path to `output.xml`  
 - `project_version` — version string associated with this run (from `--projectversion` or `version_` tags), may be `None`  
+- `custom_filters` — the `--customfilters` string (`key=value:key2=value2`), stored on the run  
+- `timezone` — UTC offset such as `+02:00` to append to every `run_start` (empty when not known)  
 
 You can inspect the example implementations for the exact structure of `output_data` and how each record is inserted.
 
@@ -158,12 +160,21 @@ Must return **all data** in this dictionary format:
       "owner": "SeleniumLibrary"
     },
     {...etc}
+  ],
+  "exceptions": [
+    {
+      "run_start": "2024-10-13 22:33:19",
+      "message": "TimeoutError: element not visible",
+      "amount": 3,
+      "run_alias": "output-20241013-223319"
+    },
+    {...etc}
   ]
 }
 
 ```
 
-Each type must be a list of dictionaries matching what RobotDashboard expects. The optional `attempts` key on tests holds the JSON-encoded rerun history of a merged `--rerunfailed` output (see [Reruns](reruns.md)); leave it empty for tests that ran once.
+Each type must be a list of dictionaries matching what RobotDashboard expects. The optional `attempts` key on tests holds the JSON-encoded rerun history of a merged `--rerunfailed` output (see [Reruns](reruns.md)); leave it empty for tests that ran once. Every row also carries a `run_name` (the run's `name`, deduplicated) and the run's `run_alias`; `run_start` includes the timezone offset. The built-in class adds these while reading, see `get_data` in the examples.
 
 ---
 
@@ -184,7 +195,10 @@ Each type must be a list of dictionaries matching what RobotDashboard expects. T
 - `run_start=<timestamp>` — remove by exact run_start timestamp  
 - `alias=<alias>` — remove by run alias  
 - `tag=<tag>` — remove all runs matching the given tag  
-- `limit=<n>` — keep only the N most recent runs, removing all older ones  
+- `limit=<n>` — keep only the N most recent runs, removing all older ones (`limit=<n>;tag=<tag>` scopes it to runs with that tag)  
+- `age=<range>` — remove runs older than e.g. `30d` (`-30d` for newer)  
+
+The method returns the console output as a string. When `--logremoved` is used, RobotDashboard sets `log_removed_path` and `log_removed_types` on your instance after construction; the examples write the removed rows to that JSONL file inside the delete transaction.
 
 You must correctly interpret and remove runs accordingly. If you only want to support removing based on run_start or index you could only implement those usages.
 
@@ -207,6 +221,11 @@ This is only required when using:
 In this approach, you store `log.html` and related files on the server, and this method updates the stored path.
 
 If you do not use server-side log storage, you can safely omit this method.
+
+---
+
+### `_get_runs(self) -> tuple`
+Returns five parallel lists — `run_starts`, `names`, `aliases`, `tags`, `custom_filters` — for all runs, oldest first. RobotDashboard uses it for the server's `/get-outputs` endpoint and for `remove_runs`.
 
 ---
 
@@ -236,5 +255,5 @@ If not implemented, the default returns `{}` and no log files will be automatica
 
 - Look at the examples before implementing your own:
   - [abstractdb.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/abstractdb.py): base abstract class to extend
-  - [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): default implementation used by RobotDashboard
+  - [sqlite3.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/sqlite3.py): reference copy of the built-in SQLite implementation (`robotframework_dashboard/database.py`), the best starting point for your own class
   - [mysql.py](https://github.com/marketsquare/robotframework-dashboard/blob/main/example/database/mysql.py): example MySQL implementation

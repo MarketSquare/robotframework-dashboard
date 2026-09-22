@@ -21,7 +21,7 @@ docker build --tag $IMAGE -f scripts/docker/$IMAGE.dockerfile "${@}" .
 # To run the container in an interactive mode:
 #   docker run -it --rm --ipc=host -v.:/robotframework-dashboard --user 1000:1000 test-dashboard-robot
 # Within the container install the current code from the working directory
-#   pip install .
+#   pip install .[all]
 # add the ~/.local/bin to your path
 #   export PATH=$PATH:~/.local/bin
 # and run the tests, e.g.
