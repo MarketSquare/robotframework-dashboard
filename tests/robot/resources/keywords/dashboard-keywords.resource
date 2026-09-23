@@ -125,10 +125,17 @@ Get Test Count With Attempts
     RETURN    ${count}
 
 Open Filter Dialog
+    [Documentation]    Bootstrap ignores a hide() that arrives while the modal is still animating
+    ...    open, which leaves the modal on screen for good and makes every later click fail, so
+    ...    wait until the opening animation is really finished.
     Click    selector=id=filters
+    Wait For Function
+    ...    () => { const modal = document.getElementById("filtersModal"); return modal.classList.contains("show") && getComputedStyle(modal).opacity === "1" && !bootstrap.Modal.getInstance(modal)?._isTransitioning; }
+    ...    timeout=10s
 
 Close Filter Dialog
     Click    selector=id=closeFilters
+    Wait For Elements State    selector=id=filtersModal    state=hidden    timeout=10s
 
 Modal Buttons Should Be Right Aligned
     [Documentation]    The dashboard modals use their own button group instead of Bootstrap's .btn-close;
@@ -679,6 +686,54 @@ Set Custom Filter Mode
     Click    selector=id=selectCustomFilter_${dimension}
     Select Options By    id=customFilter_${dimension}_Mode    value    ${mode}
     Close Filter Dialog
+
+Check Custom Filter Value
+    [Documentation]    Checks one value of a custom filter and closes its dropdown again, without
+    ...    closing the filter dialog, so the effect on the other filters can be inspected.
+    [Arguments]    ${dimension}    ${value}
+    Click    selector=id=selectCustomFilter_${dimension}
+    Check Checkbox    selector=id=customFilter_${dimension}_List_${value}
+    Click    selector=id=selectCustomFilter_${dimension}
+
+# filter option availability (run counts + greying out of options that match no runs)
+Get Custom Filter Option Counts
+    [Documentation]    The run count shown behind every value of one custom filter dropdown, as
+    ...    {value: count}. Values without a count are left out.
+    [Arguments]    ${dimension}
+    ${counts}    Evaluate JavaScript    ${None}
+    ...    () => Object.fromEntries([...document.querySelectorAll('#customFilter_${dimension}_List input.form-check-input')].map(input => [input.value, input.closest("li").querySelector(".filter-option-count")]).filter(([value, count]) => count).map(([value, count]) => [value, Number(count.textContent.replace(/[()]/g, ""))]))
+    RETURN    ${counts}
+
+Get Unavailable Custom Filter Values
+    [Documentation]    The values of one custom filter dropdown that are greyed out because they
+    ...    match no runs with the other filters applied.
+    [Arguments]    ${dimension}
+    ${values}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#customFilter_${dimension}_List li.filter-option-unavailable input.form-check-input')].map(input => input.value)
+    RETURN    ${values}
+
+Custom Filter Option Counts Should Be
+    [Documentation]    The counts are refreshed one animation frame after a filter changes, so the
+    ...    comparison is retried for a moment.
+    [Arguments]    ${dimension}    ${expected}
+    Wait Until Keyword Succeeds    5x    200ms    Custom Filter Option Counts Are    ${dimension}    ${expected}
+
+Custom Filter Option Counts Are
+    [Documentation]    One comparison attempt of Custom Filter Option Counts Should Be.
+    [Arguments]    ${dimension}    ${expected}
+    ${counts}    Get Custom Filter Option Counts    ${dimension}
+    Should Be Equal    ${counts}    ${expected}
+
+Unavailable Custom Filter Values Should Be
+    [Documentation]    Like Custom Filter Option Counts Should Be, for the greyed out values.
+    [Arguments]    ${dimension}    ${expected}
+    Wait Until Keyword Succeeds    5x    200ms    Unavailable Custom Filter Values Are    ${dimension}    ${expected}
+
+Unavailable Custom Filter Values Are
+    [Documentation]    One comparison attempt of Unavailable Custom Filter Values Should Be.
+    [Arguments]    ${dimension}    ${expected}
+    ${values}    Get Unavailable Custom Filter Values    ${dimension}
+    Should Be Equal    ${values}    ${expected}
 
 # "All" tab of the Add Stat Widget modal
 Open Add All Stat Widgets Tab

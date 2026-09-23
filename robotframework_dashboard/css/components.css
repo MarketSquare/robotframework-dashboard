@@ -115,6 +115,18 @@
   display: block;
 }
 
+/* filter options that match no runs with the other filters applied: still visible and
+   selectable, only dimmed so it is clear they cannot add anything to the result */
+.filter-option-unavailable {
+  color: var(--color-text-muted);
+  opacity: 0.65;
+}
+
+.filter-option-count {
+  color: var(--color-text-muted);
+  font-size: 0.85em;
+}
+
 .filter-search-wrapper {
   position: relative;
 }
