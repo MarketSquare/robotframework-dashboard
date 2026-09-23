@@ -232,7 +232,7 @@ function setup_section_order() {
     document.getElementById("compare").hidden = !settings.menu.compare;
     document.getElementById("tables").hidden = !settings.menu.tables;
     const order_sections = (sectionsConfig, topAnchorId) => {
-		let prevEl = document.getElementById(topAnchorId);
+        let prevEl = document.getElementById(topAnchorId);
         // Show
         for (const section of sectionsConfig.show) {
             let sectionId;
@@ -248,8 +248,8 @@ function setup_section_order() {
             if (topAnchorId === "topDashboardSection") {
                 sectionEl.hidden = false;
             }
-			prevEl.after(sectionEl);
-			prevEl = sectionEl;
+            prevEl.after(sectionEl);
+            prevEl = sectionEl;
         }
         // Hide
         for (const section of sectionsConfig.hide) {
@@ -258,8 +258,8 @@ function setup_section_order() {
             if (!sectionEl) continue;
             if (gridEditMode) {
                 sectionEl.hidden = false;
-				prevEl.after(sectionEl);
-				prevEl = sectionEl;
+                prevEl.after(sectionEl);
+                prevEl = sectionEl;
             } else {
                 sectionEl.hidden = true;
             }
