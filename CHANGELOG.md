@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The admin page asks for confirmation before removing outputs and refuses an empty remove form
 
 ### Fixed
+- The Overview page no longer fails to load when a project name contains a character with a special meaning in CSS (e.g. `.`, `:`, `[`, `/`) or starts with a digit
 - Clicking the "remove by limit" number input on the admin page no longer sends a remove request by itself; a limit below 1 is now rejected by the admin page, the server (HTTP 422) and the CLI (`-r limit=0` previously removed every run)
 - Clicking a project card on the Overview page (with "Display bars with projects by Tag" enabled) now pre-selects the project tag instead of opening an empty Dashboard
 - Reset Filters now also resets the Tag Mode to AND
