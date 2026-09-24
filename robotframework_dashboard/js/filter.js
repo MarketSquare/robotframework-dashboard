@@ -1089,18 +1089,20 @@ function compute_filter_option_availability(runList, selections, suiteList = nul
     return availability;
 }
 
-// add or update the "(X)" count behind one filter option label
-function set_filter_option_count(labelElement, count) {
-    if (!labelElement) { return; }
-    let countElement = labelElement.querySelector(".filter-option-count");
+// add or update the "(X)" count of one filter option row. The count is a sibling of the
+// label, not a child: the row is the flex container, so only a direct child of the row can
+// be pushed into its own right-aligned column.
+function set_filter_option_count(rowElement, count) {
+    if (!rowElement) { return; }
+    let countElement = rowElement.querySelector(".filter-option-count");
     if (!settings.show.filterCounts) {
         countElement?.remove();
         return;
     }
     if (!countElement) {
         countElement = document.createElement("span");
-        countElement.className = "filter-option-count ms-1";
-        labelElement.appendChild(countElement);
+        countElement.className = "filter-option-count";
+        rowElement.appendChild(countElement);
     }
     countElement.textContent = `(${count})`;
 }
@@ -1113,7 +1115,7 @@ function apply_availability_to_checkbox_list(listElement, counts) {
     for (const input of inputs) {
         const count = counts?.get(input.value) ?? 0;
         const row = input.closest("li");
-        set_filter_option_count(row?.querySelector("label.form-check-label"), count);
+        set_filter_option_count(row, count);
         row?.classList.toggle("filter-option-unavailable", Boolean(counts) && settings.show.filterAvailability && count === 0);
     }
 }
