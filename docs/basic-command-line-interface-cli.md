@@ -114,7 +114,7 @@ robotdashboard -r index=0,index=1:4;9,index=10
 robotdashboard --removeruns 'run_start=2024-07-30 15:27:20.184407,index=20'  
 robotdashboard -r alias=some_cool_alias,tag=prod,tag=dev -r alias=alias12345  
 robotdashboard -r limit=10
-robotdashboard -r limit=10,tag=nightly # keep 10 newest 'nightly' runs, leave others
+robotdashboard -r limit=10,tag=nightly # keep 10 newest 'nightly' runs per project, leave others
 robotdashboard -r limit=10,tag=nightly,tag=prod # scope to multiple tags
 robotdashboard -r age=10d # remove runs OLDER than 10 days. (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
 robotdashboard -r age=-10d # remove runs YOUNGER than 10 days (note the leading minus)
@@ -129,8 +129,9 @@ robotdashboard -r limit=10 --logremoved run:keyword
 - Must specify data types: index, run_start, alias, tag or limit.  
 - Index ranges use `:` for ranges and `;` for lists.  
 - Quotation marks are required when spaces exist in identifiers.  
-- With limit=10 only the 10 most recent runs will be kept, all others will be removed. The limit must be at least 1.  
-- With limit=10,tag=nightly only the 10 most recent runs **carrying that tag** are kept; older tagged runs are removed and runs without the tag are left untouched. Add more `tag=` values to scope to multiple tags. Only `limit` supports this tag scoping — `tag` and `age` combined just run as two independent operations.  
+- With limit=10 only the 10 most recent runs **per project** will be kept, all others will be removed. The limit must be at least 1.  
+- A project is a run name and every `project_` run tag, the same grouping the dashboard overview page uses. A run that belongs to more than one project is kept as long as it is one of the 10 most recent runs of at least one of them, so a project that runs less often never loses its history to a project that runs more often.  
+- With limit=10,tag=nightly only the 10 most recent runs per project **carrying that tag** are kept; older tagged runs are removed and runs without the tag are left untouched. Add more `tag=` values to scope to multiple tags. Only `limit` supports this tag scoping — `tag` and `age` combined just run as two independent operations.  
 - With age=10d only runs _**older**_ than 10 days will be removed  
 - With age=-10d (leading minus) only runs _**younger**_ than 10 days will be removed  
 - Supported age units: (y)ear, (d)ay, (h)our, (m)inute, (s)econd — e.g. `age=12h`, `age=-30m`  
@@ -191,7 +192,8 @@ robotdashboard -t "My Cool Title"
 robotdashboard -q 7  
 robotdashboard --quantity 50  
 ```
-- Optional: `-q` or `--quantity` sets the default number of runs shown in the dashboard on first load.
+- Optional: `-q` or `--quantity` sets the default number of runs **per project** shown in the dashboard on first load.
+- A project is a run name and every `project_` run tag, see the [Amount filter](/filtering#_8-amount-per-project).
 - Default: value in the dashboard is 20. This can be changed in the filters.
 
 ### Use local JS and CSS dependencies

@@ -48,6 +48,31 @@ Validate Dashboard Run Tags Filter From Overview Project Card
     Should Show 10 Of 10 Runs
     Validate Filter Settings    runTags=project_1
 
+Validate Overview Resets The Project Card Filter When Navigating Back
+    [Documentation]    Issue #348: the overview page shows all projects, so the single project
+    ...                filter that was applied by clicking a project card is dropped again when
+    ...                navigating back to the overview.
+    Open Overview Page
+    Enable Run Tags On Overview Page
+    Open Dashboard Page From Overview Project Card    project=project_1
+    Should Show 10 Of 10 Runs
+    Open Overview Page
+    Should Show 18 Of 18 Runs
+    Validate Filter Settings    runTags=All
+    Wait For Elements State    selector=id=project_2Section    state=visible
+
+Validate Overview Keeps Filters That Were Changed By Hand
+    [Documentation]    Issue #348: only the filter applied by the project card is dropped, a
+    ...                filter the user changed themselves survives the navigation.
+    Open Overview Page
+    Enable Run Tags On Overview Page
+    Open Dashboard Page From Overview Project Card    project=project_1
+    Set Run Tags Filter    project_2    strict=True
+    Should Show 8 Of 8 Runs
+    Open Overview Page
+    Should Show 8 Of 8 Runs
+    Validate Filter Settings    runTags=project_2
+
 Validate Dashboard Date Filter
     Set Date Filter    fromDate=08252026    fromTime=1200am
     Validate Component    id=runStatisticsSection    name=runDateFilter    folder=run
@@ -55,6 +80,19 @@ Validate Dashboard Date Filter
 Validate Dashboard Amount Filter
     Set Amount Filter    amount=5
     Validate Component    id=runStatisticsSection    name=runAmountFilter    folder=run
+
+Validate Dashboard Amount Filter Is Applied Per Project
+    [Documentation]    Issue #347: the amount is applied per project (the run name and every
+    ...                project_ run tag) instead of on the combined run list, so a project with
+    ...                fewer or older runs keeps its section on the overview page.
+    Set Amount Filter    amount=1
+    Should Show 2 Of 18 Runs
+    Open Overview Page
+    Wait For Elements State    selector=id=WebshopUISection    state=visible
+    Wait For Elements State    selector=id=WebshopAPISection    state=visible
+    Enable Run Tags On Overview Page
+    Wait For Elements State    selector=id=project_1Section    state=visible
+    Wait For Elements State    selector=id=project_2Section    state=visible
 
 Add Filter Profile With Runs Filter
     Set Run Filter    value=WebshopUI

@@ -69,10 +69,11 @@ database:
                           • '-r index=0,index=1:4;9,index=10'
                           • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run
                           • '-r alias=some_alias,tag=prod'
-                          • '-r limit=10' -> keep only the 10 most recent runs
-                          • '-r limit=10,tag=nightly' -> keep 10 newest 'nightly' runs, leave others
+                          • '-r limit=10' -> keep only the 10 most recent runs per project
+                          • '-r limit=10,tag=nightly' -> keep 10 newest 'nightly' runs per project, leave others
                           • '-r age=10d' -> remove runs older than 10 days
                           • '-r age=-10d' -> remove runs younger than 10 days
+                          • a project is a run name and every 'project_' run tag
                           • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
   --logremoved [[]TYPES_PATH[]]
                         Log (append if file exists) run data to jsonl before removing from the db
@@ -102,7 +103,8 @@ dashboard:
                         Examples:
                           • '-t My_Test_Dashboard'
   -q INT, --quantity INT
-                        Number of runs shown on initial dashboard load (default: 20).
+                        Number of runs per project shown on initial dashboard load (default: 20).
+                          • a project is a run name and every 'project_' run tag
                           • Higher values slow initial load
                         Examples:
                           • '-q 25'

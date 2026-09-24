@@ -28,6 +28,10 @@ var gridEditMode = false; // used to check how the graphs should be shown when r
 // global vars for switching between overview and dashboard
 var selectedRunSetting = '';
 var selectedTagSetting = '';
+// holds the project (and version) of the filter that was applied by clicking an overview
+// project card, so returning to the overview page can drop that filter again and show all
+// projects instead of the single clicked one (issue #348)
+let overviewProjectNavFilter = { project: '', version: '' };
 
 // some global vars for various functionalities
 var showingRunTags = false; // used to keep track if the runtags popup is showing and determine if it should be closed when clicked outside
@@ -167,6 +171,7 @@ export {
     gridEditMode,
     selectedRunSetting,
     selectedTagSetting,
+    overviewProjectNavFilter,
     showingRunTags,
     showingProjectVersionDialogue,
     inFullscreen,

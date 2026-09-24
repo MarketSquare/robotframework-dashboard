@@ -476,7 +476,9 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                     # checked before "tag=" because a scoped combo ("limit=10;tag=x")
                     # still contains the substring "tag=" and would otherwise be
                     # misrouted to _remove_by_tag
-                    console += self._remove_by_limit(run, run_starts, run_tags)
+                    console += self._remove_by_limit(
+                        run, run_starts, run_tags, run_names
+                    )
                 elif "tag=" in run:
                     console += self._remove_by_tag(run, run_starts, run_tags)
                 elif "age=" in run:
@@ -555,13 +557,45 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             console += f"  WARNING: no runs were removed as no runs were found with tag: {tag}\n"
         return console
 
-    def _remove_by_limit(self, run: str, run_starts: list, run_tags: list = None):
-        """Keep the N newest runs, removing older ones.
+    @staticmethod
+    def _get_run_projects(index: int, run_names: list = None, run_tags: list = None):
+        """Helper function to get the projects a run belongs to.
+
+        A run belongs to a project for every 'project_' run tag it carries and
+        always to the project of its run name, mirroring the grouping of the
+        dashboard overview page. The keys are prefixed so a run name can never
+        collide with a run tag.
+        """
+        projects = []
+        tags = (run_tags[index] if run_tags else "") or ""
+        for tag in tags.split(","):
+            if tag.lower().startswith("project_"):
+                projects.append(f"tag:{tag}")
+        if run_names:
+            projects.append(f"name:{run_names[index]}")
+        # without run names every run ends up in the same project, which keeps the
+        # limit working for callers that cannot provide them
+        return projects or ["name:"]
+
+    def _remove_by_limit(
+        self,
+        run: str,
+        run_starts: list,
+        run_tags: list = None,
+        run_names: list = None,
+    ):
+        """Keep the N newest runs per project, removing older ones.
+
+        The limit is applied per project (a run name and every 'project_' run tag,
+        see _get_run_projects) instead of on the complete run list, so a project
+        that runs less often does not lose its history to a project that runs more
+        often (issue #347). A run that belongs to more than one project is kept as
+        long as it is one of the N newest runs of at least one of them.
 
         When tag filters are appended (e.g. 'limit=10;tag=nightly;tag=prod'),
         the limit is scoped to runs matching any of those tags: the N newest
-        matching runs are kept, older matching runs are removed, and runs that
-        do not match any tag are left untouched.
+        matching runs per project are kept, older matching runs are removed, and
+        runs that do not match any tag are left untouched.
         """
         console = ""
         parts = run.split(";")
@@ -578,8 +612,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         tag_filters = [
             part.replace("tag=", "") for part in parts[1:] if part.startswith("tag=")
         ]
-        # run_starts are ordered oldest -> newest, so keeping the N newest means
-        # dropping the leading (oldest) candidates.
+        # optional tag scoping narrows which runs are considered at all, runs without
+        # any of the tags are never removed
         if tag_filters and run_tags is not None:
             candidates = [
                 index
@@ -590,13 +624,23 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         else:
             candidates = list(range(len(run_starts)))
             scope = ""
-        if limit >= len(candidates):
+        # group the candidates per project, run_starts are ordered oldest -> newest so
+        # the last entries of every group are the newest runs of that project
+        candidates_by_project = {}
+        for index in candidates:
+            for project in self._get_run_projects(index, run_names, run_tags):
+                candidates_by_project.setdefault(project, []).append(index)
+        kept = set()
+        for project_indexes in candidates_by_project.values():
+            kept.update(project_indexes[-limit:])
+        removals = [index for index in candidates if index not in kept]
+        if not removals:
             print(
-                f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs{scope} ({len(candidates)})"
+                f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the number of runs{scope} of every project ({len(candidates)} run(s) in {len(candidates_by_project)} project(s))"
             )
-            console += f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the total number of runs{scope} ({len(candidates)})\n"
+            console += f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the number of runs{scope} of every project ({len(candidates)} run(s) in {len(candidates_by_project)} project(s))\n"
             return console
-        for index in candidates[: len(candidates) - limit]:
+        for index in removals:
             self._remove_run(run_starts[index])
             print(
                 f"  Removed run from the database: index={index}, run_start={run_starts[index]}"

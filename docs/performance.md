@@ -87,7 +87,7 @@ Very large dashboards (500+ runs with many unique tests) may reach 5–10 MB. Th
 
 The time it takes for the dashboard to finish drawing after the page opens is driven by Chart.js — not by data size or HTML file size. Key factors:
 
-- **Default quantity is 20 runs** — renders near-instantly on any hardware.
+- **Default quantity is 20 runs per project** — renders near-instantly on any hardware. The amount filter is applied per project (run name / `project_` tag), so a dashboard with several projects renders more runs than the quantity itself.
 - **50 runs** — expect a couple of seconds while Chart.js draws all graphs.
 - **100+ runs** — rendering can approach **~10 seconds or more!**. The exact time depends on:
   - The **size of your test suite** — more tests and suites mean more data points per chart.

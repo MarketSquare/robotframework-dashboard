@@ -157,13 +157,13 @@ remove_outputs_model_config = {
                 "value": {"age": "10d"},
             },
             "limit": {
-                "summary": "Remove all but the N most recent runs",
-                "description": "Keep only the specified number of most recent runs, deleting the rest.",
+                "summary": "Remove all but the N most recent runs per project",
+                "description": "Keep only the specified number of most recent runs per project, deleting the rest. A project is a run name and every 'project_' run tag, so a project that runs less often keeps its history.",
                 "value": {"limit": 10},
             },
             "limit_by_tag": {
-                "summary": "Keep N most recent runs within a tag",
-                "description": "When 'tags' is combined with 'limit', the limit is scoped to runs matching any given tag: the N newest matching runs are kept, older matching runs are removed, and runs without those tags are left untouched.",
+                "summary": "Keep N most recent runs per project within a tag",
+                "description": "When 'tags' is combined with 'limit', the limit is scoped to runs matching any given tag: the N newest matching runs per project are kept, older matching runs are removed, and runs without those tags are left untouched.",
                 "value": {"limit": 10, "tags": ["nightly"]},
             },
             "all": {

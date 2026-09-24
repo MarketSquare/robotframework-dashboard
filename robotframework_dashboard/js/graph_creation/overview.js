@@ -34,6 +34,7 @@ import {
     latestRunByProjectTag,
     areGroupedProjectsPrepared,
     filteredRuns,
+    overviewProjectNavFilter,
 } from '../variables/globals.js';
 import { runs, tests, use_logs } from '../variables/data.js';
 import { get_rerun_summary } from '../graph_data/helpers.js';
@@ -286,6 +287,9 @@ function clear_project_filter() {
 }
 
 function set_filter_show_current_project(projectName) {
+    // remember that this filter came from an overview card so returning to the overview
+    // page can drop it again and show all projects instead of this one (issue #348)
+    overviewProjectNavFilter.project = projectName;
     if (projectName.startsWith("project_")) {
         selectedTagSetting = projectName;
         setTimeout(() => { // hack to prevent update_menu calls from hinderance

@@ -10,6 +10,7 @@ import {
     underscore_to_camelcase,
     camelcase_to_underscore,
     format_date_to_string,
+    get_run_projects,
     parse_run_start,
     format_relative_time,
     format_run_start_exact,
@@ -419,3 +420,30 @@ describe('debounce', () => {
     });
 });
 
+describe('get_run_projects', () => {
+
+    it('returns the run name as project when there are no project tags', () => {
+        expect(get_run_projects({ name: 'WebshopUI', tags: 'prod,nightly' })).toEqual(['name:WebshopUI']);
+    });
+
+    it('returns every project_ tag next to the run name', () => {
+        const run = { name: 'WebshopUI', tags: 'project_1,prod,project_2' };
+        expect(get_run_projects(run)).toEqual(['tag:project_1', 'tag:project_2', 'name:WebshopUI']);
+    });
+
+    it('matches project tags case insensitively', () => {
+        expect(get_run_projects({ name: 'A', tags: 'Project_One' })).toEqual(['tag:Project_One', 'name:A']);
+    });
+
+    it('keeps a run name apart from an identical run tag', () => {
+        const byName = get_run_projects({ name: 'project_web', tags: '' });
+        const byTag = get_run_projects({ name: 'WebshopUI', tags: 'project_web' });
+        expect(byName).toEqual(['name:project_web']);
+        expect(byTag).toEqual(['tag:project_web', 'name:WebshopUI']);
+    });
+
+    it('handles runs without tags', () => {
+        expect(get_run_projects({ name: 'A', tags: '' })).toEqual(['name:A']);
+        expect(get_run_projects({ name: 'A' })).toEqual(['name:A']);
+    });
+});

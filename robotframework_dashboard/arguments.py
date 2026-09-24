@@ -103,8 +103,8 @@ class ArgumentParser:
         combo = limit_parts[0] + "".join(f";tag={value}" for value in tag_values)
         print(
             f"  INFO: Combining 'limit' with 'tag(s)' -> keeping the {limit_value} most recent "
-            f"run(s) tagged with [{', '.join(tag_values)}] and removing older matching runs "
-            f"(runs without these tags are left untouched)."
+            f"run(s) per project tagged with [{', '.join(tag_values)}] and removing older "
+            f"matching runs (runs without these tags are left untouched)."
         )
         # other independent options (index/run_start/alias) run before the combo
         return other_parts + [combo]
@@ -314,10 +314,11 @@ class ArgumentParser:
                 "  • '-r index=0,index=1:4;9,index=10'\n"
                 "  • '-r run_start=2024-07-30 15:27:20.184407' -> remove specified run\n"
                 "  • '-r alias=some_alias,tag=prod'\n"
-                "  • '-r limit=10' -> keep only the 10 most recent runs\n"
-                "  • '-r limit=10,tag=nightly' -> keep 10 newest 'nightly' runs, leave others\n"
+                "  • '-r limit=10' -> keep only the 10 most recent runs per project\n"
+                "  • '-r limit=10,tag=nightly' -> keep 10 newest 'nightly' runs per project, leave others\n"
                 "  • '-r age=10d' -> remove runs older than 10 days\n"
                 "  • '-r age=-10d' -> remove runs younger than 10 days\n"
+                "  • a project is a run name and every 'project_' run tag\n"
                 "  • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported\n"
             ),
             action="append",
@@ -409,7 +410,8 @@ class ArgumentParser:
             "--quantity",
             metavar="INT",
             help=(
-                "Number of runs shown on initial dashboard load (default: 20).\n"
+                "Number of runs per project shown on initial dashboard load (default: 20).\n"
+                "  • a project is a run name and every 'project_' run tag\n"
                 "  • Higher values slow initial load\n"
                 "Examples:\n"
                 "  • '-q 25'\n"
