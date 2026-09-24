@@ -33,13 +33,17 @@
             <a class="nav-item nav-link fw-bold" id="menuCustomTitle" hidden></a>
             <a class="nav-link information px-1" id="navHamburger" role="button" hidden></a>
             <a class="nav-item nav-link" id="menuOverview">Overview</a>
+            <div class="nav-track" id="overviewNavTrack" hidden></div>
             <a class="nav-item nav-link active" id="menuDashboard">Dashboard</a>
-            <a class="nav-item nav-link" id="runStatisticsSectionNav"><i>Runs</i></a>
-            <a class="nav-item nav-link" id="suiteStatisticsSectionNav"><i>Suites</i></a>
-            <a class="nav-item nav-link" id="testStatisticsSectionNav"><i>Tests</i></a>
-            <a class="nav-item nav-link" id="keywordStatisticsSectionNav"><i>Keywords</i></a>
+            <div class="nav-track" id="dashboardNavTrack" hidden>
+                <a class="nav-item nav-link nav-track-item" id="runStatisticsSectionNav">Runs</a>
+                <a class="nav-item nav-link nav-track-item" id="suiteStatisticsSectionNav">Suites</a>
+                <a class="nav-item nav-link nav-track-item" id="testStatisticsSectionNav">Tests</a>
+                <a class="nav-item nav-link nav-track-item" id="keywordStatisticsSectionNav">Keywords</a>
+            </div>
             <a class="nav-item nav-link" id="menuCompare">Compare</a>
             <a class="nav-item nav-link" id="menuTables">Tables</a>
+            <div class="nav-track" id="tablesNavTrack" hidden></div>
             <a class="nav-item nav-link" id="openDashboard" href="/admin" hidden>Admin</a>
             <button class="btn btn-primary btn-sm ms-3 my-auto" id="refreshDashboard" hidden>
                 &#x21bb;&nbsp; Refresh Dashboard&nbsp;

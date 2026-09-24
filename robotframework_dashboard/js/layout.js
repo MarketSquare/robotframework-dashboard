@@ -539,6 +539,8 @@ function customize_layout() {
     document.querySelectorAll("#iconNavItems > li").forEach(li => {
         if (!li.querySelector("#saveLayout")) li.classList.add("navbar-disabled");
     });
+    // the undo/redo buttons sit centred over the navbar, so the tracks step aside while editing
+    document.getElementById("navigation").classList.add("nav-tracks-hidden");
     document.getElementById("layoutHistoryNavItems").hidden = false;
     layoutHistory = [capture_settings_snapshot()];
     layoutHistoryIndex = 0;
@@ -551,6 +553,7 @@ function save_layout() {
     document.getElementById("saveLayout").hidden = true;
     document.getElementById("mainNavItems").classList.remove("navbar-disabled");
     document.querySelectorAll("#iconNavItems > li").forEach(li => li.classList.remove("navbar-disabled"));
+    document.getElementById("navigation").classList.remove("nav-tracks-hidden");
     document.getElementById("layoutHistoryNavItems").hidden = true;
     layoutHistory = [];
     layoutHistoryIndex = -1;
