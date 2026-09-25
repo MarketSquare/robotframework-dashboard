@@ -279,3 +279,43 @@ Filter Option Counts And Greying Out Can Be Turned Off
     Custom Filter Option Counts Should Be    Browser    ${{ {} }}
     Unavailable Custom Filter Values Should Be    Browser    ${{ [] }}
     Close Filter Dialog
+Validate Dashboard Custom Filters Hidden Per Page
+    [Documentation]    "Settings > Filters" hides custom filter keys per page: a hidden key gets no dropdown in
+    ...    the filter modal on that page, is not applied there, and is left off the Overview run cards. The
+    ...    selection of a hidden key is kept, so it applies again on the pages where it is still shown.
+    [Setup]    Run Keywords    Generate Dashboard With Custom Filters    Open Dashboard
+    [Teardown]    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+    Open Overview Page
+    ${keys}    Get Overview Run Card Custom Filter Keys
+    Should Be Equal    ${keys}    ${{ ["Browser", "Env"] }}
+    Hide Custom Filters On Page    Overview    Env
+    Open Overview Page
+    ${keys}    Get Overview Run Card Custom Filter Keys
+    Should Be Equal    ${keys}    ${{ ["Browser"] }}
+    Open Filter Dialog
+    ${dimensions}    Get Custom Filter Dimensions
+    Should Be Equal    ${dimensions}    ${{ ["Browser"] }}
+    Close Filter Dialog
+    Open Dashboard Page
+    Open Filter Dialog
+    ${dimensions}    Get Custom Filter Dimensions
+    Should Be Equal    ${dimensions}    ${{ ["Browser", "Env"] }}
+    Close Filter Dialog
+    Set Custom Filter    Env    prod
+    Should Show 1 Of 1 Runs
+    Open Overview Page
+    Should Show 5 Of 5 Runs
+    Open Dashboard Page
+    Should Show 1 Of 1 Runs
+    # the option counts have to follow the data: on the overview Env is hidden and therefore not
+    # applied, so it may not narrow the Browser counts there either
+    Open Overview Page
+    Open Filter Dialog
+    Custom Filter Option Counts Should Be    Browser    ${{ {"All": 5, "None": 1, "chrome": 3, "firefox": 1} }}
+    Unavailable Custom Filter Values Should Be    Browser    ${{ [] }}
+    Close Filter Dialog
+    Open Dashboard Page
+    Open Filter Dialog
+    Custom Filter Option Counts Should Be    Browser    ${{ {"All": 1, "None": 0, "chrome": 0, "firefox": 1} }}
+    Unavailable Custom Filter Values Should Be    Browser    ${{ ["None", "chrome"] }}
+    Close Filter Dialog

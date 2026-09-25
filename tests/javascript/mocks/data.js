@@ -5,6 +5,7 @@ const runs = [];
 const suites = [];
 const tests = [];
 const keywords = [];
+const exceptions = [];
 const message_config = "placeholder_message_config";
 const force_json_config = false;
 const json_config = "placeholder_json_config";
@@ -20,6 +21,7 @@ export {
     suites,
     tests,
     keywords,
+    exceptions,
     message_config,
     force_json_config,
     json_config,

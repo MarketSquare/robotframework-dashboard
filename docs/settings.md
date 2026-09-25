@@ -116,6 +116,34 @@ The **Overview** tab controls which sections are visible on the Overview page an
 - Closing the modal **automatically saves** your overview selections  
 - No need to press additional buttons in this tab
 
+## Filter Settings (Filters Tab)
+
+The **Filters** tab hides [custom filter](/filtering#global-filters) attributes per page. By default every custom filter attribute found in the run data is shown everywhere: it gets a dropdown in the Filters dialog on all pages, and its `key: value` is printed on every Overview run card that has one. With many attributes that quickly becomes noisy, so each page has its own list of attributes to leave out.
+
+### Details
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Hide Custom Filters on Overview** | None | Attributes to hide on the Overview page. |
+| **Hide Custom Filters on Dashboard** | None | Attributes to hide on the Dashboard page. |
+| **Hide Custom Filters on Compare** | None | Attributes to hide on the Compare page. |
+| **Hide Custom Filters on Tables** | None | Attributes to hide on the Tables page. |
+
+Each dropdown only lists the attributes found in the run data, so the lists are empty when no run was processed with `--customfilters`.
+
+Hiding an attribute on a page means:
+
+- its dropdown is left out of the Filters dialog while that page is active
+- its selection is **not applied** on that page, so the runs are filtered as if the attribute were not set, and it is left out of the [run counts](/filtering#run-counts-and-unavailable-options) of the other filters
+- on the Overview it is also left off the run cards
+
+The selection you made in the dropdown is kept, so the attribute filters again as soon as you switch to a page where it is still shown.
+
+### Saving Filter Settings
+
+- Closing the modal **automatically saves** your filter selections  
+- No need to press additional buttons in this tab
+
 ## Theme Settings (Theme Tab)
 
 The **Theme** tab allows you to override the default colors used by the dashboard in both light and dark modes, and to set custom branding (title and logo) for the menu bar. Each mode has independent color customization.

@@ -24,8 +24,29 @@ function sort_wall_clock(data) {
     });
 }
 
+const dashboardPages = ["overview", "dashboard", "compare", "tables"];
+
+function get_active_page() {
+    return dashboardPages.find(page => settings.menu[page]) ?? "dashboard";
+}
+
+function get_hidden_custom_filters(page = get_active_page()) {
+    const key = `hiddenCustomFilters${page.charAt(0).toUpperCase() + page.slice(1)}`;
+    return settings.show[key] ?? [];
+}
+
+// the rows are built once, so hiding keeps their state for the pages where they are still shown
+function apply_custom_filter_visibility() {
+    const hiddenCustomFilters = get_hidden_custom_filters();
+    for (const dimName of Object.keys(collect_custom_filter_dimensions())) {
+        const rowEl = document.getElementById(`customFilter_${dimName}`);
+        if (rowEl) rowEl.hidden = hiddenCustomFilters.includes(dimName);
+    }
+}
+
 // function updates the data in the graphs whenever filters are updated
 function setup_filtered_data_and_filters() {
+    apply_custom_filter_visibility();
     filteredRuns = remove_milliseconds(runs)
     filteredSuites = remove_milliseconds(suites)
     filteredTests = remove_milliseconds(tests)
@@ -241,7 +262,10 @@ function apply_custom_filter_dimension(runs, dimName, checkedValues, mode) {
 // filter run data based on active custom filters (one dropdown per dimension)
 function filter_custom_filters(filteredRuns) {
     const dimensions = collect_custom_filter_dimensions();
+    const hiddenCustomFilters = get_hidden_custom_filters();
     for (const dimName of Object.keys(dimensions)) {
+        // hidden on this page also means not applied on this page
+        if (hiddenCustomFilters.includes(dimName)) continue;
         const listEl = document.getElementById(`customFilter_${dimName}_List`);
         if (!listEl) continue;
         const checkedValues = new Set(
@@ -980,8 +1004,11 @@ function get_filter_base_suites() {
 // functions take
 function normalize_filter_selections(profile) {
     const checked_values = (items, key) => new Set((items || []).filter(item => item.checked).map(item => item[key]));
+    const hiddenCustomFilters = get_hidden_custom_filters();
     const customFilters = {};
     for (const [dimName, items] of Object.entries(profile.customFilters || {})) {
+        // a custom filter hidden on this page is not applied, so it may not shape the counts either
+        if (hiddenCustomFilters.includes(dimName)) continue;
         customFilters[dimName] = {
             values: checked_values(items, "value"),
             mode: (profile.customFilterModes || {})[dimName] ?? "OR",
@@ -1810,6 +1837,10 @@ export {
     setup_project_versions_in_select_filter_buttons,
     setup_suite_path_navigator,
     setup_custom_filters_in_select_filter_buttons,
+    apply_custom_filter_visibility,
+    get_hidden_custom_filters,
+    get_active_page,
+    dashboardPages,
     setup_filter_checkbox_handler_listeners,
     clear_all_filters,
     set_filter_show_current_version,

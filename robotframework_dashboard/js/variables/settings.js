@@ -60,6 +60,10 @@ var settings = {
         suitesSelectionInTestStats: "First Suite",
         filterAvailability: true,
         filterCounts: true,
+        hiddenCustomFiltersOverview: [],
+        hiddenCustomFiltersDashboard: [],
+        hiddenCustomFiltersCompare: [],
+        hiddenCustomFiltersTables: [],
     },
     theme_colors: {
         light: {

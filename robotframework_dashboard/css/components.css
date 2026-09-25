@@ -519,6 +519,12 @@ li.filter-option-unavailable > .filter-option-count {
   position: relative;
 }
 
+/* only when custom filter lines are rendered, an unconditional padding changes the height of
+   every run card and breaks the overview reference screenshots */
+.overview-card .card-body:has(.run-card-custom-filters) {
+  padding-bottom: 2rem;
+}
+
 .run-card-run-time {
   position: absolute;
   right: 1rem;
@@ -565,6 +571,17 @@ li.filter-option-unavailable > .filter-option-count {
 
 .run-card-small-version:hover div {
   color: var(--color-run-card-hover) !important;
+}
+
+.run-card-custom-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: fit-content;
+}
+
+.run-card-custom-filter {
+  font-size: 0.85em;
 }
 
 .grid-stack-item-content {

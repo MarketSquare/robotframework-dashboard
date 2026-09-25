@@ -82,6 +82,10 @@ Open Dashboard Page From Overview Project Card
     Click    selector=id=overviewLatest${project}Card0
     Wait For Elements State    selector=id=runStatisticsSection
 
+Open Dashboard Page
+    Click    selector=id=menuDashboard
+    Wait For Elements State    selector=id=runStatisticsSection
+
 Open Compare Page
     Click    selector=id=menuCompare
     Wait For Elements State    selector=id=compareStatisticsSection
@@ -404,8 +408,12 @@ Confirm Action
     IF    ${wait_for_hidden}    Wait For Elements State    selector=id=confirmModal    state=hidden
 
 Open Settings Tab
+    [Documentation]    Waits for the modal fade to finish, the tab panes are only filled on its shown event.
     [Arguments]    ${tab}
     Click    selector=id=settings
+    Wait For Function
+    ...    () => { const modal = document.getElementById("settingsModal"); return modal.classList.contains("show") && getComputedStyle(modal).opacity === "1" && !bootstrap.Modal.getInstance(modal)?._isTransitioning; }
+    ...    timeout=10s
     Click    selector=id=${tab}-tab
 
 Close Settings
@@ -648,10 +656,28 @@ Toggle Compare Suite Paths
 
 # custom filters (--customfilters key=value pairs, one dropdown per key)
 Get Custom Filter Dimensions
-    [Documentation]    The custom filter keys shown in the filter modal, in display order.
+    [Documentation]    The custom filter keys shown in the filter modal on the active page, in display order.
+    ...    Keys hidden for that page in "Settings > Filters" are left out.
     ${dimensions}    Evaluate JavaScript    ${None}
-    ...    () => [...document.querySelectorAll('#customFiltersList > .list-group-item')].map(el => el.id.replace("customFilter_", ""))
+    ...    () => [...document.querySelectorAll('#customFiltersList > .list-group-item:not([hidden])')].map(el => el.id.replace("customFilter_", ""))
     RETURN    ${dimensions}
+
+Get Overview Run Card Custom Filter Keys
+    [Documentation]    The distinct custom filter keys rendered on the Overview run cards, sorted.
+    ${keys}    Evaluate JavaScript    ${None}
+    ...    () => [...new Set([...document.querySelectorAll('.run-card-custom-filter span')].map(el => el.textContent.trim().replace(":", "")))].sort()
+    RETURN    ${keys}
+
+Hide Custom Filters On Page
+    [Documentation]    Checks custom filter keys in "Settings > Filters" so they are hidden on one page;
+    ...    ${page} is the capitalized page name (Overview, Dashboard, Compare or Tables).
+    [Arguments]    ${page}    @{dimensions}
+    Open Settings Tab    filters-settings
+    Click    selector=id=selectHiddenCustomFilters${page}
+    FOR    ${dimension}    IN    @{dimensions}
+        Check Checkbox    selector=id=hiddenCustomFilters${page}List >> css=input[value="${dimension}"]
+    END
+    Close Settings
 
 Get Custom Filter Values
     [Documentation]    The checkbox values of one custom filter dropdown (All, None and the run values).
