@@ -563,52 +563,66 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
-                                    id="profileCheckFromDate" style="display: none;" />
-                                <span class="d-flex align-items-center information info-label" id="filterFromDateInformation">
-                                    From Date
-                                    <span class="info-icon-small ms-1"></span>
-                                </span>
-                                <div class="d-flex align-items-center">
-                                    <input class="form-control form-control-sm" id="fromDate" type="date"
-                                        style="width: 200px;" />
+                            <div class="list-group-item" id="dateHistogramFilter">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="d-flex align-items-center information info-label"
+                                        id="filterDateHistogramInformation">
+                                        Runs over Time
+                                        <span class="info-icon-small ms-1"></span>
+                                    </span>
+                                    <div class="d-flex align-items-center">
+                                        <span class="date-histogram-bucket me-2" id="dateHistogramBucket"></span>
+                                        <button type="button" class="btn btn-outline-light btn-sm text-nowrap"
+                                            id="dateHistogramReset">Reset Range</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
-                                    id="profileCheckFromTime" style="display: none;" />
-                                <span class="d-flex align-items-center information info-label" id="filterFromTimeInformation">
-                                    From Time
-                                    <span class="info-icon-small ms-1"></span>
-                                </span>
-                                <div class="d-flex align-items-center">
-                                    <input class="form-control form-control-sm" id="fromTime" type="time"
-                                        style="width: 200px;" />
+                                <div class="date-histogram-wrapper" id="dateHistogramWrapper">
+                                    <canvas id="dateHistogramGraph"></canvas>
+                                    <div class="date-histogram-selection" id="dateHistogramSelection" hidden></div>
+                                    <div class="date-histogram-tooltip" id="dateHistogramTooltip" hidden></div>
                                 </div>
+                                <div class="date-histogram-empty" id="dateHistogramEmpty" hidden></div>
                             </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
-                                    id="profileCheckToDate" style="display: none;" />
-                                <span class="d-flex align-items-center information info-label" id="filterToDateInformation">
-                                    To Date
-                                    <span class="info-icon-small ms-1"></span>
-                                </span>
-                                <div class="d-flex align-items-center">
-                                    <input class="form-control form-control-sm" id="toDate" type="date"
-                                        style="width: 200px;" />
-                                </div>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <input class="form-check-input filter-profile-check me-2" type="checkbox"
-                                    id="profileCheckToTime" style="display: none;" />
-                                <span class="d-flex align-items-center information info-label" id="filterToTimeInformation">
-                                    To Time
-                                    <span class="info-icon-small ms-1"></span>
-                                </span>
-                                <div class="d-flex align-items-center">
-                                    <input class="form-control form-control-sm" id="toTime" type="time"
-                                        style="width: 200px;" />
+                            <div class="list-group-item" id="dateRangeFilter">
+                                <div class="d-flex flex-wrap align-items-center date-range-row">
+                                    <div class="d-flex align-items-center date-range-field">
+                                        <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                            id="profileCheckFromDate" style="display: none;" />
+                                        <span class="date-range-label">From</span>
+                                        <input class="form-control form-control-sm date-range-input" id="fromDate"
+                                            type="date" />
+                                        <span class="information info-label ms-1" id="filterFromDateInformation">
+                                            <span class="info-icon-small"></span>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center date-range-field">
+                                        <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                            id="profileCheckFromTime" style="display: none;" />
+                                        <input class="form-control form-control-sm date-range-input" id="fromTime"
+                                            type="time" />
+                                        <span class="information info-label ms-1" id="filterFromTimeInformation">
+                                            <span class="info-icon-small"></span>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center date-range-field">
+                                        <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                            id="profileCheckToDate" style="display: none;" />
+                                        <span class="date-range-label">To</span>
+                                        <input class="form-control form-control-sm date-range-input" id="toDate"
+                                            type="date" />
+                                        <span class="information info-label ms-1" id="filterToDateInformation">
+                                            <span class="info-icon-small"></span>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center date-range-field">
+                                        <input class="form-check-input filter-profile-check me-2" type="checkbox"
+                                            id="profileCheckToTime" style="display: none;" />
+                                        <input class="form-control form-control-sm date-range-input" id="toTime"
+                                            type="time" />
+                                        <span class="information info-label ms-1" id="filterToTimeInformation">
+                                            <span class="info-icon-small"></span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center"

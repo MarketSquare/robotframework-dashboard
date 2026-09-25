@@ -77,6 +77,55 @@ Validate Dashboard Date Filter
     Set Date Filter    fromDate=08252026    fromTime=1200am
     Validate Component    id=runStatisticsSection    name=runDateFilter    folder=run
 
+Validate Date Histogram Bars
+    Open Filter Dialog
+    Date Histogram Bucket Label Should Be    1 bar = 1 day
+    Date Histogram Should Hold 18 Runs
+    ${datasets}    Get Graph Dataset Labels    dateHistogramChart
+    Should Be Equal    ${datasets}    ${{ ['Failed', 'Skipped', 'Passed'] }}
+    Close Filter Dialog
+
+Validate Date Histogram Drag Zooms Into The Selection
+    Open Filter Dialog
+    Drag On Date Histogram    0.1    0.35
+    # a quarter of the 24 day span is about a week, which is drawn with 6 hour buckets
+    Date Histogram Bucket Label Should Be    1 bar = 6 hours
+    # the drag happened while the bars were days, so the range snapped to whole days
+    Get Property    selector=id=fromTime    property=value    assertion_operator===    assertion_expected=00:00
+    Get Property    selector=id=toTime    property=value    assertion_operator===    assertion_expected=23:59
+    ${runs}    Get Date Histogram Run Count
+    Close Filter Dialog
+    Should Show ${runs} Of ${runs} Runs
+
+Validate Date Histogram Bar Click Selects One Bucket
+    Open Filter Dialog
+    Click On Highest Date Histogram Bar
+    Date Histogram Bucket Label Should Be    1 bar = 1 hour
+    ${fromDate}    Get Property    selector=id=fromDate    property=value
+    ${toDate}    Get Property    selector=id=toDate    property=value
+    Should Be Equal    ${fromDate}    ${toDate}
+    Get Property    selector=id=fromTime    property=value    assertion_operator===    assertion_expected=00:00
+    Get Property    selector=id=toTime    property=value    assertion_operator===    assertion_expected=23:59
+    Close Filter Dialog
+
+Validate Date Histogram Reset Range Button
+    Open Filter Dialog
+    Drag On Date Histogram    0.1    0.35
+    Date Histogram Bucket Label Should Be    1 bar = 6 hours
+    Click    selector=id=dateHistogramReset
+    # the runs outside the zoomed window are back, which they can only be because the bars are
+    # built without the date filter
+    Date Histogram Bucket Label Should Be    1 bar = 1 day
+    Date Histogram Should Hold 18 Runs
+    Close Filter Dialog
+    Should Show 18 Of 18 Runs
+
+Validate Date Histogram Follows The Other Filters
+    Set Run Tags Filter    project_2
+    Open Filter Dialog
+    Date Histogram Should Hold 8 Runs
+    Close Filter Dialog
+
 Validate Dashboard Amount Filter
     Set Amount Filter    amount=5
     Validate Component    id=runStatisticsSection    name=runAmountFilter    folder=run

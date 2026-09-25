@@ -74,17 +74,25 @@ Example: with two custom filters where `filter_1=A` only ever occurs together wi
 - Typing in the search box inside the dropdown selects every matching version and unselects the rest (e.g. `1.` selects all `1.x` versions in one go).
 - Click the **X** in the search box to clear it while keeping the current selection. Deleting characters one by one instead re-runs the matching on every keystroke.
 
-#### 4. From Date / From Time
+#### 4. Runs over Time (date histogram)
 
-- Sets the earliest point in time a run must have started at to be included.
-- Runs that started before this date and time are excluded.
-- Defaults to the date and time of the oldest run in the data (with a small margin to account for seconds and daylight saving time).
+A bar chart of how many runs started in each time bucket, sitting directly above the date range. It replaces typing dates with dragging: the bars show where the runs actually are, so you can pick the period straight off the chart.
 
-#### 5. To Date / To Time
+- **Bars** show the number of runs per bucket, stacked by run status: red for runs with failures, yellow for runs that only skipped, green for the rest. Vertical separators mark every bucket, so gaps in the data stay readable.
+- **Drag across the chart** to select a range. The From/To fields below are filled in and the chart **zooms into the selection**, re-bucketing finer, so dragging again drills further down (a month at a bar per day, then a week at a bar per 6 hours, then a day at a bar per hour).
+- **Click a single bar** to select just that bucket.
+- **Reset Range** returns to the full span of the data. Widening the From/To fields by hand does the same.
+- The bucket size is chosen from the visible range and is printed next to the chart as `1 bar = 1 day`. Hovering a bar shows its exact time range and, per run in it, how many tests passed, failed and were skipped — the same shape as the hover on the run graphs.
+- The bars follow every other filter (runs, run tags, versions, metadata, custom filters, suite path) but not the date range itself — the date range is the part of the timeline you are looking at, which is why widening it brings the runs outside it straight back. The *Amount per project* filter is not applied to the bars either.
 
-- Sets the latest point in time a run must have started at to be included.
-- Runs that started after this date and time are excluded.
-- Defaults to the date and time of the most recent run in the data (with a small margin).
+#### 5. From / To Date and Time
+
+The four fields below the chart are the range itself, and they stay editable by hand.
+
+- **From Date / From Time** set the earliest point in time a run must have started at to be included; runs that started before it are excluded.
+- **To Date / To Time** set the latest point in time; runs that started after it are excluded.
+- They default to the oldest and most recent run in the data (with a small margin to account for seconds and daylight saving time), which is also what **Reset Range** restores.
+- Typing in them moves the histogram above, exactly like dragging moves them.
 
 #### 6. Metadata
 

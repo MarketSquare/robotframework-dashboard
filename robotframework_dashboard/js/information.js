@@ -76,10 +76,12 @@ function setup_information_popups() {
         }
 
         // the tooltip hangs below its icon, so a long text on an icon near the bottom of the
-        // window runs off screen: flip it above the icon, and pin it to the top edge when even
-        // that does not fit (a tooltip taller than the window)
+        // window runs off screen: flip it above the icon, keep it inside the window (an icon
+        // that is itself below the fold would take the tooltip off screen with it) and pin it
+        // to the top edge when even that does not fit (a tooltip taller than the window)
         if (tooltipRect.bottom > window.innerHeight - padding) {
-            top = Math.max(rect.top - tooltipRect.height - 8, padding);
+            const lowestTop = window.innerHeight - tooltipRect.height - padding;
+            top = Math.max(Math.min(rect.top - tooltipRect.height - 8, lowestTop), padding);
             tooltipEl.style.top = `${top}px`;
         }
     }
