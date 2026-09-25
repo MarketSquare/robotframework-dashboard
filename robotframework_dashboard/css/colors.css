@@ -9,7 +9,9 @@
   --color-track-border: rgba(0, 0, 0, 0.08);
   --color-menu-hover-bg: rgba(0, 0, 0, 0.05);
   --color-text: #000000;
-  --color-text-muted: darkgrey;
+  --color-text-muted: #6c757d;
+  --color-text-disabled: #6c757d;
+  --color-popover-bg: #ffffff;
   --color-border: rgba(0, 0, 0, 0.175);
   --color-shadow-strong: rgba(0, 0, 0, 0.5);
   --color-shadow-soft: rgba(0, 0, 0, 0.3);
@@ -45,6 +47,8 @@
   --color-menu-hover-bg: rgba(255, 255, 255, 0.06);
   --color-text: #eee;
   --color-text-muted: #9ca3af;
+  --color-text-disabled: #94a3b8;
+  --color-popover-bg: #1e293b;
   --color-border: rgba(255, 255, 255, 0.15);
   --color-shadow-strong: rgba(0, 0, 0, 0.5);
   --color-shadow-soft: rgba(0, 0, 0, 0.3);

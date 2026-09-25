@@ -143,22 +143,30 @@ It helps identify tests with inconsistent execution times, which might be flaky 
 - A dot means the active profile's filters have been modified since it was applied.
 - Update Profile: overwrites the saved profile with the current filter values.
 - Merge Profiles: combine two profiles using the widest coverage for each filter.`,
-    "filterRunsInformation": "Filter by project name. 'All' includes every project.",
+    "filterRunsInformation": `Filter by project name. 'All' includes every project.
+- The number behind an option is how many runs remain if you select it (the other filters stay as they are).
+- Greyed out options match no runs, but can still be selected.`,
     "filterRunTagsInformation": `Filter by run tags. 'All' disables the filter.
 - AND mode (default): run must have all selected tags.
 - OR mode: run needs at least one selected tag.
 - NOT mode: run must not have any selected tag.
-- A dot indicates the filter is active.`,
+- A dot indicates the filter is active.
+- The number behind an option is how many runs remain if you select it (the other filters stay as they are).
+- Greyed out options match no runs, but can still be selected.`,
     "filterVersionsInformation": `Filter by project version. 'All' disables the filter.
 - 'None' covers runs without a version label.
 - Typing in the search box selects every matching version (e.g. "1." selects all 1.x).
 - The X in the search box clears it while keeping the current selection.
-- A dot indicates the filter is active.`,
+- A dot indicates the filter is active.
+- The number behind an option is how many runs remain if you select it (the other filters stay as they are).
+- Greyed out options match no runs, but can still be selected.`,
     "filterFromDateInformation": "Show only runs that started on or after this date.",
     "filterFromTimeInformation": "Show only runs that started at or after this time (combined with From Date).",
     "filterToDateInformation": "Show only runs that started on or before this date.",
     "filterToTimeInformation": "Show only runs that started at or before this time (combined with To Date).",
-    "filterMetadataInformation": "Filter by a metadata value attached to the run. Only shown when runs have metadata.",
+    "filterMetadataInformation": `Filter by a metadata value attached to the run. Only shown when runs have metadata.
+- The number behind an option is how many runs remain if you select it (the other filters stay as they are).
+- Greyed out options match no runs, but can still be selected.`,
     "filterAmountInformation": "Limit to the most recent X runs after all other filters are applied. 'All Runs' sets this to the total matching count.",
     "filterSuitePathsInformation": `Filter runs by suite path. Only runs that contain at least one suite matching the selected path (or any of its sub-paths) are shown.
 - Navigate into sub-folders by clicking a child button.
@@ -185,6 +193,8 @@ Tip: avoid using Status and Only Changes together — the result will be empty.`
     "settingConvertTimezone": "Convert stored run_start timestamps to your browser's local timezone. Only applies to runs that have a stored timezone offset.",
     "settingSuiteStatsDefault": "Default suite shown in the Suite Statistics tab when the dashboard opens.",
     "settingTestStatsDefault": "Default suite shown in the Test Statistics tab when the dashboard opens.",
+    "settingFilterCounts": "Show behind every filter option how many runs remain if that option is the selection of its filter. The count is calculated with all other filters applied, and ignores the amount filter.",
+    "settingFilterAvailability": "Grey out filter options that match no runs with the other filters as they are. The options stay visible and selectable.",
     "settingLatestRuns": "Show the Latest Runs bar with the most recent run per project, color-coded by duration.",
     "settingTotalStats": "Show the Total Stats bar with aggregate pass/fail/skip counts and average pass rates per project.",
     "settingProjectsByName": "Group and display projects on the Overview by their Robot Framework run name.",
@@ -192,6 +202,10 @@ Tip: avoid using Status and Only Changes together — the result will be empty.`
     "settingPrefixes": "Show or hide the 'project_' prefix on tag-based project names on the Overview.",
     "settingOverviewDurationPercentage": "Threshold for duration color comparison on all project bars. A run is green if at least X% faster than average, red if X% slower.",
     "settingSortFilters": "Show the sort controls for ordering Overview project bars.",
+    "settingHiddenCustomFiltersOverview": "Custom filter attributes to hide on the Overview page. A hidden attribute gets no filter in the Filters dialog there, is not applied there, and is left off the run cards. Only lists attributes found in the run data.",
+    "settingHiddenCustomFiltersDashboard": "Custom filter attributes to hide on the Dashboard page. A hidden attribute gets no filter in the Filters dialog there and is not applied there. Only lists attributes found in the run data.",
+    "settingHiddenCustomFiltersCompare": "Custom filter attributes to hide on the Compare page. A hidden attribute gets no filter in the Filters dialog there and is not applied there. Only lists attributes found in the run data.",
+    "settingHiddenCustomFiltersTables": "Custom filter attributes to hide on the Tables page. A hidden attribute gets no filter in the Filters dialog there and is not applied there. Only lists attributes found in the run data.",
     "settingBackgroundColor": "Main page background color for the current theme.",
     "settingCardColor": "Background color for graph cards and content panels.",
     "settingHighlightColor": "Accent color used for hover states and interactive elements.",

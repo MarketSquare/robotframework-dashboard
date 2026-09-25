@@ -186,5 +186,6 @@ export {
     tablesNavStore,
     lastMergeResult,
     filterRows,
-    defaultFaviconHref
+    defaultFaviconHref,
+    escape_html_for_merge
 };

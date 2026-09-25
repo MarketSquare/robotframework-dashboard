@@ -28,6 +28,19 @@ The **Dashboard** page provides both **global filters** and **section-specific f
 
 Global filters are applied to the entire dashboard, affecting all sections and graphs. Open the filter modal using the filter icon in the top navigation bar.
 
+#### Run Counts and Unavailable Options
+
+Every option of the Runs, Run Tags, Versions, Metadata and Custom Filters dropdowns shows how many runs it still matches:
+
+- The number behind an option is calculated with **all other filters applied**, so it tells you what you get if you select that option. The Amount filter ("most recent X runs") is not included, as it is not a category.
+- The count of a filter **ignores that filter itself**. Selecting one Run Tag therefore never changes the counts of the other Run Tags, and they never disappear from the list.
+- A count always answers the same question: *how many runs remain if this option is the selection of this filter*. In **NOT** mode an option excludes its runs, so its count is what is left over.
+- Options that match no runs at all are **greyed out**. They stay visible and can still be selected (the dashboard then simply shows no runs), so you never lose sight of the values in your data.
+- A custom filter that is hidden on the current page (see [Settings - Filters Tab](/settings#filter-settings-filters-tab)) is not applied there, so it does not count towards the numbers of the other filters either.
+- Both can be turned off in [Settings](settings.md): *Display Run Counts in Filter Options* and *Grey Out Filter Options Without Runs*.
+
+Example: with two custom filters where `filter_1=A` only ever occurs together with `filter_2=C`, selecting `filter_1=A` shows `filter_2=D (0)` greyed out, because no run has that combination.
+
 #### 1. Runs
 
 - Filters the dashboard to only show data for runs of the selected project (run name).
@@ -89,6 +102,8 @@ Global filters are applied to the entire dashboard, affecting all sections and g
 - **None** covers runs that have no value stored for that key.
 - Use the **Mode** dropdown to control matching: **OR** (default), **AND**, or **NOT**.
 - A dot next to the label indicates the filter is active.
+- Custom filter values are also printed on the Overview run cards, one `key: value` line per attribute the run has.
+- Attributes you do not want can be hidden per page under **Settings → Filters**; a hidden attribute gets no dropdown here and is not applied on that page. See [Settings - Filters Tab](/settings#filter-settings-filters-tab).
 - See [Advanced CLI & Examples](/advanced-cli-examples#custom-filters) for how to attach custom filter data to runs.
 
 #### 8. Amount

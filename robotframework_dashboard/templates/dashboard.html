@@ -720,6 +720,11 @@
                                     aria-controls="overview-settings" aria-selected="false">Overview</button>
                             </li>
                             <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="filters-settings-tab" data-bs-toggle="tab"
+                                    data-bs-target="#filters-settings" type="button" role="tab"
+                                    aria-controls="filters-settings" aria-selected="false">Filters</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="theme-tab" data-bs-toggle="tab" data-bs-target="#theme"
                                     type="button" role="tab" aria-controls="theme" aria-selected="false">Theme</button>
                             </li>
@@ -851,6 +856,20 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingFilterCounts">Display Run Counts in Filter Options <span class="info-icon-small ms-1"></span></span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleFilterCounts">
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingFilterAvailability">Grey Out Filter Options Without Runs <span class="info-icon-small ms-1"></span></span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleFilterAvailability">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="overview-settings" role="tabpanel"
@@ -912,6 +931,71 @@
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" role="switch"
                                                 id="switchSortFilters" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="filters-settings" role="tabpanel"
+                                aria-labelledby="filters-settings-tab">
+                                <p><i>Hide custom filter attributes per page. A hidden attribute has no filter in the
+                                        Filters dialog on that page and is not applied there, and it is left off the
+                                        Overview run cards.</i></p>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingHiddenCustomFiltersOverview">Hide Custom Filters on Overview <span class="info-icon-small ms-1"></span></span>
+                                        <div style="width: 200px;">
+                                            <div class="selectBox" id="selectHiddenCustomFiltersOverview">
+                                                <select class="form-select form-select-sm">
+                                                    <option>Select Attributes</option>
+                                                </select>
+                                                <div class="overSelect"></div>
+                                            </div>
+                                            <div id="hiddenCustomFiltersOverviewCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; display: none;">
+                                                <ul class="list-group" id="hiddenCustomFiltersOverviewList"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingHiddenCustomFiltersDashboard">Hide Custom Filters on Dashboard <span class="info-icon-small ms-1"></span></span>
+                                        <div style="width: 200px;">
+                                            <div class="selectBox" id="selectHiddenCustomFiltersDashboard">
+                                                <select class="form-select form-select-sm">
+                                                    <option>Select Attributes</option>
+                                                </select>
+                                                <div class="overSelect"></div>
+                                            </div>
+                                            <div id="hiddenCustomFiltersDashboardCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; display: none;">
+                                                <ul class="list-group" id="hiddenCustomFiltersDashboardList"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingHiddenCustomFiltersCompare">Hide Custom Filters on Compare <span class="info-icon-small ms-1"></span></span>
+                                        <div style="width: 200px;">
+                                            <div class="selectBox" id="selectHiddenCustomFiltersCompare">
+                                                <select class="form-select form-select-sm">
+                                                    <option>Select Attributes</option>
+                                                </select>
+                                                <div class="overSelect"></div>
+                                            </div>
+                                            <div id="hiddenCustomFiltersCompareCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; display: none;">
+                                                <ul class="list-group" id="hiddenCustomFiltersCompareList"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingHiddenCustomFiltersTables">Hide Custom Filters on Tables <span class="info-icon-small ms-1"></span></span>
+                                        <div style="width: 200px;">
+                                            <div class="selectBox" id="selectHiddenCustomFiltersTables">
+                                                <select class="form-select form-select-sm">
+                                                    <option>Select Attributes</option>
+                                                </select>
+                                                <div class="overSelect"></div>
+                                            </div>
+                                            <div id="hiddenCustomFiltersTablesCheckBoxes" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto; display: none;">
+                                                <ul class="list-group" id="hiddenCustomFiltersTablesList"></ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
