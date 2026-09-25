@@ -169,6 +169,15 @@ body {
   padding-right: 0px !important;
 }
 
+/* Bootstrap locks the page behind a modal with overflow:hidden on <body>, but the dashboard's
+   scrollbar sits on <html> (.html-scroll above), so the page keeps scrolling without this.
+   scrollbar-gutter keeps the scrollbar width reserved, otherwise the layout jumps sideways
+   every time a modal opens. */
+html:has(body.modal-open) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
 h4,
 h5,
 h6 {
