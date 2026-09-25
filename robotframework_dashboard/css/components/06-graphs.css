@@ -1,0 +1,116 @@
+.grid-stack-item-content {
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 0 4px 20px var(--color-shadow-strong);
+  background-color: var(--color-section-card-bg)
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.graph-header h6 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.graph-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* Icon row in section card headers (add stat/link widget, add section, move/show/hide section) */
+.section-header-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid-stack-item-content .graph-body {
+  flex: 1 1 auto;
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.graph-body .row {
+  flex-wrap: wrap;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.grid-stack-item-content .graph-body .vertical {
+  overflow-y: auto;
+}
+
+canvas {
+  display: block;
+}
+
+.table > :not(caption) > * > * {
+  color: var(--color-table-text);
+}
+
+#alertContainer {
+  z-index: 1100;
+  top: 7rem;
+  max-width: 80%;
+}
+
+.alert-dismissible {
+  padding-right: 16px !important;
+}
+
+.grid-stack-item-content:has(.hidden-graph:not([hidden])),
+.table-section:has(.hidden-graph:not([hidden])),
+.card:has(.hidden-section:not([hidden])) {
+  opacity: 0.5;
+}
+
+.modal.dimmed {
+  pointer-events: none;
+  filter: brightness(0.5);
+}
+
+/* Bootstrap >= 5.3.1 no longer spaces the modal header itself (only its .btn-close gets
+   margin-left: auto); the dashboard modals use their own button groups, so keep the
+   title left and the buttons right */
+.modal-header {
+  justify-content: space-between;
+}
+
+#runTag {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.btn.collapse-icon:active {
+  border: none;
+  background-color: transparent;
+}
+
+@media print {
+  table {
+    width: 100%;
+    page-break-inside: auto;
+  }
+
+  .grid-stack-item-contentvas {
+    width: 100%;
+    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: block;
+  }
+
+  canvas {
+    height: auto !important;
+    max-width: 100% !important;
+  }
+}

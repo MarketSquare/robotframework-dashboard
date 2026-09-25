@@ -55,7 +55,7 @@ tests/javascript/
 | File | What it covers |
 |---|---|
 | `common.test.js` | `format_duration`, `strip_tz_suffix`, `get_next_folder_level`, `compare_to_average`, case converters, `parse_run_start`, `format_relative_time`, `format_run_start_exact`, `transform_file_path`, `combine_paths`, `debounce` |
-| `filter.test.js` | Re-implemented pure logic from `filter.js` (`sort_wall_clock`, `remove_milliseconds`, `remove_timezones`, `filter_data`) plus the exported `convert_timezone` — most of `filter.js` reads the DOM and is covered by robot tests instead |
+| `filter.test.js` | Re-implemented pure logic from `filter/pipeline.js` (`sort_wall_clock`, `remove_milliseconds`, `remove_timezones`, `filter_data`) plus the exported `convert_timezone` — most of `filter/` reads the DOM and is covered by robot tests instead |
 | `localstorage.test.js` | `merge_deep`, `set_nested_setting`, `merge_view_section_or_graph` and related merge helpers |
 | `log.test.js` | `open_log_file` (regression for issue #311) |
 | `graph_data/helpers.test.js` | `convert_timeline_data` |
@@ -73,7 +73,7 @@ Only **pure functions** (no DOM access, no Chart.js instances, no DataTables) sh
 
 | Classification | Examples |
 |---|---|
-| **Pure / testable** | `common.js`, `filter.js`, `localstorage.js`, `graph_data/tooltip_helpers.js`, `graph_data/failed.js`, `graph_data/flaky.js`, `graph_data/donut.js`, `graph_data/messages.js`, `graph_data/time_consuming.js`, `graph_data/graph_config.js`, `graph_data/helpers.js` |
+| **Pure / testable** | `common.js`, `filter/pipeline.js`, `filter/availability.js`, `localstorage.js`, `graph_data/tooltip_helpers.js`, `graph_data/failed.js`, `graph_data/flaky.js`, `graph_data/donut.js`, `graph_data/messages.js`, `graph_data/time_consuming.js`, `graph_data/graph_config.js`, `graph_data/helpers.js` |
 | **DOM-dependent / not testable** | `graph_data/statistics.js`, `graph_data/duration.js`, `graph_data/heatmap.js`, `graph_data/duration_deviation.js`, `graph_creation/*.js`, `js/main.js`, `js/admin_page/*.js` |
 
 If a module has **some** pure functions and **some** DOM-dependent functions, test only the pure ones. Do not attempt to mock `document`, `window.Chart`, or DataTables.

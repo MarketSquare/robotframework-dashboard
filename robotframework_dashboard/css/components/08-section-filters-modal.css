@@ -1,0 +1,29 @@
+#sectionFiltersModal .modal-body {
+  padding: 1rem;
+}
+
+#sectionFiltersModal .card {
+  background-color: var(--color-section-card-bg) !important;
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem var(--color-shadow-soft);
+}
+
+#sectionFiltersModal .card-header {
+  background-color: var(--color-section-card-bg) !important;
+  border-bottom: 1px solid var(--color-section-card-border);
+  color: var(--color-section-card-text);
+}
+
+#sectionFiltersModal .card-body {
+  background-color: var(--color-section-card-bg) !important;
+  color: var(--color-section-card-text);
+  padding: 1.25rem;
+}
+
+.list-group-item[hidden] {
+  display: none !important;
+}
+
+.list-group-item {
+  background-color: var(--color-card);
+}

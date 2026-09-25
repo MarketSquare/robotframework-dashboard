@@ -144,7 +144,7 @@ Close Filter Dialog
 Modal Buttons Should Be Right Aligned
     [Documentation]    The dashboard modals use their own button group instead of Bootstrap's .btn-close;
     ...    the last button must sit at the right edge of the modal header (Bootstrap 5.3.1+ stopped
-    ...    spacing the header itself, see components.css).
+    ...    spacing the header itself, see css/components/06-graphs.css).
     [Arguments]    ${modal}    ${last_button}
     Wait For Elements State    selector=id=${last_button}    state=visible
     ${header}    Get BoundingBox    selector=id=${modal} >> .modal-header
@@ -399,7 +399,7 @@ Merge Filter Profiles Into
     Close Filter Dialog
 
 Confirm Action
-    [Documentation]    Presses OK in the confirm dialog (confirm_action in eventlisteners.js). Waits for the
+    [Documentation]    Presses OK in the confirm dialog (confirm_action in eventlisteners/confirm_modal.js). Waits for the
     ...    fade-in to finish first: Bootstrap ignores hide() while the modal is still transitioning, so an
     ...    early click would leave the dialog open. wait_for_hidden=False for actions that reload the page.
     [Arguments]    ${wait_for_hidden}=True

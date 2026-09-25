@@ -11,7 +11,7 @@ import {
     get_active_page,
     get_hidden_custom_filters,
     parse_custom_filters,
-} from '@js/filter.js';
+} from '@js/filter/pipeline.js';
 import { settings } from '@js/variables/settings.js';
 
 // settings is module level state, so it is restored between tests

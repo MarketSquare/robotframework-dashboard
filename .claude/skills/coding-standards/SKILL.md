@@ -23,7 +23,7 @@ Write a comment only when the code cannot say it itself. Before adding one, chec
 - repeating what a guard clause or an early return already shows
 - "what changed", "added for issue N", "new in 2.4" — that is git history
 
-Match the surrounding density rather than your own taste: the JS modules run one short lowercase line per top-level function and few inside bodies. `filter.js` sits near 6% comment lines — a new block far above the file's ratio is a signal to cut, not a new house style. Do not restyle existing comments while you are there.
+Match the surrounding density rather than your own taste: the JS modules run one short lowercase line per top-level function and few inside bodies. `filter/pipeline.js` sits near 6% comment lines — a new block far above the file's ratio is a signal to cut, not a new house style. Do not restyle existing comments while you are there.
 
 Robot `[Documentation]` is API documentation, not a comment: it renders in `log.html`. Write it for a keyword whose contract or trap is invisible at the call site; skip it when the name already says everything (`Open Compare Page`).
 
@@ -41,7 +41,8 @@ Robot `[Documentation]` is API documentation, not a comment: it renders in `log.
 
 ## CSS
 
-- Files: `css/base.css`, `colors.css`, `components.css`, `dark.css` — concatenated in sorted order at generation time.
+- Files: `css/base.css`, `colors.css`, `components/01-…08-*.css`, `dark.css` — concatenated in **path order** at generation time,
+  so the numbered prefixes inside `css/components/` are the cascade order. Renaming one reorders the stylesheet.
 - Reuse existing Bootstrap/DataTables class conventions, keep selectors shallow, prefer CSS variables for theme values.
 
 ## Docs
@@ -79,11 +80,27 @@ ES `import`/`export` syntax in source, but the Python `DependencyProcessor` stri
 ```
 main.js                  startup entry; imports and calls all setup functions
 common.js                shared utilities (format_duration, add_alert, path helpers, …)
-filter.js                filter pipeline + filter profiles
 localstorage.js          settings persistence, merge_deep / merge_view / merge_layout
 layout.js                GridStack setup, customize/save layout, undo/redo snapshots
 menu.js                  tab/page switching (update_menu)
-eventlisteners.js        wires every modal/filter/settings listener on load
+filter/
+  pipeline.js            filter_data + every apply_*/filter_* run filter, setup_filtered_data_and_filters
+  section_selects.js     the per-section suite/test/tag/keyword/compare selects
+  modal_options.js       fills the filter modal's option lists (runs, tags, dates, metadata, versions, custom)
+  suite_path.js          suite path navigator and its run/data filters
+  availability.js        per-option run counts and greying out (issue #296)
+  controls.js            filter indicators, checkbox handlers, every clear_* function
+  profiles.js            filter profile capture/compare/apply/storage/edit mode
+  profile_merge.js       merge_two_profiles ("largest horizon" rules)
+eventlisteners/
+  filter_modal.js        wires the filter modal
+  merge_profiles.js      wires the merge-profiles dialogue
+  settings_modal.js      wires the settings modal (toggles, theme colours, branding, JSON config)
+  confirm_modal.js       confirm_action promise wrapper
+  section_filters.js     wires the per-section filters and the overview switches
+  graph_view_buttons.js  fullscreen, graph type buttons, show/hide, per-graph toggles
+  collapsables.js        collapse icons
+  overview_listeners.js  run card version links and the overview "sort by" selects
 statwidgets.js           custom stat widgets (CRUD, render, modal)
 linkwidgets.js           custom link widgets (same pattern)
 customsections.js        user-defined dashboard sections

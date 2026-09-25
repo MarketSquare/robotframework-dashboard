@@ -60,7 +60,7 @@ This block replaces `<!-- placeholder_javascript -->` in `templates/dashboard.ht
 
 ## How CSS Is Bundled
 
-`DependencyProcessor._inline_css_files()` reads all `.css` files under `robotframework_dashboard/css/` in sorted order (`base.css`, `colors.css`, `components.css`, `dark.css`) and concatenates them into a single `<style>` block that replaces `<!-- placeholder_css -->`.
+`DependencyProcessor._inline_css_files()` reads all `.css` files under `robotframework_dashboard/css/` recursively in **path order** (`base.css`, `colors.css`, `components/01-cards.css` … `components/08-section-filters-modal.css`, `dark.css`) and concatenates them into a single `<style>` block that replaces `<!-- placeholder_css -->`.
 
 ---
 

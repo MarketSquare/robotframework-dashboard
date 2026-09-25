@@ -1,11 +1,13 @@
-import { setup_filtered_data_and_filters, clear_overview_project_navigation_filter } from "./filter.js";
+import { setup_filtered_data_and_filters } from "./filter/pipeline.js";
+import { clear_overview_project_navigation_filter } from "./filter/controls.js";
 import { areGroupedProjectsPrepared, overviewNavStore, tablesNavStore } from "./variables/globals.js";
 import { space_to_camelcase, fade_in, fade_out } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
 import { create_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
 import { setup_theme } from "./theme.js";
-import { setup_graph_view_buttons, setup_overview_order_filters } from "./eventlisteners.js";
+import { setup_graph_view_buttons } from "./eventlisteners/graph_view_buttons.js";
+import { setup_overview_order_filters } from "./eventlisteners/overview_listeners.js";
 import { setup_section_order, setup_graph_order, setup_overview_section_layout_buttons } from "./layout.js";
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";

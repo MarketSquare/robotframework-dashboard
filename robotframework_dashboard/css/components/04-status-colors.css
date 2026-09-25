@@ -1,0 +1,29 @@
+.green-text,
+.text-passed {
+  color: var(--color-passed);
+}
+
+.border-passed {
+  border-color: var(--color-passed);
+}
+
+.red-text,
+.text-failed {
+  color: var(--color-failed);
+}
+
+.border-failed {
+  border-color: var(--color-failed);
+}
+
+.yellow-text {
+  color: var(--color-skipped);
+}
+
+.border-skipped {
+  border-color: var(--color-skipped);
+}
+
+.blue-text {
+  color: var(--color-info);
+}

@@ -1,0 +1,74 @@
+.overview-canvas {
+  height: 200px;
+}
+
+/* relative run time, pinned to the bottom right corner of a run card without
+   affecting the layout of the stats/duration columns next to the donut */
+.overview-card .card-body {
+  position: relative;
+}
+
+/* only when custom filter lines are rendered, an unconditional padding changes the height of
+   every run card and breaks the overview reference screenshots */
+.overview-card .card-body:has(.run-card-custom-filters) {
+  padding-bottom: 2rem;
+}
+
+.run-card-run-time {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.55rem;
+  color: var(--color-text-muted);
+  cursor: help;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.overview-card {
+  cursor: pointer;
+  min-width: 300px;
+}
+
+.overview-card .card {
+  border-radius: 1rem;
+}
+
+.project-run-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 24px;
+}
+
+.project-run-cards-container .overview-card {
+  flex: 0 1 calc((100% - 48px) / 3);
+}
+
+.run-card-version-title {
+  gap: 0.25rem;
+  width: fit-content;
+}
+
+.run-card-version-title:hover h5 {
+  color: var(--color-run-card-hover) !important;
+}
+
+.run-card-small-version {
+  display: flex;
+  gap: 0.25rem;
+  width: fit-content;
+}
+
+.run-card-small-version:hover div {
+  color: var(--color-run-card-hover) !important;
+}
+
+.run-card-custom-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: fit-content;
+}
+
+.run-card-custom-filter {
+  font-size: 0.85em;
+}

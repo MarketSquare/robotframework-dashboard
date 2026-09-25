@@ -1,0 +1,246 @@
+.border {
+  min-height: 42px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.stat-widget-body {
+  justify-content: center;
+  align-items: center;
+}
+
+/* Color picker buttons inside the Add Stat Widget modal */
+.stat-color-btn {
+  min-width: 60px;
+}
+
+/* "All" tab stat list inside the Add Stat Widget modal */
+.add-all-widgets-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.add-all-widgets-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.add-all-widgets-row .form-check {
+  margin-bottom: 0;
+}
+
+.add-all-widgets-row .add-all-widgets-title {
+  flex: 1 1 auto;
+}
+
+.add-all-widgets-row .add-all-widgets-badge {
+  flex: 0 0 auto;
+}
+
+.add-all-widgets-group-heading {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.add-all-widgets-group-heading:first-child {
+  margin-top: 0;
+}
+
+/* Custom section divider bar rendered inside the unified GridStack */
+.custom-section-divider {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-radius: 6px;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.custom-section-title {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  user-select: none;
+}
+
+/* Move to first/last + delete controls on custom widgets/sections — pinned to top-right,
+   out of flex flow, sized and spaced like the icons in graph headers */
+.custom-widget-move-controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Compact flex layout for custom stat widgets — works at any GridStack size */
+.stat-widget-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
+.stat-widget-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.stat-widget-inner:has(.custom-widget-move-controls) .stat-widget-title {
+  max-width: calc(100% - 96px);
+}
+
+/* When the item is very short (h=1 row ≈ 60px) switch to a side-by-side row */
+.grid-stack-item-content:has(.stat-widget-inner) {
+  padding: 8px 12px;
+}
+
+.grid-stack-item[gs-h="1"] .stat-widget-inner,
+.grid-stack-item[data-gs-h="1"] .stat-widget-inner {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid-stack-item[gs-h="1"] .stat-widget-title,
+.grid-stack-item[data-gs-h="1"] .stat-widget-title {
+  flex: 1 1 0;
+  text-align: left;
+  max-width: calc(100% - 40px); /* leave room for the value */
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.grid-stack-item[gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-widget-title,
+.grid-stack-item[data-gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-widget-title {
+  max-width: calc(100% - 136px); /* value + move/delete controls */
+}
+
+.grid-stack-item[gs-h="1"] .stat-value,
+.grid-stack-item[data-gs-h="1"] .stat-value {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.grid-stack-item[gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-value,
+.grid-stack-item[data-gs-h="1"] .stat-widget-inner:has(.custom-widget-move-controls) .stat-value {
+  margin-right: 96px;
+}
+
+.grid-stack-item-content.blue-bg   { background-color: rgba(13, 110, 253, 0.15); }
+.grid-stack-item-content.green-bg  { background-color: rgba(151, 189, 97, 0.2);  }
+.grid-stack-item-content.red-bg    { background-color: rgba(206, 62, 1, 0.2);    }
+.grid-stack-item-content.yellow-bg { background-color: rgba(254, 216, 79, 0.2);  }
+
+/* Inner layout — mirrors stat-widget-inner */
+.link-widget-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Label — main large text, like .stat-value */
+.link-widget-label {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* URL preview — small muted text below the label */
+.link-widget-url {
+  font-size: 0.72rem;
+  opacity: 0.55;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.link-widget-inner:has(.custom-widget-move-controls) .link-widget-label,
+.link-widget-inner:has(.custom-widget-move-controls) .link-widget-url {
+  max-width: calc(100% - 96px);
+}
+
+/* Clickable in non-edit mode */
+.link-widget-clickable {
+  cursor: pointer;
+}
+
+/* Same padding as stat widget tiles */
+.grid-stack-item-content:has(.link-widget-inner) {
+  padding: 8px 12px;
+}
+
+/* h=1 compact row — mirrors stat widget compact layout */
+.grid-stack-item[gs-h="1"] .link-widget-inner,
+.grid-stack-item[data-gs-h="1"] .link-widget-inner {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid-stack-item[gs-h="1"] .link-widget-label,
+.grid-stack-item[data-gs-h="1"] .link-widget-label {
+  flex: 1 1 0;
+  font-size: 1.1rem;
+  text-align: left;
+  max-width: calc(60% - 10px);
+}
+
+.grid-stack-item[gs-h="1"] .link-widget-url,
+.grid-stack-item[data-gs-h="1"] .link-widget-url {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  text-align: right;
+  max-width: 40%;
+}
+
+/* Leave room for the move/delete controls pinned to the top-right in edit mode */
+.grid-stack-item[gs-h="1"] .link-widget-inner:has(.custom-widget-move-controls) .link-widget-url {
+  max-width: calc(40% - 96px);
+  margin-right: 96px;
+}
+
+.fullscreen .stat-value {
+  font-size: 4rem;
+}
+
+.fullscreen .stat-label {
+  font-size: 2rem;
+}

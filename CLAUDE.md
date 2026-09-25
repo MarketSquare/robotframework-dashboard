@@ -76,12 +76,16 @@ Optional `--server` mode hosts the same pipeline behind FastAPI (upload endpoint
 | `robotframework_dashboard/abstractdb.py` | `AbstractDatabaseProcessor` for custom backends (`--databaseclass`) |
 | `robotframework_dashboard/dashboard.py` | `DashboardGenerator` — template rendering |
 | `robotframework_dashboard/dependencies.py` | `DependencyProcessor` — JS/CSS inlining, CDN/offline switching |
-| `robotframework_dashboard/server.py` | FastAPI server |
+| `robotframework_dashboard/server.py` | `ApiServer` — app setup, auth, the HTML serving routes (`/`, `/admin`, `/log`, catch-all) |
+| `robotframework_dashboard/server_models.py` | Pydantic request/response models + their OpenAPI examples |
+| `robotframework_dashboard/server_routes_outputs.py` / `server_routes_logs.py` | The `/…-output(s)` and `/…-log(s)` endpoints, registered onto the app by `_setup_routes` |
 | `robotframework_dashboard/robotdashboardlistener.py` | Robot listener that uploads results to the server |
 | `robotframework_dashboard/js/main.js` | Browser startup entry; everything is reached via its import graph |
 | `robotframework_dashboard/templates/dashboard.html`, `admin.html` | Templates with string placeholders (not Jinja) |
 
 Frontend source: `robotframework_dashboard/js/` and `css/`. **There is no Node bundler** for the dashboard — Python does the bundling. `package.json` exists only for the VitePress docs site.
+
+The two largest front-end concerns live in directories, not single files: `js/filter/` (pipeline, modal option lists, suite path, option availability, controls, profiles) and `js/eventlisteners/` (one module per modal or listener group). `css/components/` is numbered because path order is cascade order. The `coding-standards` skill has the per-file map.
 
 ---
 

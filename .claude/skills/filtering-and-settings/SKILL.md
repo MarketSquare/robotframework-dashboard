@@ -12,7 +12,7 @@ The dashboard front-end has three tightly coupled systems:
 2. **Filtering** — a multi-stage pipeline that produces `filteredRuns/Suites/Tests/Keywords` from the raw decoded data
 3. **Layout** — GridStack-based drag-and-drop positioning + section ordering, also persisted in `settings`
 
-Key files: `js/variables/settings.js`, `js/variables/globals.js`, `js/filter.js`, `js/localstorage.js`, `js/eventlisteners.js`, `js/layout.js`
+Key files: `js/variables/settings.js`, `js/variables/globals.js`, `js/filter/` (8 modules), `js/localstorage.js`, `js/eventlisteners/` (8 modules), `js/layout.js`
 
 ---
 
@@ -58,7 +58,7 @@ All graph-level toggle switches (the controls directly on individual graphs, not
 
 - `update_switch_local_storage(key, state, firstLoad)` — for checkbox switches (overview toggles, suite paths); on `firstLoad=true`, reads from `settings` and sets the DOM element
 - Direct `set_local_storage_item("switch.*", value)` calls — for graph-specific switches like `ignoreSkips`, `onlyLastRunSuite`, `heatmapStatus`, etc.
-- Data-driven initialization loops in `eventlisteners.js` — arrays of `[elementId, settingsKey]` pairs that restore checkbox/select states on load and wire change listeners that persist to localStorage
+- Data-driven initialization loops in `eventlisteners/graph_view_buttons.js` — arrays of `[elementId, settingsKey]` pairs that restore checkbox/select states on load and wire change listeners that persist to localStorage
 
 ### Deep Merge Behavior (`merge_deep`)
 
@@ -80,7 +80,7 @@ In `localstorage.js`: if the placeholder string was not replaced (i.e. the strin
 
 ---
 
-## Filtering Pipeline (`js/filter.js`)
+## Filtering Pipeline (`js/filter/pipeline.js`)
 
 `setup_filtered_data_and_filters()` is called when the filter modal closes, when navigating from the overview page, and on initial load. Stages, in order:
 
@@ -129,7 +129,7 @@ settings.filterProfiles = {
 ```
 A profile need not contain all keys — only the keys that were checked when the profile was saved.
 
-### Key functions (`filter.js`)
+### Key functions (`js/filter/`)
 | Function | What it does |
 |---|---|
 | `capture_current_filters()` | Reads all filter DOM controls → plain profile object |
@@ -178,7 +178,7 @@ Key mutable globals used across modules:
 
 | Global | Description |
 |---|---|
-| `filteredRuns`, `filteredSuites`, `filteredTests`, `filteredKeywords` | Current filtered data arrays (reassigned by `filter.js` after each filter pass) |
+| `filteredRuns`, `filteredSuites`, `filteredTests`, `filteredKeywords` | Current filtered data arrays (reassigned by `filter/pipeline.js` after each filter pass) |
 | `filteredAmount` | Total count before amount-slicing (shown as "showing X of N runs") |
 | `gridUnified`, `gridRun`, `gridSuite`, `gridTest`, `gridKeyword`, `gridCompare` | GridStack instances per section |
 | `gridEditMode` | Boolean: layout editor is active |
@@ -221,7 +221,7 @@ In normal mode, hidden graphs are rendered to a `#[section]DataHidden` container
 
 ---
 
-## Event Wiring (`js/eventlisteners.js`)
+## Event Wiring (`js/eventlisteners/`)
 
 `setup_filter_modal()` — wires all filter modal controls. The Bootstrap `hidden.bs.modal` event triggers `setup_filtered_data_and_filters()` + `update_dashboard_graphs()` (with a loading overlay and double `requestAnimationFrame` to let the DOM settle before rendering).
 
