@@ -19,9 +19,17 @@
 //   node scripts/docs/build-versioned-docs.mjs --only legacy       only the README-only versions
 //   node scripts/docs/build-versioned-docs.mjs --main-ref origin/main
 //   node scripts/docs/build-versioned-docs.mjs --cache-dir .docs-dist-cache
+//   node scripts/docs/build-versioned-docs.mjs --no-example          keep the committed example dashboard
 //
 // Env: DOCS_MAIN_REF (same as --main-ref, default "main"),
-//      DOCS_CACHE_DIR (same as --cache-dir).
+//      DOCS_CACHE_DIR (same as --cache-dir),
+//      DOCS_SKIP_EXAMPLE (same as --no-example),
+//      PYTHON (interpreter used to rebuild the `dev` example dashboard).
+//
+// The example dashboard is committed and only regenerated when a release is cut, so every
+// released version serves the example its own code produced. `dev` documents unreleased main,
+// where that file is behind by every merge since the last release, so its example is rebuilt
+// from the worktree (scripts/example.py) before the docs are built.
 //
 // Cache: released versions never change, so with a cache dir each finished
 // build is stored there under a fingerprint (commit + everything overlaid +
@@ -71,11 +79,17 @@ const PATCHES = {
 };
 
 function parse_args(argv) {
-  const args = { only: null, mainRef: process.env.DOCS_MAIN_REF || 'main', cacheDir: process.env.DOCS_CACHE_DIR || null };
+  const args = {
+    only: null,
+    mainRef: process.env.DOCS_MAIN_REF || 'main',
+    cacheDir: process.env.DOCS_CACHE_DIR || null,
+    example: !process.env.DOCS_SKIP_EXAMPLE,
+  };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--only') args.only = new Set(argv[++i].split(',').map((s) => s.trim()).filter(Boolean));
     else if (argv[i] === '--main-ref') args.mainRef = argv[++i];
     else if (argv[i] === '--cache-dir') args.cacheDir = argv[++i];
+    else if (argv[i] === '--no-example') args.example = false;
     else throw new Error(`Unknown argument: ${argv[i]}`);
   }
   if (args.cacheDir) args.cacheDir = resolve(repoRoot, args.cacheDir);
@@ -305,7 +319,40 @@ function strip_shared_assets(worktree, build, latest) {
   return shared;
 }
 
-function build_one(build, env, latest) {
+// scripts/example.py imports the fixtures with the source of the worktree it runs in
+// (python -m, cwd first on sys.path), so the example matches the code the docs describe.
+// It needs the dependencies of the package, not the package itself.
+function python_for_example() {
+  for (const candidate of [process.env.PYTHON, 'python', 'python3']) {
+    if (!candidate) continue;
+    try {
+      execFileSync(candidate, ['-c', 'import robot'], { stdio: 'ignore' });
+      return candidate;
+    } catch {
+      // no such interpreter, or one without robotframework: try the next
+    }
+  }
+  return null;
+}
+
+function rebuild_example(worktree, args) {
+  if (!args.example) {
+    console.log('[example] --no-example: keeping the committed example dashboard');
+    return;
+  }
+  const python = python_for_example();
+  if (!python) {
+    // a docs build is not worth a python install locally, but in CI it means the workflow
+    // stopped installing one and dev would quietly serve a stale example again
+    if (process.env.CI) throw new Error('No python with robotframework found to rebuild the example dashboard');
+    console.log('[example] no python with robotframework: keeping the committed example dashboard');
+    return;
+  }
+  console.log('[example] rebuilding example/robot_dashboard.html from this worktree');
+  execFileSync(python, ['scripts/example.py'], { cwd: worktree, stdio: 'inherit' });
+}
+
+function build_one(build, env, latest, args) {
   const worktree = resolve(worktreesDir, build.name.replace(/[^\w.-]/g, '_'));
   const outDir = resolve(distDir, build.prefix);
   console.log(`\n=== ${build.name} (${build.ref}) -> ${SITE_BASE}${build.prefix}`);
@@ -317,6 +364,8 @@ function build_one(build, env, latest) {
     overlay(worktree);
     apply_patches(worktree, build);
     const sharedAssets = strip_shared_assets(worktree, build, latest);
+    // before copy-static.mjs, which copies example/robot_dashboard.html into docs/public
+    if (build.name === 'dev') rebuild_example(worktree, args);
     execFileSync(process.execPath, [resolve(worktree, 'scripts/docs/copy-static.mjs')], {
       cwd: worktree,
       stdio: 'inherit',
@@ -377,7 +426,7 @@ function main() {
         restored++;
         continue;
       }
-      build_one(build, env, latest);
+      build_one(build, env, latest, args);
       if (cacheable) {
         store_in_cache(args.cacheDir, build, print);
         // tells CI that the cache dir changed and is worth saving again
