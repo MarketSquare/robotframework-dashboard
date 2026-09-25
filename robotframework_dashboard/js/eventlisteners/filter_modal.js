@@ -32,6 +32,11 @@ import {
     schedule_filter_option_availability_refresh,
     set_filter_modal_open,
 } from "../filter/availability.js";
+import {
+    render_date_histogram,
+    schedule_date_histogram_refresh,
+    setup_date_histogram,
+} from "../filter/date_histogram.js";
 import { confirm_action } from "./confirm_modal.js";
 import { setup_merge_profiles_modal } from "./merge_profiles.js";
 
@@ -65,10 +70,16 @@ function setup_filter_modal() {
     document.getElementById("filtersModal").addEventListener("show.bs.modal", function () {
         set_filter_modal_open(true);
     });
+    // Chart.js cannot size a canvas inside a hidden element, so the histogram waits for the modal
+    // to be on screen instead of drawing on show.bs.modal
+    document.getElementById("filtersModal").addEventListener("shown.bs.modal", function () {
+        render_date_histogram();
+    });
     // eventlistener to reset the filters
     document.getElementById("resetFilters").addEventListener("click", function () {
         clear_all_filters();
         clear_active_profile();
+        schedule_date_histogram_refresh();
         add_alert("Filters have been set to default values!", "success")
         update_profile_select_display();
     });
@@ -147,6 +158,7 @@ function setup_filter_modal() {
     setup_project_versions_in_select_filter_buttons();
     setup_suite_path_navigator("All");
     setup_custom_filters_in_select_filter_buttons();
+    setup_date_histogram();
     // snapshot the default/initial filter state so profile checkboxes can reflect changes
     capture_default_filters();
     // filter profiles setup
@@ -207,6 +219,7 @@ function setup_filter_modal() {
             const profile = profiles[name];
             if (profile) {
                 apply_filter_profile(profile, name);
+                schedule_date_histogram_refresh();
                 add_alert(`Filter profile "${name}" applied`, "success");
                 update_profile_select_display();
                 populate_filter_profile_select();

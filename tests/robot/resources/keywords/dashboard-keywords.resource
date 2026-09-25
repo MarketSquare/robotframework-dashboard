@@ -198,6 +198,63 @@ Set Date Filter
     IF    '${toTime}' != '${None}'    Type Text    selector=id=toTime    txt=${toTime}    clear=True
     Close Filter Dialog
 
+Wait For Date Histogram
+    [Documentation]    The histogram is drawn on shown.bs.modal, which can fire a moment after
+    ...    Open Filter Dialog is satisfied, and a filter change redraws it on the next frame.
+    Wait For Function    () => !!window.dateHistogramChart    timeout=10s
+
+Date Histogram Bucket Label Should Be
+    [Documentation]    The "1 bar = <unit>" label next to the histogram: the bucket size the
+    ...    current window was drawn with.
+    [Arguments]    ${label}
+    Wait For Date Histogram
+    Browser.Get Text    selector=id=dateHistogramBucket    assertion_operator===    assertion_expected=${label}
+
+Get Date Histogram Run Count
+    [Documentation]    Every bar of every status added up: the runs the bars cover.
+    Wait For Date Histogram
+    ${total}    Evaluate JavaScript    ${None}
+    ...    () => window.dateHistogramChart.data.datasets.reduce((sum, dataset) => sum + dataset.data.reduce((a, b) => a + b, 0), 0)
+    RETURN    ${total}
+
+Date Histogram Should Hold ${runs} Runs
+    ${total}    Get Date Histogram Run Count
+    Should Be Equal As Integers    ${total}    ${runs}
+
+Date Histogram Pixel At
+    [Documentation]    The page coordinates of a fraction of the plotted chart area, so a gesture
+    ...    aims at the bars instead of at the axis labels and the padding around them.
+    [Arguments]    ${fraction}
+    ${box}    Get BoundingBox    selector=id=dateHistogramGraph
+    ${area}    Evaluate JavaScript    ${None}
+    ...    () => { const area = window.dateHistogramChart.chartArea; return { left: area.left, right: area.right, top: area.top, bottom: area.bottom }; }
+    ${x}    Evaluate    ${box}[x] + ${area}[left] + (${area}[right] - ${area}[left]) * ${fraction}
+    ${y}    Evaluate    ${box}[y] + (${area}[top] + ${area}[bottom]) / 2
+    RETURN    ${x}    ${y}
+
+Drag On Date Histogram
+    [Documentation]    Drags across part of the histogram, which selects that part of the window and
+    ...    zooms into it.
+    [Arguments]    ${from_fraction}    ${to_fraction}
+    Wait For Date Histogram
+    ${from_x}    ${y}    Date Histogram Pixel At    ${from_fraction}
+    ${to_x}    ${y}    Date Histogram Pixel At    ${to_fraction}
+    Mouse Move    ${from_x}    ${y}
+    Mouse Button    down
+    Mouse Move    ${to_x}    ${y}    steps=10
+    Mouse Button    up
+
+Click On Highest Date Histogram Bar
+    [Documentation]    A click without a drag selects the single bucket under the pointer. The
+    ...    fullest bar is the one to aim at: a bucket without runs leaves nothing to draw.
+    Wait For Date Histogram
+    ${fraction}    Evaluate JavaScript    ${None}
+    ...    () => { const chart = window.dateHistogramChart; const totals = chart.data.labels.map((label, index) => chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0)); return (totals.indexOf(Math.max(...totals)) + 0.5) / totals.length; }
+    ${x}    ${y}    Date Histogram Pixel At    ${fraction}
+    Mouse Move    ${x}    ${y}
+    Mouse Button    down
+    Mouse Button    up
+
 Set Amount Filter
     [Arguments]    ${amount}    ${close_filter_dialog}=True
     Open Filter Dialog

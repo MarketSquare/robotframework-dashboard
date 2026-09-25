@@ -343,15 +343,20 @@ function build_date_range(fromDate, fromTime, toDate, toTime) {
     return { from, to };
 }
 
+// The date a run started as the date filter sees it: when timezones are not converted, the
+// offset is stripped so the run_start is a plain wall-clock time matching the date picker
+// values (which are also wall-clock). Not the parse_run_start() of common.js, which keeps the
+// offset - every module ends up in one script, so the names may not clash either.
+function get_run_start_date(run) {
+    let rs = run.run_start.replace(" ", "T");
+    if (!settings.show.convertTimezone) {
+        rs = strip_tz_suffix(rs);
+    }
+    return new Date(rs);
+}
 function apply_date_filter(runs, fromDateTime, toDateTime) {
     return runs.filter(run => {
-        // When not converting timezones, strip any timezone offset so the run_start is treated
-        // as a plain wall-clock time matching the date picker values (which are also wall-clock).
-        let rs = run.run_start.replace(" ", "T");
-        if (!settings.show.convertTimezone) {
-            rs = strip_tz_suffix(rs);
-        }
-        const runStart = new Date(rs);
+        const runStart = get_run_start_date(run);
         return runStart >= fromDateTime && runStart <= toDateTime;
     });
 }
@@ -464,6 +469,7 @@ export {
     get_custom_filter_value,
     get_hidden_custom_filters,
     get_project_version_value,
+    get_run_start_date,
     parse_custom_filters,
     remove_milliseconds,
     remove_timezones,

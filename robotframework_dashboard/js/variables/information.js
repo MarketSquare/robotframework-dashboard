@@ -160,6 +160,14 @@ It helps identify tests with inconsistent execution times, which might be flaky 
 - A dot indicates the filter is active.
 - The number behind an option is how many runs remain if you select it (the other filters stay as they are).
 - Greyed out options match no runs, but can still be selected.`,
+    "filterDateHistogramInformation": `How many runs started in each time bucket, split by run status, for the date range below.
+- Drag across the bars to select a range: the from/to date and time are filled in and the chart zooms into the selection, so dragging again zooms in further.
+- Clicking a single bar selects that bucket.
+- A selection always covers whole bars, and the text next to the chart says how much time one bar is.
+- Hovering a bar shows its time range and one block per run with the tests that passed, failed and were skipped, the same way the run graphs do.
+- 'Reset Range' (or widening the from/to values by hand) zooms back out to all runs.
+- Every other filter shapes the bars, the date range itself does not: it is the part of the timeline you are looking at, so widening it brings the runs outside it back.
+- The amount filter is not applied to the bars.`,
     "filterFromDateInformation": "Show only runs that started on or after this date.",
     "filterFromTimeInformation": "Show only runs that started at or after this time (combined with From Date).",
     "filterToDateInformation": "Show only runs that started on or before this date.",

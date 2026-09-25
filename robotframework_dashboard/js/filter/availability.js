@@ -79,8 +79,9 @@ function apply_filters_except(runList, selections, facet, dimName = null, suiteL
         if (facet === "customFilters" && dim === dimName) { continue; }
         result = apply_custom_filter_dimension(result, dim, dimSelection.values, dimSelection.mode);
     }
-    // the date range and the suite path have no option lists to count, so they always apply
-    if (selections.dateRange) {
+    // the suite path has no option list to count, so it always applies. The date range applies
+    // too, except for the date histogram, which draws the runs the window is chosen from.
+    if (facet !== "dates" && selections.dateRange) {
         result = apply_date_filter(result, selections.dateRange.from, selections.dateRange.to);
     }
     if (selections.suitePath && selections.suitePath !== "All") {
@@ -156,6 +157,14 @@ function compute_filter_option_availability(runList, selections, suiteList = nul
     }
 
     return availability;
+}
+
+// the runs the date histogram draws: every run level filter except the date range itself,
+// so the bars still cover the runs outside the window and widening it brings them back. The
+// amount filter is left out for the same reason it is left out of the option counts.
+function get_runs_for_date_histogram() {
+    const selections = normalize_filter_selections(capture_current_filters());
+    return apply_filters_except(get_filter_base_runs(), selections, "dates");
 }
 
 // add or update the "(X)" count of one filter option row. The count is a sibling of the
@@ -252,6 +261,7 @@ function schedule_filter_option_availability_refresh() {
 
 export {
     compute_filter_option_availability,
+    get_runs_for_date_histogram,
     normalize_filter_selections,
     refresh_filter_option_availability,
     schedule_filter_option_availability_refresh,
