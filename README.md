@@ -54,7 +54,7 @@ For all available CLI options see the [Basic CLI docs](https://marketsquare.gith
 - 📄 **Dashboard Pages** - Overview, Dashboard, and Compare pages for multi-level insights.  
 - 🎛️ **Customizable Layouts** - Drag-and-drop sections with adjustable size and order.  
 - 📊 **Graph Customization** - Toggle legends, axis titles, labels, and control animations.  
-- 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity (applied per project).  
+- 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity (applied per project). Every filter option shows how many runs it still matches, and options that match none are greyed out.  
 - ⚖️ **Comparison Mode** - Compare up to 4 runs side by side with visual statistics.  
 - 🔗 **Automatic Log Linking** - Open Robot Framework logs directly from the dashboard.  
 - 🔁 **Rerun History** - Merged `--rerunfailed` outputs keep the status of every attempt per test.  

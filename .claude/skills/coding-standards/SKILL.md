@@ -5,6 +5,28 @@ description: Naming, structure, and style rules for Python, JavaScript, HTML, an
 
 # Coding Standards
 
+## Comments
+
+Write a comment only when the code cannot say it itself. Before adding one, check that it is not simply the name, or the next statement in prose.
+
+**Earns its place:**
+
+- why a non-obvious choice was made — especially one a later reader would "simplify" and break (`:has()` instead of an unconditional rule, `hidden` instead of rebuilding a list)
+- a constraint that lives in another file: an id built from a name, a fixture, a reference screenshot, a placeholder token
+- ordering that matters ("must run before `remove_timezones` so the offset is still present")
+- a workaround for third-party behaviour, naming what breaks without it
+
+**Cut:**
+
+- restating the function or variable name (`// the four dashboard pages` above `const dashboardPages = ["overview", ...]`)
+- narrating the next statement
+- repeating what a guard clause or an early return already shows
+- "what changed", "added for issue N", "new in 2.4" — that is git history
+
+Match the surrounding density rather than your own taste: the JS modules run one short lowercase line per top-level function and few inside bodies. `filter.js` sits near 6% comment lines — a new block far above the file's ratio is a signal to cut, not a new house style. Do not restyle existing comments while you are there.
+
+Robot `[Documentation]` is API documentation, not a comment: it renders in `log.html`. Write it for a keyword whose contract or trap is invisible at the call site; skip it when the name already says everything (`Open Compare Page`).
+
 ## Python
 
 - Targets Python 3.8+.

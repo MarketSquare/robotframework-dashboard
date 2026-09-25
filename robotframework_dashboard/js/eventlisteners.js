@@ -13,12 +13,13 @@ import {
     showingProjectVersionDialogue,
     lastMergeResult,
     filterRows,
+    escape_html_for_merge,
 } from "./variables/globals.js";
 import { arrowDown, arrowRight } from "./variables/svg.js";
 import { fullscreenButtons, graphChangeButtons, compareRunIds } from "./variables/graphs.js";
 import { toggle_theme, apply_theme_colors, apply_custom_branding } from "./theme.js";
 import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading, show_loading_overlay, hide_loading_overlay } from "./common.js";
-import { setup_data_and_graphs, update_menu } from "./menu.js";
+import { setup_data_and_graphs, update_menu, setup_overview_section_menu_buttons } from "./menu.js";
 import { update_dashboard_graphs } from "./graph_creation/all.js";
 import {
     setup_filtered_data_and_filters,
@@ -41,6 +42,10 @@ import {
     clear_active_profile,
     capture_default_filters,
     merge_two_profiles,
+    schedule_filter_option_availability_refresh,
+    set_filter_modal_open,
+    collect_custom_filter_dimensions,
+    dashboardPages,
 } from "./filter.js"
 import { camelcase_to_underscore, underscore_to_camelcase } from "./common.js";
 import {
@@ -153,8 +158,9 @@ function update_merge_result_preview() {
 function update_filters_button_indicator() {
     const indicator = document.getElementById("filtersActiveIndicator");
     if (!indicator) return;
+    // a hidden custom filter is not applied, so its dot must not mark the button as active
     const anyActive = [...document.querySelectorAll("#filtersModal .version-selected-dot")]
-        .some(el => el.style.display !== "none");
+        .some(el => el.style.display !== "none" && !el.closest("[hidden]"));
     indicator.style.display = anyActive ? "inline-block" : "none";
 }
 
@@ -163,6 +169,8 @@ function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
     // Only recompute filtered data and update graphs in-place (no layout rebuild needed)
     document.getElementById("filtersModal").addEventListener("hide.bs.modal", function () {
+        // no more writing into the modal while it fades out
+        set_filter_modal_open(false);
         show_loading_overlay();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -171,6 +179,11 @@ function setup_filter_modal() {
                 hide_loading_overlay();
             });
         });
+    });
+    // count the runs behind every filter option and grey out the ones that match nothing,
+    // also picking up filters that were set while the modal was closed (overview drill down)
+    document.getElementById("filtersModal").addEventListener("show.bs.modal", function () {
+        set_filter_modal_open(true);
     });
     // eventlistener to reset the filters
     document.getElementById("resetFilters").addEventListener("click", function () {
@@ -407,10 +420,12 @@ function setup_filter_modal() {
     filterModal.addEventListener("change", function () {
         update_profile_select_display();
         update_filters_button_indicator();
+        schedule_filter_option_availability_refresh();
     });
     filterModal.addEventListener("input", function () {
         update_profile_select_display();
         update_filters_button_indicator();
+        schedule_filter_option_availability_refresh();
     });
 }
 
@@ -450,6 +465,57 @@ function setup_settings_modal() {
             });
         }
         render_keyword_libraries();
+        dashboardPages.forEach(page => render_hidden_custom_filters(page));
+    });
+    function render_hidden_custom_filters(page) {
+        const pageName = page.charAt(0).toUpperCase() + page.slice(1);
+        const settingKey = `hiddenCustomFilters${pageName}`;
+        const container = document.getElementById(`${settingKey}List`);
+        if (!container) return;
+        container.innerHTML = "";
+        const dimNames = Object.keys(collect_custom_filter_dimensions()).sort();
+        if (!dimNames.length) {
+            container.innerHTML = `<li class="list-group-item small text-muted">No custom filters in run data.</li>`;
+            return;
+        }
+        dimNames.forEach((dimName, dimIndex) => {
+            const isChecked = (settings.show[settingKey] ?? []).includes(dimName);
+            const checkBoxId = `${settingKey}_${dimIndex}`;
+            const item = document.createElement("li");
+            item.className = "list-group-item list-group-item-action d-flex small";
+            item.innerHTML = `
+                <input class="form-check-input me-1" type="checkbox" value="${escape_html_for_merge(dimName)}" id="${checkBoxId}" ${isChecked ? "checked" : ""}>
+                <label class="form-check-label ms-2" for="${checkBoxId}">${escape_html_for_merge(dimName)}</label>
+            `;
+            container.appendChild(item);
+            item.querySelector("input").addEventListener("change", e => {
+                const hiddenCustomFilters = new Set(settings.show[settingKey] ?? []);
+                if (e.target.checked) {
+                    hiddenCustomFilters.add(dimName);
+                } else {
+                    hiddenCustomFilters.delete(dimName);
+                }
+                set_local_storage_item(`show.${settingKey}`, Array.from(hiddenCustomFilters));
+            });
+        });
+    }
+    // dropdown open/close behaviour, one selector per page
+    dashboardPages.forEach(page => {
+        const pageName = page.charAt(0).toUpperCase() + page.slice(1);
+        const selectEl = document.getElementById(`selectHiddenCustomFilters${pageName}`);
+        const checkBoxesEl = document.getElementById(`hiddenCustomFilters${pageName}CheckBoxes`);
+        if (!selectEl || !checkBoxesEl) return;
+        let showing = false;
+        function toggle() {
+            showing = !showing;
+            checkBoxesEl.style.display = showing ? "block" : "none";
+        }
+        selectEl.addEventListener("pointerdown", toggle);
+        document.body.addEventListener("pointerdown", function (event) {
+            if (showing && !checkBoxesEl.contains(event.target) && !selectEl.contains(event.target)) {
+                toggle();
+            }
+        });
     });
     // function to create setting toggle handlers
     function create_toggle_handler({ key, elementId, datatype = "boolean" }) {
@@ -502,6 +568,8 @@ function setup_settings_modal() {
         { key: "show.suitesSelectionInSuiteStats", elementId: "toggleSuitesSelectionInSuiteStats", datatype: "string", event: "change" },
         { key: "show.suitesSelectionInTestStats", elementId: "toggleSuitesSelectionInTestStats", datatype: "string", event: "change" },
         { key: "show.overviewDurationPercentage", elementId: "overviewDurationPercentage", datatype: "number", event: "change" },
+        { key: "show.filterAvailability", elementId: "toggleFilterAvailability" },
+        { key: "show.filterCounts", elementId: "toggleFilterCounts" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
         handler(true);
@@ -766,6 +834,7 @@ function setup_sections_filters() {
                 update_overview_sections_visibility();
                 // update all tagged bars
                 update_projectbar_visibility();
+                setup_overview_section_menu_buttons();
                 hide_loading_overlay();
             });
         });
@@ -784,6 +853,7 @@ function setup_sections_filters() {
                 update_overview_sections_visibility();
                 // update all named project bars
                 update_projectbar_visibility();
+                setup_overview_section_menu_buttons();
                 hide_loading_overlay();
             });
         });
@@ -792,11 +862,13 @@ function setup_sections_filters() {
         settings.switch.latestRuns = !settings.switch.latestRuns
         update_switch_local_storage("switch.latestRuns", settings.switch.latestRuns);
         update_overview_sections_visibility();
+        setup_overview_section_menu_buttons();
     });
     document.getElementById("switchTotalStats").addEventListener("click", function () {
         settings.switch.totalStats = !settings.switch.totalStats
         update_switch_local_storage("switch.totalStats", settings.switch.totalStats);
         update_overview_sections_visibility();
+        setup_overview_section_menu_buttons();
     });
     document.getElementById("switchSortFilters").addEventListener("click", function () {
         settings.switch.sortFilters = !settings.switch.sortFilters

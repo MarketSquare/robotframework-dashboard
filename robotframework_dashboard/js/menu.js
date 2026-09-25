@@ -1,5 +1,5 @@
 import { setup_filtered_data_and_filters, clear_overview_project_navigation_filter } from "./filter.js";
-import { areGroupedProjectsPrepared, overviewNavStore } from "./variables/globals.js";
+import { areGroupedProjectsPrepared, overviewNavStore, tablesNavStore } from "./variables/globals.js";
 import { space_to_camelcase, fade_in, fade_out } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
 import { create_dashboard_graphs } from "./graph_creation/all.js";
@@ -9,6 +9,10 @@ import { setup_graph_view_buttons, setup_overview_order_filters } from "./eventl
 import { setup_section_order, setup_graph_order, setup_overview_section_layout_buttons } from "./layout.js";
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";
+import { arrowDown, arrowRight } from "./variables/svg.js";
+
+const PAGE_IDS = ["menuOverview", "menuDashboard", "menuCompare", "menuTables", "openDashboard"];
+const PAGES_WITH_SECTIONS = ["menuOverview", "menuDashboard", "menuTables"];
 
 function get_sticky_height() {
     const stickyTop = document.getElementById("navigation");
@@ -128,6 +132,9 @@ function setup_menu() {
         else if (menuSettings.tables) selectedMenu = "menuTables";
     }
     update_menu(selectedMenu);
+
+    // hiding, showing or reordering a table changes what the tables track should hold
+    document.addEventListener("layout-user-action", () => setup_tables_section_menu_buttons());
 }
 
 // function to update all graph data, function is called when updating filters and when the page loads
@@ -154,6 +161,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
                 setup_spinner(true);
                 setup_dashboard_section_menu_buttons();
                 setup_overview_section_menu_buttons();
+                setup_tables_section_menu_buttons();
 
                 // Always create graphs from scratch because setup_graph_order()
                 // rebuilds all GridStack grids and canvas DOM elements above
@@ -208,14 +216,20 @@ function setup_dashboard_section_menu_buttons() {
     } else {
         sectionButtons.forEach(btn => btn.hidden = true);
     }
+    // an empty track would still draw its pill background, so it goes with its last item
+    document.getElementById("dashboardNavTrack").hidden = sectionButtons.every(btn => btn.hidden);
 
     const sections = Object.keys(sectionMap).map(id => document.getElementById(id));
     function update_active_section() {
         const bestIndex = compute_best_visible_index(sections);
         const bestMatch = sections[bestIndex];
-        sectionButtons.forEach(btn => btn.classList.remove("active"));
+        sectionButtons.forEach(btn => {
+            btn.classList.remove("active");
+            btn.removeAttribute("aria-current");
+        });
         if (bestMatch && sectionMap[bestMatch.id]) {
             sectionMap[bestMatch.id].classList.add("active");
+            sectionMap[bestMatch.id].setAttribute("aria-current", "true");
         }
     }
 
@@ -240,11 +254,13 @@ function setup_overview_section_menu_buttons() {
     const isOverviewActive = !!(settings.menu && settings.menu.overview);
     const navbar = document.querySelector(".navbar-nav");
     const overviewMenuLink = document.getElementById("menuOverview");
-    if (!navbar || !overviewMenuLink) return;
+    const overviewTrack = document.getElementById("overviewNavTrack");
+    if (!navbar || !overviewMenuLink || !overviewTrack) return;
 
     const existingOverviewButtons = Array.from(navbar.querySelectorAll('a[id^="overview-"][id$="Nav"]'));
     if (!isOverviewActive) {
         existingOverviewButtons.forEach(el => el.remove());
+        overviewTrack.hidden = true;
         if (overviewNavStore.scrollHandler) {
             window.removeEventListener("scroll", overviewNavStore.scrollHandler);
             overviewNavStore.scrollHandler = null;
@@ -258,15 +274,10 @@ function setup_overview_section_menu_buttons() {
 
     const sections = Array.from(document.querySelectorAll("#overview .overview-bar"))
         .filter(el => el.offsetParent !== null);
-    if (sections.length === 0) return;
-
-    const insertAfter = (newNode, referenceNode) => {
-        if (referenceNode.nextSibling) {
-            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-        } else {
-            referenceNode.parentNode.appendChild(newNode);
-        }
-    };
+    if (sections.length === 0) {
+        overviewTrack.hidden = true;
+        return;
+    }
 
     const buttonMap = new Map();
     const makeButtonForSection = (sectionEl) => {
@@ -281,11 +292,9 @@ function setup_overview_section_menu_buttons() {
         if (!btn) {
             btn = document.createElement("a");
             btn.id = btnId;
-            btn.className = "nav-item nav-link";
-            const label = document.createElement("i");
-            label.textContent = baseName;
-            btn.appendChild(label);
-            insertAfter(btn, overviewMenuLink);
+            btn.className = "nav-item nav-link nav-track-item";
+            btn.textContent = baseName;
+            overviewTrack.appendChild(btn);
 
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -296,6 +305,13 @@ function setup_overview_section_menu_buttons() {
     };
 
     sections.forEach(makeButtonForSection);
+
+    // Sections come and go when the overview bar settings change (projects by name, projects by
+    // tag), so buttons of sections that no longer exist have to go with them
+    Array.from(overviewTrack.children).forEach(btn => {
+        const sectionId = btn.id.replace(/^overview-/, "").replace(/Nav$/, "");
+        if (!buttonMap.has(sectionId)) btn.remove();
+    });
 
     // Before attaching new listeners, remove any previous ones to avoid stale closures
     if (overviewNavStore.scrollHandler) {
@@ -314,6 +330,7 @@ function setup_overview_section_menu_buttons() {
         if (!stillOverview) {
             const toRemove = Array.from(navbar.querySelectorAll('a[id^="overview-"][id$="Nav"]'));
             toRemove.forEach(el => el.remove());
+            overviewTrack.hidden = true;
             if (overviewNavStore.scrollHandler) {
                 window.removeEventListener("scroll", overviewNavStore.scrollHandler);
                 overviewNavStore.scrollHandler = null;
@@ -331,28 +348,32 @@ function setup_overview_section_menu_buttons() {
             if (!settings.show.prefixes && name.startsWith('project_')) {
                 name = name.replace(/^project_/, '');
             }
-            const label = btn.querySelector('i');
-            if (label) label.textContent = name;
+            btn.textContent = name;
         });
         const bestIndex = compute_best_visible_index(sections);
         const indices = neighbor_indices(bestIndex, sections.length);
 
-        // Reorder the visible buttons (up to 3) in the navbar after the Overview link
-        let last = overviewMenuLink;
+        // Reorder the visible buttons (up to 3) so they sit in section order inside the track
         indices.forEach(idx => {
             const btn = buttonMap.get(sections[idx].id);
             if (!btn) return;
             btn.hidden = !showButtons;
-            if (last.nextSibling !== btn) insertAfter(btn, last);
-            last = btn;
+            overviewTrack.appendChild(btn);
         });
 
         sections.forEach((section, idx) => {
             const btn = buttonMap.get(section.id);
             if (!btn) return;
             btn.hidden = !showButtons || !indices.includes(idx);
-            btn.classList.toggle("active", showButtons && idx === bestIndex);
+            const isActive = showButtons && idx === bestIndex;
+            btn.classList.toggle("active", isActive);
+            if (isActive) {
+                btn.setAttribute("aria-current", "true");
+            } else {
+                btn.removeAttribute("aria-current");
+            }
         });
+        overviewTrack.hidden = !showButtons || indices.length === 0;
     };
 
     window.addEventListener("scroll", updateVisibleButtons, { passive: true });
@@ -360,6 +381,101 @@ function setup_overview_section_menu_buttons() {
     overviewNavStore.scrollHandler = updateVisibleButtons;
     overviewNavStore.resizeHandler = updateVisibleButtons;
     updateVisibleButtons();
+}
+
+// function to create and manage the tables page buttons: one per table that is currently
+// shown, in the order the user arranged them, highlighting the one that is most visible
+function setup_tables_section_menu_buttons() {
+    const isTablesActive = !!(settings.menu && settings.menu.tables);
+    const navbar = document.querySelector(".navbar-nav");
+    const tablesTrack = document.getElementById("tablesNavTrack");
+    if (!navbar || !tablesTrack) return;
+
+    const remove_handlers = () => {
+        if (tablesNavStore.scrollHandler) {
+            window.removeEventListener("scroll", tablesNavStore.scrollHandler);
+            tablesNavStore.scrollHandler = null;
+        }
+        if (tablesNavStore.resizeHandler) {
+            window.removeEventListener("resize", tablesNavStore.resizeHandler);
+            tablesNavStore.resizeHandler = null;
+        }
+    };
+
+    if (!isTablesActive) {
+        Array.from(navbar.querySelectorAll('a[id^="tables-"][id$="Nav"]')).forEach(el => el.remove());
+        tablesTrack.hidden = true;
+        remove_handlers();
+        return;
+    }
+
+    const sections = Array.from(document.querySelectorAll("#tables .table-section"))
+        .filter(el => el.offsetParent !== null);
+    if (sections.length === 0) {
+        tablesTrack.hidden = true;
+        remove_handlers();
+        return;
+    }
+
+    const label_for = (sectionEl) => {
+        const heading = sectionEl.querySelector("h6");
+        const name = heading
+            ? heading.textContent.replace(/\s*Table$/i, "").trim()
+            : sectionEl.id.replace(/TableCanvas$/, "");
+        return `${name}s`;
+    };
+
+    const buttonMap = new Map();
+    sections.forEach(sectionEl => {
+        const btnId = `tables-${sectionEl.id}Nav`;
+        let btn = document.getElementById(btnId);
+        if (!btn) {
+            btn = document.createElement("a");
+            btn.id = btnId;
+            btn.className = "nav-item nav-link nav-track-item";
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                expand_and_scroll_to(sectionEl);
+            });
+        }
+        btn.textContent = label_for(sectionEl);
+        // re-appending in section order keeps the track following the user's table order
+        tablesTrack.appendChild(btn);
+        buttonMap.set(sectionEl.id, btn);
+    });
+
+    Array.from(tablesTrack.children).forEach(btn => {
+        const sectionId = btn.id.replace(/^tables-/, "").replace(/Nav$/, "");
+        if (!buttonMap.has(sectionId)) btn.remove();
+    });
+
+    remove_handlers();
+    const update_active_table = () => {
+        if (!(settings.menu && settings.menu.tables)) {
+            tablesTrack.hidden = true;
+            remove_handlers();
+            return;
+        }
+        const bestIndex = compute_best_visible_index(sections);
+        sections.forEach((section, idx) => {
+            const btn = buttonMap.get(section.id);
+            if (!btn) return;
+            const isActive = idx === bestIndex;
+            btn.classList.toggle("active", isActive);
+            if (isActive) {
+                btn.setAttribute("aria-current", "true");
+            } else {
+                btn.removeAttribute("aria-current");
+            }
+        });
+    };
+
+    window.addEventListener("scroll", update_active_table, { passive: true });
+    window.addEventListener("resize", update_active_table);
+    tablesNavStore.scrollHandler = update_active_table;
+    tablesNavStore.resizeHandler = update_active_table;
+    tablesTrack.hidden = false;
+    update_active_table();
 }
 
 function scroll_to_most_visible_section() {
@@ -427,6 +543,10 @@ function setup_navbar_overflow() {
 
     // Capture icon <li> references (they move, but references stay valid)
     const iconLiEls = Array.from(iconNavUl.children);
+    // the section tracks are not .nav-item themselves, so they are hidden separately
+    const trackEls = ['overviewNavTrack', 'dashboardNavTrack', 'tablesNavTrack']
+        .map(id => document.getElementById(id))
+        .filter(Boolean);
 
     let navInSidebar = false;
     let iconsInSidebar = false;
@@ -501,9 +621,102 @@ function setup_navbar_overflow() {
         // Remaining pages
         push(byId('menuCompare'));
         push(byId('menuTables'));
+        // Tables sub-items in actual DOM table order
+        if (settings.menu && settings.menu.tables) {
+            Array.from(document.querySelectorAll('#tables .table-section'))
+                .filter(el => el.offsetParent !== null || !el.hidden)
+                .forEach(section => {
+                    const btn = byId(`tables-${section.id}Nav`);
+                    if (btn) items.push(btn);
+                });
+        }
         push(byId('openDashboard'));
 
         return items;
+    }
+
+    // Turn the flat, ordered nav item list into one group per page plus its section items
+    function grouped_sidebar_items() {
+        const groups = [];
+        ordered_sidebar_items().forEach(el => {
+            if (PAGE_IDS.includes(el.id)) {
+                groups.push({ page: el, subItems: [] });
+            } else if (groups.length) {
+                groups[groups.length - 1].subItems.push(el);
+            }
+        });
+        return groups;
+    }
+
+    function build_page_group(group) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sidenav-group';
+        const isActivePage = group.page.classList.contains('active');
+
+        const header = document.createElement('div');
+        header.className = 'sidenav-group-header' + (isActivePage ? ' active' : '');
+        const link = document.createElement('a');
+        link.className = 'sidenav-nav-item';
+        link.textContent = group.page.textContent;
+        if (isActivePage) link.setAttribute('aria-current', 'page');
+        link.addEventListener('click', () => {
+            group.page.click();
+            close_sidebar();
+        });
+        header.appendChild(link);
+        wrapper.appendChild(header);
+
+        if (!PAGES_WITH_SECTIONS.includes(group.page.id)) return wrapper;
+
+        const subGroup = document.createElement('div');
+        subGroup.className = 'sidenav-subgroup';
+        subGroup.hidden = !isActivePage;
+        group.subItems.forEach(el => {
+            const item = document.createElement('a');
+            item.className = 'sidenav-sub-item';
+            if (el.classList.contains('active')) {
+                item.classList.add('active');
+                item.setAttribute('aria-current', 'true');
+            }
+            item.textContent = el.textContent;
+            item.addEventListener('click', () => {
+                el.click();
+                close_sidebar();
+                subGroup.querySelectorAll('.sidenav-sub-item').forEach(n => {
+                    n.classList.remove('active');
+                    n.removeAttribute('aria-current');
+                });
+                item.classList.add('active');
+                item.setAttribute('aria-current', 'true');
+            });
+            subGroup.appendChild(item);
+        });
+        wrapper.appendChild(subGroup);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'sidenav-group-toggle';
+        const set_toggle_state = (expanded) => {
+            toggle.setAttribute('aria-expanded', String(expanded));
+            toggle.setAttribute('aria-label', `${expanded ? 'Collapse' : 'Expand'} ${link.textContent} sections`);
+            toggle.innerHTML = expanded ? arrowDown : arrowRight;
+        };
+        set_toggle_state(isActivePage);
+        toggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            // section items only exist for the page that is open, so expanding another page's
+            // group means going there first - its group is then expanded on the rebuild
+            if (!isActivePage) {
+                group.page.click();
+                close_sidebar();
+                return;
+            }
+            subGroup.hidden = !subGroup.hidden;
+            set_toggle_state(!subGroup.hidden);
+        });
+        header.appendChild(toggle);
+
+        return wrapper;
     }
 
     function build_sidebar_content() {
@@ -515,19 +728,8 @@ function setup_navbar_overflow() {
             label.textContent = 'Pages';
             sidenavBody.appendChild(label);
 
-            ordered_sidebar_items().forEach(el => {
-                const isSubmenu = !!el.querySelector('i');
-                const item = document.createElement('a');
-                item.className = 'sidenav-nav-item' + (isSubmenu ? ' sidenav-nav-submenu' : '');
-                if (el.classList.contains('active')) item.classList.add('active');
-                item.textContent = el.textContent;
-                item.addEventListener('click', () => {
-                    el.click();
-                    close_sidebar();
-                    sidenavBody.querySelectorAll('.sidenav-nav-item').forEach(n => n.classList.remove('active'));
-                    item.classList.add('active');
-                });
-                sidenavBody.appendChild(item);
+            grouped_sidebar_items().forEach(group => {
+                sidenavBody.appendChild(build_page_group(group));
             });
         }
 
@@ -568,6 +770,9 @@ function setup_navbar_overflow() {
         if (on === navInSidebar) return;
         navInSidebar = on;
         nav_item_els().forEach(el => {
+            el.style.display = on ? 'none' : '';
+        });
+        trackEls.forEach(el => {
             el.style.display = on ? 'none' : '';
         });
     }

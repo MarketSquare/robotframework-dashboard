@@ -47,3 +47,25 @@ Validate Project WebshopAPI
     Open Overview Page
     Click    selector=id=collapseWebshopAPIBody
     Validate Component    id=WebshopAPISection    name=prjWebshopAPI    folder=overview
+
+Overview Section Track Follows The Project Bar Settings
+    [Documentation]    Switching the project bars on or off changes which overview sections exist, so
+    ...    the section track has to be rebuilt with them. It used to keep items for bars that were
+    ...    switched off, which then scrolled nowhere.
+    Open Overview Page
+    ${stale}    Get Stale Section Track Items    overviewNavTrack    overview
+    Should Be Empty    ${stale}
+    Click    selector=id=settings
+    Click    selector=id=overview-tab
+    Click    selector=id=switchRunTags
+    Click    selector=id=closeSettings
+    Wait For Dashboard Idle
+    ${stale}    Get Stale Section Track Items    overviewNavTrack    overview
+    Should Be Empty    ${stale}
+    Click    selector=id=settings
+    Click    selector=id=overview-tab
+    Click    selector=id=switchRunName
+    Click    selector=id=closeSettings
+    Wait For Dashboard Idle
+    ${stale}    Get Stale Section Track Items    overviewNavTrack    overview
+    Should Be Empty    ${stale}
