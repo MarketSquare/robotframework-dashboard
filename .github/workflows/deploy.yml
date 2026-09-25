@@ -5,10 +5,13 @@
 #   /vX.Y.Z/ every release tag       /versions.json
 name: Deploy RobotDashboard docs site to Pages
 
+# A release tag points at the same commit as the main push that created it, and
+# the build checks out every release tag itself, so a tag trigger would only add
+# a duplicate run -- one the github-pages environment rejects, since its
+# deployment branch policy allows main (and guides) but no tag ref.
 on:
   push:
     branches: [main]
-    tags: ['v*']
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -32,9 +35,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0 # every release tag is checked out into a worktree
-      - name: Fetch main
-        # on a tag push main is not checked out; the /dev/ build reads it from origin/main
-        run: git fetch --no-tags origin main:refs/remotes/origin/main
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
