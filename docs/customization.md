@@ -72,13 +72,38 @@ The **Theme** tab also lets you personalize the navigation bar with your own bra
 
 Both settings take effect immediately and persist across page reloads.
 
-## 7. Responsive Menu Bar
+## 7. Menu Bar
+
+### Section Tracks
+
+Pages that are split into sections carry those sections in a **rounded track** in the menu bar, placed
+directly after the page they belong to, so it is always clear which page a section belongs to. The
+section you are looking at is marked by a filled pill, which follows you as you scroll.
+
+Three pages have one:
+
+- **Overview** — one item per project bar, showing at most three at a time: the section you are
+  looking at plus its neighbours. Switching the project bars on or off (see the
+  [Overview settings](/settings#overview-settings-overview-tab)) adds and removes items with them.
+- **Dashboard** — *Runs*, *Suites*, *Tests* and *Keywords*. Sections you hide leave the track as well.
+  In [Unified Mode](/tabs-pages#unified-mode) the whole track disappears, since there are no separate
+  sections to jump between.
+- **Tables** — one item per table that is shown, in the order you arranged the tables in.
+
+Clicking an item scrolls to that section, expanding it first if it was collapsed. While you are
+editing the layout the tracks step aside, so the undo/redo buttons have the middle of the bar to
+themselves.
+
+### Responsive Menu Bar
 
 The navigation bar automatically adapts to any screen width — no manual configuration required:
 
 - When the viewport becomes too narrow to display all page links, the menu items (*Overview*, *Dashboard*, *Compare*, *Tables*, etc.) are moved into a **slide-in sidebar**.
 - If the viewport is even smaller and the icon shortcuts also no longer fit, those move into the sidebar too.
 - A **hamburger button** (☰) appears in the top-right corner whenever items have been moved to the sidebar. Clicking it opens the sidebar; clicking the backdrop or the close button dismisses it.
+- In the sidebar each page that has sections becomes a **collapsible group**: the page you are on is
+  expanded, and the chevron next to a page folds its sections away. Opening the group of another page
+  takes you to that page.
 - The sidebar reorganizes itself to reflect the current page order configured by the user.
 
 This behavior is fully automatic and requires no action from the user.

@@ -140,6 +140,11 @@ let overviewNavStore = {
     resizeHandler: null,
 };
 
+let tablesNavStore = {
+    scrollHandler: null,
+    resizeHandler: null,
+};
+
 var defaultFaviconHref = (() => {
     const link = document.querySelector("link[rel~='icon']");
     return link ? link.getAttribute('href') : null;
@@ -178,6 +183,7 @@ export {
     ignoreSkipsRecent,
     onlyFailedFolders,
     overviewNavStore,
+    tablesNavStore,
     lastMergeResult,
     filterRows,
     defaultFaviconHref,

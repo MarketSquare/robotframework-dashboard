@@ -170,3 +170,33 @@ Validate Compare Tests Status And Only Changes Filters
     Set Compare Tests Status Filter    All
     ${tests}    Get Graph Labels    compareTestsGraph
     Length Should Be    ${tests}    50
+
+Dashboard Section Track Holds The Sections Of The Open Page
+    [Documentation]    The segmented track is part of the Dashboard page, not of the navbar in general:
+    ...    it shows that page's four sections and disappears on a page that has none.
+    ${items}    Get Section Track Items    dashboardNavTrack
+    Should Be Equal    ${items}    ${{ ['Runs', 'Suites', 'Tests', 'Keywords'] }}
+    Open Compare Page
+    Wait For Elements State    selector=id=dashboardNavTrack    state=hidden
+
+Dashboard Section Track Item Scrolls To Its Section And Fills Its Pill
+    [Documentation]    Clicking a pill scrolls to that section, and the pill that fills follows the
+    ...    section that is actually in view.
+    Click    selector=id=keywordStatisticsSectionNav
+    Wait For Dashboard Idle
+    Wait Until Keyword Succeeds    5s    200ms    Section Track Item Should Be Active    dashboardNavTrack    Keywords
+    Click    selector=id=runStatisticsSectionNav
+    Wait For Dashboard Idle
+    Wait Until Keyword Succeeds    5s    200ms    Section Track Item Should Be Active    dashboardNavTrack    Runs
+
+Dashboard Sections Move Into The Sidebar Drawer As Collapsible Groups
+    [Documentation]    Below the overflow width the pages move into the drawer. The open page's group
+    ...    starts expanded and its chevron collapses it; the other pages stay collapsed.
+    Open Sidebar Drawer
+    ${pages}    Get Sidebar Group Labels
+    Should Contain    ${pages}    Dashboard
+    ${subItems}    Get Expanded Sidebar Sub Items
+    Should Be Equal    ${subItems}    ${{ ['Runs', 'Suites', 'Tests', 'Keywords'] }}
+    Toggle Active Sidebar Group
+    ${subItems}    Get Expanded Sidebar Sub Items
+    Should Be Empty    ${subItems}

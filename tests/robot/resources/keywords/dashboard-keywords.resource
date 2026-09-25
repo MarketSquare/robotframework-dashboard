@@ -444,6 +444,7 @@ Apply Settings JSON
     ...    statement that receives the parsed settings as `s`, then applies it (reloads the page).
     [Arguments]    ${patch}
     Open Settings Tab    json
+    Wait For Function    () => document.getElementById("settingsTextArea").value.length > 0    timeout=10s
     Evaluate JavaScript    ${None}
     ...    () => { const area = document.getElementById("settingsTextArea"); const s = JSON.parse(area.value); ${patch}; area.value = JSON.stringify(s); }
     Click    selector=id=applySettings
@@ -792,3 +793,53 @@ Get Custom Section Titles In Grid
 Delete First Custom Section
     Click    selector=css=.delete-custom-section
     Wait For Dashboard Idle
+
+# navigation: the segmented section tracks and the sidebar drawer
+Get Section Track Items
+    [Documentation]    The labels of the items that a page's section track currently shows, in track order.
+    [Arguments]    ${track}
+    ${labels}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#${track} .nav-track-item')].filter(item => !item.hidden).map(item => item.textContent)
+    RETURN    ${labels}
+
+Get Active Section Track Item
+    [Documentation]    The label of the filled pill in a page's section track, or an empty string when none is active.
+    [Arguments]    ${track}
+    ${label}    Evaluate JavaScript    ${None}
+    ...    () => (document.querySelector('#${track} .nav-track-item.active') || {textContent: ''}).textContent
+    RETURN    ${label}
+
+Section Track Item Should Be Active
+    [Arguments]    ${track}    ${label}
+    ${active}    Get Active Section Track Item    ${track}
+    Should Be Equal    ${active}    ${label}
+
+Get Stale Section Track Items
+    [Documentation]    Track items whose section is gone or hidden. Always empty: a track item that
+    ...    outlives its section scrolls nowhere and lies about what the page holds.
+    [Arguments]    ${track}    ${prefix}
+    ${stale}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#${track} a')].filter(item => { const section = document.getElementById(item.id.replace(/^${prefix}-/, '').replace(/Nav$/, '')); return !section || section.offsetParent === null; }).map(item => item.id)
+    RETURN    ${stale}
+
+Open Sidebar Drawer
+    [Documentation]    Narrows the viewport until the navbar overflows into the hamburger, then opens the drawer.
+    Set Viewport Size    width=700    height=900
+    Wait For Elements State    selector=id=navHamburger    state=visible    timeout=10s
+    Click    selector=id=navHamburger
+    Wait For Elements State    selector=css=.sidenav.sidenav-open    state=visible
+
+Get Sidebar Group Labels
+    [Documentation]    The page labels in the drawer, in order.
+    ${labels}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#sidenavBody .sidenav-group-header .sidenav-nav-item')].map(el => el.textContent)
+    RETURN    ${labels}
+
+Get Expanded Sidebar Sub Items
+    [Documentation]    The labels of the sub-items that the drawer currently shows, across all expanded groups.
+    ${labels}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#sidenavBody .sidenav-subgroup:not([hidden]) .sidenav-sub-item')].map(el => el.textContent)
+    RETURN    ${labels}
+
+Toggle Active Sidebar Group
+    Click    selector=css=#sidenavBody .sidenav-group-header.active .sidenav-group-toggle

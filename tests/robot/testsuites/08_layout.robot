@@ -153,3 +153,12 @@ Custom Section Divider In Unified View Is Added, Saved And Deleted
     Should Be Empty    ${titles}
     ${settings}    Get Settings From Local Storage
     Should Be Empty    ${settings}[customSections]
+
+Section Tracks Step Aside While The Layout Is Edited
+    [Documentation]    The undo/redo buttons are centred over the navbar, where the section track sits,
+    ...    so the track hides for as long as the layout is being edited.
+    Wait For Elements State    selector=id=dashboardNavTrack    state=visible
+    Enter Layout Edit Mode
+    Wait For Elements State    selector=id=dashboardNavTrack    state=hidden
+    Save Layout
+    Wait For Elements State    selector=id=dashboardNavTrack    state=visible

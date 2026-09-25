@@ -19,7 +19,7 @@ import { arrowDown, arrowRight } from "./variables/svg.js";
 import { fullscreenButtons, graphChangeButtons, compareRunIds } from "./variables/graphs.js";
 import { toggle_theme, apply_theme_colors, apply_custom_branding } from "./theme.js";
 import { add_alert, show_graph_loading, hide_graph_loading, update_graphs_with_loading, show_loading_overlay, hide_loading_overlay } from "./common.js";
-import { setup_data_and_graphs, update_menu } from "./menu.js";
+import { setup_data_and_graphs, update_menu, setup_overview_section_menu_buttons } from "./menu.js";
 import { update_dashboard_graphs } from "./graph_creation/all.js";
 import {
     setup_filtered_data_and_filters,
@@ -834,6 +834,7 @@ function setup_sections_filters() {
                 update_overview_sections_visibility();
                 // update all tagged bars
                 update_projectbar_visibility();
+                setup_overview_section_menu_buttons();
                 hide_loading_overlay();
             });
         });
@@ -852,6 +853,7 @@ function setup_sections_filters() {
                 update_overview_sections_visibility();
                 // update all named project bars
                 update_projectbar_visibility();
+                setup_overview_section_menu_buttons();
                 hide_loading_overlay();
             });
         });
@@ -860,11 +862,13 @@ function setup_sections_filters() {
         settings.switch.latestRuns = !settings.switch.latestRuns
         update_switch_local_storage("switch.latestRuns", settings.switch.latestRuns);
         update_overview_sections_visibility();
+        setup_overview_section_menu_buttons();
     });
     document.getElementById("switchTotalStats").addEventListener("click", function () {
         settings.switch.totalStats = !settings.switch.totalStats
         update_switch_local_storage("switch.totalStats", settings.switch.totalStats);
         update_overview_sections_visibility();
+        setup_overview_section_menu_buttons();
     });
     document.getElementById("switchSortFilters").addEventListener("click", function () {
         settings.switch.sortFilters = !settings.switch.sortFilters
