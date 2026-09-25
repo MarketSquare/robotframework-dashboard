@@ -195,7 +195,7 @@ Each type must be a list of dictionaries matching what RobotDashboard expects. T
 - `run_start=<timestamp>` — remove by exact run_start timestamp  
 - `alias=<alias>` — remove by run alias  
 - `tag=<tag>` — remove all runs matching the given tag  
-- `limit=<n>` — keep only the N most recent runs, removing all older ones (`limit=<n>;tag=<tag>` scopes it to runs with that tag)  
+- `limit=<n>` — keep only the N most recent runs per project, removing all older ones (a project is a run name and every `project_` run tag; `limit=<n>;tag=<tag>` scopes it to runs with that tag)  
 - `age=<range>` — remove runs older than e.g. `30d` (`-30d` for newer)  
 
 The method returns the console output as a string. When `--logremoved` is used, RobotDashboard sets `log_removed_path` and `log_removed_types` on your instance after construction; the examples write the removed rows to that JSONL file inside the delete transaction.

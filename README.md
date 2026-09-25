@@ -54,7 +54,7 @@ For all available CLI options see the [Basic CLI docs](https://marketsquare.gith
 - 📄 **Dashboard Pages** - Overview, Dashboard, and Compare pages for multi-level insights.  
 - 🎛️ **Customizable Layouts** - Drag-and-drop sections with adjustable size and order.  
 - 📊 **Graph Customization** - Toggle legends, axis titles, labels, and control animations.  
-- 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity. Every filter option shows how many runs it still matches, and options that match none are greyed out.  
+- 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity (applied per project). Every filter option shows how many runs it still matches, and options that match none are greyed out.  
 - ⚖️ **Comparison Mode** - Compare up to 4 runs side by side with visual statistics.  
 - 🔗 **Automatic Log Linking** - Open Robot Framework logs directly from the dashboard.  
 - 🔁 **Rerun History** - Merged `--rerunfailed` outputs keep the status of every attempt per test.  
@@ -97,7 +97,7 @@ robotframework-dashboard is designed to stay fast even as your result set grows.
 - **Dashboard generation** is nearly always **under 1 second** regardless of scale — data is already aggregated in the database, so re-generating HTML after adding new runs is essentially free.
 - **Incremental processing** — output files already in the database are automatically skipped, so you can safely re-run against a folder of XMLs without re-processing old results.
 - **HTML size** stays modest (~500 KB–1 MB for typical workloads) thanks to zlib compression of the embedded data.
-- **Dashboard rendering** (Chart.js in the browser) depends on how many runs are displayed. The default limit is **20 runs** (near-instant). Raising it to **50 runs** takes a few seconds as Chart.js renders all graphs. At **100+ runs**, initial rendering can approach **~10 seconds or more!**. This is also affected by your suite and test size — selecting **"All Suites"** or **"All Tests"** in their respective sections amplifies render time significantly, since each unique name becomes a separate data series. Use the quantity filter to keep the displayed run count manageable.
+- **Dashboard rendering** (Chart.js in the browser) depends on how many runs are displayed. The default limit is **20 runs per project** (near-instant). Raising it to **50 runs** takes a few seconds as Chart.js renders all graphs. At **100+ runs**, initial rendering can approach **~10 seconds or more!**. This is also affected by your suite and test size — selecting **"All Suites"** or **"All Tests"** in their respective sections amplifies render time significantly, since each unique name becomes a separate data series. Use the quantity filter to keep the displayed run count manageable.
 
 For detailed results and scaling guidance, see the [Performance docs](https://marketsquare.github.io/robotframework-dashboard/performance.html).
 

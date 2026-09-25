@@ -1,7 +1,7 @@
 import { settings, get_run_label } from './variables/settings.js';
 import { compareRunIds } from './variables/graphs.js';
 import { runs, suites, tests, keywords, exceptions, unified_dashboard_title } from './variables/data.js';
-import { show_loading_overlay, hide_loading_overlay, strip_tz_suffix } from './common.js';
+import { show_loading_overlay, hide_loading_overlay, strip_tz_suffix, get_run_projects } from './common.js';
 import { set_local_storage_item } from './localstorage.js';
 import {
     filteredAmount,
@@ -11,7 +11,8 @@ import {
     filteredKeywords,
     filteredExceptions,
     selectedRunSetting,
-    selectedTagSetting
+    selectedTagSetting,
+    overviewProjectNavFilter
 } from './variables/globals.js';
 
 // Sort an array of run objects by wall-clock run_start (timezone offset stripped),
@@ -383,6 +384,10 @@ function filter_dates(runs) {
 }
 
 // function to filter the amount of runs based on the filter
+// the amount is applied per project (every project_* run tag and the run name, see
+// get_run_projects) and not on the combined run list: a run is kept when it is one of
+// the last X runs of at least one of its projects, so a project with a lower run
+// frequency never disappears behind the runs of a busier project (issue #347)
 function filter_amount(filteredRuns) {
     var selectedAmount = document.getElementById("amount").value;
     // Handle weird selectedAmountValues:
@@ -408,8 +413,21 @@ function filter_amount(filteredRuns) {
     }
     filteredAmount = filteredRuns.length
     if (selectedAmount == 0) { return [] }
-    filteredRuns = filteredRuns.slice(- selectedAmount)
-    return filteredRuns
+    // collect the indexes of the last X runs of every project, the indexes keep the
+    // original (chronological) order of filteredRuns and de-duplicate runs that belong
+    // to more than one project (a run always has a name project next to its tags)
+    const runIndexesByProject = new Map();
+    filteredRuns.forEach((run, index) => {
+        for (const project of get_run_projects(run)) {
+            if (!runIndexesByProject.has(project)) runIndexesByProject.set(project, []);
+            runIndexesByProject.get(project).push(index);
+        }
+    });
+    const keptIndexes = new Set();
+    for (const indexes of runIndexesByProject.values()) {
+        for (const index of indexes.slice(- selectedAmount)) keptIndexes.add(index);
+    }
+    return filteredRuns.filter((_, index) => keptIndexes.has(index));
 }
 
 function apply_metadata_filter(filteredRuns, selectedMetadata) {
@@ -1296,6 +1314,8 @@ function setup_filter_checkbox_subfilter(parentElementId, autoSelectMatches = fa
 }
 
 function clear_all_filters() {
+    overviewProjectNavFilter.project = '';
+    overviewProjectNavFilter.version = '';
     clear_project_filter();
     clear_version_filter();
     clear_suite_path_filter();
@@ -1343,7 +1363,43 @@ function clear_version_filter() {
     update_filter_active_indicator("projectVersionInputItemAll", "filterVersionSelectedIndicator");
 }
 
+// the run/tag filter set by set_filter_show_current_project results in either a single
+// selected run name or a single checked run tag, checked here so a filter the user changed
+// themselves in the meantime is not mistaken for the one applied by the overview card
+function overview_navigation_filter_still_applied(project) {
+    if (project.startsWith("project_")) {
+        const tagElements = document.getElementById("runTag").getElementsByTagName("input");
+        const checkedTags = Array.from(tagElements).filter(input => input.checked);
+        return checkedTags.length === 1 && checkedTags[0].value === project;
+    }
+    return document.getElementById("runs").value === project;
+}
+
+// the overview page is meant to show every project, so the single project filter that was
+// applied by clicking a project card is dropped again when the user navigates back to the
+// overview (issue #348). Filters the user changed themselves are left alone.
+function clear_overview_project_navigation_filter() {
+    const { project, version } = overviewProjectNavFilter;
+    if (!project) { return; }
+    overviewProjectNavFilter.project = '';
+    overviewProjectNavFilter.version = '';
+    // the navigation writes these globals and the next filter pass copies them into the
+    // filter modal, so they are dropped here as well: when the pass has not run yet the
+    // DOM check below sees the still empty filter and would otherwise leave them pending
+    selectedRunSetting = '';
+    selectedTagSetting = '';
+    if (!overview_navigation_filter_still_applied(project)) { return; }
+    clear_project_filter();
+    // the version filter is only cleared when the same navigation applied it (version badge)
+    if (version) { clear_version_filter(); }
+    const runsIndicator = document.getElementById("filterRunSelectedIndicator");
+    if (runsIndicator) runsIndicator.style.display = "none";
+    // any other filter the user set stays active, so recompute the dot instead of hiding it
+    update_filters_button_indicator();
+}
+
 function set_filter_show_current_version(version) {
+    overviewProjectNavFilter.version = version;
     const projectVersionList = document.getElementById("projectVersionList");
     document.getElementById("projectVersionInputItemAll").checked = false;
     projectVersionList.querySelector(`input[value="${version}"]`).checked = true;
@@ -1843,6 +1899,7 @@ export {
     dashboardPages,
     setup_filter_checkbox_handler_listeners,
     clear_all_filters,
+    clear_overview_project_navigation_filter,
     set_filter_show_current_version,
     build_profile_from_checks,
     apply_filter_profile,

@@ -4,6 +4,7 @@ vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
 vi.mock('@js/variables/data.js', () => import('./mocks/data.js'));
 vi.mock('@js/variables/graphs.js', () => import('./mocks/graphs.js'));
 
+import { strip_tz_suffix, get_run_projects } from '@js/common.js';
 import { strip_tz_suffix } from '@js/common.js';
 import {
     dashboardPages,
@@ -282,6 +283,61 @@ describe('filter.js pure logic', () => {
             expect(result[0].name).toBe('test1');
             expect(result[0].status).toBe('PASS');
         });
+    });
+});
+
+// Reimplementation of the per-project slicing of filter_amount from filter.js for direct
+// testing, the input handling around it reads the #amount input and needs the DOM
+function keep_last_amount_per_project(filteredRuns, selectedAmount) {
+    const runIndexesByProject = new Map();
+    filteredRuns.forEach((run, index) => {
+        for (const project of get_run_projects(run)) {
+            if (!runIndexesByProject.has(project)) runIndexesByProject.set(project, []);
+            runIndexesByProject.get(project).push(index);
+        }
+    });
+    const keptIndexes = new Set();
+    for (const indexes of runIndexesByProject.values()) {
+        for (const index of indexes.slice(- selectedAmount)) keptIndexes.add(index);
+    }
+    return filteredRuns.filter((_, index) => keptIndexes.has(index));
+}
+
+describe('filter_amount per project logic', () => {
+    const run = (name, tags = '') => ({ name, tags });
+
+    it('keeps the last X runs of every run name (issue #347)', () => {
+        const runs = [run('API'), run('UI'), run('UI'), run('UI')];
+        const result = keep_last_amount_per_project(runs, 1);
+        // the API project keeps its only run instead of being pushed out by the UI runs
+        expect(result).toEqual([runs[0], runs[3]]);
+    });
+
+    it('keeps the last X runs of every project tag (issue #347)', () => {
+        const runs = [run('UI', 'project_a'), run('UI', 'project_b'), run('UI', 'project_a')];
+        const result = keep_last_amount_per_project(runs, 1);
+        expect(result).toEqual([runs[1], runs[2]]);
+    });
+
+    it('keeps a run that is in the last X of at least one of its projects', () => {
+        const runs = [run('UI', 'project_a'), run('UI', 'project_a'), run('API', 'project_a')];
+        const result = keep_last_amount_per_project(runs, 1);
+        // runs[1] is the newest UI run, runs[2] the newest API and project_a run
+        expect(result).toEqual([runs[1], runs[2]]);
+    });
+
+    it('keeps the chronological order of the runs', () => {
+        const runs = [run('A'), run('B'), run('A'), run('B')];
+        expect(keep_last_amount_per_project(runs, 2)).toEqual(runs);
+    });
+
+    it('returns everything when the amount is higher than every project', () => {
+        const runs = [run('A'), run('B'), run('A')];
+        expect(keep_last_amount_per_project(runs, 10)).toEqual(runs);
+    });
+
+    it('returns an empty array for an empty run list', () => {
+        expect(keep_last_amount_per_project([], 5)).toEqual([]);
     });
 });
 

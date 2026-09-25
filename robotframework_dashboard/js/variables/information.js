@@ -167,7 +167,11 @@ It helps identify tests with inconsistent execution times, which might be flaky 
     "filterMetadataInformation": `Filter by a metadata value attached to the run. Only shown when runs have metadata.
 - The number behind an option is how many runs remain if you select it (the other filters stay as they are).
 - Greyed out options match no runs, but can still be selected.`,
-    "filterAmountInformation": "Limit to the most recent X runs after all other filters are applied. 'All Runs' sets this to the total matching count.",
+    "filterAmountInformation": `Limit to the most recent X runs per project, after all other filters are applied.
+- A project is a run name and every 'project_' run tag, the same grouping the overview page uses.
+- The limit is not applied to the combined run list, so a project that runs less often is never pushed out of the overview (and the dashboard) by a project that runs more often.
+- A run is kept when it is one of the last X runs of at least one of its projects, which means the total number of shown runs can be higher than X.
+- 'All Runs' sets this to the total matching count, which shows every run of every project.`,
     "filterSuitePathsInformation": `Filter runs by suite path. Only runs that contain at least one suite matching the selected path (or any of its sub-paths) are shown.
 - Navigate into sub-folders by clicking a child button.
 - Use the breadcrumb links to jump back to a parent level.

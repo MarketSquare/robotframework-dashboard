@@ -12,6 +12,11 @@ RobotFramework Dashboard provides flexible filtering options across different pa
 
 The **Overview** page uses the same **global filters** as the Dashboard page (see below): open the filter modal from the top navigation bar and every project bar, the Latest Runs bar and the Total Stats bar reflect the filtered set of runs. A dot on the filter icon indicates a filter is active.
 
+Two things behave differently here, because the Overview is meant to show *all* your projects:
+
+- The **[Amount filter](#_8-amount-per-project) is applied per project**, so a project that runs less often never disappears behind the runs of a project that runs more often.
+- Clicking a **project card** filters the Dashboard to that single project. Navigating **back to the Overview** drops that filter again so all projects are shown. Filters you changed yourself in the filter modal are kept.
+
 In addition, the Overview offers a few **display settings** under **Settings > Overview**:
 
 - **Projects by Name** – Toggle whether to display the names of projects in the statistics.
@@ -106,10 +111,13 @@ Example: with two custom filters where `filter_1=A` only ever occurs together wi
 - Attributes you do not want can be hidden per page under **Settings → Filters**; a hidden attribute gets no dropdown here and is not applied on that page. See [Settings - Filters Tab](/settings#filter-settings-filters-tab).
 - See [Advanced CLI & Examples](/advanced-cli-examples#custom-filters) for how to attach custom filter data to runs.
 
-#### 8. Amount
+#### 8. Amount per project
 
-- After all other filters have been applied, limits the dashboard to the **most recent X runs**.
-- Use **All Runs** to set the value to the total number of runs currently matching the other filters.
+- After all other filters have been applied, limits the dashboard to the **most recent X runs per project**.
+- A project is a run name and every `project_` run tag, the same grouping the [Overview page](/tabs-pages#overview-page) uses.
+- The limit is **not** applied to the combined run list. A run is kept as long as it is one of the most recent X runs of at least one of its projects, which means the total number of shown runs can be higher than X.
+- Because of this, a project that runs less often is never pushed out of the Overview (or the Dashboard) by a project that runs more often.
+- Use **All Runs** to set the value to the total number of runs currently matching the other filters, which shows every run of every project.
 - Useful for focusing on recent history without changing the date filters.
 
 #### 8. Suite Path
@@ -121,7 +129,7 @@ Example: with two custom filters where `filter_1=A` only ever occurs together wi
   - Click any **breadcrumb segment** to jump back up to that level.
 - After the run filter is applied, suites and tests are also narrowed to only those matching the selected path prefix — so all graphs and tables reflect only the chosen path.
 - A dot next to the label indicates the filter is active.
-- The Suite Path filter is applied after all other run-level filters but before the Amount limit, so "most recent X runs" always refers to runs that contain the selected path.
+- The Suite Path filter is applied after all other run-level filters but before the Amount limit, so "most recent X runs per project" always refers to runs that contain the selected path.
 
 ### Filter Profiles
 

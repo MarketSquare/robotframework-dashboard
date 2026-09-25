@@ -184,8 +184,9 @@ def test_remove_by_tag_no_match_is_noop(populated_db):
 
 
 def test_remove_by_limit_keeps_most_recent(populated_db):
+    # SAMPLE_XML and SAMPLE_XML_3 are two runs of the same project (run name)
     populated_db.open_database()
-    _insert_second_run(populated_db)
+    _insert_run(populated_db, SAMPLE_XML_3, [])
     assert len(populated_db.get_data()["runs"]) == 2
     populated_db.remove_runs(["limit=1"])
     assert len(populated_db.get_data()["runs"]) == 1
@@ -228,34 +229,34 @@ def _run_starts(db):
 
 def test_remove_by_limit_with_single_tag_keeps_newest_matching(db):
     db.open_database()
-    # oldest -> newest; three "nightly" runs + one unrelated "release" run
+    # oldest -> newest; three "nightly" runs of one project + one unrelated "release" run
     _insert_run(db, SAMPLE_XML, ["nightly"])
-    _insert_run(db, SAMPLE_XML_2, ["nightly"])
+    _insert_run(db, SAMPLE_XML_2, ["release"])
     _insert_run(db, SAMPLE_XML_3, ["nightly"])
-    _insert_run(db, SAMPLE_XML_4, ["release"])
+    _insert_run(db, SAMPLE_XML_4, ["nightly"])
     starts_before = _run_starts(db)  # ordered oldest -> newest
     db.remove_runs(["limit=2;tag=nightly"])
     starts_after = _run_starts(db)
     # oldest nightly removed; 2 newest nightly + release remain
     assert len(starts_after) == 3
     assert starts_before[0] not in starts_after  # oldest nightly removed
-    assert starts_before[3] in starts_after  # release untouched
+    assert starts_before[1] in starts_after  # release untouched
     db.close_database()
 
 
 def test_remove_by_limit_with_multiple_tags(db):
     db.open_database()
     _insert_run(db, SAMPLE_XML, ["alpha"])
-    _insert_run(db, SAMPLE_XML_2, ["beta"])
-    _insert_run(db, SAMPLE_XML_3, ["alpha"])
-    _insert_run(db, SAMPLE_XML_4, ["gamma"])
+    _insert_run(db, SAMPLE_XML_2, ["gamma"])
+    _insert_run(db, SAMPLE_XML_3, ["beta"])
+    _insert_run(db, SAMPLE_XML_4, ["alpha"])
     starts_before = _run_starts(db)
-    # candidates = union of alpha+beta = 3 oldest runs; keep 2 newest of those
+    # candidates = union of alpha+beta = 3 runs of one project; keep 2 newest of those
     db.remove_runs(["limit=2;tag=alpha;tag=beta"])
     starts_after = _run_starts(db)
     assert len(starts_after) == 3
     assert starts_before[0] not in starts_after  # oldest alpha removed
-    assert starts_before[3] in starts_after  # gamma untouched
+    assert starts_before[1] in starts_after  # gamma untouched
     db.close_database()
 
 
@@ -273,13 +274,55 @@ def test_remove_by_limit_with_tag_higher_than_count_is_noop(db):
 def test_remove_by_limit_only_ignores_tags(db):
     db.open_database()
     _insert_run(db, SAMPLE_XML, ["nightly"])
-    _insert_run(db, SAMPLE_XML_2, ["release"])
-    _insert_run(db, SAMPLE_XML_3, ["nightly"])
+    _insert_run(db, SAMPLE_XML_3, ["release"])
     starts_before = _run_starts(db)
-    # no tag scope -> global limit, keep 1 newest regardless of tag
+    # no tag scope -> the limit is applied per project regardless of the tags, and both
+    # runs are of the same project, so only the newest one remains
     db.remove_runs(["limit=1"])
     starts_after = _run_starts(db)
     assert starts_after == [starts_before[-1]]  # only the newest remains
+    db.close_database()
+
+
+def test_remove_by_limit_is_applied_per_run_name(db):
+    """Issue #347: a project with fewer runs keeps its history."""
+    db.open_database()
+    # SAMPLE_XML/_3/_4 are runs of one project, SAMPLE_XML_2 of another
+    _insert_run(db, SAMPLE_XML, [])
+    _insert_run(db, SAMPLE_XML_2, [])
+    _insert_run(db, SAMPLE_XML_3, [])
+    _insert_run(db, SAMPLE_XML_4, [])
+    starts_before = _run_starts(db)
+    db.remove_runs(["limit=1"])
+    starts_after = _run_starts(db)
+    # the newest run of both projects remains instead of only the newest run overall
+    assert starts_after == [starts_before[1], starts_before[3]]
+    db.close_database()
+
+
+def test_remove_by_limit_is_applied_per_project_tag(db):
+    """Issue #347: the same holds for projects that are grouped by a 'project_' tag."""
+    db.open_database()
+    # all three runs share a run name, so only the project tags can separate them
+    _insert_run(db, SAMPLE_XML, ["project_a"])
+    _insert_run(db, SAMPLE_XML_3, ["project_b"])
+    _insert_run(db, SAMPLE_XML_4, ["project_a"])
+    starts_before = _run_starts(db)
+    db.remove_runs(["limit=1"])
+    starts_after = _run_starts(db)
+    # the only run of project_b survives next to the newest run of project_a
+    assert starts_after == [starts_before[1], starts_before[2]]
+    db.close_database()
+
+
+def test_remove_by_limit_warns_when_every_project_is_below_the_limit(db):
+    db.open_database()
+    _insert_run(db, SAMPLE_XML, [])
+    _insert_run(db, SAMPLE_XML_2, [])
+    console = db.remove_runs(["limit=1"])
+    assert len(db.get_data()["runs"]) == 2
+    assert "WARNING" in console
+    assert "2 project(s)" in console
     db.close_database()
 
 

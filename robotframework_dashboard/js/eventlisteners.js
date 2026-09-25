@@ -1554,6 +1554,7 @@ function setup_overview_order_filters() {
 
 export {
     setup_filter_modal,
+    update_filters_button_indicator,
     setup_settings_modal,
     setup_sections_filters,
     setup_graph_view_buttons,

@@ -1,4 +1,4 @@
-import { setup_filtered_data_and_filters } from "./filter.js";
+import { setup_filtered_data_and_filters, clear_overview_project_navigation_filter } from "./filter.js";
 import { areGroupedProjectsPrepared, overviewNavStore, tablesNavStore } from "./variables/globals.js";
 import { space_to_camelcase, fade_in, fade_out } from "./common.js";
 import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
@@ -81,6 +81,9 @@ function update_menu(item) {
         set_local_storage_item(`menu.${menuItem}`, (item === id));
         document.getElementById(id).classList.toggle("active", id === item);
     });
+    // the overview shows all projects, so a project filter that was applied by clicking an
+    // overview card is dropped again when navigating back to it (issue #348)
+    if (item === "menuOverview") { clear_overview_project_navigation_filter(); }
     setup_data_and_graphs(true, item === "menuOverview" && !areGroupedProjectsPrepared);
 }
 

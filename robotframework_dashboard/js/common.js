@@ -293,6 +293,19 @@ function strip_tz_suffix(s) {
     return /^[+-]\d{2}:\d{2}$/.test(suffix) ? s.slice(0, -6) : s;
 }
 
+// a run belongs to one project per project_* run tag and always to the project of its run
+// name, mirroring the grouping of the overview page (prepare_projects_grouped_data). The
+// keys are prefixed so a run name can never collide with a run tag, the same way the
+// python side groups them (database.py _get_run_projects)
+function get_run_projects(run) {
+    const projects = [];
+    for (const tag of String(run.tags ?? "").split(",")) {
+        if (tag.toLowerCase().startsWith("project_")) projects.push(`tag:${tag}`);
+    }
+    projects.push(`name:${run.name}`);
+    return projects;
+}
+
 function generate_id() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
@@ -356,6 +369,7 @@ export {
     fade_in,
     fade_out,
     strip_tz_suffix,
+    get_run_projects,
     generate_id,
     apply_bg_class,
     fill_color_picker,
