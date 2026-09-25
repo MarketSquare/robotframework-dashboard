@@ -76,7 +76,7 @@ Example: with two custom filters where `filter_1=A` only ever occurs together wi
 
 #### 4. Runs over Time (date histogram)
 
-A bar chart of how many runs started in each time bucket, sitting directly above the date range. It replaces typing dates with dragging, the way Grafana and Kibana let you pick a time range.
+A bar chart of how many runs started in each time bucket, sitting directly above the date range. It replaces typing dates with dragging: the bars show where the runs actually are, so you can pick the period straight off the chart.
 
 - **Bars** show the number of runs per bucket, stacked by run status: red for runs with failures, yellow for runs that only skipped, green for the rest. Vertical separators mark every bucket, so gaps in the data stay readable.
 - **Drag across the chart** to select a range. The From/To fields below are filled in and the chart **zooms into the selection**, re-bucketing finer, so dragging again drills further down (a month at a bar per day, then a week at a bar per 6 hours, then a day at a bar per hour).
