@@ -58,6 +58,8 @@ var settings = {
         convertTimezone: false,
         suitesSelectionInSuiteStats: "First Suite",
         suitesSelectionInTestStats: "First Suite",
+        filterAvailability: true,
+        filterCounts: true,
         hiddenCustomFiltersOverview: [],
         hiddenCustomFiltersDashboard: [],
         hiddenCustomFiltersCompare: [],

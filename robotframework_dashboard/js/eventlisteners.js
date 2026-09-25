@@ -42,6 +42,8 @@ import {
     clear_active_profile,
     capture_default_filters,
     merge_two_profiles,
+    schedule_filter_option_availability_refresh,
+    set_filter_modal_open,
     collect_custom_filter_dimensions,
     dashboardPages,
 } from "./filter.js"
@@ -167,6 +169,8 @@ function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
     // Only recompute filtered data and update graphs in-place (no layout rebuild needed)
     document.getElementById("filtersModal").addEventListener("hide.bs.modal", function () {
+        // no more writing into the modal while it fades out
+        set_filter_modal_open(false);
         show_loading_overlay();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -175,6 +179,11 @@ function setup_filter_modal() {
                 hide_loading_overlay();
             });
         });
+    });
+    // count the runs behind every filter option and grey out the ones that match nothing,
+    // also picking up filters that were set while the modal was closed (overview drill down)
+    document.getElementById("filtersModal").addEventListener("show.bs.modal", function () {
+        set_filter_modal_open(true);
     });
     // eventlistener to reset the filters
     document.getElementById("resetFilters").addEventListener("click", function () {
@@ -411,10 +420,12 @@ function setup_filter_modal() {
     filterModal.addEventListener("change", function () {
         update_profile_select_display();
         update_filters_button_indicator();
+        schedule_filter_option_availability_refresh();
     });
     filterModal.addEventListener("input", function () {
         update_profile_select_display();
         update_filters_button_indicator();
+        schedule_filter_option_availability_refresh();
     });
 }
 
@@ -557,6 +568,8 @@ function setup_settings_modal() {
         { key: "show.suitesSelectionInSuiteStats", elementId: "toggleSuitesSelectionInSuiteStats", datatype: "string", event: "change" },
         { key: "show.suitesSelectionInTestStats", elementId: "toggleSuitesSelectionInTestStats", datatype: "string", event: "change" },
         { key: "show.overviewDurationPercentage", elementId: "overviewDurationPercentage", datatype: "number", event: "change" },
+        { key: "show.filterAvailability", elementId: "toggleFilterAvailability" },
+        { key: "show.filterCounts", elementId: "toggleFilterCounts" },
     ].forEach(def => {
         const handler = create_toggle_handler(def);
         handler(true);

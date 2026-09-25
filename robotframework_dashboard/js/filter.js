@@ -184,19 +184,42 @@ function convert_timezone(data) {
     });
 }
 
+// The apply_* functions below hold the actual filter logic and take their selection as an
+// argument instead of reading the DOM. The filter_* functions read the filter modal and call
+// them, and compute_filter_option_availability reuses them to determine which filter options
+// can still produce runs, so both paths always behave identically.
+function apply_run_name_filter(runs, selectedRun) {
+    if (!selectedRun || selectedRun === "All") { return runs; }
+    return Object.values(runs).filter(run => run.name === selectedRun);
+}
+
 // function to filter run data based on the runs (aka run name) filter
 function filter_runs(runs) {
     if (selectedRunSetting != '') {
         document.getElementById("runs").value = selectedRunSetting
         selectedRunSetting = ''
     }
-    const selectedRun = document.getElementById("runs").value;
-    if (selectedRun === "All") {
-        var selectedRuns = runs
-    } else {
-        var selectedRuns = Object.values(runs).filter(run => run.name === selectedRun)
+    return apply_run_name_filter(runs, document.getElementById("runs").value);
+}
+
+function apply_runtag_filter(runs, selectedTags, tagMode) {
+    if (selectedTags.includes("All")) {
+        return runs;
     }
-    return selectedRuns;
+    if (selectedTags.length === 0) {
+        return [];
+    }
+    return runs.filter(run => {
+        const runTags = run.tags.split(",");
+        if (tagMode === "OR") { // Use OR logic: the run must contain at least one selected tag
+            return selectedTags.some(selectedTag => runTags.includes(selectedTag));
+        }
+        if (tagMode === "NOT") { // Use NOT logic: the run must not contain any selected tag
+            return !selectedTags.some(selectedTag => runTags.includes(selectedTag));
+        }
+        // Default AND logic: the run must contain all selected tags
+        return selectedTags.every(selectedTag => runTags.includes(selectedTag));
+    });
 }
 
 // function to filter run data based on the run tags filter
@@ -220,22 +243,19 @@ function filter_runtags(runs) {
     const selectedTags = Array.from(tagElements)
         .filter(tagElement => tagElement.checked)
         .map(tagElement => tagElement.id.replace(/^runTagCheckBox/, ""));
-    if (selectedTags.includes("All")) {
-        return runs;
-    }
-    if (selectedTags.length === 0) {
-        return [];
-    }
+    return apply_runtag_filter(runs, selectedTags, tagMode);
+}
+
+function apply_custom_filter_dimension(runs, dimName, checkedValues, mode) {
+    if (!checkedValues.size) { return []; }
+    if (checkedValues.has("All")) { return runs; }
     return runs.filter(run => {
-        const runTags = run.tags.split(",");
-        if (tagMode === "OR") { // Use OR logic: the run must contain at least one selected tag
-            return selectedTags.some(selectedTag => runTags.includes(selectedTag));
+        const effectiveValue = get_custom_filter_value(run, dimName);
+        if (mode === "NOT") { // Use NOT logic: the run must not have any of the selected values
+            return !checkedValues.has(effectiveValue);
         }
-        if (tagMode === "NOT") { // Use NOT logic: the run must not contain any selected tag
-            return !selectedTags.some(selectedTag => runTags.includes(selectedTag));
-        }
-        // Default AND logic: the run must contain all selected tags
-        return selectedTags.every(selectedTag => runTags.includes(selectedTag));
+        // Default OR/AND logic: the run must have one of the selected values
+        return checkedValues.has(effectiveValue);
     });
 }
 
@@ -251,26 +271,22 @@ function filter_custom_filters(filteredRuns) {
         const checkedValues = new Set(
             Array.from(listEl.querySelectorAll("input:checked")).map(el => el.value)
         );
-        if (!checkedValues.size) { filteredRuns = []; continue; }
-        if (checkedValues.has("All")) continue;
         const modeEl = document.getElementById(`customFilter_${dimName}_Mode`);
         const mode = modeEl ? modeEl.value : "OR";
-        filteredRuns = filteredRuns.filter(run => {
-            const parsed = parse_custom_filters(run.custom_filters);
-            const runValue = parsed[dimName];
-            const effectiveValue = runValue === undefined ? "None" : runValue;
-            if (mode === "NOT") { // Use NOT logic: the run must not have any of the selected values
-                return !checkedValues.has(effectiveValue);
-            }
-            // Default OR/AND logic: the run must have one of the selected values
-            return checkedValues.has(effectiveValue);
-        });
+        filteredRuns = apply_custom_filter_dimension(filteredRuns, dimName, checkedValues, mode);
     }
     return filteredRuns;
 }
 
+// custom_filters strings never change after the data is decoded, so the parsed result is
+// cached: the value of one dimension is read once per run per filter pass, and the option
+// availability computation walks every run once per dimension on top of that.
+const parsedCustomFiltersCache = new Map();
+
 function parse_custom_filters(cfStr) {
     if (!cfStr) return {};
+    const cached = parsedCustomFiltersCache.get(cfStr);
+    if (cached) return cached;
     const result = {};
     cfStr.split(":").forEach(part => {
         const eq = part.indexOf("=");
@@ -278,7 +294,14 @@ function parse_custom_filters(cfStr) {
             result[part.slice(0, eq).trim()] = part.slice(eq + 1).trim();
         }
     });
+    parsedCustomFiltersCache.set(cfStr, result);
     return result;
+}
+
+// the value of one custom filter dimension for a run, "None" when the run has no such key
+function get_custom_filter_value(run, dimName) {
+    const value = parse_custom_filters(run.custom_filters)[dimName];
+    return value === undefined ? "None" : value;
 }
 
 function collect_custom_filter_dimensions() {
@@ -294,20 +317,51 @@ function collect_custom_filter_dimensions() {
     return dimensions;
 }
 
+function apply_project_version_filter(runs, selectedProjectVersions) {
+    if (!selectedProjectVersions.size) return [];
+    if (selectedProjectVersions.has("All")) return runs;
+
+    return runs.filter(run => selectedProjectVersions.has(get_project_version_value(run)));
+}
+
+// the project version of a run, "None" when the run has no version label
+function get_project_version_value(run) {
+    return run.project_version === null || run.project_version === undefined ? "None" : run.project_version;
+}
+
 // filter run data based on the project version filter
-function filter_project_versions(runs) {    const selectedProjectVersions = new Set(
+function filter_project_versions(runs) {
+    const selectedProjectVersions = new Set(
         Array.from(
             document.querySelectorAll('#projectVersionList input[type="checkbox"]:checked')
         ).map(el => el.value)
     );
-    if (!selectedProjectVersions.size) return [];
-    if (selectedProjectVersions.has("All")) return runs;
+    return apply_project_version_filter(runs, selectedProjectVersions);
+}
 
+// the selected date range as {from, to} Date objects, or null when the range is incomplete
+function build_date_range(fromDate, fromTime, toDate, toTime) {
+    if (!fromDate || !fromTime || !toDate || !toTime) {
+        return null;
+    }
+    const from = new Date(`${fromDate} ${fromTime}:00`);
+    const to = new Date(`${toDate} ${toTime}:00`);
+    if (from > to) {
+        return null;
+    }
+    return { from, to };
+}
+
+function apply_date_filter(runs, fromDateTime, toDateTime) {
     return runs.filter(run => {
-        if (run.project_version === null) { // allow filter for runs with no project version
-            return selectedProjectVersions.has("None");
+        // When not converting timezones, strip any timezone offset so the run_start is treated
+        // as a plain wall-clock time matching the date picker values (which are also wall-clock).
+        let rs = run.run_start.replace(" ", "T");
+        if (!settings.show.convertTimezone) {
+            rs = strip_tz_suffix(rs);
         }
-        return selectedProjectVersions.has(run.project_version);
+        const runStart = new Date(rs);
+        return runStart >= fromDateTime && runStart <= toDateTime;
     });
 }
 
@@ -320,22 +374,12 @@ function filter_dates(runs) {
     if (!fromDate || !fromTime || !toDate || !toTime) {
         return runs;
     }
-    const fromDateTime = new Date(`${fromDate} ${fromTime}:00`);
-    const toDateTime = new Date(`${toDate} ${toTime}:00`);
-    if (fromDateTime > toDateTime) {
+    const dateRange = build_date_range(fromDate, fromTime, toDate, toTime);
+    if (!dateRange) { // build_date_range only rejects a complete range when from is later than to
         alert("Filter error: The selected from date + time is later than your selected to date + time. Date filter has not been applied!");
         return runs;
     }
-    return runs.filter(run => {
-        // When not converting timezones, strip any timezone offset so the run_start is treated
-        // as a plain wall-clock time matching the date picker values (which are also wall-clock).
-        let rs = run.run_start.replace(" ", "T");
-        if (!settings.show.convertTimezone) {
-            rs = strip_tz_suffix(rs);
-        }
-        const runStart = new Date(rs);
-        return runStart >= fromDateTime && runStart <= toDateTime;
-    });
+    return apply_date_filter(runs, dateRange.from, dateRange.to);
 }
 
 // function to filter the amount of runs based on the filter
@@ -368,17 +412,14 @@ function filter_amount(filteredRuns) {
     return filteredRuns
 }
 
+function apply_metadata_filter(filteredRuns, selectedMetadata) {
+    if (selectedMetadata == '' || selectedMetadata == 'All' || selectedMetadata == undefined) return filteredRuns;
+    return filteredRuns.filter(run => (run.metadata || "").includes(selectedMetadata));
+}
+
 // function to filter the runs based on the selected metadata key:value pair
 function filter_metadata(filteredRuns) {
-    const selectedMetadata = document.getElementById("metadata").value;
-    if (selectedMetadata == '' || selectedMetadata == 'All') return filteredRuns;
-    var filteredData = []
-    for (const run of filteredRuns) {
-        if (run.metadata.includes(selectedMetadata)) {
-            filteredData.push(run)
-        }
-    }
-    return filteredData
+    return apply_metadata_filter(filteredRuns, document.getElementById("metadata").value);
 }
 
 // function to filter suites/tests/keywords based on the already filtered runs
@@ -622,16 +663,31 @@ function setup_lowest_highest_dates() {
     }
 }
 
+// metadata strings never change after the data is decoded, so the parsed items are cached:
+// the option list is rebuilt on every refresh of the filter option counts
+const parsedMetadataCache = new Map();
+
+function parse_metadata_items(metadata) {
+    if (!metadata) return [];
+    const cached = parsedMetadataCache.get(metadata);
+    if (cached) return cached;
+    const parsed = JSON.parse(metadata.replace(/'/g, '"'));
+    parsedMetadataCache.set(metadata, parsed);
+    return parsed;
+}
+
+// the metadata key:value pairs found in the run data, sorted for display
+function get_metadata_options(runList = runs) {
+    const metadataItems = new Set();
+    for (const run of runList) {
+        parse_metadata_items(run.metadata).forEach(item => metadataItems.add(item));
+    }
+    return Array.from(metadataItems).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+
 // function to setup metadata filter if there is metadata in the data
 function setup_metadata_filter() {
-    var metadataItems = new Set();
-    for (const run of runs) {
-        if (!run.metadata) continue;
-        const jsonStr = run.metadata.replace(/'/g, '"');
-        const parsed = JSON.parse(jsonStr);
-        parsed.forEach(item => metadataItems.add(item));
-    }
-    metadataItems = Array.from(metadataItems).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    const metadataItems = get_metadata_options();
     const metadataFilter = document.getElementById("metadataFilter");
     if (metadataItems.length > 0) {
         metadataFilter.hidden = false;
@@ -791,6 +847,16 @@ function setup_suite_path_navigator(path) {
     }
 
     document.getElementById("suitePathFilter").hidden = suites.length === 0;
+    // the path lives in a hidden input, so no change event reaches the filter modal listener
+    schedule_filter_option_availability_refresh();
+}
+
+function apply_suite_path_run_filter(runs, selectedPath, suiteList) {
+    if (!selectedPath || selectedPath === "All") return runs;
+
+    const matches = (full_name) => full_name === selectedPath || full_name.startsWith(selectedPath + ".");
+    const validRunStarts = new Set(suiteList.filter(s => matches(s.full_name)).map(s => s.run_start));
+    return runs.filter(r => validRunStarts.has(r.run_start));
 }
 
 // Run-level part of the suite path filter: removes runs that have no suite matching the path.
@@ -798,11 +864,7 @@ function setup_suite_path_navigator(path) {
 // values line up with the transformed filteredRuns entries.
 function filter_runs_by_suite_path(runs) {
     const selectedPath = document.getElementById("suitePathValue").value;
-    if (!selectedPath || selectedPath === "All") return runs;
-
-    const matches = (full_name) => full_name === selectedPath || full_name.startsWith(selectedPath + ".");
-    const validRunStarts = new Set(filteredSuites.filter(s => matches(s.full_name)).map(s => s.run_start));
-    return runs.filter(r => validRunStarts.has(r.run_start));
+    return apply_suite_path_run_filter(runs, selectedPath, filteredSuites);
 }
 
 // Data-level part of the suite path filter: narrows filteredSuites/filteredTests to the
@@ -899,6 +961,251 @@ function setup_custom_filters_in_select_filter_buttons() {
             }
         });
     }
+}
+
+// Filter option availability: every filter option shows how many runs it would still match
+// given the other filters, and options that cannot match anything are greyed out. Without this
+// a dropdown keeps offering values that belong to runs another filter already excluded.
+// The counts follow the usual faceted-search rule: the count of an option in filter X is
+// computed with every filter except X applied, so selecting a value in X never makes the other
+// values of X disappear. The amount filter ("last X runs") is not a category and is left out.
+let filterBaseRunsCache = { key: null, runs: null, suites: null };
+
+// key of the settings that change run_start representation, and with it which runs a date
+// range matches and which suites belong to which run
+function get_filter_base_cache_key() {
+    return `${settings.show.milliseconds}|${settings.show.convertTimezone}|${settings.show.timezones}`;
+}
+
+function apply_run_start_transformations(data) {
+    return remove_timezones(convert_timezone(remove_milliseconds(data)));
+}
+
+// all runs with the same run_start transformations the filter pipeline applies, so the
+// availability computation compares the same timestamps as the real filters do
+function get_filter_base_runs() {
+    const key = get_filter_base_cache_key();
+    if (filterBaseRunsCache.key !== key) {
+        filterBaseRunsCache = { key: key, runs: apply_run_start_transformations(runs), suites: null };
+    }
+    return filterBaseRunsCache.runs;
+}
+
+// suites are only needed while a suite path is selected, so they are transformed on demand
+function get_filter_base_suites() {
+    get_filter_base_runs();
+    if (filterBaseRunsCache.suites === null) {
+        filterBaseRunsCache.suites = apply_run_start_transformations(suites);
+    }
+    return filterBaseRunsCache.suites;
+}
+
+// turn the profile object of capture_current_filters() into the selection shape the apply_*
+// functions take
+function normalize_filter_selections(profile) {
+    const checked_values = (items, key) => new Set((items || []).filter(item => item.checked).map(item => item[key]));
+    const hiddenCustomFilters = get_hidden_custom_filters();
+    const customFilters = {};
+    for (const [dimName, items] of Object.entries(profile.customFilters || {})) {
+        // a custom filter hidden on this page is not applied, so it may not shape the counts either
+        if (hiddenCustomFilters.includes(dimName)) continue;
+        customFilters[dimName] = {
+            values: checked_values(items, "value"),
+            mode: (profile.customFilterModes || {})[dimName] ?? "OR",
+        };
+    }
+    return {
+        runs: profile.runs ?? "All",
+        runTags: Array.from(checked_values(profile.runTags, "id")),
+        tagMode: profile.tagMode ?? "AND",
+        projectVersions: checked_values(profile.projectVersions, "value"),
+        metadata: profile.metadata ?? "All",
+        suitePath: profile.suitePath ?? "All",
+        dateRange: build_date_range(profile.fromDate, profile.fromTime, profile.toDate, profile.toTime),
+        customFilters: customFilters,
+    };
+}
+
+// apply every run level filter except the one whose options are being counted
+function apply_filters_except(runList, selections, facet, dimName = null, suiteList = null) {
+    let result = runList;
+    if (facet !== "runs") { result = apply_run_name_filter(result, selections.runs); }
+    if (facet !== "runTags") { result = apply_runtag_filter(result, selections.runTags, selections.tagMode); }
+    if (facet !== "metadata") { result = apply_metadata_filter(result, selections.metadata); }
+    if (facet !== "projectVersions") { result = apply_project_version_filter(result, selections.projectVersions); }
+    for (const [dim, dimSelection] of Object.entries(selections.customFilters)) {
+        if (facet === "customFilters" && dim === dimName) { continue; }
+        result = apply_custom_filter_dimension(result, dim, dimSelection.values, dimSelection.mode);
+    }
+    // the date range and the suite path have no option lists to count, so they always apply
+    if (selections.dateRange) {
+        result = apply_date_filter(result, selections.dateRange.from, selections.dateRange.to);
+    }
+    if (selections.suitePath && selections.suitePath !== "All") {
+        result = apply_suite_path_run_filter(result, selections.suitePath, suiteList ?? get_filter_base_suites());
+    }
+    return result;
+}
+
+function count_option(counts, value) {
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+}
+
+// every option of a filter starts at 0, so options that no longer match any run are part of
+// the result instead of missing from it
+function seed_option_counts(values) {
+    const counts = new Map();
+    for (const value of values) { counts.set(value, 0); }
+    return counts;
+}
+
+// In NOT mode an option excludes its runs instead of selecting them, so its count is the
+// number of runs that would be left over. "All" means "no filtering" in every mode and keeps
+// the total. This way a count always answers the same question: how many runs remain if this
+// option is the selection of this filter.
+function invert_counts_for_not_mode(counts, mode, total) {
+    if (mode !== "NOT") { return counts; }
+    for (const [value, count] of counts) {
+        if (value !== "All") { counts.set(value, total - count); }
+    }
+    return counts;
+}
+
+// how many runs every option of every filter would match, as {facet: Map(option -> count)}.
+// Multi valued filters (run tags, metadata) count a run for each of its values, so their
+// counts do not add up to the total, which is what the "All" option holds.
+function compute_filter_option_availability(runList, selections, suiteList = null) {
+    const availability = { customFilters: {} };
+
+    availability.runs = seed_option_counts(runList.map(run => run.name));
+    const runNameBase = apply_filters_except(runList, selections, "runs", null, suiteList);
+    availability.runs.set("All", runNameBase.length);
+    for (const run of runNameBase) { count_option(availability.runs, run.name); }
+
+    const all_tags = (run) => run.tags.split(",").filter(tag => tag);
+    availability.runTags = seed_option_counts(runList.flatMap(all_tags));
+    const runTagBase = apply_filters_except(runList, selections, "runTags", null, suiteList);
+    availability.runTags.set("All", runTagBase.length);
+    for (const run of runTagBase) {
+        for (const tag of all_tags(run)) { count_option(availability.runTags, tag); }
+    }
+    invert_counts_for_not_mode(availability.runTags, selections.tagMode, runTagBase.length);
+
+    availability.projectVersions = seed_option_counts(runList.map(get_project_version_value));
+    const versionBase = apply_filters_except(runList, selections, "projectVersions", null, suiteList);
+    availability.projectVersions.set("All", versionBase.length);
+    for (const run of versionBase) { count_option(availability.projectVersions, get_project_version_value(run)); }
+
+    // the metadata filter matches its value against the whole metadata string of a run, so the
+    // count of an option has to use the same substring check instead of the parsed items
+    availability.metadata = new Map();
+    const metadataBase = apply_filters_except(runList, selections, "metadata", null, suiteList);
+    availability.metadata.set("All", metadataBase.length);
+    for (const option of get_metadata_options(runList)) {
+        availability.metadata.set(option, apply_metadata_filter(metadataBase, option).length);
+    }
+
+    for (const [dimName, dimSelection] of Object.entries(selections.customFilters)) {
+        const counts = seed_option_counts(runList.map(run => get_custom_filter_value(run, dimName)));
+        const dimBase = apply_filters_except(runList, selections, "customFilters", dimName, suiteList);
+        counts.set("All", dimBase.length);
+        for (const run of dimBase) { count_option(counts, get_custom_filter_value(run, dimName)); }
+        availability.customFilters[dimName] = invert_counts_for_not_mode(counts, dimSelection.mode, dimBase.length);
+    }
+
+    return availability;
+}
+
+// add or update the "(X)" count of one filter option row. The count is a sibling of the
+// label, not a child: the row is the flex container, so only a direct child of the row can
+// be pushed into its own right-aligned column.
+function set_filter_option_count(rowElement, count) {
+    if (!rowElement) { return; }
+    let countElement = rowElement.querySelector(".filter-option-count");
+    if (!settings.show.filterCounts) {
+        countElement?.remove();
+        return;
+    }
+    if (!countElement) {
+        countElement = document.createElement("span");
+        countElement.className = "filter-option-count";
+        rowElement.appendChild(countElement);
+    }
+    countElement.textContent = `(${count})`;
+}
+
+// Unavailable options are only greyed out, never disabled or hidden: the user keeps seeing
+// that the option exists and can still select it (which then simply results in no runs).
+function apply_availability_to_checkbox_list(listElement, counts) {
+    if (!listElement) { return; }
+    const inputs = listElement.querySelectorAll("input.form-check-input:not([role='switch'])");
+    for (const input of inputs) {
+        const count = counts?.get(input.value) ?? 0;
+        const row = input.closest("li");
+        set_filter_option_count(row, count);
+        row?.classList.toggle("filter-option-unavailable", Boolean(counts) && settings.show.filterAvailability && count === 0);
+    }
+}
+
+function apply_availability_to_select(selectElement, counts) {
+    if (!selectElement) { return; }
+    for (const option of selectElement.options) {
+        const count = counts?.get(option.value) ?? 0;
+        option.textContent = (counts && settings.show.filterCounts) ? `${option.value} (${count})` : option.value;
+        option.classList.toggle("filter-option-unavailable", Boolean(counts) && settings.show.filterAvailability && count === 0);
+    }
+}
+
+// walk every filter option list and drop the counts and the greying out
+function clear_filter_option_availability() {
+    apply_availability_to_select(document.getElementById("runs"), null);
+    apply_availability_to_select(document.getElementById("metadata"), null);
+    apply_availability_to_checkbox_list(document.getElementById("runTag"), null);
+    apply_availability_to_checkbox_list(document.getElementById("projectVersionList"), null);
+    for (const dimName of Object.keys(collect_custom_filter_dimensions())) {
+        apply_availability_to_checkbox_list(document.getElementById(`customFilter_${dimName}_List`), null);
+    }
+}
+
+// The refresh writes into the filter modal, which is only safe while the modal is open:
+// changing its contents during the closing animation competes with the fade out and can leave
+// the modal on screen. Filters can also be set programmatically while the modal is closed
+// (overview drill down, filter profiles), so the state is refreshed when it opens.
+let filterModalIsOpen = false;
+
+function set_filter_modal_open(isOpen) {
+    filterModalIsOpen = isOpen;
+    if (isOpen) { refresh_filter_option_availability(); }
+}
+
+// recompute the counts of all filter options and grey out the ones that match no runs
+function refresh_filter_option_availability() {
+    if (!filterModalIsOpen || !document.getElementById("filtersModal")) { return; }
+    if (!settings.show.filterAvailability && !settings.show.filterCounts) {
+        clear_filter_option_availability();
+        return;
+    }
+    const selections = normalize_filter_selections(capture_current_filters());
+    const availability = compute_filter_option_availability(get_filter_base_runs(), selections);
+    apply_availability_to_select(document.getElementById("runs"), availability.runs);
+    apply_availability_to_select(document.getElementById("metadata"), availability.metadata);
+    apply_availability_to_checkbox_list(document.getElementById("runTag"), availability.runTags);
+    apply_availability_to_checkbox_list(document.getElementById("projectVersionList"), availability.projectVersions);
+    for (const [dimName, counts] of Object.entries(availability.customFilters)) {
+        apply_availability_to_checkbox_list(document.getElementById(`customFilter_${dimName}_List`), counts);
+    }
+}
+
+// The filter modal fires a change event per checkbox, and the version search box checks a whole
+// set of them at once, so the refresh is collapsed into one call per frame.
+let filterAvailabilityFrame = null;
+
+function schedule_filter_option_availability_refresh() {
+    if (filterAvailabilityFrame !== null) { return; }
+    filterAvailabilityFrame = requestAnimationFrame(() => {
+        filterAvailabilityFrame = null;
+        refresh_filter_option_availability();
+    });
 }
 
 // show filter active indicator if checkBoxElement unchecked
@@ -1000,6 +1307,7 @@ function clear_all_filters() {
     if (runsIndicator) runsIndicator.style.display = "none";
     const filtersActiveIndicator = document.getElementById("filtersActiveIndicator");
     if (filtersActiveIndicator) filtersActiveIndicator.style.display = "none";
+    schedule_filter_option_availability_refresh();
 }
 
 function clear_suite_path_filter() {
@@ -1322,6 +1630,7 @@ function apply_filter_profile(profile, name) {
     if (runsIndicator)
         runsIndicator.style.display =
             runsVal && runsVal !== "All" ? "inline-block" : "none";
+    schedule_filter_option_availability_refresh();
 }
 
 function load_filter_profiles() {
@@ -1549,4 +1858,9 @@ export {
     merge_two_profiles,
     collect_custom_filter_dimensions,
     parse_custom_filters,
+    compute_filter_option_availability,
+    normalize_filter_selections,
+    refresh_filter_option_availability,
+    schedule_filter_option_availability_refresh,
+    set_filter_modal_open,
 };
