@@ -7,7 +7,16 @@ description: "The optional FastAPI server (--server): every REST endpoint, HTTP 
 
 ## Overview
 
-The server is an optional FastAPI application started with `robotdashboard --server` (or `-s host:port:user:pass`). It wraps a persistent `RobotDashboard` instance and exposes REST endpoints for managing outputs and serving the dashboard. Implementation is in `robotframework_dashboard/server.py`.
+The server is an optional FastAPI application started with `robotdashboard --server` (or `-s host:port:user:pass`). It wraps a persistent `RobotDashboard` instance and exposes REST endpoints for managing outputs and serving the dashboard. Implementation is split across four modules:
+
+| File | Holds |
+|---|---|
+| `server.py` | `ApiServer`: app + auth setup, the HTML serving routes (`/`, `/admin`, `/log`, `/refresh-dashboard`, catch-all), `run()` |
+| `server_models.py` | The Pydantic models (`AddOutput`, `RemoveOutputs`, `AddLog`, …), their `*_model_config` OpenAPI examples and `model_examples()` |
+| `server_routes_outputs.py` | `register_output_routes(server, authenticate)` — `/get-outputs`, `/add-outputs`, `/add-output-file`, `/remove-outputs` |
+| `server_routes_logs.py` | `register_log_routes(server, authenticate)` — `/get-logs`, `/add-log`, `/add-log-file`, `/remove-log` |
+
+The route modules are plain functions that take the `ApiServer` instance (they read `server.robotdashboard`, `server.log_dir`, `server.no_autoupdate`) and the `authenticate` dependency built in `_setup_routes`. A new endpoint goes in the matching route module; a new model goes in `server_models.py`. `server.py` re-exports the models, so `from robotframework_dashboard.server import ResponseMessage` keeps working.
 
 ---
 

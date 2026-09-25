@@ -91,9 +91,9 @@ Steps:
 3. **`js/graph_creation/<section>.js`** — `build_<snake_key>_config()` calling `get_graph_config(type, data, title, xTitle, yTitle)`, then the one-liners `create_*` (`create_chart(id, build_fn)`) and `update_*` (`update_chart`). Respect `settings.graphTypes.<key>GraphType` for each view option and `inFullscreen && inFullscreenGraph.includes(key)` for larger limits. Export both.
 4. **`js/graph_creation/all.js`** — import and call `create_*` in `create_dashboard_graphs()` and `update_*` in `update_dashboard_graphs()` inside the right section block.
 5. **`js/variables/information.js`** — add `key` to `graphKeys` (generates Fullscreen/Close/Move/Show/Hide tooltips) and one `"<key>Graph<View>": "…"` tooltip per view option.
-6. **`js/variables/settings.js`** — nothing for plain graphs (types and show/hide lists are derived). Only add a `settings.switch.*` entry if the graph gets its own toggle (e.g. `ignoreSkips`), wired in `eventlisteners.js` and persisted via `set_local_storage_item`.
+6. **`js/variables/settings.js`** — nothing for plain graphs (types and show/hide lists are derived). Only add a `settings.switch.*` entry if the graph gets its own toggle (e.g. `ignoreSkips`), wired in `eventlisteners/graph_view_buttons.js` and persisted via `set_local_storage_item`.
 7. **Template** — nothing; sections already exist (`#runStatisticsSection` … `#runDataHidden`). Compare/Table graphs are the exception and have their own markup patterns in `graphmetadata.js` (`_tableHtml`).
-8. **CSS** — only for a new `viewOptionClassMap` icon class (`css/components.css`).
+8. **CSS** — only for a new `viewOptionClassMap` icon class (`css/components/06-graphs.css`).
 9. **Tests** — reference screenshot for the section changes: regenerate `dashboard_output/<section>/base<Section>Section.png` in Docker; add a JS unit test for the `graph_data` function.
 10. **Docs** — row in the section table of `docs/graphs-tables.md` (Graph Name / Views / Views Description / Notes).
 

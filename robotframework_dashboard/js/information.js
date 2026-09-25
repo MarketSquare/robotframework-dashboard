@@ -74,6 +74,14 @@ function setup_information_popups() {
             const shiftAmount = tooltipRect.right - (window.innerWidth - padding);
             tooltipEl.style.transform = `translateX(calc(-50% - ${shiftAmount}px))`;
         }
+
+        // the tooltip hangs below its icon, so a long text on an icon near the bottom of the
+        // window runs off screen: flip it above the icon, and pin it to the top edge when even
+        // that does not fit (a tooltip taller than the window)
+        if (tooltipRect.bottom > window.innerHeight - padding) {
+            top = Math.max(rect.top - tooltipRect.height - 8, padding);
+            tooltipEl.style.top = `${top}px`;
+        }
     }
 
     function removeTooltip() {

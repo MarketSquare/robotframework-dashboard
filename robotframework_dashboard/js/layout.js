@@ -807,7 +807,7 @@ function setup_dashboard_section_layout_buttons() {
             update_history_buttons();
         }
     });
-    // Capture DOM snapshot when graph show/hide buttons are toggled (dispatched from eventlisteners.js)
+    // Capture DOM snapshot when graph show/hide buttons are toggled (dispatched from eventlisteners/graph_view_buttons.js)
     document.addEventListener("layout-user-action", () => capture_dom_snapshot_and_push());
     attach_section_order_buttons("dashboard");
 

@@ -7,7 +7,7 @@ vi.mock('@js/variables/data.js', () => import('./mocks/data.js'));
 vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
 vi.mock('@js/variables/graphs.js', () => import('./mocks/graphs.js'));
 
-import { compute_filter_option_availability, normalize_filter_selections } from '@js/filter.js';
+import { compute_filter_option_availability, normalize_filter_selections } from '@js/filter/availability.js';
 
 // The example from issue #296: two custom filter dimensions where filter_1=A only ever
 // occurs together with filter_2=C.

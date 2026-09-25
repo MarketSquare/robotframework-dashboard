@@ -31,7 +31,7 @@ Must contain:
 
 **Import the new module from `layout.js`** — the bundler discovers it via the import graph from `main.js`.
 
-### Part 2 — CSS (`css/components.css`)
+### Part 2 — CSS (`css/components/03-widgets.css`)
 
 Required CSS classes:
 
@@ -167,7 +167,7 @@ Some keys only exist in localStorage (not in the `settings` defaults object). Th
 | `layouts` | `layout.js` |
 | `libraries` | keyword library toggles |
 | `theme` | theme switcher |
-| `filterProfiles` | `filter.js` |
+| `filterProfiles` | `filter/profiles.js` |
 | `statWidgets` | `statwidgets.js` |
 | `linkWidgets` | `linkwidgets.js` |
 | `customSections` | `customsections.js` |
@@ -193,7 +193,7 @@ The `STAT_WIDGET_COLORS` and `STAT_WIDGET_BG_COLORS` arrays from `js/variables/s
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
 ```
 
-The color CSS classes they reference (`.white-text`, `.blue-text`, `.blue-bg`, etc.) are defined in `css/components.css` and `css/base.css`.
+The color CSS classes they reference (`.white-text`, `.blue-text`, `.blue-bg`, etc.) are defined in `css/components/03-widgets.css`, `css/components/04-status-colors.css` and `css/base.css`.
 
 ---
 
@@ -216,5 +216,5 @@ Do not use an `<a>` tag as the outermost clickable wrapper for GridStack items �
 | `js/<name>widgets.js` | **Create** — full widget module |
 | `js/layout.js` | Import + add to snapshots + render calls + setup call |
 | `js/localstorage.js` | (1) Add key to `merge_deep` whitelist AND (2) add `data-gs-id` prefix to `merge_layout` allowlist — **both are required** or positions reset on refresh |
-| `css/components.css` | Add all widget CSS classes |
+| `css/components/03-widgets.css` | Add all widget CSS classes |
 | `templates/dashboard.html` | Add modal HTML |

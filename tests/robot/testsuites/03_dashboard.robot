@@ -200,3 +200,17 @@ Dashboard Sections Move Into The Sidebar Drawer As Collapsible Groups
     Toggle Active Sidebar Group
     ${subItems}    Get Expanded Sidebar Sub Items
     Should Be Empty    ${subItems}
+
+The Page Behind An Open Modal Does Not Scroll
+    [Documentation]    Bootstrap locks the page with overflow:hidden on <body>, but the dashboard's
+    ...    scrollbar sits on <html> (.html-scroll in base.css), so the page used to keep scrolling
+    ...    behind a modal. The database modal is short enough not to scroll itself, so a wheel over
+    ...    it reaches the page whenever the lock is missing.
+    Click    selector=id=database
+    Wait For Elements State    selector=id=databaseModal    state=visible
+    Wait For Function    () => getComputedStyle(document.getElementById("databaseModal")).opacity === "1"    timeout=10s
+    ${before}    Evaluate JavaScript    ${None}    () => window.scrollY
+    Mouse Wheel    0    900
+    ${after}    Evaluate JavaScript    ${None}
+    ...    () => new Promise(res => requestAnimationFrame(() => requestAnimationFrame(() => res(window.scrollY))))
+    Should Be Equal    ${before}    ${after}    msg=the page scrolled behind the open modal

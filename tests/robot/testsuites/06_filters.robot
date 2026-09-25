@@ -357,3 +357,14 @@ Validate Dashboard Custom Filters Hidden Per Page
     Custom Filter Option Counts Should Be    Browser    ${{ {"All": 1, "None": 0, "chrome": 0, "firefox": 1} }}
     Unavailable Custom Filter Values Should Be    Browser    ${{ ["None", "chrome"] }}
     Close Filter Dialog
+
+Information Popups In The Filter Modal Stay Inside The Window
+    [Documentation]    The popups hang below their icon, so the long ones near the bottom of the modal
+    ...    used to run off screen. They flip above the icon instead (createTooltip in information.js).
+    ...    The suite viewport is 2000px high, which is too tall for any popup to overflow, so the
+    ...    window is shrunk to a realistic height first.
+    Set Viewport Size    width=1600    height=800
+    Open Filter Dialog
+    ${offscreen}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll("#filtersModal .information[data-title]")].flatMap(el => { el.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })); const tip = document.querySelector(".tooltip-popup"); if (!tip) return []; const r = tip.getBoundingClientRect(); const fits = r.top >= 0 && r.bottom <= window.innerHeight && r.left >= 0 && r.right <= window.innerWidth; return fits ? [] : [el.id + " " + Math.round(r.top) + "-" + Math.round(r.bottom) + " of " + window.innerHeight]; })
+    Should Be Empty    ${offscreen}    msg=information popups rendered outside the window

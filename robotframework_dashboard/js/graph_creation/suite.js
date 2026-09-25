@@ -4,7 +4,7 @@ import { get_duration_graph_data } from '../graph_data/duration.js';
 import { get_graph_config } from '../graph_data/graph_config.js';
 import { build_tooltip_meta, lookup_tooltip_meta, format_status } from '../graph_data/tooltip_helpers.js';
 import { exclude_from_suite_data } from '../graph_data/helpers.js';
-import { setup_suites_in_suite_select } from '../filter.js';
+import { setup_suites_in_suite_select } from '../filter/section_selects.js';
 import { format_duration } from '../common.js';
 import { dataLabelConfig } from '../variables/chartconfig.js';
 import { settings } from '../variables/settings.js';

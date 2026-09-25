@@ -10,10 +10,8 @@ import {
     hide_loading_overlay,
 } from '../common.js';
 import { update_menu } from '../menu.js';
-import {
-    setup_collapsables,
-    attach_run_card_version_listener
-} from '../eventlisteners.js';
+import { setup_collapsables } from '../eventlisteners/collapsables.js';
+import { attach_run_card_version_listener } from '../eventlisteners/overview_listeners.js';
 import { clockSVG, arrowRight } from '../variables/svg.js';
 import {
     passedBackgroundColor,
@@ -39,12 +37,8 @@ import {
 } from '../variables/globals.js';
 import { runs, tests, use_logs } from '../variables/data.js';
 import { get_rerun_summary } from '../graph_data/helpers.js';
-import {
-    clear_all_filters,
-    update_filter_active_indicator,
-    parse_custom_filters,
-    get_hidden_custom_filters,
-} from '../filter.js';
+import { parse_custom_filters, get_hidden_custom_filters } from '../filter/pipeline.js';
+import { clear_all_filters, update_filter_active_indicator } from '../filter/controls.js';
 
 // rerun summary (rebot --merge attempt history) per run, keyed by the run_start without
 // milliseconds/timezone so it matches run_start values that were reformatted by the filters
