@@ -248,5 +248,7 @@ npm run docs:build:versions
 npm run docs:build:versions -- --only latest,dev,v1.3.0
 npm run docs:build:versions -- --only latest,legacy       # latest + all README-only releases
 npm run docs:build:versions -- --cache-dir .docs-dist-cache   # reuse finished builds between runs, like CI
+npm run docs:build:versions -- --only dev --no-example         # skip rebuilding the example dashboard
 npm run docs:preview:versions
 ```
+The `dev` version rebuilds `example/robot_dashboard.html` from its own worktree first (`scripts/example.py`), so the example under `/dev/` shows what `main` does rather than what the last release did. Every released version keeps the example that was committed for it. The rebuild needs a python with the package dependencies installed; without one the build keeps the committed example and says so, and `--no-example` skips it on purpose. Neither writes into your checkout: the rebuild happens in the temporary worktree.

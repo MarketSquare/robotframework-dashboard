@@ -42,6 +42,15 @@ jobs:
           cache: npm
       - name: Setup Pages
         uses: actions/configure-pages@v6
+      # The /dev/ build rebuilds example/robot_dashboard.html from its worktree, so the
+      # unreleased example shows what main does instead of what the last release did. Only
+      # the dependencies of the package are needed: scripts/example.py runs it from source.
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the package dependencies for the dev example dashboard
+        run: pip install .
       - name: Install dependencies
         run: npm ci
       # Released versions never change: their finished builds are kept between

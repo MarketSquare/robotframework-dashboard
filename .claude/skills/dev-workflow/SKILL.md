@@ -61,6 +61,7 @@ npm run docs:preview   # preview the build
 npm run docs:build:versions -- --only latest,dev,v1.3.0   # versioned site as CI builds it (omit --only for all tags)
 npm run docs:preview:versions                             # serve dist under /robotframework-dashboard/ like Pages
 npm run docs:build:versions -- --cache-dir .docs-dist-cache   # skip versions whose build is already cached (CI does this)
+npm run docs:build:versions -- --only dev --no-example        # keep the committed example instead of rebuilding it
 ```
 
 `package.json` exists **only** for the docs site — it has nothing to do with bundling dashboard JS.

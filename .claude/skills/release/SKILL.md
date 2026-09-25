@@ -48,6 +48,8 @@ Do not change the ASCII art banner lines above it.
 ## Step 3 — Regenerate the example dashboard and database
 
 The example dashboard and database live in `example/robot_dashboard.html` and `example/robot_results.db`.
+They are what every *released* docs version serves; the `/dev/` docs rebuild the example from `main` on every
+deploy (`scripts/docs/build-versioned-docs.mjs`), so this step is only about the release itself.
 
 Run from anywhere (any OS):
 
