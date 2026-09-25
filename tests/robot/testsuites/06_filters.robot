@@ -245,3 +245,32 @@ Validate Dashboard Custom Filters
     Should Show 1 Of 1 Runs
     Set Custom Filter    Browser    chrome    strict=True
     Should Show 0 Of 0 Runs
+
+Validate Dashboard Custom Filters Hidden Per Page
+    [Documentation]    "Settings > Filters" hides custom filter keys per page: a hidden key gets no dropdown in
+    ...    the filter modal on that page, is not applied there, and is left off the Overview run cards. The
+    ...    selection of a hidden key is kept, so it applies again on the pages where it is still shown.
+    [Setup]    Run Keywords    Generate Dashboard With Custom Filters    Open Dashboard
+    [Teardown]    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+    Open Overview Page
+    ${keys}    Get Overview Run Card Custom Filter Keys
+    Should Be Equal    ${keys}    ${{ ["Browser", "Env"] }}
+    Hide Custom Filters On Page    Overview    Env
+    Open Overview Page
+    ${keys}    Get Overview Run Card Custom Filter Keys
+    Should Be Equal    ${keys}    ${{ ["Browser"] }}
+    Open Filter Dialog
+    ${dimensions}    Get Custom Filter Dimensions
+    Should Be Equal    ${dimensions}    ${{ ["Browser"] }}
+    Close Filter Dialog
+    Open Dashboard Page
+    Open Filter Dialog
+    ${dimensions}    Get Custom Filter Dimensions
+    Should Be Equal    ${dimensions}    ${{ ["Browser", "Env"] }}
+    Close Filter Dialog
+    Set Custom Filter    Env    prod
+    Should Show 1 Of 1 Runs
+    Open Overview Page
+    Should Show 5 Of 5 Runs
+    Open Dashboard Page
+    Should Show 1 Of 1 Runs

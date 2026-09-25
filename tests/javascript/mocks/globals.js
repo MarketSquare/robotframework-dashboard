@@ -12,6 +12,7 @@ let filteredRuns;
 let filteredSuites;
 let filteredTests;
 let filteredKeywords;
+let filteredExceptions;
 let gridUnified = null;
 let gridRun = null;
 let gridSuite = null;
@@ -46,6 +47,7 @@ export {
     filteredSuites,
     filteredTests,
     filteredKeywords,
+    filteredExceptions,
     gridUnified,
     gridRun,
     gridSuite,

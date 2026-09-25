@@ -1,8 +1,25 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
+vi.mock('@js/variables/data.js', () => import('./mocks/data.js'));
+vi.mock('@js/variables/graphs.js', () => import('./mocks/graphs.js'));
 
 import { strip_tz_suffix } from '@js/common.js';
+import {
+    dashboardPages,
+    get_active_page,
+    get_hidden_custom_filters,
+    parse_custom_filters,
+} from '@js/filter.js';
+import { settings } from '@js/variables/settings.js';
+
+// settings is module level state, so it is restored between tests
+const defaultMenu = structuredClone(settings.menu);
+const defaultShow = structuredClone(settings.show);
+beforeEach(() => {
+    settings.menu = structuredClone(defaultMenu);
+    settings.show = structuredClone(defaultShow);
+});
 
 // Test the pure data transformation logic from filter.js.
 // Most filter functions in filter.js touch the DOM (document.getElementById),
@@ -265,5 +282,83 @@ describe('filter.js pure logic', () => {
             expect(result[0].name).toBe('test1');
             expect(result[0].status).toBe('PASS');
         });
+    });
+});
+
+// The setting key is built from the page name, so settings.js, the ids in dashboard.html and the
+// lookup here have to stay in sync. These import the real filter.js so a rename fails the test.
+describe('filter.js hidden custom filters per page', () => {
+
+    it('knows the same four pages as the menu settings', () => {
+        expect([...dashboardPages].sort()).toEqual(Object.keys(settings.menu).sort());
+    });
+
+    it('has an empty hidden custom filters default for every page', () => {
+        dashboardPages.forEach(page => {
+            const key = `hiddenCustomFilters${page.charAt(0).toUpperCase() + page.slice(1)}`;
+            expect(settings.show[key]).toEqual([]);
+        });
+    });
+
+    describe('get_active_page', () => {
+
+        it('returns the page selected in the menu', () => {
+            dashboardPages.forEach(page => {
+                dashboardPages.forEach(other => { settings.menu[other] = other === page; });
+                expect(get_active_page()).toBe(page);
+            });
+        });
+
+        it('falls back to dashboard when no page is selected', () => {
+            dashboardPages.forEach(page => { settings.menu[page] = false; });
+            expect(get_active_page()).toBe('dashboard');
+        });
+    });
+
+    describe('get_hidden_custom_filters', () => {
+
+        it('returns the keys hidden for the requested page', () => {
+            settings.show.hiddenCustomFiltersOverview = ['Env'];
+            settings.show.hiddenCustomFiltersTables = ['Browser', 'Env'];
+            expect(get_hidden_custom_filters('overview')).toEqual(['Env']);
+            expect(get_hidden_custom_filters('tables')).toEqual(['Browser', 'Env']);
+            expect(get_hidden_custom_filters('compare')).toEqual([]);
+        });
+
+        it('defaults to the active page', () => {
+            settings.show.hiddenCustomFiltersCompare = ['Env'];
+            dashboardPages.forEach(page => { settings.menu[page] = page === 'compare'; });
+            expect(get_hidden_custom_filters()).toEqual(['Env']);
+        });
+
+        it('returns an empty list when the setting is missing', () => {
+            delete settings.show.hiddenCustomFiltersDashboard;
+            expect(get_hidden_custom_filters('dashboard')).toEqual([]);
+        });
+    });
+});
+
+describe('filter.js parse_custom_filters', () => {
+
+    it('parses the colon separated key=value pairs of --customfilters', () => {
+        expect(parse_custom_filters('Browser=chrome:Env=staging')).toEqual({ Browser: 'chrome', Env: 'staging' });
+    });
+
+    it('trims whitespace around keys and values', () => {
+        expect(parse_custom_filters(' Browser = chrome ')).toEqual({ Browser: 'chrome' });
+    });
+
+    it('keeps everything after the first equals sign as the value', () => {
+        expect(parse_custom_filters('Query=a=b')).toEqual({ Query: 'a=b' });
+    });
+
+    it('splits on colons first, so a colon ends the value', () => {
+        expect(parse_custom_filters('Url=http://host')).toEqual({ Url: 'http' });
+    });
+
+    it('skips parts without a key and returns an empty object for no value', () => {
+        expect(parse_custom_filters('=chrome:Env=prod')).toEqual({ Env: 'prod' });
+        expect(parse_custom_filters('')).toEqual({});
+        expect(parse_custom_filters(null)).toEqual({});
     });
 });

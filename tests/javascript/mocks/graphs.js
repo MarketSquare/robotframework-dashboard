@@ -14,6 +14,7 @@ const unifiedSections = ["Dashboard Statistics"];
 const compareSections = ["Compare Statistics"];
 const tableSections = ["Table Statistics"];
 const dashboardGraphs = [];
+const defaultHiddenDashboardGraphs = [];
 const compareGraphs = [];
 const tableGraphs = [];
 
@@ -31,6 +32,7 @@ export {
     compareSections,
     tableSections,
     dashboardGraphs,
+    defaultHiddenDashboardGraphs,
     compareGraphs,
     tableGraphs,
 };
