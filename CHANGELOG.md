@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The four largest source files were split along their existing seams: `server.py` into `server.py` + `server_models.py` + `server_routes_outputs.py` + `server_routes_logs.py`, `js/eventlisteners.js` into `js/eventlisteners/` (8 modules), `js/filter.js` into `js/filter/` (8 modules) and `css/components.css` into `css/components/` (8 numbered files, path order is cascade order). `from robotframework_dashboard.server import ...` keeps working for the models, the bundled `<script>` and `<style>` are unchanged, and no user-visible behaviour changed
 - The `/dev/` documentation now rebuilds the example dashboard from `main` on every deploy, so it is no longer the example of the last release; `/vX.Y.Z/` keeps serving the example committed with that release
 - Pushing a release tag no longer triggers a second docs deploy that could only fail, which left a red cross on every release commit
+- The filter dropdowns (Filter Profiles, Run Tags, Versions, custom filters and the hidden custom filter pickers in Settings) open above their select when there is not enough room below and are capped to the available space, so opening one near the bottom of the modal no longer adds a scrollbar and makes the page jump
 
 ---
 
