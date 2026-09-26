@@ -1,0 +1,11 @@
+{
+  "name": "robotdashboard-playwright-sample",
+  "private": true,
+  "description": "Small Playwright suite used to produce JSON reports for the robotdashboard Playwright adapter",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

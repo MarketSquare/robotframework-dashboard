@@ -1,0 +1,5 @@
+demo_output/
+sample/node_modules/
+sample/results/
+sample/test-results/
+sample/playwright-report/
