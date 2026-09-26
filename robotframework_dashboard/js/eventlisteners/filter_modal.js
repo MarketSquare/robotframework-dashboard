@@ -14,7 +14,7 @@ import {
     setup_custom_filters_in_select_filter_buttons,
 } from "../filter/modal_options.js";
 import { setup_suite_path_navigator } from "../filter/suite_path.js";
-import { clear_all_filters } from "../filter/controls.js";
+import { clear_all_filters, set_filter_dropdown_visible } from "../filter/controls.js";
 import {
     capture_default_filters,
     populate_filter_profile_select,
@@ -89,9 +89,8 @@ function setup_filter_modal() {
     });
     // eventlistener for the runTags
     function show_checkboxes() {
-        const checkboxes = document.getElementById("runTagCheckBoxes");
         showingRunTags = !showingRunTags;
-        checkboxes.style.display = showingRunTags ? "block" : "none";
+        set_filter_dropdown_visible(runTagsSelectElement, checkboxesElement, showingRunTags);
     }
     const checkboxesElement = document.getElementById("runTagCheckBoxes");
     const runTagsSelectElement = document.getElementById("selectRunTags");
@@ -107,7 +106,7 @@ function setup_filter_modal() {
     const projectVersionSelectElement = document.getElementById("selectProjectVersion");
     function toggle_project_version_filter_dialogue() {
         showingProjectVersionDialogue = !showingProjectVersionDialogue;
-        projectVersionCheckboxes.style.display = showingProjectVersionDialogue ? "block" : "none";
+        set_filter_dropdown_visible(projectVersionSelectElement, projectVersionCheckboxes, showingProjectVersionDialogue);
     }
     projectVersionSelectElement.addEventListener("pointerdown", toggle_project_version_filter_dialogue);
     document.body.addEventListener("pointerdown", function (event) {
@@ -166,7 +165,7 @@ function setup_filter_modal() {
     let showingFilterProfiles = false;
     function toggle_filter_profiles() {
         showingFilterProfiles = !showingFilterProfiles;
-        document.getElementById("filterProfileCheckBoxes").style.display = showingFilterProfiles ? "block" : "none";
+        set_filter_dropdown_visible(selectFilterProfileElement, filterProfileCheckBoxes, showingFilterProfiles);
     }
     document.getElementById("selectFilterProfile").addEventListener("click", toggle_filter_profiles);
     const filterProfileCheckBoxes = document.getElementById("filterProfileCheckBoxes");

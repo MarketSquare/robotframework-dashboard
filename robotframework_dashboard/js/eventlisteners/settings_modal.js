@@ -7,6 +7,7 @@ import { setup_data_and_graphs } from "../menu.js";
 import { toggle_theme, apply_theme_colors, apply_custom_branding } from "../theme.js";
 import { collect_custom_filter_dimensions, dashboardPages } from "../filter/pipeline.js";
 import { setup_lowest_highest_dates } from "../filter/modal_options.js";
+import { set_filter_dropdown_visible } from "../filter/controls.js";
 import { update_duration_comparison_for_all_projects } from "../graph_creation/overview.js";
 import { confirm_action } from "./confirm_modal.js";
 
@@ -89,7 +90,7 @@ function setup_settings_modal() {
         let showing = false;
         function toggle() {
             showing = !showing;
-            checkBoxesEl.style.display = showing ? "block" : "none";
+            set_filter_dropdown_visible(selectEl, checkBoxesEl, showing);
         }
         selectEl.addEventListener("pointerdown", toggle);
         document.body.addEventListener("pointerdown", function (event) {
