@@ -68,7 +68,7 @@ python tests/robot/resources/generator/generate.py
 then refresh the reference screenshots, `cli_output` and `database_output` files by running the robot tests in Docker.
 The generator suites are not part of the test pipeline. See `tests/robot/resources/generator/README.md`.
 
-The example dashboard in `example/` is built from the same fixtures with `python scripts/example.py` (or `scripts\example.bat` on Windows).
+The example dashboard in `example/` is built from the same fixtures with `python scripts/example.py` (or `scripts\example.bat` on Windows). Add `--test` to build `robot_dashboard.html` in the repo root without updating `example/`, handy for eyeballing a change.
 
 ## Running Tests Locally - in a Docker Container
 Run the tests locally on your PC before pushing and waiting for the results from the GitHub actions is always a good idea. But this requires to install the required components in your native PC. In some cases this will not work as expected bacause of the differemt versions used. E.g.  screenshots taken during the tests may differ, so that the tests might fail.
