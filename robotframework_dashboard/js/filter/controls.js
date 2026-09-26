@@ -181,9 +181,45 @@ function set_filter_show_current_version(version) {
     update_filter_active_indicator("projectVersionInputItemAll", "filterVersionSelectedIndicator");
 }
 
+// gap between the select and its dropdown panel (the mt-2 margin) plus breathing room to the viewport edge
+const FILTER_DROPDOWN_GAP = 8;
+const FILTER_DROPDOWN_EDGE_MARGIN = 16;
+const FILTER_DROPDOWN_MIN_HEIGHT = 120;
+
+// decide whether a dropdown panel opens below or above its select and how tall it may get:
+// below while the content fits there, otherwise on whichever side has more room
+function get_filter_dropdown_placement(spaceBelow, spaceAbove, contentHeight, defaultMaxHeight) {
+    const wantedHeight = Math.min(contentHeight, defaultMaxHeight);
+    const dropUp = wantedHeight > spaceBelow && spaceAbove > spaceBelow;
+    const available = dropUp ? spaceAbove : spaceBelow;
+    const maxHeight = Math.max(Math.min(defaultMaxHeight, available), FILTER_DROPDOWN_MIN_HEIGHT);
+    return { dropUp, maxHeight };
+}
+
+// show or hide a .filterCheckBoxes panel; when shown it flips above the select if there is not
+// enough room below, so opening it does not stretch the modal and make the page jump
+function set_filter_dropdown_visible(selectElement, panelElement, visible) {
+    if (!visible) {
+        panelElement.style.display = "none";
+        return;
+    }
+    panelElement.classList.remove("drop-up");
+    panelElement.style.display = "block";
+    const selectRect = selectElement.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - selectRect.bottom - FILTER_DROPDOWN_GAP - FILTER_DROPDOWN_EDGE_MARGIN;
+    const spaceAbove = selectRect.top - FILTER_DROPDOWN_GAP - FILTER_DROPDOWN_EDGE_MARGIN;
+    const { dropUp, maxHeight } = get_filter_dropdown_placement(
+        spaceBelow, spaceAbove, panelElement.scrollHeight, window.innerHeight * 0.5
+    );
+    panelElement.classList.toggle("drop-up", dropUp);
+    panelElement.style.maxHeight = `${maxHeight}px`;
+}
+
 export {
     clear_all_filters,
     clear_overview_project_navigation_filter,
+    get_filter_dropdown_placement,
+    set_filter_dropdown_visible,
     set_filter_show_current_version,
     setup_filter_active_indicator,
     setup_filter_checkbox_handler_listeners,

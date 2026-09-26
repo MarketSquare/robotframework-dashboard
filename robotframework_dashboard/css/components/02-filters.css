@@ -43,6 +43,19 @@
   padding: 0.25rem;
 }
 
+/* the wrapper of select + panel is the anchor, so a panel flipped by set_filter_dropdown_visible
+   sits directly on top of its select and shrinks towards it while the list is being searched */
+:has(> .filterCheckBoxes) {
+  position: relative;
+}
+
+.filterCheckBoxes.drop-up {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem;
+}
+
 .filterCheckBoxes .list-group-item {
   background-color: transparent;
   border-color: transparent;

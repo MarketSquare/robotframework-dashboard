@@ -1,7 +1,7 @@
 import { settings } from '../variables/settings.js';
 import { runs } from '../variables/data.js';
 import { collect_custom_filter_dimensions } from './pipeline.js';
-import { setup_filter_active_indicator, setup_filter_checkbox_handler_listeners, setup_filter_checkbox_subfilter } from './controls.js';
+import { set_filter_dropdown_visible, setup_filter_active_indicator, setup_filter_checkbox_handler_listeners, setup_filter_checkbox_subfilter } from './controls.js';
 
 // function to setup run amount filter maximum
 function setup_run_amount_filter() {
@@ -262,7 +262,7 @@ function setup_custom_filters_in_select_filter_buttons() {
         const selectEl = document.getElementById(selectId);
         const checkBoxesEl = document.getElementById(checkBoxesId);
         let showing = false;
-        function toggle() { showing = !showing; checkBoxesEl.style.display = showing ? "block" : "none"; }
+        function toggle() { showing = !showing; set_filter_dropdown_visible(selectEl, checkBoxesEl, showing); }
         selectEl.addEventListener("pointerdown", toggle);
         document.body.addEventListener("pointerdown", function (event) {
             if (showing && !checkBoxesEl.contains(event.target) && !selectEl.contains(event.target)) {
