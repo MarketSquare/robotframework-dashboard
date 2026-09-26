@@ -7,6 +7,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.4.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.4.0) - 2026-09-26
+
+### Added
+- Drag to select time histogram for the date filter — the filter modal now opens with a bar chart of runs per time bucket above the date range, stacked by run status. Drag across the bars to fill the date inputs and zoom in (the chart re-buckets finer on every drag, so a month at a bar per day becomes a week at a bar per 6 hours), click a single bar to select that bucket, or use **Reset Range** for the full span. Hovering a bar lists every run in it with its passed/failed/skipped counts. The histogram follows every other filter but not the date range itself, so widening the range always brings runs back
+- Run counts and greying out of impossible filter options — every option of the Runs, Run Tags, Versions, Metadata and custom filter dropdowns shows how many runs remain if that option is selected, and options that can only ever yield zero runs are greyed out (they stay visible and selectable). Counts are computed with every filter except their own applied, and in **NOT** mode a count is what is left over. Both the counts and the greying out can be turned off in Settings > Defaults
+- Segmented section tracks in the menu bar — the sections of a page now sit in a rounded track directly after the page itself, with a filled pill marking the section in view, for the Overview (project bars), the Dashboard (`Runs`, `Suites`, `Tests`, `Keywords`) and, for the first time, the Tables page. In the responsive sidebar the pages became collapsible groups: the page you are on is expanded and a chevron folds its sections away
+- Custom filter attributes on the Overview run cards — `custom_filter` key/value pairs can be shown on the run cards via Settings > Overview > "Display Custom Filter attributes on run cards"
+
+### Fixed
+- The amount filter is applied per project instead of over the combined run list, so a project with a lower run frequency no longer drops out of the Overview entirely. The same holds for retention: `-r limit=N` (and the admin page and `/remove-outputs`) now keeps the N newest runs *per project*, where it could previously wipe a low frequency project's whole history. A run is kept when it is in the last X of at least one of its projects, so the shown total can exceed X — the filter modal label is now **"Amount per project"** and its ⓘ popup explains this
+- Navigating back to the Overview after clicking a project card resets the filter that the card applied, unless the filter was changed by hand in the meantime
+- The page behind an open modal no longer scrolls — Bootstrap locks `<body>`, but the dashboard's scroll container is `<html>`
+- Long information popups near the bottom of the window are no longer cut off; they flip above their icon and are clamped to the window
+- The Overview bar settings (*projects by Name*, *projects by Tag*, *latest runs*, *total stats*) now rebuild the section navigation, which kept buttons for bars that had been switched off and missed the ones that appeared
+- The filter dropdown panels paint their own opaque surface, so the modal rows underneath no longer show through an open dropdown; the search box inside them is sticky, and `--color-text-muted` now passes WCAG AA contrast on the light theme
+- Three JavaScript imports that only resolved because the bundler flattens every module into one scope (`filteredAmount`, the `setup_*_in_select` functions and `set_filter_show_current_version`)
+
+### Changed
+- The four largest source files were split along their existing seams: `server.py` into `server.py` + `server_models.py` + `server_routes_outputs.py` + `server_routes_logs.py`, `js/eventlisteners.js` into `js/eventlisteners/` (8 modules), `js/filter.js` into `js/filter/` (8 modules) and `css/components.css` into `css/components/` (8 numbered files, path order is cascade order). `from robotframework_dashboard.server import ...` keeps working for the models, the bundled `<script>` and `<style>` are unchanged, and no user-visible behaviour changed
+- The `/dev/` documentation now rebuilds the example dashboard from `main` on every deploy, so it is no longer the example of the last release; `/vX.Y.Z/` keeps serving the example committed with that release
+- Pushing a release tag no longer triggers a second docs deploy that could only fail, which left a red cross on every release commit
+- The filter dropdowns (Filter Profiles, Run Tags, Versions, custom filters and the hidden custom filter pickers in Settings) open above their select when there is not enough room below and are capped to the available space, so opening one near the bottom of the modal no longer adds a scrollbar and makes the page jump
+
+---
+
 ## [2.3.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.3.0) - 2026-09-22
 
 ### Added

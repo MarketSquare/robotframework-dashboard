@@ -150,13 +150,28 @@ If a **new skill** was created under `.claude/skills/` as part of this release, 
 
 ---
 
-## Step 7 — Verify the versioned docs deploy (after the tag is pushed)
+## Step 7 — After the release PR is merged: tag, GitHub Release, docs
 
-Pushing the `vX.Y.Z` tag triggers `.github/workflows/deploy.yml`, which rebuilds the docs for every tag (`scripts/docs/build-versioned-docs.mjs`). Once the run is green, check:
+The user merges the release PR (squash, `Release X.Y.Z (#PR)`), uploads to PyPI and posts the Slack notes. The rest, in this order:
 
-- `https://marketsquare.github.io/robotframework-dashboard/` shows `vX.Y.Z` in the nav bar (the root is always the latest tag)
-- `https://marketsquare.github.io/robotframework-dashboard/vX.Y.Z/` exists
-- `https://marketsquare.github.io/robotframework-dashboard/versions.json` lists the new version with `"latest": true`
+1. **Tag the merge commit** — never before the merge, or the tag points at a commit that is not on `main`:
+   ```bash
+   git checkout main && git pull
+   git tag vX.Y.Z && git push origin vX.Y.Z
+   ```
+2. **GitHub Release** — same style as the earlier releases (auto-generated "What's Changed"):
+   ```bash
+   gh release create vX.Y.Z --title "Robotdashboard vX.Y.Z" --generate-notes --notes-start-tag vPREVIOUS --latest
+   ```
+   Check `gh release list` first: every tag should have a release, so create any missing earlier one (oldest first) before this one so `--latest` ends up on the new version.
+3. **Re-run the docs deploy.** `.github/workflows/deploy.yml` runs only on pushes to `main` (plus `workflow_dispatch`), **not** on tags; it builds every release tag it finds (`scripts/docs/build-versioned-docs.mjs`). The run started by the merge usually builds before the tag exists, so trigger it again after the tag push:
+   ```bash
+   gh workflow run deploy.yml
+   ```
+   Once that run is green, check:
+   - `https://marketsquare.github.io/robotframework-dashboard/` shows `vX.Y.Z` in the nav bar (the root is always the latest tag)
+   - `https://marketsquare.github.io/robotframework-dashboard/vX.Y.Z/` exists
+   - `https://marketsquare.github.io/robotframework-dashboard/versions.json` lists the new version with `"latest": true`
 
 ---
 
@@ -169,4 +184,5 @@ Pushing the `vX.Y.Z` tag triggers `.github/workflows/deploy.yml`, which rebuilds
 - [ ] `example/robot_results.db` — regenerated
 - [ ] `CHANGELOG.md` — new section added at the top
 - [ ] Slack release notes produced
-- [ ] After the tag push: `/`, `/vX.Y.Z/` and `versions.json` on the docs site show the new version
+- [ ] After the merge: `vX.Y.Z` tag pushed on the merge commit, GitHub Release created
+- [ ] `gh workflow run deploy.yml` after the tag push; `/`, `/vX.Y.Z/` and `versions.json` on the docs site show the new version

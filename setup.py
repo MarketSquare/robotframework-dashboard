@@ -12,7 +12,7 @@ extras["all"] = sorted({pkg for group in extras.values() for pkg in group})
 
 setup(
     name="robotframework-dashboard",
-    version="2.3.0",
+    version="2.4.0",
     description="Output processor and dashboard generator for Robot Framework output files",
     long_description="""# 📊 Robot Framework Dashboard
 
