@@ -35,7 +35,7 @@ Use the project scripts — do **not** call `pytest`, `vitest`, `robot`, or `pab
 | Python unit tests | `bash scripts/python-tests.sh` / `scripts\python-tests.bat` |
 | JS unit tests | `bash scripts/javascript-tests.sh` / `scripts\javascript-tests.bat` |
 | Generate a dashboard from source | `python -m robotframework_dashboard.main -f tests -n robot_dashboard.html` |
-| Build the example dashboard (tags, versions, filters, logs) | `python scripts/example.py` / `scripts\example.bat` |
+| Build the example dashboard (tags, versions, filters, logs) | `python scripts/example.py` / `scripts\example.bat`; add `--test` to build only in the repo root and leave `example/` untouched |
 | Regenerate the `output.xml` fixtures | `python tests/robot/resources/generator/generate.py` (then refresh screenshots/CLI/DB references in Docker) |
 | Docs site | `npm run docs:dev` / `npm run docs:build` |
 

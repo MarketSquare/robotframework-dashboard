@@ -1,13 +1,15 @@
 """Build the example dashboard (example/robot_dashboard.html + example/robot_results.db).
 
     python scripts/example.py
+    python scripts/example.py --test   # leave example/ untouched, only build in the repo root
 
 Imports every fixture from tests/robot/resources/outputs/ with run tags, project
 versions, timezones and custom filters so the example shows all dashboard features,
-then copies the result into example/. Runs the package from source (python -m), so
+then copies the result into example/ (skipped with --test). Runs the package from source (python -m), so
 no install is needed. The fixtures come from tests/robot/resources/generator/.
 """
 
+import argparse
 import shutil
 import subprocess
 import sys
@@ -70,12 +72,22 @@ def build_commands():
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Build the example dashboard and database.")
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help=f"only build {DASHBOARD.name} and {DATABASE.name} in the repo root, do not update example/",
+    )
+    args = parser.parse_args()
     for stale in (DATABASE, DASHBOARD):
         if stale.exists():
             stale.unlink()
     for command in build_commands():
         print(" ".join(command[3:5]), flush=True)
         subprocess.run(command, cwd=ROOT, check=True)
+    if args.test:
+        print(f"Built {DASHBOARD} and {DATABASE}, example/ left untouched")
+        return
     shutil.copy(DATABASE, EXAMPLE / DATABASE.name)
     shutil.copy(DASHBOARD, EXAMPLE / DASHBOARD.name)
     print(f"Updated {EXAMPLE / DATABASE.name} and {EXAMPLE / DASHBOARD.name}")
