@@ -90,7 +90,6 @@ Current third-party libraries:
 | @sgratzl/chartjs-chart-boxplot | Box plot chart type |
 | chartjs-chart-matrix | Matrix/heatmap chart type |
 | GridStack | Drag-and-drop dashboard layout |
-| Pako | `pako.inflate()` — decompress embedded data in the browser |
 | Bootstrap | Modals, layout, admin page UI |
 | DataTables (3.x, no jQuery) | Tables page, admin page tables |
 
@@ -128,8 +127,8 @@ json.dumps(data).encode("utf-8")  # serialize
 **JavaScript (browser):**
 ```javascript
 // js/variables/data.js
-const runs = decode_and_decompress("placeholder_runs");
-// atob() → Uint8Array → pako.inflate() → JSON.parse()
+await load_data();   // main() awaits this before anything reads runs/suites/tests/...
+// atob() → Uint8Array → native DecompressionStream("deflate") → Response.json()
 ```
 
-Pako (the JS zlib port) is the only dependency required to decode data, so it must always be loaded before `data.js` runs.
+Decoding needs no library: the browser's `DecompressionStream` inflates the zlib payload. It is async, so the data arrays are empty `let` bindings until `load_data()` resolves — never read them at module load time, only from code that runs after `main()` awaited it.

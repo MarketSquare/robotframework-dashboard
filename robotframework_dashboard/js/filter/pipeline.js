@@ -16,7 +16,6 @@ function sort_wall_clock(data) {
 
 // the run_start transformations only depend on these settings, so they are cached per combination
 // instead of copying every row on each filter apply; the filter availability uses the same copies
-const transformSourceData = { runs, suites, tests, keywords, exceptions };
 let transformedDataCache = { key: null, data: {} };
 
 function get_transformed_data(name) {
@@ -25,7 +24,8 @@ function get_transformed_data(name) {
         transformedDataCache = { key: key, data: {} };
     }
     if (!(name in transformedDataCache.data)) {
-        transformedDataCache.data[name] = remove_timezones(convert_timezone(remove_milliseconds(transformSourceData[name])));
+        const sourceData = { runs, suites, tests, keywords, exceptions }[name];
+        transformedDataCache.data[name] = remove_timezones(convert_timezone(remove_milliseconds(sourceData)));
     }
     return transformedDataCache.data[name];
 }
