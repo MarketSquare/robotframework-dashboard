@@ -14,7 +14,7 @@ The process has three distinct stages — each with its own time and size cost:
 |---|---|
 | **XML processing** | `OutputProcessor` uses `robot.api.ExecutionResult` to parse each `output.xml` and insert its data into the SQLite database. |
 | **Dashboard generation** | `DashboardGenerator` reads all data from the database, compresses it (JSON → zlib → base64), inlines all JS/CSS, and writes a single self-contained `.html` file. |
-| **Browser rendering** | The browser decompresses the embedded data and renders charts using Chart.js. Render time scales with the number of displayed runs and active data views. |
+| **Browser rendering** | The browser decompresses the embedded data with its native `DecompressionStream` (Chrome 80+, Firefox 113+, Safari 16.4+) and renders charts using Chart.js. Render time scales with the number of displayed runs and active data views. |
 
 ## Baseline Results
 
@@ -88,8 +88,7 @@ Very large dashboards (500+ runs with many unique tests) may reach 5–10 MB. Th
 The time it takes for the dashboard to finish drawing after the page opens is driven by Chart.js — not by data size or HTML file size. Key factors:
 
 - **Default quantity is 20 runs per project** — renders near-instantly on any hardware. The amount filter is applied per project (run name / `project_` tag), so a dashboard with several projects renders more runs than the quantity itself.
-- **50 runs** — expect a couple of seconds while Chart.js draws all graphs.
-- **100+ runs** — rendering can approach **~10 seconds or more!**. The exact time depends on:
+- **Hundreds of runs** — expect a few seconds. As a reference, a dashboard with 504 runs, 208k test results and 138k keyword results loads in about 2.3 seconds with the default quantity, and applying a filter that shows all 504 runs takes about 3.6 seconds on the Dashboard page, 2.4 seconds on the Tables page and under 0.1 seconds on the Overview page. The exact time depends on:
   - The **size of your test suite** — more tests and suites mean more data points per chart.
   - Whether **"All Suites"** or **"All Tests"** is selected in their respective sections — these views render one data series per unique suite/test name, which scales with the breadth of your suite.
 
