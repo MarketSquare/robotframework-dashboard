@@ -7,7 +7,12 @@ const exceptions = decode_and_decompress("placeholder_exceptions");
 
 function decode_and_decompress(base64Str) {
     if (base64Str.includes("placeholder_")) return [];
-    const compressedData = Uint8Array.from(atob(base64Str), c => c.charCodeAt(0));
+    // a plain loop is much faster than Uint8Array.from with a map callback on large payloads
+    const binaryStr = atob(base64Str);
+    const compressedData = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+        compressedData[i] = binaryStr.charCodeAt(i);
+    }
     const decompressedData = pako.inflate(compressedData, { toText: true });
     return JSON.parse(decompressedData);
 }

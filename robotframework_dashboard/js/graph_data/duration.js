@@ -2,7 +2,7 @@ import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { barConfig, lineConfig } from "../variables/chartconfig.js";
 import { compareRunIds } from "../variables/graphs.js";
-import { exclude_from_suite_data } from "./helpers.js";
+import { get_suite_data_exclusion } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for duration graphs
@@ -14,6 +14,7 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
     const keywordSelect = document.getElementById("keywordSelect").value;
     const useLibraryNames = settings?.switch?.useLibraryNames === true;
     const limit = inFullscreen && inFullscreenGraph.includes("Duration") ? 100 : 30;
+    const exclude_from_suite_data = get_suite_data_exclusion(dataType);
     const should_include = (value) => {
         if (dataType === "keyword") {
             const keywordKey = useLibraryNames && value.owner
@@ -22,7 +23,7 @@ function get_duration_graph_data(dataType, graphType, objectDataAttribute, filte
 
             if (keywordKey !== keywordSelect) return false;
         }
-        if (exclude_from_suite_data(dataType, value)) return false;
+        if (exclude_from_suite_data(value)) return false;
         if (settings.switch.suitePathsTestSection) {
             if (dataType === "test" && suiteSelectTests !== "All" &&
                 value.full_name !== `${suiteSelectTests}.${value.name}`) {

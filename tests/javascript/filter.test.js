@@ -5,13 +5,15 @@ vi.mock('@js/variables/data.js', () => import('./mocks/data.js'));
 vi.mock('@js/variables/graphs.js', () => import('./mocks/graphs.js'));
 
 import { strip_tz_suffix, get_run_projects } from '@js/common.js';
-import { strip_tz_suffix } from '@js/common.js';
 import {
     dashboardPages,
     get_active_page,
     get_hidden_custom_filters,
+    get_transformed_data,
     parse_custom_filters,
+    sort_wall_clock,
 } from '@js/filter/pipeline.js';
+import { runs } from '@js/variables/data.js';
 import { settings } from '@js/variables/settings.js';
 
 // settings is module level state, so it is restored between tests
@@ -26,15 +28,6 @@ beforeEach(() => {
 // Most filter functions in filter.js touch the DOM (document.getElementById),
 // so here we test the reusable logic patterns (sorting, data transformations)
 // that the filter functions rely on.
-
-// Reimplementation of sort_wall_clock from filter.js for direct testing
-function sort_wall_clock(data) {
-    return [...data].sort((a, b) => {
-        const ak = strip_tz_suffix(a.run_start);
-        const bk = strip_tz_suffix(b.run_start);
-        return ak < bk ? -1 : ak > bk ? 1 : 0;
-    });
-}
 
 describe('filter.js pure logic', () => {
     describe('sort_wall_clock logic', () => {
@@ -86,6 +79,47 @@ describe('filter.js pure logic', () => {
             const original = [...data];
             sort_wall_clock(data);
             expect(data).toEqual(original);
+        });
+
+        it('keeps the original order of items with the same wall-clock time', () => {
+            const data = [
+                { run_start: '2025-01-15 10:00:00', name: 'b' },
+                { run_start: '2025-01-15 09:00:00', name: 'c' },
+                { run_start: '2025-01-15 10:00:00+02:00', name: 'a' },
+            ];
+            expect(sort_wall_clock(data).map(item => item.name)).toEqual(['c', 'b', 'a']);
+        });
+    });
+
+    describe('get_transformed_data', () => {
+        beforeEach(() => {
+            runs.length = 0;
+            runs.push({ run_start: '2025-01-15 09:05:03.123+02:00', name: 'run1' });
+            settings.show.milliseconds = true;
+            settings.show.timezones = true;
+            settings.show.convertTimezone = false;
+        });
+
+        it('applies the run_start transformations of the settings', () => {
+            settings.show.milliseconds = false;
+            settings.show.timezones = false;
+            expect(get_transformed_data('runs')[0].run_start).toBe('2025-01-15 09:05:03');
+            expect(runs[0].run_start).toBe('2025-01-15 09:05:03.123+02:00');
+        });
+
+        it('reuses the transformed data while the settings stay the same', () => {
+            settings.show.milliseconds = false;
+            const first = get_transformed_data('runs');
+            expect(get_transformed_data('runs')).toBe(first);
+        });
+
+        it('transforms again when one of the settings changes', () => {
+            settings.show.milliseconds = false;
+            expect(get_transformed_data('runs')[0].run_start).toBe('2025-01-15 09:05:03+02:00');
+            settings.show.timezones = false;
+            expect(get_transformed_data('runs')[0].run_start).toBe('2025-01-15 09:05:03');
+            settings.show.milliseconds = true;
+            expect(get_transformed_data('runs')[0].run_start).toBe('2025-01-15 09:05:03.123');
         });
     });
 
@@ -174,8 +208,8 @@ describe('filter.js pure logic', () => {
                 { run_start: '2025-01-15 10:00:00', name: 'suite2' },
                 { run_start: '2025-01-15 11:00:00', name: 'suite3' },
             ];
-            const validRunStarts = filteredRuns.map(v => v.run_start);
-            const result = data.filter(v => validRunStarts.includes(v.run_start));
+            const validRunStarts = new Set(filteredRuns.map(v => v.run_start));
+            const result = data.filter(v => validRunStarts.has(v.run_start));
             expect(result).toHaveLength(2);
             expect(result[0].name).toBe('suite1');
             expect(result[1].name).toBe('suite2');
@@ -186,8 +220,8 @@ describe('filter.js pure logic', () => {
             const data = [
                 { run_start: '2025-01-15 09:00:00', name: 'suite1' },
             ];
-            const validRunStarts = filteredRuns.map(v => v.run_start);
-            const result = data.filter(v => validRunStarts.includes(v.run_start));
+            const validRunStarts = new Set(filteredRuns.map(v => v.run_start));
+            const result = data.filter(v => validRunStarts.has(v.run_start));
             expect(result).toHaveLength(0);
         });
     });

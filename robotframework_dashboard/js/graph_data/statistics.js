@@ -14,7 +14,7 @@ import {
     rerunBorderWidth
 } from "../variables/chartconfig.js";
 import { settings, get_run_label } from "../variables/settings.js";
-import { convert_timeline_data, exclude_from_suite_data, parse_test_attempts, resolve_test_status } from "./helpers.js";
+import { convert_timeline_data, get_suite_data_exclusion, parse_test_attempts, resolve_test_status } from "./helpers.js";
 import { compareRunIds } from "../variables/graphs.js";
 
 // function to prepare the data in the correct format for statistics graphs
@@ -33,8 +33,9 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
         runNames.push(value.run_name ?? value.name);
         names.push(value.name);
     };
+    const exclude_from_suite_data = get_suite_data_exclusion(dataType);
     for (const value of filteredData) {
-        if (exclude_from_suite_data(dataType, value)) continue;
+        if (exclude_from_suite_data(value)) continue;
         if (dataType === "keyword") {
             const keywordKey = useLibraryNames && value.owner
                 ? `${value.owner}.${value.name}`
