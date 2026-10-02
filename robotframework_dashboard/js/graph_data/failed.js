@@ -1,6 +1,6 @@
 import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
-import { convert_timeline_data, parse_test_attempts } from "./helpers.js";
+import { convert_timeline_data, group_timeline_values, parse_test_attempts } from "./helpers.js";
 import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
 import { strip_tz_suffix } from "../common.js";
 
@@ -93,13 +93,10 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
         let datasets = [];
         let runAxis = 0;
         const pointMeta = {};
+        const groups = group_timeline_values(filteredData, labels, value => value.failed > 0 ? [getTestKey(value, dataType)] : []);
         for (const runStart of runStarts) {
             for (const label of labels) {
-                const foundValues = filteredData.filter(value =>
-                    getTestKey(value, dataType) === label &&
-                    value.run_start === runStart &&
-                    value.failed > 0
-                );
+                const foundValues = groups.get(label).get(runStart) ?? [];
                 if (foundValues.length > 0) {
                     const value = foundValues[0];
                     // tests re-executed with robot --rerunfailed (rebot --merge history) get the rerun border

@@ -3,43 +3,58 @@ import { barConfig } from "../variables/chartconfig.js";
 import { inFullscreen}  from "../variables/globals.js";
 
 // helper function to more easily use the logic of filtering suite graph data based on the selected filters
-// returns true if the value should be excluded, false if it should be included
-function exclude_from_suite_data(dataType, value) {
-    if (dataType !== "suite") return false;
+// returns a function that returns true if a value should be excluded, false if it should be included
+// the selected filters are read once here instead of once per value
+function get_suite_data_exclusion(dataType) {
+    if (dataType !== "suite") return () => false;
     const suiteSelectSuites = document.getElementById("suiteSelectSuites").value;
-    const suiteSelectSuitesOptions = [...document.getElementById("suiteSelectSuites").options].map(o => o.value);
+    const suiteSelectSuitesOptions = new Set([...document.getElementById("suiteSelectSuites").options].map(o => o.value));
     const suiteFolder = document.getElementById("suiteFolder").innerText;
     const isFolderAll = suiteFolder === "All";
     const isSuiteAll = suiteSelectSuites === "All Suites Separate" || suiteSelectSuites === "All Suites Combined";
     const usingSuitePaths = settings.switch.suitePathsSuiteSection;
 
     const folderMatches = (val) => val.full_name === suiteFolder || val.full_name.startsWith(`${suiteFolder}.`);
-    const suiteNameMatches = (val) => suiteSelectSuitesOptions.includes(val.name);
-    const fullNameMatches = (val) => suiteSelectSuitesOptions.includes(val.full_name);
+    const suiteNameMatches = (val) => suiteSelectSuitesOptions.has(val.name);
+    const fullNameMatches = (val) => suiteSelectSuitesOptions.has(val.full_name);
+    const selectedSuiteMismatch = (val) => usingSuitePaths
+        ? val.full_name !== suiteSelectSuites
+        : val.name !== suiteSelectSuites;
 
     if (isFolderAll && isSuiteAll) {
         // All folders, all suites: include all
-        return false;
+        return () => false;
     }
     if (isFolderAll && !isSuiteAll) {
         // All folders, specific suite
-        return usingSuitePaths
-            ? value.full_name !== suiteSelectSuites
-            : value.name !== suiteSelectSuites;
+        return selectedSuiteMismatch;
     }
     if (!isFolderAll && isSuiteAll) {
         // Specific folder, all suites
-        if (!folderMatches(value)) return true;
-
-        return usingSuitePaths
-            ? !fullNameMatches(value)
-            : !suiteNameMatches(value);
+        return (value) => {
+            if (!folderMatches(value)) return true;
+            return usingSuitePaths
+                ? !fullNameMatches(value)
+                : !suiteNameMatches(value);
+        };
     }
     // Specific folder, specific suite
-    if (!folderMatches(value)) return true;
-    return usingSuitePaths
-        ? value.full_name !== suiteSelectSuites
-        : value.name !== suiteSelectSuites;
+    return (value) => !folderMatches(value) || selectedSuiteMismatch(value);
+}
+
+// function to group timeline rows by label and run_start in one pass
+// returns Map(label -> Map(run_start -> [rows])), rows whose labels are not in labels are skipped
+function group_timeline_values(data, labels, get_labels) {
+    const groups = new Map(labels.map(label => [label, new Map()]));
+    for (const value of data) {
+        for (const label of get_labels(value)) {
+            const byRunStart = groups.get(label);
+            if (!byRunStart) continue;
+            if (!byRunStart.has(value.run_start)) byRunStart.set(value.run_start, []);
+            byRunStart.get(value.run_start).push(value);
+        }
+    }
+    return groups;
 }
 
 // function to update the height of the test statistics graph and enable scrolling
@@ -170,7 +185,8 @@ function format_attempt_lines(attempts, maxMessageLength = 80) {
 }
 
 export {
-    exclude_from_suite_data,
+    get_suite_data_exclusion,
+    group_timeline_values,
     update_height,
     convert_timeline_data,
     parse_test_attempts,

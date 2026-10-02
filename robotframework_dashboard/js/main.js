@@ -6,10 +6,12 @@ import { setup_collapsables } from "./eventlisteners/collapsables.js";
 import { setup_filter_modal } from "./eventlisteners/filter_modal.js";
 import { setup_settings_modal } from "./eventlisteners/settings_modal.js";
 import { setup_menu, setup_navbar_overflow } from "./menu.js";
+import { load_data } from "./variables/data.js";
 
 // function that triggers all functions that should be executed when the dashboard is loaded first
 // in the correct order!
-function main() {
+async function main() {
+    await load_data();
     setup_local_storage();
     setup_database_stats();
     setup_dashboard_section_layout_buttons();

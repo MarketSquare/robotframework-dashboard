@@ -103,20 +103,19 @@ function setup_tests_in_select() {
     const testTagsSelect = document.getElementById("testTagsSelect").value;
     const testSelect = document.getElementById("testSelect");
     testSelect.innerHTML = "";
-    const testNames = filteredTests.reduce((names, test) => {
+    const testNames = new Set();
+    for (const test of filteredTests) {
+        if (testNames.has(test.name)) continue;
         const isInSuite = settings.switch.suitePathsTestSection
             ? test.full_name.includes(`${suiteSelectTests}.${test.name}`) || suiteSelectTests === "All"
             : test.full_name.includes(`.${suiteSelectTests}.${test.name}`) || suiteSelectTests === "All"
         const hasTag = testTagsSelect === "All" || test.tags.includes(testTagsSelect);
-
-        if (isInSuite && hasTag && !names.includes(test.name)) {
-            names.push(test.name);
+        if (isInSuite && hasTag) {
+            testNames.add(test.name);
         }
-
-        return names;
-    }, []);
+    }
     testSelect.options.add(new Option("All", "All"));
-    testNames.sort().forEach(testName => testSelect.options.add(new Option(testName, testName)));
+    [...testNames].sort().forEach(testName => testSelect.options.add(new Option(testName, testName)));
 }
 
 // function to update the available testtags to select in the filters

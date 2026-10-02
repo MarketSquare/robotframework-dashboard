@@ -5,6 +5,15 @@ import base64
 import pytest
 from robotframework_dashboard.dashboard import DashboardGenerator
 
+EMBEDDED_PAYLOAD_ORDER = ["runs", "suites", "tests", "keywords", "exceptions"]
+
+
+def _embedded_payload(content, name):
+    """Decode one embedded data payload, load_data() in data.js decodes them in this order."""
+    payloads = re.findall(r'decode_and_decompress\("([^"]+)"\)', content)
+    assert len(payloads) == len(EMBEDDED_PAYLOAD_ORDER), "data payloads not found in dashboard"
+    return json.loads(zlib.decompress(base64.b64decode(payloads[EMBEDDED_PAYLOAD_ORDER.index(name)])))
+
 
 def test_compress_and_encode_returns_string():
     result = DashboardGenerator()._compress_and_encode({"key": "value"})
@@ -317,9 +326,7 @@ def test_generate_dashboard_uselogs_embeds_relative_paths(tmp_path):
     )
     content = dashboard.read_text(encoding="utf-8")
     # Extract the base64 payload for runs
-    match = re.search(r'const runs = decode_and_decompress\("([^"]+)"\)', content)
-    assert match, "runs payload not found in dashboard"
-    decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
+    decoded = _embedded_payload(content, "runs")
     assert decoded[0]["path"] == "output.xml"
     assert str(tmp_path).replace("\\", "/") not in decoded[0]["path"]
 
@@ -346,9 +353,7 @@ def test_generate_dashboard_server_mode_keeps_absolute_paths(tmp_path):
         no_autoupdate=False,
     )
     content = dashboard.read_text(encoding="utf-8")
-    match = re.search(r'const runs = decode_and_decompress\("([^"]+)"\)', content)
-    assert match, "runs payload not found in dashboard"
-    decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
+    decoded = _embedded_payload(content, "runs")
     assert decoded[0]["path"] == abs_path
 
 
@@ -374,9 +379,7 @@ def test_generate_dashboard_embeds_exceptions(tmp_path):
         no_autoupdate=False,
     )
     content = dashboard.read_text(encoding="utf-8")
-    match = re.search(r'const exceptions = decode_and_decompress\("([^"]+)"\)', content)
-    assert match, "exceptions payload not found in dashboard"
-    decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
+    decoded = _embedded_payload(content, "exceptions")
     assert decoded[0]["message"] == "Timeout error"
     assert decoded[0]["amount"] == 2
 
@@ -401,7 +404,5 @@ def test_generate_dashboard_missing_exceptions_key_defaults_to_empty(tmp_path):
     )
     content = dashboard.read_text(encoding="utf-8")
     import json, zlib, base64, re
-    match = re.search(r'const exceptions = decode_and_decompress\("([^"]+)"\)', content)
-    assert match, "exceptions payload not found in dashboard"
-    decoded = json.loads(zlib.decompress(base64.b64decode(match.group(1))))
+    decoded = _embedded_payload(content, "exceptions")
     assert decoded == []

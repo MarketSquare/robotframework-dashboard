@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.4.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.4.1) - 2026-09-28
+
+### Changed
+- Much faster filtering on large dashboards — suites, tests and keywords are matched to the filtered runs with a set lookup instead of a scan per row, and the millisecond/timezone versions of the data are computed once per setting instead of on every filter change. On a dashboard with 504 runs and 208k tests, applying the default filter went from 1.2 s to 0.4 s and applying all runs from 9.8 s to 3.6 s
+- Faster Most Failed, Most Flaky and Messages timelines — their rows are grouped once by test and run instead of scanning every row for every cell, and the rules of a `--messageconfig` are compiled once
+- The Overview page only draws the donut of a run card when the card scrolls into view, so updating an Overview with hundreds of run cards went from about 4 s to under 0.1 s
+- Faster Tables page — the column types are set up front instead of DataTables checking every cell on every update (3.9 s to 2.4 s with all runs)
+- Faster initial load — the embedded data is decompressed in parallel with the browser's native `DecompressionStream`, and the pako library is no longer needed (also not in `--offlinedependencies` mode). The dashboard now needs Chrome 80+, Firefox 113+ or Safari 16.4+. Loading the 504 run dashboard went from 3.8 s to 2.3 s
+
+### Fixed
+- The donut charts of the Overview run cards were never freed when the cards were rebuilt, so the page used more memory with every filter change
+- The Messages timeline with a `--messageconfig` relied on an undeclared variable and a block-scoped function that break in strict JavaScript
+
+---
+
 ## [2.4.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.4.0) - 2026-09-26
 
 ### Added

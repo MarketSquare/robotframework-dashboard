@@ -73,12 +73,6 @@ DEPENDENCIES = {
         "local": "dependencies/datatables.js",
         "admin_page": True,
     },
-    "pako": {
-        "type": "js",
-        "cdn": "https://cdn.jsdelivr.net/npm/pako@3.0.2/dist/browser/pako_inflate.umd.min.js",
-        "local": "dependencies/pako.js",
-        "admin_page": False,
-    },
 }
 
 

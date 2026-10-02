@@ -1,15 +1,31 @@
-// prepare input data
-const runs = decode_and_decompress("placeholder_runs");
-const suites = decode_and_decompress("placeholder_suites");
-const tests = decode_and_decompress("placeholder_tests");
-const keywords = decode_and_decompress("placeholder_keywords");
-const exceptions = decode_and_decompress("placeholder_exceptions");
+// the input data, filled by load_data() which main() awaits before anything reads it
+let runs = [];
+let suites = [];
+let tests = [];
+let keywords = [];
+let exceptions = [];
 
-function decode_and_decompress(base64Str) {
+async function load_data() {
+    [runs, suites, tests, keywords, exceptions] = await Promise.all([
+        decode_and_decompress("placeholder_runs"),
+        decode_and_decompress("placeholder_suites"),
+        decode_and_decompress("placeholder_tests"),
+        decode_and_decompress("placeholder_keywords"),
+        decode_and_decompress("placeholder_exceptions"),
+    ]);
+}
+
+// the payloads are zlib compressed JSON, inflated with the native DecompressionStream
+async function decode_and_decompress(base64Str) {
     if (base64Str.includes("placeholder_")) return [];
-    const compressedData = Uint8Array.from(atob(base64Str), c => c.charCodeAt(0));
-    const decompressedData = pako.inflate(compressedData, { toText: true });
-    return JSON.parse(decompressedData);
+    // a plain loop is much faster than Uint8Array.from with a map callback on large payloads
+    const binaryStr = atob(base64Str);
+    const compressedData = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+        compressedData[i] = binaryStr.charCodeAt(i);
+    }
+    const stream = new Blob([compressedData]).stream().pipeThrough(new DecompressionStream("deflate"));
+    return new Response(stream).json();
 }
 
 var unified_dashboard_title = '"placeholder_dashboard_title"'
@@ -24,6 +40,7 @@ const no_auto_update = "placeholder_no_autoupdate"
 if (!message_config.includes("placeholder_message_config")) { message_config = JSON.parse(message_config) }
 
 export {
+    load_data,
     runs,
     suites,
     tests,

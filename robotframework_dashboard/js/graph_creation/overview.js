@@ -449,15 +449,13 @@ function create_project_cards_container(projectName, projectRuns, percent = null
     }
 
     const container = document.getElementById(`${projectName}RunCardsContainer`);
+    destroy_overview_donuts(container);
     container.innerHTML = '';
     const projectRunsToShow = projectRuns.slice().reverse();
-    // create cards and charts for each run card
+    // create cards and charts for each run card, create_project_run_card also creates the donut
     projectRunsToShow.forEach((run, idx) => {
         const runNumber = projectRunsToShow.length - idx;
-        const createdRunCardId = create_project_run_card(run, projectName, idx, runNumber, passRate, percent, durations, false);
-        const createdRunCard = document.getElementById(createdRunCardId);
-        container.appendChild(createdRunCard);
-        create_overview_run_donut(run, idx, projectName);
+        create_project_run_card(run, projectName, idx, runNumber, passRate, percent, durations, false);
     });
 }
 
@@ -467,6 +465,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
     if (!orderEl) return;
     const order = orderEl.value;
     const overviewCardsContainer = document.getElementById("overviewLatestRunCardsContainer");
+    destroy_overview_donuts(overviewCardsContainer);
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
     const durationsByProject = {};
@@ -527,6 +526,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
 function create_overview_total_graphs(preFilteredRuns = null) {
     const overviewCardsContainer = document.getElementById("overviewTotalRunCardsContainer");
     if (!overviewCardsContainer) return;
+    destroy_overview_donuts(overviewCardsContainer);
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
     const durationsByProject = {};
@@ -621,6 +621,7 @@ function create_project_run_card(run, projectName, runIndex, runNumber, passRate
     )
     const existingRunCard = document.getElementById(`${projectNameForId}Card${runIndex}`);
     if (existingRunCard) {
+        destroy_overview_donuts(existingRunCard);
         // preserves listeners of element
         existingRunCard.replaceWith(document.createRange().createContextualFragment(projectRunCardHTML));
     } else {
@@ -660,7 +661,7 @@ function create_overview_run_donut(run, chartElementPostfix, projectName) {
         );
         return;
     }
-    if (el.chartInstance) el.chartInstance.destroy();
+    destroy_overview_donut(el);
     const chartData = {
         labels: [],
         datasets: [{
@@ -684,7 +685,44 @@ function create_overview_run_donut(run, chartElementPostfix, projectName) {
     const config = get_graph_config('donut', chartData, 'Run Status');
     delete config.options.plugins.datalabels;
     config.options.plugins.legend.display = false;
-    el.chartInstance = new Chart(el, config);
+    // the run cards can hold hundreds of donuts of which only a few are on screen, so a donut
+    // is only created once its card comes near the viewport
+    el.pendingChartConfig = config;
+    get_lazy_donut_observer().observe(el);
+}
+
+let lazyDonutObserver = null;
+
+function get_lazy_donut_observer() {
+    if (!lazyDonutObserver) {
+        lazyDonutObserver = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const el = entry.target;
+                lazyDonutObserver.unobserve(el);
+                if (el.pendingChartConfig) {
+                    el.chartInstance = new Chart(el, el.pendingChartConfig);
+                    delete el.pendingChartConfig;
+                }
+            }
+        }, { rootMargin: "500px" });
+    }
+    return lazyDonutObserver;
+}
+
+function destroy_overview_donut(el) {
+    lazyDonutObserver?.unobserve(el);
+    delete el.pendingChartConfig;
+    if (el.chartInstance) {
+        el.chartInstance.destroy();
+        delete el.chartInstance;
+    }
+}
+
+// Chart.js keeps a reference to every chart until it is destroyed, so the donuts have to be
+// destroyed before their cards are removed from the page
+function destroy_overview_donuts(container) {
+    container.querySelectorAll(".overview-canvas canvas").forEach(destroy_overview_donut);
 }
 
 function update_overview_latest_heading() {

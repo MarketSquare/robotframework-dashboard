@@ -1,6 +1,5 @@
 import { settings } from '../variables/settings.js';
-import { runs, suites } from '../variables/data.js';
-import { apply_custom_filter_dimension, apply_date_filter, apply_metadata_filter, apply_project_version_filter, apply_run_name_filter, apply_runtag_filter, build_date_range, collect_custom_filter_dimensions, convert_timezone, get_custom_filter_value, get_hidden_custom_filters, get_project_version_value, remove_milliseconds, remove_timezones } from './pipeline.js';
+import { apply_custom_filter_dimension, apply_date_filter, apply_metadata_filter, apply_project_version_filter, apply_run_name_filter, apply_runtag_filter, build_date_range, collect_custom_filter_dimensions, get_custom_filter_value, get_hidden_custom_filters, get_project_version_value, get_transformed_data } from './pipeline.js';
 import { get_metadata_options } from './modal_options.js';
 import { apply_suite_path_run_filter } from './suite_path.js';
 import { capture_current_filters } from './profiles.js';
@@ -11,36 +10,6 @@ import { capture_current_filters } from './profiles.js';
 // The counts follow the usual faceted-search rule: the count of an option in filter X is
 // computed with every filter except X applied, so selecting a value in X never makes the other
 // values of X disappear. The amount filter ("last X runs") is not a category and is left out.
-let filterBaseRunsCache = { key: null, runs: null, suites: null };
-
-// key of the settings that change run_start representation, and with it which runs a date
-// range matches and which suites belong to which run
-function get_filter_base_cache_key() {
-    return `${settings.show.milliseconds}|${settings.show.convertTimezone}|${settings.show.timezones}`;
-}
-
-function apply_run_start_transformations(data) {
-    return remove_timezones(convert_timezone(remove_milliseconds(data)));
-}
-
-// all runs with the same run_start transformations the filter pipeline applies, so the
-// availability computation compares the same timestamps as the real filters do
-function get_filter_base_runs() {
-    const key = get_filter_base_cache_key();
-    if (filterBaseRunsCache.key !== key) {
-        filterBaseRunsCache = { key: key, runs: apply_run_start_transformations(runs), suites: null };
-    }
-    return filterBaseRunsCache.runs;
-}
-
-// suites are only needed while a suite path is selected, so they are transformed on demand
-function get_filter_base_suites() {
-    get_filter_base_runs();
-    if (filterBaseRunsCache.suites === null) {
-        filterBaseRunsCache.suites = apply_run_start_transformations(suites);
-    }
-    return filterBaseRunsCache.suites;
-}
 
 // turn the profile object of capture_current_filters() into the selection shape the apply_*
 // functions take
@@ -85,7 +54,7 @@ function apply_filters_except(runList, selections, facet, dimName = null, suiteL
         result = apply_date_filter(result, selections.dateRange.from, selections.dateRange.to);
     }
     if (selections.suitePath && selections.suitePath !== "All") {
-        result = apply_suite_path_run_filter(result, selections.suitePath, suiteList ?? get_filter_base_suites());
+        result = apply_suite_path_run_filter(result, selections.suitePath, suiteList ?? get_transformed_data("suites"));
     }
     return result;
 }
@@ -164,7 +133,7 @@ function compute_filter_option_availability(runList, selections, suiteList = nul
 // amount filter is left out for the same reason it is left out of the option counts.
 function get_runs_for_date_histogram() {
     const selections = normalize_filter_selections(capture_current_filters());
-    return apply_filters_except(get_filter_base_runs(), selections, "dates");
+    return apply_filters_except(get_transformed_data("runs"), selections, "dates");
 }
 
 // add or update the "(X)" count of one filter option row. The count is a sibling of the
@@ -237,7 +206,7 @@ function refresh_filter_option_availability() {
         return;
     }
     const selections = normalize_filter_selections(capture_current_filters());
-    const availability = compute_filter_option_availability(get_filter_base_runs(), selections);
+    const availability = compute_filter_option_availability(get_transformed_data("runs"), selections);
     apply_availability_to_select(document.getElementById("runs"), availability.runs);
     apply_availability_to_select(document.getElementById("metadata"), availability.metadata);
     apply_availability_to_checkbox_list(document.getElementById("runTag"), availability.runTags);

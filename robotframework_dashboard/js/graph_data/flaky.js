@@ -1,6 +1,6 @@
 import { settings, get_run_label } from "../variables/settings.js";
 import { passedConfig, failedConfig, skippedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
-import { convert_timeline_data, parse_test_attempts, resolve_test_status, count_attempt_flips } from "./helpers.js";
+import { convert_timeline_data, group_timeline_values, parse_test_attempts, resolve_test_status, count_attempt_flips } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for (recent) most flaky test graph
@@ -77,36 +77,28 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
         };
         return [graphData, data];
     } else if (graphType == "timeline") {
-        var [labels, runStarts, count, run_labels] = [[], [], 0, []];
+        var [labels, runStartsSet, count, runLabelsSet] = [[], new Set(), 0, new Set()];
         for (const key in sortedData) {
             if (count == limit) {
                 break;
             }
             labels.push(sortedData[key][0]);
             for (const runStart of sortedData[key][1].run_starts) {
-                if (!runStarts.includes(runStart)) {
-                    runStarts.push(runStart);
-                }
+                runStartsSet.add(runStart);
             }
             count += 1;
         }
         var datasets = [];
         var runAxis = 0;
         const pointMeta = {};
-        runStarts = runStarts.sort((a, b) => new Date(strip_tz_suffix(a)).getTime() - new Date(strip_tz_suffix(b)).getTime())
+        var runStarts = [...runStartsSet].sort((a, b) => new Date(strip_tz_suffix(a)).getTime() - new Date(strip_tz_suffix(b)).getTime())
+        const groups = group_timeline_values(filteredData, labels, value => [settings.switch.suitePathsTestSection ? value.full_name : value.name]);
         for (const runStart of runStarts) {
             for (const label of labels) {
-                var foundValues = [];
-                for (value of filteredData) {
-                    const compareKey = settings.switch.suitePathsTestSection ? value.full_name : value.name;
-                    if (compareKey == label && value.run_start == runStart) {
-                        foundValues.push(value);
-                        const runLabel = get_run_label(value);
-                        if (!run_labels.includes(runLabel)) { run_labels.push(runLabel) }
-                    }
-                }
+                const foundValues = groups.get(label).get(runStart) ?? [];
+                foundValues.forEach(value => runLabelsSet.add(get_run_label(value)));
                 if (foundValues.length > 0) {
-                    var value = foundValues[0];
+                    const value = foundValues[0];
                     const [status, attempts] = status_of(value);
                     const statusName = status === "passed" ? "PASS" : status === "failed" ? "FAIL" : "SKIP";
                     pointMeta[`${label}::${runAxis}`] = {
@@ -127,7 +119,7 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
             }
             runAxis += 1;
         }
-        if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") { runStarts = run_labels }
+        if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") { runStarts = [...runLabelsSet] }
         datasets = convert_timeline_data(datasets)
         var graphData = {
             labels: labels,

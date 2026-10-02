@@ -96,21 +96,16 @@ Rules:
 
 ## Step 5 — Generate Slack release notes
 
-Produce a ready-to-paste Slack message. Be **verbose** — explain how each feature works with a short example where helpful, and link to the relevant documentation page.
+Produce a ready-to-paste Slack message. Keep it **short and scannable**: the notes announce the release, the changelog and docs hold the detail.
 
-Documentation base URL: `https://marketsquare.github.io/robotframework-dashboard/`
-
-Key doc pages and their slugs:
-- `filtering.html` — filters, tag modes (AND/OR/NOT), custom filters, versions
-- `log-linking.html` — log URL support, `--uselogs` flag
-- `basic-command-line-interface-cli.html` — CLI flags, `--customfilters`, output import
-- `listener-integration.html` — listener, standalone push script
-- `customization.html` — layout, undo/redo, GridStack
-- `performance.html` — benchmarking, scale data
-- `graphs-tables.html` — charts, data tables, horizontal scrolling
-- `settings.html` — settings modal, themes, widget toggles
-
-**Shout out external contributors** — scan all PR entries for authors who are *not* `@timdegroot1996` and call them out by name with a :pray: in the relevant bullet or in a dedicated thanks line.
+Rules:
+- **One-line summary** under the title, naming the theme of the release (e.g. "A small performance release: …").
+- **Section headers without emoji**: `Added`, `Fixed`, `Changed`, `Resources`, in that order, only the non-empty ones. No `---` separators.
+- **One bullet per change**: `*<Short name>* — <one or two sentences on what changed and why it matters to the user>`. No code examples, no per-bullet docs links, no PR numbers.
+- **No timings in the bullets.** When a release is about performance, put the headline gains in the summary line or a single closing bullet as percentages or "N× faster" measured on a large dashboard, and state the dataset size once (e.g. "on a dashboard with 504 runs and 208k test results"). Never list raw millisecond numbers.
+- **Fixed bullets** are plain sentences describing the user-visible symptom that is gone.
+- **Thank external contributors inline**: scan the PR authors and co-authors for anyone who is *not* `@timdegroot1996` and end the bullet their work landed in with `Thanks @name for …!` (no emoji).
+- **Resources** always has the same four lines.
 
 Format:
 
@@ -119,25 +114,18 @@ Format:
 
 <one-line summary of the release theme>
 
----
+*Added*
+• *<Feature name>* — <one or two sentences>.
 
-*:new: Added*
+*Changed*
+• *<Change name>* — <one or two sentences>. Thanks @contributor for <what they did>!
 
-• *<Feature name>* — <2–3 sentences explaining what it does and why it's useful. Include a short code example if applicable.> → <docs link>
+*Fixed*
+• <what the user no longer runs into>.
 
-*:wrench: Fixed*
-
-• <fix description>. Thanks *@contributor* for the fix! :pray:
-
-*:arrows_counterclockwise: Changed*
-
-• <change description>
-
----
-
-*:bookmark: Resources*
-Full changelog: <compare URL>
-PyPI: <pypi URL>
+*Resources*
+Full changelog: https://github.com/MarketSquare/robotframework-dashboard/compare/vPREVIOUS...vX.Y.Z
+PyPI: https://pypi.org/project/robotframework-dashboard/X.Y.Z/
 Docs: https://marketsquare.github.io/robotframework-dashboard/
 Example dashboard: https://marketsquare.github.io/robotframework-dashboard/example/robot_dashboard.html
 ```
@@ -183,6 +171,6 @@ The user merges the release PR (squash, `Release X.Y.Z (#PR)`), uploads to PyPI 
 - [ ] `example/robot_dashboard.html` — regenerated
 - [ ] `example/robot_results.db` — regenerated
 - [ ] `CHANGELOG.md` — new section added at the top
-- [ ] Slack release notes produced
+- [ ] Slack release notes produced (short format, no timings, contributors thanked inline)
 - [ ] After the merge: `vX.Y.Z` tag pushed on the merge commit, GitHub Release created
 - [ ] `gh workflow run deploy.yml` after the tag push; `/`, `/vX.Y.Z/` and `versions.json` on the docs site show the new version

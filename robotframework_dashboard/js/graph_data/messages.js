@@ -2,7 +2,7 @@ import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
 import { message_config } from "../variables/data.js";
-import { convert_timeline_data, parse_test_attempts } from "./helpers.js";
+import { convert_timeline_data, group_timeline_values, parse_test_attempts } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for messages graphs
@@ -22,13 +22,18 @@ function get_messages_data(dataType, graphType, filteredData) {
             run_names.get(value.message).push(value.run_name);
         }
     }
-    // If there is a message config use that to merge the data
-    if (!message_config.includes("placeholder_message_config")) {
-        function matches_message_config(str, rule) {
-            rule = rule.replace(/\$\{.*?\}/g, "*") // match any ${something} string
-            var escapeRegex = (str) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"); // escape the test messages to prevent regex mismatches
-            return new RegExp("^" + rule.split("*").map(escapeRegex).join(".*") + "$").test(str);
+    const useMessageConfig = !message_config.includes("placeholder_message_config");
+    const messageConfigRegexes = new Map();
+    function matches_message_config(str, rule) {
+        if (!messageConfigRegexes.has(rule)) {
+            const wildcardRule = rule.replace(/\$\{.*?\}/g, "*") // match any ${something} string
+            const escapeRegex = (str) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"); // escape the test messages to prevent regex mismatches
+            messageConfigRegexes.set(rule, new RegExp("^" + wildcardRule.split("*").map(escapeRegex).join(".*") + "$"));
         }
+        return messageConfigRegexes.get(rule).test(str);
+    }
+    // If there is a message config use that to merge the data
+    if (useMessageConfig) {
         for (const config of message_config) {
             for (const [message, runStarts] of data) {
                 if (message == config) { continue }
@@ -43,8 +48,7 @@ function get_messages_data(dataType, graphType, filteredData) {
         }
 
         for (const [message, runStarts] of data) {
-            arrayWithDuplicates = data.get(message)
-            data.set(message, [...new Set(arrayWithDuplicates)])
+            data.set(message, [...new Set(runStarts)])
         }
     }
     const limit = inFullscreen && inFullscreenGraph.includes("Messages") ? 50 : 10;
@@ -94,14 +98,13 @@ function get_messages_data(dataType, graphType, filteredData) {
         var datasets = [];
         let runAxis = 0;
         const pointMeta = {};
-        function check_label(message, label) {
-            return !message_config.includes("placeholder_message_config")
-                ? matches_message_config(message, label)
-                : message === label;
-        }
+        // with a message config one message can match more than one label
+        const groups = group_timeline_values(filteredData, labels, value => useMessageConfig
+            ? labels.filter(label => matches_message_config(value.message, label))
+            : [value.message]);
         for (const runStart of runStarts) {
             for (const label of labels) {
-                const foundValues = filteredData.filter(value => check_label(value.message, label) && value.run_start === runStart);
+                const foundValues = groups.get(label).get(runStart) ?? [];
                 if (foundValues.length > 0) {
                     const value = foundValues[0];
                     // tests re-executed with robot --rerunfailed (rebot --merge history) get the rerun border

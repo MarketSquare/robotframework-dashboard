@@ -38,31 +38,37 @@ function _get_exception_table_data() {
     ]);
 }
 
+// DataTables detects the type of a column by checking every cell on every update, which is slow
+// for large tables, so the columns get the type it would detect. Only the version is left to the
+// detection, because it can be numeric or free text depending on the project.
+function run_start_column() { return { title: "run", type: "date" }; }
+function number_column(title) { return { title, type: "num" }; }
+function text_column(title, type = "string") { return { title, type }; }
 const runColumns = [
-    { title: "run" }, { title: "full_name" }, { title: "name" }, { title: "total" },
-    { title: "passed" }, { title: "failed" }, { title: "skipped" }, { title: "elapsed_s" },
-    { title: "start_time" }, { title: "version" }, { title: "tags" }, { title: "alias" }, { title: "metadata" },
-    { title: "custom_filters" },
+    run_start_column(), text_column("full_name"), text_column("name"), number_column("total"),
+    number_column("passed"), number_column("failed"), number_column("skipped"), number_column("elapsed_s"),
+    text_column("start_time"), { title: "version" }, text_column("tags"), text_column("alias"), text_column("metadata"),
+    text_column("custom_filters"),
 ];
 const suiteColumns = [
-    { title: "run" }, { title: "full_name" }, { title: "name" }, { title: "total" },
-    { title: "passed" }, { title: "failed" }, { title: "skipped" }, { title: "elapsed_s" },
-    { title: "start_time" }, { title: "alias" }, { title: "id" },
+    run_start_column(), text_column("full_name"), text_column("name"), number_column("total"),
+    number_column("passed"), number_column("failed"), number_column("skipped"), number_column("elapsed_s"),
+    text_column("start_time"), text_column("alias"), text_column("id"),
 ];
 const testColumns = [
-    { title: "run" }, { title: "full_name" }, { title: "name" },
-    { title: "passed" }, { title: "failed" }, { title: "skipped" }, { title: "elapsed_s" },
-    { title: "start_time" }, { title: "message" }, { title: "tags" }, { title: "alias" }, { title: "id" },
-    { title: "attempts" },
+    run_start_column(), text_column("full_name"), text_column("name"),
+    number_column("passed"), number_column("failed"), number_column("skipped"), number_column("elapsed_s"),
+    text_column("start_time"), text_column("message", "html"), text_column("tags"), text_column("alias"), text_column("id"),
+    text_column("attempts", "string-utf8"),
 ];
 const keywordColumns = [
-    { title: "run" }, { title: "name" }, { title: "passed" }, { title: "failed" },
-    { title: "skipped" }, { title: "times_run" }, { title: "total_execution_time" },
-    { title: "average_execution_time" }, { title: "min_execution_time" },
-    { title: "max_execution_time" }, { title: "alias" }, { title: "owner" },
+    run_start_column(), text_column("name"), number_column("passed"), number_column("failed"),
+    number_column("skipped"), number_column("times_run"), number_column("total_execution_time"),
+    number_column("average_execution_time"), number_column("min_execution_time"),
+    number_column("max_execution_time"), text_column("alias"), text_column("owner"),
 ];
 const exceptionColumns = [
-    { title: "run" }, { title: "message" }, { title: "amount" }, { title: "alias" },
+    run_start_column(), text_column("message"), number_column("amount"), text_column("alias"),
 ];
 
 function create_data_table(tableId, columns, getDataFn) {

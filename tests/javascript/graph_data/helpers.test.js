@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
 vi.mock('@js/variables/settings.js', () => ({
     settings: {
@@ -17,7 +17,8 @@ vi.mock('@js/variables/globals.js', () => ({
     inFullscreenGraph: '',
 }));
 
-import { convert_timeline_data, parse_test_attempts, resolve_test_status, format_attempt_lines, count_attempt_flips, get_rerun_summary } from '@js/graph_data/helpers.js';
+import { convert_timeline_data, parse_test_attempts, resolve_test_status, format_attempt_lines, count_attempt_flips, get_rerun_summary, group_timeline_values, get_suite_data_exclusion } from '@js/graph_data/helpers.js';
+import { settings } from '@js/variables/settings.js';
 
 
 describe('convert_timeline_data', () => {
@@ -189,3 +190,93 @@ describe('get_rerun_summary', () => {
     });
 });
 
+
+describe('group_timeline_values', () => {
+    const rows = [
+        { name: 'A', run_start: 'r1', id: 1 },
+        { name: 'B', run_start: 'r1', id: 2 },
+        { name: 'A', run_start: 'r2', id: 3 },
+        { name: 'A', run_start: 'r1', id: 4 },
+        { name: 'C', run_start: 'r1', id: 5 },
+    ];
+
+    it('groups the rows by label and run_start in their original order', () => {
+        const groups = group_timeline_values(rows, ['A', 'B'], row => [row.name]);
+        expect(groups.get('A').get('r1').map(row => row.id)).toEqual([1, 4]);
+        expect(groups.get('A').get('r2').map(row => row.id)).toEqual([3]);
+        expect(groups.get('B').get('r1').map(row => row.id)).toEqual([2]);
+        expect(groups.get('B').get('r2')).toBeUndefined();
+    });
+
+    it('only keeps the given labels', () => {
+        const groups = group_timeline_values(rows, ['B'], row => [row.name]);
+        expect([...groups.keys()]).toEqual(['B']);
+    });
+
+    it('adds a row to every label it belongs to and skips rows without a label', () => {
+        const groups = group_timeline_values(rows, ['A', 'any'], row => row.name === 'A' ? ['A', 'any'] : []);
+        expect(groups.get('any').get('r1').map(row => row.id)).toEqual([1, 4]);
+        expect(groups.get('A').get('r1').map(row => row.id)).toEqual([1, 4]);
+    });
+});
+
+describe('get_suite_data_exclusion', () => {
+    const suites = [
+        { name: 'Login', full_name: 'Web.Login' },
+        { name: 'Cart', full_name: 'Web.Cart' },
+        { name: 'Login', full_name: 'Api.Login' },
+    ];
+    let reads = 0;
+    function stub_document(suiteSelect, options, folder) {
+        reads = 0;
+        globalThis.document = {
+            getElementById: (id) => {
+                reads++;
+                if (id === 'suiteSelectSuites') return { value: suiteSelect, options: options.map(value => ({ value })) };
+                if (id === 'suiteFolder') return { innerText: folder };
+                return null;
+            },
+        };
+    }
+    const kept = (exclude) => suites.filter(suite => !exclude(suite)).map(suite => suite.full_name);
+
+    afterEach(() => {
+        delete globalThis.document;
+        settings.switch.suitePathsSuiteSection = false;
+    });
+
+    it('never excludes data that is not suite data', () => {
+        expect(get_suite_data_exclusion('test')(suites[0])).toBe(false);
+    });
+
+    it('keeps every suite with all folders and all suites selected', () => {
+        stub_document('All Suites Separate', [], 'All');
+        expect(kept(get_suite_data_exclusion('suite'))).toEqual(['Web.Login', 'Web.Cart', 'Api.Login']);
+    });
+
+    it('keeps the selected suite by name, or by full name with suite paths', () => {
+        stub_document('Login', [], 'All');
+        expect(kept(get_suite_data_exclusion('suite'))).toEqual(['Web.Login', 'Api.Login']);
+        settings.switch.suitePathsSuiteSection = true;
+        stub_document('Api.Login', [], 'All');
+        expect(kept(get_suite_data_exclusion('suite'))).toEqual(['Api.Login']);
+    });
+
+    it('keeps the suites of the selected folder that are in the suite select', () => {
+        stub_document('All Suites Combined', ['All Suites Separate', 'All Suites Combined', 'Login', 'Cart'], 'Web');
+        expect(kept(get_suite_data_exclusion('suite'))).toEqual(['Web.Login', 'Web.Cart']);
+    });
+
+    it('keeps the selected suite inside the selected folder', () => {
+        stub_document('Login', [], 'Web');
+        expect(kept(get_suite_data_exclusion('suite'))).toEqual(['Web.Login']);
+    });
+
+    it('reads the selected filters once instead of once per suite', () => {
+        stub_document('Login', ['Login', 'Cart'], 'Web');
+        const exclude = get_suite_data_exclusion('suite');
+        const readsAfterSetup = reads;
+        suites.forEach(suite => exclude(suite));
+        expect(reads).toBe(readsAfterSetup);
+    });
+});

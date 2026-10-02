@@ -8,11 +8,26 @@ import { filter_runs_by_suite_path, filter_suite_path_data } from './suite_path.
 // Sort an array of run objects by wall-clock run_start (timezone offset stripped),
 // ensuring correct chronological order when timestamps span mixed timezone offsets.
 function sort_wall_clock(data) {
-    return [...data].sort((a, b) => {
-        const ak = strip_tz_suffix(a.run_start);
-        const bk = strip_tz_suffix(b.run_start);
-        return ak < bk ? -1 : ak > bk ? 1 : 0;
-    });
+    return data
+        .map((item, index) => ({ item, index, key: strip_tz_suffix(item.run_start) }))
+        .sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : a.index - b.index)
+        .map(entry => entry.item);
+}
+
+// the run_start transformations only depend on these settings, so they are cached per combination
+// instead of copying every row on each filter apply; the filter availability uses the same copies
+let transformedDataCache = { key: null, data: {} };
+
+function get_transformed_data(name) {
+    const key = `${settings.show.milliseconds}|${settings.show.convertTimezone}|${settings.show.timezones}`;
+    if (transformedDataCache.key !== key) {
+        transformedDataCache = { key: key, data: {} };
+    }
+    if (!(name in transformedDataCache.data)) {
+        const sourceData = { runs, suites, tests, keywords, exceptions }[name];
+        transformedDataCache.data[name] = remove_timezones(convert_timezone(remove_milliseconds(sourceData)));
+    }
+    return transformedDataCache.data[name];
 }
 
 const dashboardPages = ["overview", "dashboard", "compare", "tables"];
@@ -38,23 +53,11 @@ function apply_custom_filter_visibility() {
 // function updates the data in the graphs whenever filters are updated
 function setup_filtered_data_and_filters() {
     apply_custom_filter_visibility();
-    filteredRuns = remove_milliseconds(runs)
-    filteredSuites = remove_milliseconds(suites)
-    filteredTests = remove_milliseconds(tests)
-    filteredKeywords = remove_milliseconds(keywords)
-    filteredExceptions = remove_milliseconds(exceptions)
-    // convert timezones if enabled (must run before remove_timezones so the offset is still present)
-    filteredRuns = convert_timezone(filteredRuns);
-    filteredSuites = convert_timezone(filteredSuites);
-    filteredTests = convert_timezone(filteredTests);
-    filteredKeywords = convert_timezone(filteredKeywords);
-    filteredExceptions = convert_timezone(filteredExceptions);
-    // remove timezone display if disabled
-    filteredRuns = remove_timezones(filteredRuns);
-    filteredSuites = remove_timezones(filteredSuites);
-    filteredTests = remove_timezones(filteredTests);
-    filteredKeywords = remove_timezones(filteredKeywords);
-    filteredExceptions = remove_timezones(filteredExceptions);
+    filteredRuns = get_transformed_data("runs");
+    filteredSuites = get_transformed_data("suites");
+    filteredTests = get_transformed_data("tests");
+    filteredKeywords = get_transformed_data("keywords");
+    filteredExceptions = get_transformed_data("exceptions");
     // determine filteredRuns with all run-level filters (suite path + amount last)
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
@@ -437,8 +440,8 @@ function filter_metadata(filteredRuns) {
 
 // function to filter suites/tests/keywords based on the already filtered runs
 function filter_data(data) {
-    const validRunStarts = filteredRuns.map(v => v.run_start);
-    let filteredData = data.filter(v => validRunStarts.includes(v.run_start));
+    const validRunStarts = new Set(filteredRuns.map(v => v.run_start));
+    let filteredData = data.filter(v => validRunStarts.has(v.run_start));
     if (filteredData.length > 0 && "owner" in filteredData[0]) {
         const libraries = settings.libraries || {};
         filteredData = filteredData.filter(item => {
@@ -470,8 +473,10 @@ export {
     get_hidden_custom_filters,
     get_project_version_value,
     get_run_start_date,
+    get_transformed_data,
     parse_custom_filters,
     remove_milliseconds,
     remove_timezones,
     setup_filtered_data_and_filters,
+    sort_wall_clock,
 };

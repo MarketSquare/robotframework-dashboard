@@ -4,6 +4,8 @@
 function build_tooltip_meta(filteredData, durationField = 'elapsed_s', aggregate = false) {
     const byLabel = {};
     const byTime = {};
+    // many rows share a run_start, so every run_start is parsed only once
+    const timeKeys = new Map();
     for (const item of filteredData) {
         const elapsed = parseFloat(item[durationField]) || 0;
         const p = item.passed || 0;
@@ -11,7 +13,10 @@ function build_tooltip_meta(filteredData, durationField = 'elapsed_s', aggregate
         const s = item.skipped || 0;
         const msg = item.message || '';
         const keys = [item.run_start, item.run_alias];
-        const timeKey = new Date(item.run_start.replace(" ", "T")).getTime();
+        if (!timeKeys.has(item.run_start)) {
+            timeKeys.set(item.run_start, new Date(item.run_start.replace(" ", "T")).getTime());
+        }
+        const timeKey = timeKeys.get(item.run_start);
         const meta = { elapsed_s: elapsed, passed: p, failed: f, skipped: s, message: msg };
         for (const key of keys) {
             if (aggregate && byLabel[key]) {
