@@ -272,6 +272,7 @@ graphKeys.forEach(key => {
 ["run", "suite", "test", "keyword", "unified"].forEach(key => {
     informationMap[`${key}AddStatWidgetHeader`] = "Add Stat Widget";
     informationMap[`${key}AddLinkWidgetHeader`] = "Add Link Widget";
+    informationMap[`${key}AddCustomGraphHeader`] = "Add Custom Graph";
 });
 
 informationMap["unifiedAddSectionHeader"] = "Add Custom Section";

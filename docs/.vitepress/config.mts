@@ -185,6 +185,7 @@ export default defineConfig({
           { text: '📊 Graphs & Tables', link: '/graphs-tables.md' },
           { text: '🔍 Filtering', link: '/filtering.md' },
           { text: '🎨 Customization', link: '/customization.md' },
+          { text: '📈 Custom Graphs', link: '/custom-graphs.md' },
           { text: '⚙️ Settings', link: '/settings.md' },
         ]
       },

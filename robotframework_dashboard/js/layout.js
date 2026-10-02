@@ -30,6 +30,8 @@ import {
     wire_delete_section_buttons,
     open_add_custom_section_modal,
 } from "./customsections.js";
+import { render_custom_graphs, setup_custom_graph_buttons } from "./customgraphs/widgets.js";
+import { open_custom_graph_builder, setup_custom_graph_builder } from "./customgraphs/builder.js";
 
 // Layout history state for undo/redo in edit mode
 let layoutHistory = [];
@@ -42,6 +44,7 @@ function capture_settings_snapshot() {
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         linkWidgets: JSON.parse(JSON.stringify(settings.linkWidgets || [])),
         customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
+        customGraphs: JSON.parse(JSON.stringify(settings.customGraphs || [])),
         view: {
             dashboard: {
                 graphs: {
@@ -86,6 +89,7 @@ function capture_dom_snapshot() {
         statWidgets: JSON.parse(JSON.stringify(settings.statWidgets || [])),
         linkWidgets: JSON.parse(JSON.stringify(settings.linkWidgets || [])),
         customSections: JSON.parse(JSON.stringify(settings.customSections || [])),
+        customGraphs: JSON.parse(JSON.stringify(settings.customGraphs || [])),
         view: {
             dashboard: { graphs: { show: [], hide: [] }, sections: { show: [], hide: [] } },
             unified: { graphs: { show: [], hide: [] } },
@@ -189,6 +193,7 @@ function apply_layout_snapshot(snapshot) {
     set_local_storage_item('statWidgets', JSON.parse(JSON.stringify(snapshot.statWidgets || [])));
     set_local_storage_item('linkWidgets', JSON.parse(JSON.stringify(snapshot.linkWidgets || [])));
     set_local_storage_item('customSections', JSON.parse(JSON.stringify(snapshot.customSections || [])));
+    set_local_storage_item('customGraphs', JSON.parse(JSON.stringify(snapshot.customGraphs || [])));
     settings.view.dashboard.graphs.show = [...snapshot.view.dashboard.graphs.show];
     settings.view.dashboard.graphs.hide = [...snapshot.view.dashboard.graphs.hide];
     settings.view.dashboard.sections.show = [...snapshot.view.dashboard.sections.show];
@@ -289,6 +294,7 @@ function setup_section_order() {
     if (gridEditMode) {
         document.querySelectorAll(".add-stat-widget-header").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".add-link-widget-header").forEach(btn => { btn.hidden = false })
+        document.querySelectorAll(".add-custom-graph-header").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".add-section-header").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".move-up-section").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".move-down-section").forEach(btn => { btn.hidden = false })
@@ -312,6 +318,7 @@ function setup_section_order() {
     } else {
         document.querySelectorAll(".add-stat-widget-header").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".add-link-widget-header").forEach(btn => { btn.hidden = true })
+        document.querySelectorAll(".add-custom-graph-header").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".add-section-header").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".move-up-section").forEach(btn => { btn.hidden = true })
         document.querySelectorAll(".move-down-section").forEach(btn => { btn.hidden = true })
@@ -482,6 +489,7 @@ function setup_grid_graphs(section) {
         if (gridEditMode) {
             wire_link_delete_buttons(window[grid], sectionKey);
         }
+        render_custom_graphs(window[grid], sectionKey, gridEditMode);
     }
 
     if (section === "Unified") {
@@ -825,12 +833,13 @@ function setup_dashboard_section_layout_buttons() {
         move_widget_in_grid(gridStack, item, !!firstBtn);
     });
 
-    // Open the Add Stat Widget / Add Link Widget / Add Custom Section modals from the section header icons
+    // Open the Add Stat Widget / Add Link Widget / Add Custom Graph / Add Custom Section modals from the section header icons
     document.addEventListener("click", (e) => {
         const statBtn = e.target.closest(".add-stat-widget-header");
         const linkBtn = e.target.closest(".add-link-widget-header");
+        const graphBtn = e.target.closest(".add-custom-graph-header");
         const sectionBtn = e.target.closest(".add-section-header");
-        const btn = statBtn || linkBtn || sectionBtn;
+        const btn = statBtn || linkBtn || graphBtn || sectionBtn;
         if (!btn || btn.hidden) return;
         if (sectionBtn) {
             open_add_custom_section_modal();
@@ -840,6 +849,8 @@ function setup_dashboard_section_layout_buttons() {
         if (!sectionKey) return;
         if (statBtn) {
             open_add_stat_widget_modal(sectionKey);
+        } else if (graphBtn) {
+            open_custom_graph_builder(sectionKey);
         } else {
             open_add_link_widget_modal(sectionKey);
         }
@@ -848,6 +859,8 @@ function setup_dashboard_section_layout_buttons() {
     setup_add_stat_widget_modal();
     setup_add_link_widget_modal();
     setup_add_custom_section_modal();
+    setup_custom_graph_builder();
+    setup_custom_graph_buttons();
 }
 
 // function to separately add the eventlisteners for overview section layout buttons

@@ -35,7 +35,7 @@ The `settings` object is the single source of truth for all dashboard configurat
 - `libraries` — keyword library show/hide toggles
 - `theme` — `"dark"` or `"light"`
 - `filterProfiles` — named filter state snapshots
-- `statWidgets`, `linkWidgets`, `customSections` — user-created widgets/sections (see `js-features` skill)
+- `statWidgets`, `linkWidgets`, `customSections`, `customGraphs` — user-created widgets/sections/graphs (see `js-features` skill; custom graphs honour the global filters unless their `useGlobalFilters` is false, they ignore section filters)
 
 ---
 
