@@ -3,3 +3,5 @@ sample/node_modules/
 sample/results/
 sample/test-results/
 sample/playwright-report/
+sample/dashboard-report.json
+sample/blob-report/

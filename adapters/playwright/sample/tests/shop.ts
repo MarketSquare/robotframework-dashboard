@@ -28,3 +28,23 @@ export async function open_shop(page: Page) {
 export function unlucky(rate: number) {
   return Math.random() < rate;
 }
+
+// A page object, as many projects use them. Its methods show up as keywords with the
+// dashboard reporter's groupByFunction option, without any test.step().
+export class ShopPage {
+  constructor(private readonly page: Page) {}
+
+  async open() {
+    await open_shop(this.page);
+  }
+
+  async search(term: string) {
+    await this.page.fill('#search', term);
+  }
+
+  async addToCart(count: number) {
+    for (let i = 0; i < count; i++) {
+      await this.page.click('#add');
+    }
+  }
+}

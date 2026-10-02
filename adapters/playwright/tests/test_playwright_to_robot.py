@@ -184,3 +184,114 @@ def test_same_report_converts_to_same_run_start(tmp_path):
     first = OutputProcessor(convert(report_path, tmp_path / "a.xml")).get_run_start()
     second = OutputProcessor(convert(report_path, tmp_path / "b.xml")).get_run_start()
     assert first == second
+
+
+def broken_report():
+    """A beforeAll hook failed: Playwright fails the first test and skips the rest without annotation."""
+    report = make_report()
+    hook_error = "Error: connect ECONNREFUSED 127.0.0.1:27017\n\n  3 | test.beforeAll(...)\n    at db.spec.ts:3:11"
+    report["suites"].append({
+        "title": "db.spec.ts",
+        "file": "db.spec.ts",
+        "specs": [],
+        "suites": [{
+            "title": "Needs database",
+            "specs": [
+                spec("first", [pw_test("desktop", "unexpected", [result("failed", error=hook_error)])]),
+                spec("second", [pw_test("desktop", "skipped", [result("skipped"), result("skipped", retry=1)])]),
+            ],
+        }],
+    })
+    return report
+
+
+def test_tests_that_did_not_run_fail(processed):
+    _, data = processed(broken_report())
+    tests = by_name(data)
+    assert tests["second"][3:6] == (False, True, False)
+    assert tests["second"][8] == "Test did not run: Error: connect ECONNREFUSED 127.0.0.1:27017"
+    assert tests["second"][9] == "[not-run]"
+    assert tests["second"][11] == ""  # no attempt history for a test that never ran
+    # an intentional test.skip() stays a skip
+    assert tests["skipped"][3:6] == (False, False, True)
+
+
+def test_not_run_as_skip(tmp_path):
+    report_path = tmp_path / "report.json"
+    report_path.write_text(json.dumps(broken_report()), encoding="utf-8")
+    processor = OutputProcessor(convert(report_path, tmp_path / "output.xml", not_run_fails=False))
+    processor.get_run_start()
+    assert by_name(processor.get_output_data())["second"][3:6] == (False, False, True)
+
+
+def test_messages_lose_code_frame_and_call_log():
+    from playwright_to_robot import clean_message
+
+    message = (
+        "\x1b[31mError: expect(locator).toHaveText(expected) failed\x1b[39m\n\nExpected: \"2\"\nReceived: \"1\"\n\n"
+        "Call log:\n  - waiting for locator('#cart')\n\n  12 |   await expect(cart).toHaveText('2');\n"
+        "    at C:/project/tests/cart.spec.ts:12:11"
+    )
+    assert clean_message(message) == 'Error: expect(locator).toHaveText(expected) failed\n\nExpected: "2"\nReceived: "1"'
+    assert clean_message("Error: boom\n\n> 5 |     throw new Error('boom');") == "Error: boom"
+
+
+def reporter_report():
+    """Steps as dashboard-reporter.js writes them: categories, start times, function groups."""
+    report = make_report()
+    steps = [
+        {"title": "Before Hooks", "category": "hook", "startTime": "2026-01-02T10:00:00.000Z", "duration": 300,
+         "steps": [{"title": 'Fixture "page"', "category": "fixture", "startTime": "2026-01-02T10:00:00.000Z",
+                    "duration": 200, "steps": []}]},
+        {"title": "search", "owner": "ShopPage", "category": "function", "startTime": "2026-01-02T10:00:01.000Z",
+         "duration": 60, "steps": [{"title": 'Fill "dash"', "category": "pw:api",
+                                    "startTime": "2026-01-02T10:00:01.000Z", "duration": 60, "steps": []}]},
+        {"title": 'Expect "toHaveText"', "category": "expect", "startTime": "2026-01-02T10:00:02.000Z",
+         "duration": 10, "steps": [], "error": {"message": "Error: expect failed\n\nCall log:\n  - waiting"}},
+        {"title": "screenshot", "category": "attach", "startTime": "2026-01-02T10:00:03.000Z", "duration": 0,
+         "steps": []},
+    ]
+    report["suites"][0]["suites"][0]["specs"].append(
+        spec("with reporter", [pw_test("desktop", "unexpected", [result("failed", error="Error: expect failed",
+                                                                         steps=steps)])]))
+    return report
+
+
+def reporter_test(tmp_path, **kwargs):
+    from robot.api import ExecutionResult
+
+    report_path = tmp_path / "report.json"
+    report_path.write_text(json.dumps(reporter_report()), encoding="utf-8")
+    output = convert(report_path, tmp_path / "output.xml", **kwargs)
+    return next(t for t in ExecutionResult(str(output)).suite.all_tests if t.name == "with reporter")
+
+
+def test_reporter_steps_become_keywords(tmp_path):
+    test = reporter_test(tmp_path)
+    keywords = [(k.name, k.owner, k.args, k.status) for k in test.body]
+    assert keywords == [
+        ("Before Hooks", "Hooks", (), "PASS"),
+        ("search", "ShopPage", (), "PASS"),
+        ('Expect "toHaveText"', "Expect", (), "FAIL"),  # matcher name kept; attach step dropped
+    ]
+    hook, search, expect = test.body
+    assert (hook.body[0].name, hook.body[0].owner) == ('Fixture "page"', "Fixtures")
+    assert (search.body[0].name, search.body[0].owner, search.body[0].args) == ("Fill {}", "Playwright API", ("dash",))
+    assert expect.message == "Error: expect failed"
+    # real start times from the reporter, not laid out back to back
+    assert (expect.start_time - hook.start_time).total_seconds() == 2.0
+
+
+def test_reporter_hooks_can_be_left_out(tmp_path):
+    test = reporter_test(tmp_path, include_hooks=False)
+    assert [k.name for k in test.body] == ["search", 'Expect "toHaveText"']
+
+
+def test_step_keyword_placeholders():
+    from playwright_to_robot import step_keyword
+
+    assert step_keyword('Navigate to "/login"', "pw:api") == ("Navigate to {}", ("/login",))
+    assert step_keyword('Fill "a \\"b\\""', "pw:api") == ("Fill {}", ('a \\"b\\"',))
+    assert step_keyword("Click", "pw:api") == ("Click", ())
+    assert step_keyword('Expect "toBeVisible"', "expect") == ('Expect "toBeVisible"', ())
+    assert step_keyword('Open "shop"', "test.step") == ('Open "shop"', ())
