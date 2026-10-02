@@ -176,4 +176,8 @@ Link widgets are stored in localStorage and survive page reloads.
 
 While in **Customize view** mode, every graph and widget shows a **"Move to First"** and **"Move to Last"** control alongside its other edit icons. Clicking one of these instantly moves the item to the start or end of its grid, without needing to drag it past every other item in between.
 
-This works for regular graphs as well as stat widgets, link widgets, and custom section dividers. Click **Save** to persist the new order to localStorage.
+This works for regular graphs as well as stat widgets, link widgets, custom graphs and custom section dividers. Click **Save** to persist the new order to localStorage.
+
+## 13. Custom Graphs
+
+Next to stat and link widgets, the **"Add custom graph"** icon in a section header adds a graph you build yourself: choose the data, filters, grouping, metric and chart type, starting from a gallery of presets. See [Custom Graphs](custom-graphs.md).

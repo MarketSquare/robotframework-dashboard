@@ -1,0 +1,124 @@
+/* Custom graphs: grid tiles, data table view and the builder modal */
+.custom-graph-body {
+  position: relative;
+  min-height: 0;
+}
+
+.custom-graph-message {
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.custom-graph-table-wrapper {
+  width: 100%;
+  overflow: auto;
+}
+
+.custom-graph-table {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--color-text);
+}
+
+.custom-graph-table th {
+  position: sticky;
+  top: 0;
+  background: var(--color-card);
+}
+
+/* Builder modal */
+.custom-graph-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.custom-graph-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  text-align: left;
+  color: var(--color-text);
+  background: var(--color-section-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.custom-graph-preset:hover,
+.custom-graph-preset:focus-visible {
+  border-color: var(--color-highlight);
+  background: var(--color-highlight-tint);
+}
+
+.custom-graph-preset-title {
+  font-weight: 600;
+}
+
+.custom-graph-preset-description {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.custom-graph-preset-chart {
+  margin-top: auto;
+  font-size: 0.75rem;
+  color: var(--color-highlight);
+}
+
+.custom-graph-filter-row,
+.custom-graph-group {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.custom-graph-filter-row > .form-select,
+.custom-graph-filter-row > .form-control,
+.custom-graph-group > .form-select,
+.custom-graph-group > .form-control {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.custom-graph-group > .custom-graph-limit {
+  flex: 0 0 6rem;
+}
+
+.custom-graph-viz-btn.active {
+  border-color: var(--color-highlight);
+  background: var(--color-highlight);
+  color: var(--color-on-highlight);
+}
+
+.custom-graph-preview {
+  display: flex;
+  height: 360px;
+  padding: 0.5rem;
+  background: var(--color-section-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.custom-graph-preview .custom-graph-body {
+  flex: 1 1 auto;
+  display: flex;
+  width: 100%;
+  overflow: auto;
+}
+
+.custom-graph-errors {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-failed);
+}
+
+.custom-graph-json {
+  font-size: 0.8rem;
+}

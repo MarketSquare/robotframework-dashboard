@@ -11,7 +11,9 @@ This skill covers the recurring patterns used when adding new features to the da
 
 ## 1. The "Custom Widget" Pattern (GridStack tile + localStorage + modal)
 
-Every custom widget type in the dashboard follows the same 6-part pattern. Existing examples: **stat widget** (`statwidgets.js`) and **link widget** (`linkwidgets.js`).
+Every custom widget type in the dashboard follows the same 6-part pattern. Existing examples: **stat widget** (`statwidgets.js`), **link widget** (`linkwidgets.js`) and **custom graph** (`customgraphs/widgets.js` + `customgraphs/builder.js`; delegated button listener instead of per-render wiring).
+
+> The add buttons now live in the section headers (`.add-<name>-header`, toggled in `setup_section_order`, opened from the delegated click handler in `setup_dashboard_section_layout_buttons`), not in add-tiles inside the grid. Chart instances of widgets with generated ids must not be kept on `window[canvasId]`: that resolves to the canvas element itself (named element access) — custom graphs keep theirs in a `Map`.
 
 ### Part 1 — New JS module (`js/<name>widgets.js`)
 
@@ -171,6 +173,7 @@ Some keys only exist in localStorage (not in the `settings` defaults object). Th
 | `statWidgets` | `statwidgets.js` |
 | `linkWidgets` | `linkwidgets.js` |
 | `customSections` | `customsections.js` |
+| `customGraphs` | `customgraphs/widgets.js` |
 
 **Rule**: Any new key you persist with `set_local_storage_item` that is not in `settings` defaults must be added to this whitelist, or it will be deleted by `merge_deep` on the next page load.
 

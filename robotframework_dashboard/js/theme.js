@@ -40,6 +40,11 @@ import {
     addStatWidgetSVG,
     addLinkWidgetSVG,
     addCustomSectionSVG,
+    addCustomGraphSVG,
+    pencilSVG,
+    copySVG,
+    tableSVG,
+    bracesSVG,
     clockSVG,
     menuSVG,
 } from "./variables/svg.js";
@@ -136,6 +141,12 @@ function setup_theme() {
                 ".add-stat-widget-header": addStatWidgetSVG(color),
                 ".add-link-widget-header": addLinkWidgetSVG(color),
                 ".add-section-header": addCustomSectionSVG(color),
+                ".add-custom-graph-header": addCustomGraphSVG(color),
+                ".edit-custom-graph": pencilSVG(color),
+                ".duplicate-custom-graph": copySVG(color),
+                ".delete-custom-graph": xSVG(color),
+                ".data-custom-graph": tableSVG(color),
+                ".copy-custom-graph": bracesSVG(color),
                 ".delete-custom-stat-widget": xSVG(color),
                 ".delete-custom-link-widget": xSVG(color),
                 ".delete-custom-section": xSVG(color),
@@ -270,6 +281,10 @@ function apply_widget_control_icons(root = document) {
         ".delete-custom-stat-widget": xSVG(color),
         ".delete-custom-link-widget": xSVG(color),
         ".delete-custom-section": xSVG(color),
+        ".edit-custom-graph": pencilSVG(color),
+        ".duplicate-custom-graph": copySVG(color),
+        ".delete-custom-graph": xSVG(color),
+        ".copy-custom-graph": bracesSVG(color),
     };
     for (const [selector, svg] of Object.entries(iconMap)) {
         root.querySelectorAll(selector).forEach(el => {

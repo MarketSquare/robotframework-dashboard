@@ -145,6 +145,7 @@
                             <div class="col-auto ms-auto section-header-icons">
                                 <a class="add-stat-widget-header information" id="unifiedAddStatWidgetHeader" data-section="unified" hidden></a>
                                 <a class="add-link-widget-header information" id="unifiedAddLinkWidgetHeader" data-section="unified" hidden></a>
+                                <a class="add-custom-graph-header information" id="unifiedAddCustomGraphHeader" data-section="unified" hidden></a>
                                 <a class="add-section-header information" id="unifiedAddSectionHeader" data-section="unified" hidden></a>
                             </div>
                         </div>
@@ -170,6 +171,7 @@
                         <div class="col-auto ms-auto section-header-icons">
                             <a class="add-stat-widget-header information" id="runAddStatWidgetHeader" data-section="run" hidden></a>
                             <a class="add-link-widget-header information" id="runAddLinkWidgetHeader" data-section="run" hidden></a>
+                            <a class="add-custom-graph-header information" id="runAddCustomGraphHeader" data-section="run" hidden></a>
                             <a class="move-up-section information" id="runSectionMoveUp" hidden></a>
                             <a class="move-down-section information" id="runSectionMoveDown" hidden></a>
                             <a class="shown-section information" id="runSectionShown" hidden></a>
@@ -223,6 +225,7 @@
                             <div class="col-auto ms-auto section-header-icons">
                                 <a class="add-stat-widget-header information" id="suiteAddStatWidgetHeader" data-section="suite" hidden></a>
                                 <a class="add-link-widget-header information" id="suiteAddLinkWidgetHeader" data-section="suite" hidden></a>
+                                <a class="add-custom-graph-header information" id="suiteAddCustomGraphHeader" data-section="suite" hidden></a>
                                 <a class="move-up-section information" id="suiteSectionMoveUp" hidden></a>
                                 <a class="move-down-section information" id="suiteSectionMoveDown" hidden></a>
                                 <a class="shown-section information" id="suiteSectionShown" hidden></a>
@@ -285,6 +288,7 @@
                             <div class="col-auto ms-auto section-header-icons">
                                 <a class="add-stat-widget-header information" id="testAddStatWidgetHeader" data-section="test" hidden></a>
                                 <a class="add-link-widget-header information" id="testAddLinkWidgetHeader" data-section="test" hidden></a>
+                                <a class="add-custom-graph-header information" id="testAddCustomGraphHeader" data-section="test" hidden></a>
                                 <a class="move-up-section information" id="testSectionMoveUp" hidden></a>
                                 <a class="move-down-section information" id="testSectionMoveDown" hidden></a>
                                 <a class="shown-section information" id="testSectionShown" hidden></a>
@@ -332,6 +336,7 @@
                         <div class="col-auto ms-auto section-header-icons">
                             <a class="add-stat-widget-header information" id="keywordAddStatWidgetHeader" data-section="keyword" hidden></a>
                             <a class="add-link-widget-header information" id="keywordAddLinkWidgetHeader" data-section="keyword" hidden></a>
+                            <a class="add-custom-graph-header information" id="keywordAddCustomGraphHeader" data-section="keyword" hidden></a>
                             <a class="move-up-section information" id="keywordSectionMoveUp" hidden></a>
                             <a class="move-down-section information" id="keywordSectionMoveDown" hidden></a>
                             <a class="shown-section information" id="keywordSectionShown" hidden></a>
@@ -1374,6 +1379,134 @@
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-outline-light btn-sm"
                             id="addCustomSectionConfirm">Add Section</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <!-- Custom Graph Modal -->
+    <div class="modal fade" id="customGraphModal" tabindex="-1" aria-labelledby="customGraphModalLabel">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customGraphModalLabel">Add Custom Graph</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" id="customGraphTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="customGraphGalleryTab-tab" data-bs-toggle="tab"
+                                    data-bs-target="#customGraphGalleryTab" type="button" role="tab"
+                                    aria-controls="customGraphGalleryTab" aria-selected="true">Gallery</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="customGraphBuilderTab-tab" data-bs-toggle="tab"
+                                    data-bs-target="#customGraphBuilderTab" type="button" role="tab"
+                                    aria-controls="customGraphBuilderTab" aria-selected="false">Builder</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="customGraphJsonTab-tab" data-bs-toggle="tab"
+                                    data-bs-target="#customGraphJsonTab" type="button" role="tab"
+                                    aria-controls="customGraphJsonTab" aria-selected="false">JSON</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content pt-3" id="customGraphTabContent">
+                            <div class="tab-pane fade show active" id="customGraphGalleryTab" role="tabpanel"
+                                aria-labelledby="customGraphGalleryTab-tab">
+                                <p class="mb-2">Pick a starting point, everything can be changed in the builder afterwards.</p>
+                                <div class="custom-graph-gallery" id="customGraphGallery"></div>
+                            </div>
+                            <div class="tab-pane fade" id="customGraphBuilderTab" role="tabpanel"
+                                aria-labelledby="customGraphBuilderTab-tab">
+                                <div class="row g-3">
+                                    <div class="col-lg-5" id="customGraphForm">
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customGraphTitle">Title</label>
+                                            <input type="text" id="customGraphTitle" class="form-control form-control-sm" maxlength="60">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customGraphSource">Data</label>
+                                            <select id="customGraphSource" class="form-select form-select-sm"></select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label d-block">Filters</label>
+                                            <div id="customGraphFilters"></div>
+                                            <button type="button" class="btn btn-outline-light btn-sm" id="customGraphAddFilter">+ Add condition</button>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customGraphX">X axis</label>
+                                            <div class="custom-graph-group">
+                                                <select id="customGraphX" class="form-select form-select-sm"></select>
+                                                <input type="text" id="customGraphXKey" class="form-control form-control-sm" placeholder="Key" aria-label="X axis key" list="customGraphXKeyOptions" hidden>
+                                                <datalist id="customGraphXKeyOptions"></datalist>
+                                                <select id="customGraphXBucket" class="form-select form-select-sm" aria-label="X axis date bucket" hidden></select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customGraphSeries">Split by</label>
+                                            <div class="custom-graph-group">
+                                                <select id="customGraphSeries" class="form-select form-select-sm"></select>
+                                                <input type="text" id="customGraphSeriesKey" class="form-control form-control-sm" placeholder="Key" aria-label="Split by key" list="customGraphSeriesKeyOptions" hidden>
+                                                <datalist id="customGraphSeriesKeyOptions"></datalist>
+                                                <select id="customGraphSeriesBucket" class="form-select form-select-sm" aria-label="Split by date bucket" hidden></select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customGraphAgg">Metric</label>
+                                            <div class="custom-graph-group">
+                                                <select id="customGraphAgg" class="form-select form-select-sm"></select>
+                                                <select id="customGraphAggField" class="form-select form-select-sm" aria-label="Metric field" hidden></select>
+                                            </div>
+                                            <div class="form-check form-switch mt-1" id="customGraphIgnoreSkipsGroup" hidden>
+                                                <input class="form-check-input" type="checkbox" role="switch" id="customGraphIgnoreSkips">
+                                                <label class="form-check-label" for="customGraphIgnoreSkips">Ignore skipped</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customGraphOrder">Order and limit</label>
+                                            <div class="custom-graph-group">
+                                                <select id="customGraphOrder" class="form-select form-select-sm"></select>
+                                                <input type="number" id="customGraphLimit" class="form-control form-control-sm custom-graph-limit" min="0" max="500" placeholder="All" aria-label="Limit">
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label d-block">Chart</label>
+                                            <div class="d-flex flex-wrap gap-1" id="customGraphViz"></div>
+                                            <div class="form-check form-switch mt-1" id="customGraphPercentGroup" hidden>
+                                                <input class="form-check-input" type="checkbox" role="switch" id="customGraphPercent">
+                                                <label class="form-check-label" for="customGraphPercent">Show as percentages</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="customGraphGlobalFilters" checked>
+                                            <label class="form-check-label" for="customGraphGlobalFilters">Apply the global filters</label>
+                                        </div>
+                                        <div class="form-check form-switch" id="customGraphSectionFiltersGroup" hidden>
+                                            <input class="form-check-input" type="checkbox" role="switch" id="customGraphSectionFilters">
+                                            <label class="form-check-label" for="customGraphSectionFilters" id="customGraphSectionFiltersLabel">Follow the section filters</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <div class="custom-graph-preview">
+                                            <div class="graph-body custom-graph-body" id="customGraphPreviewBody"></div>
+                                        </div>
+                                        <div class="custom-graph-errors" id="customGraphErrors"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="customGraphJsonTab" role="tabpanel"
+                                aria-labelledby="customGraphJsonTab-tab">
+                                <p class="mb-2">The graph definition, to share it or to paste one from someone else.</p>
+                                <textarea id="customGraphJson" class="form-control font-monospace custom-graph-json" rows="18" spellcheck="false" aria-label="Graph definition"></textarea>
+                                <div class="custom-graph-errors" id="customGraphJsonErrors"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                            id="customGraphSave" hidden>Add Graph</button>
                     </div>
                 </div>
             </div>
