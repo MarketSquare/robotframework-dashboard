@@ -98,3 +98,22 @@ Steps:
 10. **Docs** — row in the section table of `docs/graphs-tables.md` (Graph Name / Views / Views Description / Notes).
 
 Verify: regenerate the dashboard (`dev-workflow` skill), open the section, switch every view option, toggle fullscreen, hide/show it in Customize mode, reload — position and type must persist.
+
+---
+
+## Custom graphs (user-built, issue #255)
+
+Not part of `graphmetadata.js`: users build them in the builder modal and they are stored as panel specs in `settings.customGraphs`. Code in `js/customgraphs/`:
+
+| File | Role |
+|---|---|
+| `fields.js` | Field catalog per source (runs/suites/tests/keywords/exceptions + run fields joined on every source), operators per field type, aggregations |
+| `engine.js` | `run_custom_graph_query(spec, data, {runLabel})` → result table `{xKind, x, xLabels, series[], meta}`; rows normalised once per filtered array (WeakMap cache) |
+| `spec.js` | `validate_custom_graph_spec` (never trust a json config), `sanitize_custom_graph_spec` (repairs the builder draft after each change), viz types / orders |
+| `presets.js` | Gallery specs; every preset is run by `tests/javascript/customgraphs/spec.test.js` |
+| `viz.js` | Result table → `get_graph_config` config (line/bar/stacked/hbar/donut) or a table |
+| `widgets.js` | Grid tiles, `create_custom_graphs`/`update_custom_graphs` (called from `all.js`), save/duplicate/delete, chart registry |
+| `builder.js` | The `#customGraphModal` (gallery / builder / JSON tabs, live preview) |
+
+Adding a field: one entry in `fields.js` + the value in `build_custom_graph_rows` (engine.js) + a unit test. Adding a preset: one entry in `presets.js` + a row in `docs/custom-graphs.md`. Robot coverage lives in `08_layout.robot` (`Get Custom Graphs In Grid` reads charts via `Chart.getChart(canvas)`).
+

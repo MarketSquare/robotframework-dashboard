@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation    This testsuite covers the layout editor of the generated HTML dashboard: hiding, resizing
-...              and reordering GridStack graphs and sections, undo/redo, and the custom stat and link widgets.
+...              and reordering GridStack graphs and sections, undo/redo, the custom stat and link widgets and the
+...              custom graphs.
 ...              Every change is asserted in the DOM and in localStorage, and proven to survive a reload.
 
 Resource    ../resources/keywords/dashboard-keywords.resource
@@ -105,6 +106,117 @@ Custom Link Widget Is Added, Saved And Deleted
     Save Layout
     ${widgets}    Get Link Widgets In Grid    gridSuite
     Should Be Empty    ${widgets}
+
+Custom Graph From A Preset Is Added, Saved And Deleted
+    Enter Layout Edit Mode
+    Add Custom Graph From Preset    run    mostFailed
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Length Should Be    ${graphs}    1
+    Should Be Equal    ${graphs}[0][0]    Most failed tests
+    Should Be True    0 < len($graphs[0][1]) <= 10
+    Save Layout
+    Reload Dashboard
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Should Be Equal    ${graphs}[0][0]    Most failed tests
+    ${settings}    Get Settings From Local Storage
+    Should Be Equal    ${settings}[customGraphs][0][metric][agg]    fail_count
+    Enter Layout Edit Mode
+    Delete First Custom Graph    gridRun
+    Save Layout
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Should Be Empty    ${graphs}
+    ${settings}    Get Settings From Local Storage
+    Should Be Empty    ${settings}[customGraphs]
+
+Custom Graph Built From Scratch Follows Its Edits
+    Enter Layout Edit Mode
+    Open Custom Graph Builder    test
+    Pick Custom Graph Preset    ${EMPTY}
+    Set Custom Graph X Axis    project_version
+    Save Custom Graph
+    ${graphs}    Get Custom Graphs In Grid    gridTest
+    Should Be Equal    ${graphs}[0][2]    ${{ ["Passed", "Failed", "Skipped"] }}
+    Should Contain    ${graphs}[0][1]    1.0
+    Edit First Custom Graph    gridTest
+    Set Custom Graph Chart Type    table
+    Save Custom Graph
+    Get Element Count    selector=css=#gridTest .custom-graph-table tbody tr    assertion_operator===    assertion_expected=${{ len($graphs[0][1]) }}
+    Save Layout
+    Reload Dashboard
+    ${settings}    Get Settings From Local Storage
+    Should Be Equal    ${settings}[customGraphs][0][viz][type]    table
+
+Custom Graph Definition Is Pasted In The JSON Tab
+    Enter Layout Edit Mode
+    Add Custom Graph From JSON    suite
+    ...    {"title": "Pass rate per run", "source": "runs", "x": {"field": "run"}, "metric": {"agg": "pass_rate"}, "viz": {"type": "line"}}
+    ${graphs}    Get Custom Graphs In Grid    gridSuite
+    Should Be Equal    ${graphs}[0][0]    Pass rate per run
+    Should Be Equal As Integers    ${graphs}[0][3]    18
+    Edit First Custom Graph    gridSuite
+    Click    selector=id=customGraphJsonTab-tab
+    Get Property    selector=id=customGraphJson    property=value    assertion_operator=contains    assertion_expected="pass_rate"
+
+Deleting A Custom Graph Is Undone And Redone
+    Enter Layout Edit Mode
+    Add Custom Graph From Preset    keyword    keywordTimePerLibrary
+    Delete First Custom Graph    gridKeyword
+    ${graphs}    Get Custom Graphs In Grid    gridKeyword
+    Should Be Empty    ${graphs}
+    Undo Layout Change
+    ${graphs}    Get Custom Graphs In Grid    gridKeyword
+    Should Be Equal    ${graphs}[0][0]    Keyword time per library
+    Redo Layout Change
+    ${graphs}    Get Custom Graphs In Grid    gridKeyword
+    Should Be Empty    ${graphs}
+
+Custom Graph From A Settings JSON Without An Id Is Rendered
+    [Documentation]    Graphs written by hand into a (--jsonconfig) settings JSON may leave out id and section.
+    Apply Settings JSON
+    ...    s.customGraphs = [{ title: "From config", source: "tests", x: { field: "run" }, series: { field: "status" }, metric: { agg: "count" }, viz: { type: "stacked_bar" } }]
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Should Be Equal    ${graphs}[0][0]    From config
+    Length Should Be    ${graphs}[0][1]    18
+    Should Be Equal    ${graphs}[0][2]    ${{ ["Passed", "Failed", "Skipped"] }}
+
+Custom Graph Follows The Section Filters When Enabled
+    Enter Layout Edit Mode
+    Open Custom Graph Builder    test
+    Pick Custom Graph Preset    slowestTests
+    Follow Section Filters In Custom Graph Builder
+    Save Custom Graph
+    Save Layout
+    Select Test In Test Statistics    Download Invoice
+    ${graphs}    Get Custom Graphs In Grid    gridTest
+    Should Be Equal    ${graphs}[0][1]    ${{ ["Download Invoice"] }}
+    Select Test In Test Statistics    All
+    ${graphs}    Get Custom Graphs In Grid    gridTest
+    Should Be True    len($graphs[0][1]) > 1
+
+Custom Graph Shows More Values In Fullscreen
+    [Documentation]    A limited graph shows five times its limit in fullscreen, like the built-in top 10 -> top 50.
+    Enter Layout Edit Mode
+    Add Custom Graph From Preset    run    mostFailed
+    Save Layout
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Length Should Be    ${graphs}[0][1]    10
+    Open First Custom Graph In Fullscreen    gridRun
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Should Be True    len($graphs[0][1]) > 10
+    Close Custom Graph Fullscreen With Escape
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Length Should Be    ${graphs}[0][1]    10
+
+Custom Graph Heatmap Shows A Cell Per Run And Test
+    Enter Layout Edit Mode
+    Add Custom Graph From Preset    run    failureHeatmap
+    ${type}    Evaluate JavaScript    ${None}
+    ...    () => Chart.getChart(document.querySelector('#gridRun [data-gs-id^="customGraph-"] canvas')).config.type
+    Should Be Equal    ${type}    matrix
+    ${graphs}    Get Custom Graphs In Grid    gridRun
+    Should Be Equal    ${graphs}[0][0]    Failure heatmap
+    # one cell per (run, test that failed at least once): 18 runs times at least one test
+    Should Be True    ${graphs}[0][3] >= 18 and ${graphs}[0][3] % 18 == 0
 
 All Stat Widgets Of A Section Are Added From The All Tab
     [Documentation]    The "All" tab lists every stat of the section with a toggle and an editable title;
