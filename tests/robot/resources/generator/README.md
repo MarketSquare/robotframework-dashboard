@@ -26,7 +26,7 @@ ends up in the `generator` attribute of the fixtures). Output goes to
 `--keep` is given.
 
 After regenerating, everything derived from the fixtures must be refreshed:
-robot reference screenshots / `cli_output` / `database_output` (in Docker, see the
+robot reference screenshots and the text snapshots in `testsuites/__snapshots__/` (in Docker, see the
 `testing` skill) and `example/robot_dashboard.html` + `example/robot_results.db`
 (`scripts/example.py`, see the `release` skill).
 

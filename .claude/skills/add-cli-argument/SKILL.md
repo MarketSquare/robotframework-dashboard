@@ -1,6 +1,6 @@
 ---
 name: add-cli-argument
-description: Checklist for adding or changing a robotdashboard CLI flag — argparse definition and groups in arguments.py, _process_arguments/_check_argument_* validation, wiring through main.py and RobotDashboard, server/listener parity, the argument unit tests, the 00_cli.robot short+long tests and cli_output fixtures (help.txt changes!), and every docs page that lists flags. Use for any "add a --flag", "new CLI option", or "rename/deprecate an argument" task.
+description: Checklist for adding or changing a robotdashboard CLI flag — argparse definition and groups in arguments.py, _process_arguments/_check_argument_* validation, wiring through main.py and RobotDashboard, server/listener parity, the argument unit tests, the 00_cli.robot short+long tests and their text snapshots (help.txt changes!), and every docs page that lists flags. Use for any "add a --flag", "new CLI option", or "rename/deprecate an argument" task.
 ---
 
 # Adding a CLI argument
@@ -52,9 +52,9 @@ input_group.add_argument(
 - `tests/python/test_main.py` / `test_robotdashboard.py`: update the positional call expectations and helper defaults (`_make_rd`).
 - `tests/python/test_server.py` if the server learned the flag.
 - `tests/robot/testsuites/00_cli.robot`: **two** cases, short and long form, named `Validate RobotDashboard <x>` / `Validate RobotDashboard <myflag>`, using `Validate CLI    command=robotdashboard -d <name>.db --myflag …    expected=<myflag>`.
-- `tests/robot/resources/cli_output/<myflag>.txt`: expected stdout (glob-matched via `Should Match`, so `*` wildcards are allowed for timestamps/paths).
-- `tests/robot/resources/cli_output/help.txt`: **always** changes — the `-h` test diffs the full help text. Regenerate it by running `robotdashboard -h` in Docker (or from source: `python -m robotframework_dashboard.main -h`) and paste the output; keep the ASCII banner lines.
-- Run `00_cli.robot` in Docker (`testing` skill).
+- `tests/robot/testsuites/__snapshots__/00_cli/<myflag>.txt`: expected stdout, recorded by `SnapshotLibrary` (DB names, paths, durations and UTC offsets are normalized to placeholders by `Validate CLI`).
+- `tests/robot/testsuites/__snapshots__/00_cli/help.txt`: **always** changes — the `-h` test compares the full help text.
+- Record/update both by running `00_cli.robot` in Docker with `--variable REFERENCE_RUN:True` (`testing` skill, "Text snapshots"), then review the snapshot diff.
 
 ## 5. Docs (`documentation` skill)
 

@@ -5,14 +5,24 @@
 # browser-launch crash or UI timing race does not fail the pipeline. The merged
 # results/output.xml + log.html are what CI uploads; the first attempt is kept as
 # results/first_output.xml, the rerun as results/rerun_output.xml.
+#
+# Text snapshots (SnapshotLibrary) run in strict mode: a missing snapshot fails instead of being
+# recorded. Record or update them with SNAPSHOT_STRICT=False, or pass --variable REFERENCE_RUN:True
+# by running a suite directly (see the testing skill).
 
 # ROBOT_PROCESSES: parallel pabot processes (GitHub ubuntu-latest has 4 vCPU; browser tests are CPU bound)
-PABOT_ARGS=(--pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes "${ROBOT_PROCESSES:-4}" -d results)
+PABOT_ARGS=(--variable "SNAPSHOT_STRICT:${SNAPSHOT_STRICT:-True}" --pabotlib --testlevelsplit --artifacts png,jpg --artifactsinsubfolders --processes "${ROBOT_PROCESSES:-4}" -d results)
 SUITES=(tests/robot/testsuites/*.robot)
 
 pabot "${PABOT_ARGS[@]}" "${SUITES[@]}"
 rc=$?
-[ "$rc" -eq 0 ] && exit 0
+if [ "$rc" -eq 0 ]; then
+  # --testlevelsplit means no process sees a whole suite, so the library's own unused-snapshot
+  # warning never fires; check the merged usage records instead. Only here: the rerun below is a
+  # filtered run and pabot clears pabot_results when it starts.
+  python3 -m SnapshotLibrary unused results
+  exit $?
+fi
 # robot exit codes >= 250 mean the run itself broke (invalid data, ...) -> nothing sensible to rerun
 { [ "$rc" -ge 250 ] || [ ! -f results/output.xml ]; } && exit "$rc"
 

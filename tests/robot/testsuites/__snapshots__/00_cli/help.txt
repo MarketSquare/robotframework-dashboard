@@ -6,17 +6,17 @@
 |_| \_\\___/|____/ \___/ |_| |____/_/   \_|____/|_| |_|____/ \___/_/   \_|_| \_|____/ 
 
 ======================================================================================
-usage: robotdashboard [[]-v[]] [[]-h[]] [[]-o [[]PATH ...[]][]] [[]-f [[]PATH ...[]][]]
-                      [[]--projectversion VERSION[]] [[]--customfilters FILTERS[]]
-                      [[]-z OFFSET[]] [[]-d PATH[]] [[]-r [[]QUERY ...[]][]]
-                      [[]--logremoved [[]TYPES_PATH[]][]] [[]-c PATH[]]
-                      [[]--novacuum [[]BOOL[]][]] [[]-g [[]BOOL[]][]] [[]-l [[]BOOL[]][]] [[]-n NAME[]]
-                      [[]-t TITLE[]] [[]-q INT[]] [[]--offlinedependencies [[]BOOL[]][]]
-                      [[]-u [[]BOOL[]][]] [[]--logurl URL[]] [[]-j PATH[]]
-                      [[]--forcejsonconfig [[]BOOL[]][]] [[]-m PATH[]]
-                      [[]-s [[]HOST:PORT:USERNAME:PASSWORD[]][]]
-                      [[]--noautoupdate [[]BOOL[]][]] [[]--ssl-certfile PATH[]]
-                      [[]--ssl-keyfile PATH[]]
+usage: robotdashboard [-v] [-h] [-o [PATH ...]] [-f [PATH ...]]
+                      [--projectversion VERSION] [--customfilters FILTERS]
+                      [-z OFFSET] [-d PATH] [-r [QUERY ...]]
+                      [--logremoved [TYPES_PATH]] [-c PATH]
+                      [--novacuum [BOOL]] [-g [BOOL]] [-l [BOOL]] [-n NAME]
+                      [-t TITLE] [-q INT] [--offlinedependencies [BOOL]]
+                      [-u [BOOL]] [--logurl URL] [-j PATH]
+                      [--forcejsonconfig [BOOL]] [-m PATH]
+                      [-s [HOST:PORT:USERNAME:PASSWORD]]
+                      [--noautoupdate [BOOL]] [--ssl-certfile PATH]
+                      [--ssl-keyfile PATH]
 
 Generate an interactive HTML dashboard from Robot Framework output.xml results.
 
@@ -25,14 +25,14 @@ options:
   -h, --help            Provide additional information.
 
 output files:
-  -o [[]PATH ...[]], --outputpath [[]PATH ...[]]
+  -o [PATH ...], --outputpath [PATH ...]
                         Path to one or more output.xml files.
                           • Repeat '-o' for multiple files
                           • Append ':tag1:tag2' to add tags
                         Examples:
                           • '-o path/to/output1.xml'
                           • '-o output2.xml:dev:nightly -o output3.xml:prod'
-  -f [[]PATH ...[]], --outputfolderpath [[]PATH ...[]]
+  -f [PATH ...], --outputfolderpath [PATH ...]
                         Directory scanned recursively for *output*.xml files.
                           • All matching files in subfolders are included
                           • Append ':tag1:tag2' to add tags
@@ -61,8 +61,8 @@ database:
   -d PATH, --databasepath PATH
                         Path to the database file (default: robot_results.db).
                         Examples:
-                          • '-d path/to/myresults.db'
-  -r [[]QUERY ...[]], --removeruns [[]QUERY ...[]]
+                          • '<DB>'
+  -r [QUERY ...], --removeruns [QUERY ...]
                         Remove runs by index, run_start, alias, tag, or limit.
                           • Separate multiple values with commas; ranges use ':', lists use ';'
                         Examples:
@@ -75,7 +75,7 @@ database:
                           • '-r age=-10d' -> remove runs younger than 10 days
                           • a project is a run name and every 'project_' run tag
                           • (y)ear/(d)ay/(h)our/(m)inute/(s)econd supported
-  --logremoved [[]TYPES_PATH[]]
+  --logremoved [TYPES_PATH]
                         Log (append if file exists) run data to jsonl before removing from the db
                           • Supply what types to log (default=all) and (optional) a path to the desired .jsonl
                         Examples:
@@ -87,13 +87,13 @@ database:
                           • See docs for implementation details
                         Examples:
                           • '-c customdb.py'
-  --novacuum [[]BOOL[]]     `boolean` [[]default: False[]] Disable automatic database vacuuming.
+  --novacuum [BOOL]     `boolean` [default: False] Disable automatic database vacuuming.
 
 dashboard:
-  -g [[]BOOL[]], --generatedashboard [[]BOOL[]]
-                        `boolean` [[]default: True[]] Generate the HTML dashboard file.
-  -l [[]BOOL[]], --listruns [[]BOOL[]]
-                        `boolean` [[]default: True[]] List runs in the console output.
+  -g [BOOL], --generatedashboard [BOOL]
+                        `boolean` [default: True] Generate the HTML dashboard file.
+  -l [BOOL], --listruns [BOOL]
+                        `boolean` [default: True] List runs in the console output.
   -n NAME, --namedashboard NAME
                         Custom HTML dashboard file name (default: robot_dashboard_yyyymmdd-hhssmm.html).
                         Examples:
@@ -108,12 +108,12 @@ dashboard:
                           • Higher values slow initial load
                         Examples:
                           • '-q 25'
-  --offlinedependencies [[]BOOL[]]
-                        `boolean` [[]default: False[]] Embed JS/CSS locally instead of loading from CDN.
+  --offlinedependencies [BOOL]
+                        `boolean` [default: False] Embed JS/CSS locally instead of loading from CDN.
 
 log linking:
-  -u [[]BOOL[]], --uselogs [[]BOOL[]]
-                        `boolean` [[]default: False[]] Enable clickable graphs that open the corresponding log.html.
+  -u [BOOL], --uselogs [BOOL]
+                        `boolean` [default: False] Enable clickable graphs that open the corresponding log.html.
   --logurl URL          URL to the log file for the processed run(s), stored in the database.
                           • Overrides the path derived from the output.xml location
                           • Use '{run_alias}' placeholder for multi-file processing
@@ -126,8 +126,8 @@ dashboard configuration:
                         Path to a JSON configuration file applied on first dashboard load.
                         Examples:
                           • '-j settings.json'
-  --forcejsonconfig [[]BOOL[]]
-                        `boolean` [[]default: False[]] Force --jsonconfig to override existing localstorage settings.
+  --forcejsonconfig [BOOL]
+                        `boolean` [default: False] Force --jsonconfig to override existing localstorage settings.
   -m PATH, --messageconfig PATH
                         Path to a file containing test message templates with ${placeholder} syntax.
                         Examples:
@@ -135,15 +135,15 @@ dashboard configuration:
                           • '-m messages.txt'
 
 server:
-  -s [[]HOST:PORT:USERNAME:PASSWORD[]], --server [[]HOST:PORT:USERNAME:PASSWORD[]]
+  -s [HOST:PORT:USERNAME:PASSWORD], --server [HOST:PORT:USERNAME:PASSWORD]
                         Start the dashboard webserver.
                           • Format: 'default' or 'host:port', optionally ':username:password'
                         Examples:
                           • '--server'  '--server default'
                           • '--server 0.0.0.0:8080'
                           • '--server 0.0.0.0:8080:admin:secret'
-  --noautoupdate [[]BOOL[]]
-                        `boolean` [[]default: False[]] Disable automatic dashboard regeneration on upload/delete.
+  --noautoupdate [BOOL]
+                        `boolean` [default: False] Disable automatic dashboard regeneration on upload/delete.
                           • When enabled, use the 'Refresh' buttons to refresh the dashboard
   --ssl-certfile PATH   Path to SSL certificate file to enable HTTPS (requires --ssl-keyfile).
                         Examples:

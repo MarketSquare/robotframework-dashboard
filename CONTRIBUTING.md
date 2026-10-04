@@ -65,7 +65,7 @@ example dashboard) are **generated** by `tests/robot/resources/generator/generat
 python tests/robot/resources/generator/generate.py
 ```
 
-then refresh the reference screenshots, `cli_output` and `database_output` files by running the robot tests in Docker.
+then refresh the reference screenshots and the text snapshots in `tests/robot/testsuites/__snapshots__/` by running the robot tests in Docker (the snapshots with `--variable REFERENCE_RUN:True`).
 The generator suites are not part of the test pipeline. See `tests/robot/resources/generator/README.md`.
 
 The example dashboard in `example/` is built from the same fixtures with `python scripts/example.py` (or `scripts\example.bat` on Windows). Add `--test` to build `robot_dashboard.html` in the repo root without updating `example/`, handy for eyeballing a change.

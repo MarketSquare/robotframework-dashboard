@@ -7,7 +7,7 @@
 
 ======================================================================================
  1. Database preparation
-  created database: 'offlinedependencies.db'
+  created database: '<DB>'
 ======================================================================================
  2. Processing output XML(s)
   skipping step
@@ -20,4 +20,4 @@
 ======================================================================================
  5. Creating dashboard HTML
   WARNING: There are no runs so the dashboard will be empty!
-  created dashboard *
+  created dashboard '<DIR>/robot_dashboard.html' in <DURATION>

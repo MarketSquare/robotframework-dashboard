@@ -34,9 +34,9 @@ Both must use the exact same new version number.
 
 ## Step 2 — Update the CLI test expected output
 
-File: `tests/robot/resources/cli_output/version.txt`
+File: `tests/robot/testsuites/__snapshots__/00_cli/version.txt`
 
-The last line of this file is the version string that the robot test compares against the CLI `--version` output. Update it to:
+The last line of this file is the version string that the robot test compares against the CLI `--version` output (a `SnapshotLibrary` snapshot). Update it to:
 ```
 Robotdashboard X.Y.Z
 ```
@@ -167,7 +167,7 @@ The user merges the release PR (squash, `Release X.Y.Z (#PR)`), uploads to PyPI 
 
 - [ ] `robotframework_dashboard/version.py` — version updated
 - [ ] `setup.py` — version updated
-- [ ] `tests/robot/resources/cli_output/version.txt` — version string updated
+- [ ] `tests/robot/testsuites/__snapshots__/00_cli/version.txt` — version string updated
 - [ ] `example/robot_dashboard.html` — regenerated
 - [ ] `example/robot_results.db` — regenerated
 - [ ] `CHANGELOG.md` — new section added at the top
