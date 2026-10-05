@@ -51,7 +51,7 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 | `tests/robot/resources/listener/listener_suite.robot` | Fixture suite (one passing, one failing test) that `09_server.robot` runs with `--listener robotframework_dashboard.robotdashboardlistener` against the test's server; not collected by the test run |
 | `tests/robot/resources/outputs/` | The 18 `output.xml` + `log.html` fixtures — **generated** by `tests/robot/resources/generator/generate.py` (see its README), never edited by hand. `Generate Dashboard` tags them `prod`/`dev`, `project_1`/`project_2`, `version_1.0`–`1.2` |
 | `tests/robot/resources/__snapshots__/<suite>/` | Snapshots written by `SnapshotLibrary`: `00_cli/<expected>.txt`, `01_database/<table>.json`, and for the browser suites `<name>.json` (graph data / table rows) and `<name>_text.txt` (section text) |
-| `tests/robot/resources/dashboard_output/<folder>/<name>.png` | Reference screenshots |
+| `tests/robot/resources/dashboard_output/<name>.png` | Reference screenshots, one flat folder; names start with the page: `overview…`, `dashboard…`, `compare…`, `tables…` |
 | `tests/robot/resources/test_config.json` | Passed via `-j` by `Generate Shared Dashboard`; disables chart animations (`show.animation: false`) so Chart.js draws synchronously. Add flags for notices/banners here if they ever overlay screenshots |
 
 ### Shared dashboard for browser tests
@@ -96,7 +96,7 @@ After regenerating fixtures: rerun **all** robot suites in Docker and refresh th
 - Headless Chromium via `robotframework-browser`; `Open Dashboard` opens `robotdashboard_shared.html` over `file://` and hides the relative run-time labels so screenshots stay deterministic.
 - **Never `Sleep` before a screenshot.** `Wait For Dashboard Idle` polls `window.dashboard_is_idle()`, a **test-only** hook that `Open Dashboard` injects from `tests/robot/resources/scripts/dashboard_idle.js` (`Evaluate JavaScript`; the shipped dashboard contains no test code): false while the page spinner, filter overlay, graph overlays, an open/closing modal or backdrop, a `fade_in`/`fade_out` from common.js (`.fading` class) or a Chart.js animation is active, and true only after 50 ms without any of those. `Validate Component` and `Open Dashboard` call it; call it yourself before DOM assertions that follow a filter/settings change. If a new async render path is added to the dashboard (a `setTimeout`, a fade, a new overlay), extend `dashboard_idle.js` rather than sleeping in the tests (unit-tested in `tests/javascript/dashboard_idle.test.js`; the file must start with the arrow function or Browser evaluates it as an expression).
 - Note: the settings UI "animation duration" only scales the stagger delay in `graph_config.js`; Chart.js's default 1000 ms draw still runs. That is why the test config turns animations off instead.
-- `Validate Component    id=<sectionId>    name=<refName>    folder=<refFolder>` takes a screenshot of one element and compares it with `tests/robot/resources/dashboard_output/<refFolder>/<refName>.png` at 99.5 % accuracy by default (`threshold=0.005`); pass `threshold=` to loosen.
+- `Validate Component    id=<sectionId>    name=<refName>` takes a screenshot of one element and compares it with `tests/robot/resources/dashboard_output/<refName>.png` at 99.5 % accuracy by default (`threshold=0.005`); pass `threshold=` to loosen.
 - **Screenshot or data?** Each page section keeps **one** `Validate Component` for its default state: that is what proves colours, legends and layout. Every other state that only changes *what* is plotted (filters, run tags, a second project card, the other tables) uses a data snapshot instead:
   - `Validate Section Data    id=<sectionId>    name=<name>` snapshots the labels and dataset values of every Chart.js graph in the section (`Get Section Graph Data`, keyed by canvas id; `Date` values become local wall-clock text, so the result is the same in every browser time zone). `text=${True}` also snapshots the section's visible text, for HTML cards such as the overview.
   - `Validate Table Data    table=<tableId>    name=<name>` snapshots the rows on the DataTable's current page plus its total row count (the full content is covered by `01_database`).
@@ -151,9 +151,8 @@ for test in root.iter("test"):
         shot = next((m for m in all_msgs if "browser/screenshot/" in m), "")
         ref = next((m for m in all_msgs if "dashboard_output" in m), "")
         shot_file = shot.split("browser/screenshot/")[-1].split('"')[0].split("'")[0].strip() if shot else "?"
-        ref_path = ref.split("dashboard_output/")[-1].strip() if ref else "?"
-        ref_folder = ref_path.split("/")[0] if "/" in ref_path else "?"
-        print(f"STALE SCREENSHOT [{name}]\n  screenshot : {shot_file}\n  ref folder : tests/robot/resources/dashboard_output/{ref_folder}/")
+        ref_file = ref.split("dashboard_output/")[-1].split('"')[0].split("'")[0].strip() if ref else "?"
+        print(f"STALE SCREENSHOT [{name}]\n  screenshot : {shot_file}\n  reference  : tests/robot/resources/dashboard_output/{ref_file}")
     elif timeout_text:
         el = next((m for m in all_msgs if "locator" in m.lower() or "click" in m.lower()), timeout_text)
         print(f"TIMEOUT / NOT VISIBLE [{name}]\n  {el[:300]}")
@@ -173,7 +172,7 @@ for test in root.iter("test"):
 
 ```bash
 bash scripts/docker/run-in-robot-container.sh robot --outputdir results tests/robot/testsuites/<suite>.robot
-cp results/browser/screenshot/<name>.png tests/robot/resources/dashboard_output/<folder>/<name>.png
+cp results/browser/screenshot/<name>.png tests/robot/resources/dashboard_output/<name>.png
 ```
 
 Screenshots from a downloaded CI artifact (`robot-results (N)/browser/screenshot/`) are also valid sources — the `${reference}` log path starting with `/__w/` confirms a Linux run. **Never** copy a screenshot taken on a Windows host: font rendering differs and it will fail in CI.

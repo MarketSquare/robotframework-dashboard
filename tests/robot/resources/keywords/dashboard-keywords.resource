@@ -96,17 +96,19 @@ Open Tables Page
     Wait For Elements State    selector=id=tablesStatisticsSection
 
 Validate Screenshot
-    [Arguments]    ${screenshot}    ${reference}    ${folder}    ${threshold}=${EMPTY}
-    VAR    ${reference}    ${REFERENCE_FOLDER}/${folder}/${reference}.png
+    [Arguments]    ${screenshot}    ${reference}    ${threshold}=${EMPTY}
+    VAR    ${reference}    ${REFERENCE_FOLDER}/${reference}.png
     VAR    ${screenshot}    ${SCREENSHOT_FOLDER}/${screenshot}.png
     IF    "${threshold}"=="${EMPTY}"    VAR    ${threshold}    0.005    # 99.5% accuracy by default
     Compare Images    reference_image=${reference}    candidate_image=${screenshot}    threshold=${threshold}
 
 Validate Component
-    [Arguments]    ${id}    ${name}    ${folder}    ${threshold}=${EMPTY}
+    [Documentation]    Screenshot of one element compared with dashboard_output/<name>.png. Names start
+    ...    with the page they show: overview, dashboard, compare or tables.
+    [Arguments]    ${id}    ${name}    ${threshold}=${EMPTY}
     Wait For Dashboard Idle
     Take Screenshot    filename=${SCREENSHOT_FOLDER}/${name}    selector=id=${id}
-    Validate Screenshot    screenshot=${name}    reference=${name}    folder=${folder}    threshold=${threshold}
+    Validate Screenshot    screenshot=${name}    reference=${name}    threshold=${threshold}
 
 Get Section Graph Data
     [Documentation]    Labels and dataset values of every Chart.js graph inside a section, keyed by

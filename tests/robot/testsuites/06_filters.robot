@@ -18,25 +18,25 @@ Validate Filters Modal Buttons Are Right Aligned
 
 Validate Dashboard Run Name Filter
     Set Run Filter    value=WebshopUI
-    Validate Section Data    id=runStatisticsSection    name=runNameFilter
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunNameFilter
 
 Validate Dashboard Run Tags Filter
     Should Show 18 Of 18 Runs
 
     Set Run Tags Filter    dev
-    Validate Section Data    id=runStatisticsSection    name=runTagsFilterDev
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunTagsFilterDev
     Should Show 14 Of 14 Runs
 
     Set Run Tags Filter    prod
-    Validate Section Data    id=runStatisticsSection    name=runTagsFilterDevProd
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunTagsFilterDevProd
     Should Show 0 Of 0 Runs
 
     Set Run Tags Filter    prod    strict=True
-    Validate Section Data    id=runStatisticsSection    name=runTagsFilterProd
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunTagsFilterProd
     Should Show 4 Of 4 Runs
 
     Set Run Tags Filter    dev    amount    strict=True
-    Validate Section Data    id=runStatisticsSection    name=runTagsFilterAmount
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunTagsFilterAmount
     Should Show 1 Of 1 Runs
 
 Validate Dashboard Run Tags Filter From Overview Project Card
@@ -73,7 +73,7 @@ Validate Overview Keeps Filters That Were Changed By Hand
 
 Validate Dashboard Date Filter
     Set Date Filter    fromDate=08252026    fromTime=1200am
-    Validate Section Data    id=runStatisticsSection    name=runDateFilter
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunDateFilter
 
 Validate Date Histogram Bars
     Open Filter Dialog
@@ -126,7 +126,7 @@ Validate Date Histogram Follows The Other Filters
 
 Validate Dashboard Amount Filter
     Set Amount Filter    amount=5
-    Validate Section Data    id=runStatisticsSection    name=runAmountFilter
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunAmountFilter
 
 Validate Dashboard Amount Filter Is Applied Per Project
     [Documentation]    Issue #347: the amount is applied per project (the run name and every
