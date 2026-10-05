@@ -1,6 +1,6 @@
 ---
 name: add-cli-argument
-description: Checklist for adding or changing a robotdashboard CLI flag — argparse definition and groups in arguments.py, _process_arguments/_check_argument_* validation, wiring through main.py and RobotDashboard, server/listener parity, the argument unit tests, the 00_cli.robot short+long tests and their text snapshots (help.txt changes!), and every docs page that lists flags. Use for any "add a --flag", "new CLI option", or "rename/deprecate an argument" task.
+description: 'Checklist for adding, renaming or deprecating a robotdashboard CLI flag ("add a --flag", "new CLI option"): arguments.py, validation, wiring, server/listener parity, unit + 00_cli.robot tests, help.txt snapshot, docs.'
 ---
 
 # Adding a CLI argument

@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Run, add, debug, or fix tests of any tier — Robot Framework acceptance tests (tests/robot/, Playwright screenshots, pabot, Docker), Python unit tests (tests/python/, pytest), or JavaScript unit tests (tests/javascript/, Vitest). Use whenever the task mentions tests, test failures, CI being red, reference screenshots, or verifying a change end-to-end.
+description: Run, add, debug or fix Robot (Docker, Playwright screenshots, pabot), Python (pytest) or JS (Vitest) tests. Use whenever a task mentions tests, test failures, red CI, reference screenshots, or end-to-end verification.
 ---
 
 # Testing

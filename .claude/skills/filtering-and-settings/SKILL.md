@@ -1,6 +1,6 @@
 ---
 name: filtering-and-settings
-description: The dashboard's global filter modal and pipeline (runs, run tags AND/OR/NOT, dates, amount, metadata, versions, custom filters, filter profiles), the settings object and localStorage persistence, JSON config, and the GridStack layout editor. Use when a bug or feature touches filters, the overview→dashboard navigation pre-filters, settings toggles, or saved layouts.
+description: Filter modal and pipeline (runs, run tags, dates, metadata, versions, profiles), overview→dashboard pre-filters, settings + localStorage, JSON config, GridStack layout editor. Use for any filter, settings toggle, or saved layout task.
 ---
 
 # Filtering, Settings, and Layout
