@@ -14,14 +14,13 @@ import {
     rerunBorderWidth
 } from "../variables/chartconfig.js";
 import { settings, get_run_label } from "../variables/settings.js";
-import { convert_timeline_data, get_suite_data_exclusion, parse_test_attempts, resolve_test_status } from "./helpers.js";
+import { convert_timeline_data, get_suite_data_exclusion, get_keyword_select_key, parse_test_attempts, resolve_test_status } from "./helpers.js";
 import { compareRunIds } from "../variables/graphs.js";
 
 // function to prepare the data in the correct format for statistics graphs
 function get_statistics_graph_data(dataType, graphType, filteredData) {
     const suiteSelectSuitesCombined = document.getElementById("suiteSelectSuites").value === "All Suites Combined";
     const keywordSelect = document.getElementById("keywordSelect").value;
-    const useLibraryNames = settings?.switch?.useLibraryNames === true;
     const rawPassed = [], rawFailed = [], rawSkipped = [], labels = [], aliases = [], runNames = [];
     let names = [];
     const process_value = (value) => {
@@ -36,12 +35,7 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
     const exclude_from_suite_data = get_suite_data_exclusion(dataType);
     for (const value of filteredData) {
         if (exclude_from_suite_data(value)) continue;
-        if (dataType === "keyword") {
-            const keywordKey = useLibraryNames && value.owner
-                ? `${value.owner}.${value.name}`
-                : value.name;
-            if (keywordKey !== keywordSelect) continue;
-        }
+        if (dataType === "keyword" && get_keyword_select_key(value) !== keywordSelect) continue;
         process_value(value);
     }
     const finalLabels = graphType !== "line"

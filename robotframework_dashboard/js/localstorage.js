@@ -59,14 +59,19 @@ function set_nested_setting(obj, path, value) {
     deep[lastKey] = value;
 }
 
+// settings that only exist in localstorage (not in the defaults) and must survive merge_deep
+const LOCAL_ONLY_SETTINGS = new Set([
+    "layouts", "libraries", "theme", "filterProfiles", "statWidgets", "customSections", "linkWidgets", "customGraphs",
+]);
+
 // function to merge two settings objects deeply, removing keys missing from defaults
 function merge_deep(local, defaults) {
     const result = {};
     for (const key of new Set([...Object.keys(defaults), ...Object.keys(local)])) {
         const defaultVal = defaults[key];
         const localVal = local[key];
-        // Removed key: exists in local but not in defaults — EXCEPT layout, libraries, theme, filterProfiles, statWidgets, and linkWidgets (only in localstorage)
-        if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && key !== "customSections" && key !== "linkWidgets" && defaultVal === undefined && localVal !== undefined) {
+        // Removed key: exists in local but not in defaults, except the localstorage-only settings
+        if (!LOCAL_ONLY_SETTINGS.has(key) && defaultVal === undefined && localVal !== undefined) {
             continue;
         }
         // Added key: exists in defaults but not local: add defaults
@@ -201,6 +206,7 @@ function merge_layout(localLayout, mergedDefaults) {
                 allowedGraphs.has(item.id) ||
                 (typeof item.id === 'string' && item.id.startsWith('customStatWidget-')) ||
                 (typeof item.id === 'string' && item.id.startsWith('customLinkWidget-')) ||
+                (typeof item.id === 'string' && item.id.startsWith('customGraph-')) ||
                 (typeof item.id === 'string' && item.id.startsWith('customSection-'))
             );
             result[key] = JSON.stringify(filtered);

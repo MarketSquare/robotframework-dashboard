@@ -103,6 +103,9 @@ eventlisteners/
   overview_listeners.js  run card version links and the overview "sort by" selects
 statwidgets.js           custom stat widgets (CRUD, render, modal)
 linkwidgets.js           custom link widgets (same pattern)
+customgraphs/            user-built graphs (issue #255): fields.js catalog, engine.js query engine,
+                         spec.js validation, presets.js gallery, viz.js Chart.js configs (all pure, unit
+                         tested) + widgets.js grid tiles and builder.js modal (DOM)
 customsections.js        user-defined dashboard sections
 log.js                   log.html link generation / open_log_file
 theme.js                 dark/light switching
@@ -149,7 +152,7 @@ admin_page/              separate bundle for the server /admin page only
 ## localStorage
 
 - Persist only through `set_local_storage_item(path, value)` (dot path, e.g. `"switch.ignoreSkips"`) — never touch `localStorage` directly.
-- Keys that exist **only** in localStorage (not in `settings` defaults) must be whitelisted in `merge_deep()` in `localstorage.js`, or they are dropped on next load. Current list: `layouts`, `libraries`, `theme`, `filterProfiles`, `statWidgets`, `linkWidgets`, `customSections`.
+- Keys that exist **only** in localStorage (not in `settings` defaults) must be whitelisted in `merge_deep()` in `localstorage.js`, or they are dropped on next load. Current list: `layouts`, `libraries`, `theme`, `filterProfiles`, `statWidgets`, `linkWidgets`, `customSections`, `customGraphs`.
 - New persisted structures should get defaults in `settings.js` so first load initialises them.
 
 ## GridStack and Chart.js

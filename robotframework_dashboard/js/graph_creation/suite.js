@@ -13,6 +13,7 @@ import { create_chart, update_chart } from './chart_factory.js';
 import { build_most_failed_config, build_most_time_consuming_config } from './config_helpers.js';
 import { update_graphs_with_loading } from '../common.js';
 import { get_suite_stats_data } from '../graph_data/stats.js';
+import { update_section_custom_graphs } from '../customgraphs/widgets.js';
 
 function _build_suite_folder_donut_config(folder) {
     const data = get_donut_folder_graph_data("suite", filteredSuites, folder);
@@ -226,6 +227,7 @@ function create_suite_folder_donut_graph(folder) {
             update_suite_most_failed_graph();
             update_suite_most_time_consuming_graph();
         }
+        update_section_custom_graphs("suite");
     }
     if (suiteFolderDonutGraph) { suiteFolderDonutGraph.destroy(); }
     suiteFolderDonutGraph = new Chart("suiteFolderDonutGraph", _build_suite_folder_donut_config(folder));
@@ -248,6 +250,7 @@ function update_suite_folder_donut_graph(folder) {
             update_suite_most_failed_graph();
             update_suite_most_time_consuming_graph();
         }
+        update_section_custom_graphs("suite");
     }
     if (!suiteFolderDonutGraph) { create_suite_folder_donut_graph(folder); return; }
     const config = _build_suite_folder_donut_config(folder);

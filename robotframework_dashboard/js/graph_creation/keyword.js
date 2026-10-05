@@ -8,7 +8,7 @@ import { format_duration } from "../common.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
 import { get_keyword_stats_data } from "../graph_data/stats.js";
-import { update_height } from "../graph_data/helpers.js";
+import { update_height, get_keyword_select_key } from "../graph_data/helpers.js";
 
 function _build_keyword_statistics_config() {
     const data = get_statistics_graph_data("keyword", settings.graphTypes.keywordStatisticsGraphType, filteredKeywords);
@@ -47,13 +47,7 @@ function _build_keyword_max_duration_config() { return _build_keyword_duration_c
 function _get_keyword_most_filtered_data() {
     if (!settings.switch.sectionFiltersApplyKeyword) return filteredKeywords;
     const keywordSelectValue = document.getElementById("keywordSelect").value;
-    const useLibraryNames = settings?.switch?.useLibraryNames === true;
-    return filteredKeywords.filter(keyword => {
-        const keywordKey = useLibraryNames && keyword.owner
-            ? `${keyword.owner}.${keyword.name}`
-            : keyword.name;
-        return keywordKey === keywordSelectValue;
-    });
+    return filteredKeywords.filter(keyword => get_keyword_select_key(keyword) === keywordSelectValue);
 }
 
 function _build_keyword_most_failed_config() {

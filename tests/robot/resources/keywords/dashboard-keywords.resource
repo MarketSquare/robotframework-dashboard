@@ -680,6 +680,84 @@ Delete First Custom Widget
     Click    selector=css=.delete-custom-${type}-widget
     Wait For Dashboard Idle
 
+Open Custom Graph Builder
+    [Documentation]    The custom graph "+" in the section header (edit mode only); opens on the gallery tab.
+    [Arguments]    ${section}
+    Click    selector=id=${section}AddCustomGraphHeader
+    Wait For Elements State    selector=id=customGraphGallery    state=visible
+
+Pick Custom Graph Preset
+    [Documentation]    ${preset} is the key in customgraphs/presets.js (mostFailed), an empty string starts from scratch.
+    [Arguments]    ${preset}
+    Click    selector=css=.custom-graph-preset[data-preset="${preset}"]
+    Wait For Elements State    selector=id=customGraphForm    state=visible
+
+Save Custom Graph
+    Wait For Elements State    selector=id=customGraphSave    state=enabled
+    Click    selector=id=customGraphSave
+    Wait For Dashboard Idle
+
+Add Custom Graph From Preset
+    [Arguments]    ${section}    ${preset}
+    Open Custom Graph Builder    ${section}
+    Pick Custom Graph Preset    ${preset}
+    Save Custom Graph
+
+Add Custom Graph From JSON
+    [Documentation]    Pastes ${definition} (a graph definition as JSON) in the JSON tab of the builder and saves it.
+    [Arguments]    ${section}    ${definition}
+    Open Custom Graph Builder    ${section}
+    Click    selector=id=customGraphJsonTab-tab
+    Wait For Elements State    selector=id=customGraphJson    state=visible
+    Fill Text    selector=id=customGraphJson    txt=${definition}
+    Save Custom Graph
+
+Edit First Custom Graph
+    [Documentation]    The pencil on the first custom graph tile of ${grid} (edit mode only); opens on the builder tab.
+    [Arguments]    ${grid}
+    Click    selector=css=#${grid} .edit-custom-graph >> nth=0
+    Wait For Elements State    selector=id=customGraphForm    state=visible
+
+Set Custom Graph X Axis
+    [Arguments]    ${field}
+    Select Options By    id=customGraphX    value    ${field}
+
+Set Custom Graph Chart Type
+    [Documentation]    ${type} is a viz key from customgraphs/spec.js: line, bar, stacked_bar, hbar, donut or table.
+    [Arguments]    ${type}
+    Click    selector=css=.custom-graph-viz-btn[data-viz="${type}"]
+
+Follow Section Filters In Custom Graph Builder
+    [Documentation]    The switch is only offered in the suite, test and keyword sections.
+    Check Checkbox    selector=id=customGraphSectionFilters
+
+Open First Custom Graph In Fullscreen
+    [Documentation]    Fullscreen redraws the chart in a setTimeout, so this waits for the redrawn chart
+    ...    instead of the idle hook.
+    [Arguments]    ${grid}
+    Click    selector=css=#${grid} .custom-graph-controls .fullscreen-graph >> nth=0
+    Wait For Elements State    selector=css=#${grid} .grid-stack-item-content.fullscreen canvas    state=visible
+    Wait For Function    () => Chart.getChart(document.querySelector("#${grid} .grid-stack-item-content.fullscreen canvas")) !== undefined
+
+Close Custom Graph Fullscreen With Escape
+    Keyboard Key    press    Escape
+    Wait For Elements State    selector=css=.grid-stack-item-content.fullscreen    state=detached
+    Wait For Dashboard Idle
+
+Delete First Custom Graph
+    [Arguments]    ${grid}
+    Click    selector=css=#${grid} .delete-custom-graph >> nth=0
+    Wait For Dashboard Idle
+
+Get Custom Graphs In Grid
+    [Documentation]    [title, x labels, dataset labels, points in the first dataset] of every custom graph tile.
+    ...    Custom graph charts are not kept on window, Chart.getChart finds them through their canvas;
+    ...    a tile that shows a table or a message has no chart and returns empty labels.
+    [Arguments]    ${grid}
+    ${graphs}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#${grid} [data-gs-id^="customGraph-"]')].map(el => { const canvas = el.querySelector("canvas"); const chart = canvas ? Chart.getChart(canvas) : null; return [el.querySelector("h6").innerText, chart?.data.labels ?? [], chart ? chart.data.datasets.map(dataset => dataset.label) : [], chart?.data.datasets[0]?.data.length ?? 0]; })
+    RETURN    ${graphs}
+
 Get Stat Widgets In Grid
     [Documentation]    [title, value] of every custom stat widget tile in the grid.
     [Arguments]    ${grid}

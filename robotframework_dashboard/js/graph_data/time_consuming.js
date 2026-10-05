@@ -1,16 +1,13 @@
 import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { blueConfig } from "../variables/chartconfig.js";
-import { convert_timeline_data } from "./helpers.js";
+import { convert_timeline_data, get_keyword_select_key } from "./helpers.js";
 
 // function to prepare the most time consuming or most used data for suites/tests/keywords
 function get_most_time_consuming_or_most_used_data(dataType, graphType, filteredData, onlyLastRun, mostUsed = false) {
-    const useLibraryNames = settings?.switch?.useLibraryNames === true;
 
     function getTestKey(value, dataType) {
-        if (dataType === "keyword" && useLibraryNames && value.owner) {
-            return `${value.owner}.${value.name}`;
-        }
+        if (dataType === "keyword") return get_keyword_select_key(value);
         if (dataType === "suite" && settings.switch.suitePathsSuiteSection) {
             return value.full_name;
         } else if (dataType === "test" && settings.switch.suitePathsTestSection) {

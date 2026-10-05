@@ -11,7 +11,9 @@ This skill covers the recurring patterns used when adding new features to the da
 
 ## 1. The "Custom Widget" Pattern (GridStack tile + localStorage + modal)
 
-Every custom widget type in the dashboard follows the same 6-part pattern. Existing examples: **stat widget** (`statwidgets.js`) and **link widget** (`linkwidgets.js`).
+Every custom widget type in the dashboard follows the same 6-part pattern. Existing examples: **stat widget** (`statwidgets.js`), **link widget** (`linkwidgets.js`) and **custom graph** (`customgraphs/widgets.js` + `customgraphs/builder.js`; delegated button listener instead of per-render wiring).
+
+> The add buttons now live in the section headers (`.add-<name>-header`, toggled in `setup_section_order`, opened from the delegated click handler in `setup_dashboard_section_layout_buttons`), not in add-tiles inside the grid. Chart instances of widgets with generated ids must not be kept on `window[canvasId]`: that resolves to the canvas element itself (named element access) — custom graphs keep theirs in a `Map`.
 
 ### Part 1 — New JS module (`js/<name>widgets.js`)
 
@@ -47,13 +49,13 @@ Required CSS classes:
 
 ### Part 3 — localStorage whitelist (`js/localstorage.js`)
 
-Add the new key name to the preserved-keys exclusion in `merge_deep()`:
+Add the new key name to the `LOCAL_ONLY_SETTINGS` set that `merge_deep()` checks:
 
 ```js
-// before:
-if (key !== "layouts" && key !== "libraries" && key !== "theme" && key !== "filterProfiles" && key !== "statWidgets" && key !== "customSections" && ...
-// after — add your key:
-&& key !== "<name>Widgets" && ...
+const LOCAL_ONLY_SETTINGS = new Set([
+    "layouts", "libraries", "theme", "filterProfiles", "statWidgets", "customSections", "linkWidgets", "customGraphs",
+    "<name>Widgets",
+]);
 ```
 
 **Also** add the `data-gs-id` prefix to the `merge_layout()` allowlist in the same file, or saved widget positions will be silently dropped on every page load:
@@ -160,7 +162,7 @@ Dispatching `document.dispatchEvent(new CustomEvent("layout-user-action"))` afte
 
 ## 5. localStorage-Only Keys Pattern
 
-Some keys only exist in localStorage (not in the `settings` defaults object). They must be whitelisted in `merge_deep()` in `localstorage.js` or they will be silently dropped on every page load. Current whitelist:
+Some keys only exist in localStorage (not in the `settings` defaults object). They must be listed in `LOCAL_ONLY_SETTINGS` in `localstorage.js` or `merge_deep()` silently drops them on every page load. Current list:
 
 | Key | Module that owns it |
 |---|---|
@@ -171,6 +173,7 @@ Some keys only exist in localStorage (not in the `settings` defaults object). Th
 | `statWidgets` | `statwidgets.js` |
 | `linkWidgets` | `linkwidgets.js` |
 | `customSections` | `customsections.js` |
+| `customGraphs` | `customgraphs/widgets.js` |
 
 **Rule**: Any new key you persist with `set_local_storage_item` that is not in `settings` defaults must be added to this whitelist, or it will be deleted by `merge_deep` on the next page load.
 

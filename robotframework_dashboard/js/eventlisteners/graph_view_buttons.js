@@ -5,7 +5,7 @@ import {
     onlyFailedFolders,
     heatMapHourAll,
     inFullscreen,
-    inFullscreenGraph,
+    set_fullscreen_state,
     lastScrollY,
     previousFolder,
 } from "../variables/globals.js";
@@ -57,7 +57,6 @@ function setup_graph_view_buttons() {
             const savedFilterValues = save_section_filter_values();
 
             show_graph_loading(canvasId);
-            inFullscreen = entering;
             fullscreen.hidden = entering;
             close.hidden = !entering;
             content.classList.toggle("fullscreen", entering);
@@ -115,14 +114,14 @@ function setup_graph_view_buttons() {
         };
 
         document.getElementById(fullscreenId).addEventListener("click", () => {
-            inFullscreenGraph = fullscreenId;
+            set_fullscreen_state(true, fullscreenId);
             lastScrollY = window.scrollY;
             document.getElementById("navigation").style.display = "none";
             toggleFullscreen(true);
         });
 
         document.getElementById(closeId).addEventListener("click", () => {
-            inFullscreenGraph = ""
+            set_fullscreen_state(false, "");
             document.getElementById("navigation").style.display = "";
             toggleFullscreen(false);
             window.scrollTo({ top: lastScrollY, behavior: "auto" });
