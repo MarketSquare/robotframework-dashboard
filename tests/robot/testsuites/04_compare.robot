@@ -13,4 +13,5 @@ Test Teardown    Close Dashboard
 *** Test Cases ***
 Validate Compare Base View
     Open Compare Page
-    Validate Component    id=compareStatisticsSection    name=baseCompareSection    folder=compare
+    Validate Component    id=compareStatisticsSection    name=compareSection
+    Validate Section Data    id=compareStatisticsSection    name=compareSection

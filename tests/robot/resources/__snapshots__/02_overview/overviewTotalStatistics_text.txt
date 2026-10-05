@@ -1,0 +1,18 @@
+Total Statistics
+showing 2 projects
+WebshopUI
+Run Stats
+Passed: 0
+Failed: 10
+Skipped: 0
+Average Run Duration
+ 21m 45s
+Passed Runs: 0.00%
+WebshopAPI
+Run Stats
+Passed: 2
+Failed: 6
+Skipped: 0
+Average Run Duration
+ 1m 43s
+Passed Runs: 25.00%

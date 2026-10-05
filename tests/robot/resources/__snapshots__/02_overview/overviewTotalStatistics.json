@@ -1,0 +1,30 @@
+{
+  "overviewTotalWebshopAPIGraph0": {
+    "datasets": [
+      {
+        "data": [
+          2,
+          6
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "overviewTotalWebshopUIGraph0": {
+    "datasets": [
+      {
+        "data": [
+          10
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "failed"
+    ]
+  }
+}

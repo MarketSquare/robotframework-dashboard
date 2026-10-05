@@ -1,0 +1,15 @@
+{
+  "rows": [
+    ["2026-08-17 02:15:12", "WebshopUI", "WebshopUI", 108, 91, 11, 6, "1226.633", "2026-08-17 02:15:12.070100", "1.0", "dev,project_1,version_1.0", "output-20260817-021512", "['Browser: chromium', 'Environment: staging', 'Team: Storefront']", ""],
+    ["2026-08-17 06:00:04", "WebshopAPI", "WebshopAPI", 50, 46, 4, 0, "102.579", "2026-08-17 06:00:04.192457", "1.0", "dev,project_2,version_1.0", "output-20260817-060004", "['API Version: v2', 'Environment: staging', 'Team: Platform']", ""],
+    ["2026-08-18 02:15:45", "WebshopUI", "WebshopUI", 108, 91, 11, 6, "1256.148", "2026-08-18 02:15:45.330714", "1.0", "dev,project_1,version_1.0", "output-20260818-021545", "['Browser: chromium', 'Environment: staging', 'Team: Storefront']", ""],
+    ["2026-08-19 14:40:31", "WebshopUI", "WebshopUI", 108, 94, 8, 6, "1257.271", "2026-08-19 14:40:31.440071", "1.0", "dev,project_1,version_1.0", "output-20260819-144031", "['Browser: chromium', 'Environment: staging', 'Team: Storefront']", ""],
+    ["2026-08-20 06:00:09", "WebshopAPI", "WebshopAPI", 50, 43, 6, 1, "95.033", "2026-08-20 06:00:09.564728", "1.0", "dev,project_2,version_1.0", "output-20260820-060009", "['API Version: v2', 'Environment: staging', 'Team: Platform']", ""],
+    ["2026-08-21 02:15:03", "WebshopUI", "WebshopUI", 108, 101, 7, 0, "1249.232", "2026-08-21 02:15:03.684635", "1.0", "dev,project_1,version_1.0", "output-20260821-021503", "['Browser: chromium', 'Environment: staging', 'Team: Storefront']", ""],
+    ["2026-08-22 10:15:27", "WebshopAPI", "WebshopAPI", 50, 47, 3, 0, "109.167", "2026-08-22 10:15:27.821992", "1.0", "dev,project_2,version_1.0", "output-20260822-101527", "['API Version: v2', 'Environment: staging', 'Team: Platform']", ""],
+    ["2026-08-24 09:05:58", "WebshopUI", "WebshopUI", 108, 100, 8, 0, "1280.454", "2026-08-24 09:05:58.934299", "1.1", "prod,project_1,version_1.1", "output-20260824-090558", "['Browser: chromium', 'Environment: production', 'Team: Storefront']", ""],
+    ["2026-08-25 06:00:16", "WebshopAPI", "WebshopAPI", 50, 50, 0, 0, "102.735", "2026-08-25 06:00:17.059506", "1.1", "prod,project_2,version_1.1", "output-20260825-060016", "['API Version: v2', 'Environment: production', 'Team: Platform']", ""],
+    ["2026-08-26 02:15:22", "WebshopUI", "WebshopUI", 113, 105, 8, 0, "1407.392", "2026-08-26 02:15:22.179863", "1.1", "dev,project_1,version_1.1", "output-20260826-021522", "['Browser: chromium', 'Environment: staging', 'Team: Storefront']", ""]
+  ],
+  "total": 18
+}

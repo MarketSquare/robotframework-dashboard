@@ -1,0 +1,134 @@
+{
+  "runDonutGraph": {
+    "datasets": [
+      {
+        "data": [
+          45,
+          5
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "Passed",
+      "Failed"
+    ]
+  },
+  "runDonutTotalGraph": {
+    "datasets": [
+      {
+        "data": [
+          289,
+          24
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "Passed",
+      "Failed"
+    ]
+  },
+  "runDurationGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 1280.45
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 1318.47
+          }
+        ],
+        "label": "WebshopUI"
+      },
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-25 06:00:16",
+            "x": "2026-08-25 06:00:16",
+            "y": 102.74
+          },
+          {
+            "_run_start": "2026-09-10 06:00:11",
+            "x": "2026-09-10 06:00:11",
+            "y": 108.75
+          }
+        ],
+        "label": "WebshopAPI"
+      }
+    ],
+    "labels": []
+  },
+  "runHeatmapGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "v": 108,
+            "x": 9.5,
+            "y": 1.5
+          },
+          {
+            "v": 50,
+            "x": 6.5,
+            "y": 2.5
+          },
+          {
+            "v": 105,
+            "x": 2.5,
+            "y": 3.5
+          },
+          {
+            "v": 50,
+            "x": 6.5,
+            "y": 4.5
+          }
+        ],
+        "label": "Test Execution Heatmap"
+      }
+    ],
+    "labels": []
+  },
+  "runStatisticsGraph": {
+    "datasets": [
+      {
+        "data": [
+          7,
+          0,
+          10,
+          10
+        ],
+        "label": "Failed"
+      },
+      {
+        "data": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "label": "Skipped"
+      },
+      {
+        "data": [
+          93,
+          100,
+          90,
+          90
+        ],
+        "label": "Passed"
+      }
+    ],
+    "labels": [
+      "2026-08-24 09:05:58",
+      "2026-08-25 06:00:16",
+      "2026-09-09 02:15:36",
+      "2026-09-10 06:00:11"
+    ]
+  }
+}

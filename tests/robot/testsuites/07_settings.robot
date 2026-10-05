@@ -14,7 +14,7 @@ Test Teardown    Close Dashboard
 Validate Settings
     Change Settings
     # threshold loosened to 0.01 (99% accuracy) — chart re-renders after multiple settings changes cause minor pixel variations
-    Validate Component    id=runStatisticsSection    name=changedSettings    folder=run    threshold=0.01
+    Validate Component    id=runStatisticsSection    name=dashboardRunSectionChangedSettings    threshold=0.01
 
 Settings Toggles Persist To Local Storage And Survive A Reload
     Toggle Setting    toggleLegends

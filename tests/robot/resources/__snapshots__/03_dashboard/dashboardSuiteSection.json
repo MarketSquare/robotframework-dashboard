@@ -1,0 +1,246 @@
+{
+  "suiteDurationGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 81.03
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 81.99
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 84.76
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 86.38
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 86.73
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 92.01
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 86.54
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 90.73
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 98.87
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 99.9
+          }
+        ],
+        "label": "Account Orders History"
+      }
+    ],
+    "labels": []
+  },
+  "suiteFolderDonutGraph": {
+    "datasets": [
+      {
+        "data": [
+          1089,
+          400
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "WebshopUI",
+      "WebshopAPI"
+    ]
+  },
+  "suiteFolderFailDonutGraph": {
+    "datasets": [
+      {
+        "data": [
+          5
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "WebshopAPI"
+    ]
+  },
+  "suiteMostFailedGraph": {
+    "datasets": [
+      {
+        "data": [
+          7
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "Account Orders History"
+    ]
+  },
+  "suiteMostTimeConsumingGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Account Orders History"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Account Orders History"
+          }
+        ],
+        "label": "Account Orders History"
+      }
+    ],
+    "labels": [
+      "Account Orders History"
+    ]
+  },
+  "suiteStatisticsGraph": {
+    "datasets": [
+      {
+        "data": [
+          17,
+          17,
+          0,
+          0,
+          0,
+          17,
+          33,
+          33,
+          17,
+          17
+        ],
+        "label": "Failed"
+      },
+      {
+        "data": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "label": "Skipped"
+      },
+      {
+        "data": [
+          83,
+          83,
+          100,
+          100,
+          100,
+          83,
+          67,
+          67,
+          83,
+          83
+        ],
+        "label": "Passed"
+      }
+    ],
+    "labels": [
+      "2026-08-17 02:15:12",
+      "2026-08-18 02:15:45",
+      "2026-08-19 14:40:31",
+      "2026-08-21 02:15:03",
+      "2026-08-24 09:05:58",
+      "2026-08-26 02:15:22",
+      "2026-08-28 16:20:40",
+      "2026-09-01 02:15:19",
+      "2026-09-04 11:30:07",
+      "2026-09-09 02:15:36"
+    ]
+  }
+}

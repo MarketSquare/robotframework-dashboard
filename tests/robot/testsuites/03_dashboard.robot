@@ -18,16 +18,20 @@ Test Teardown    Close Dashboard
 
 *** Test Cases ***
 Validate Dashboard Run Statistics
-    Validate Component    id=runStatisticsSection    name=baseRunSection    folder=run
+    Validate Component    id=runStatisticsSection    name=dashboardRunSection
+    Validate Section Data    id=runStatisticsSection    name=dashboardRunSection
 
 Validate Dashboard Suite Statistics
-    Validate Component    id=suiteStatisticsSection    name=baseSuiteSection    folder=suite
+    Validate Component    id=suiteStatisticsSection    name=dashboardSuiteSection
+    Validate Section Data    id=suiteStatisticsSection    name=dashboardSuiteSection
 
 Validate Dashboard Test Statistics
-    Validate Component    id=testStatisticsSection    name=baseTestSection    folder=test
+    Validate Component    id=testStatisticsSection    name=dashboardTestSection
+    Validate Section Data    id=testStatisticsSection    name=dashboardTestSection
 
 Validate Dashboard Keyword Statistics
-    Validate Component    id=keywordStatisticsSection    name=baseKeywordSection    folder=keyword
+    Validate Component    id=keywordStatisticsSection    name=dashboardKeywordSection
+    Validate Section Data    id=keywordStatisticsSection    name=dashboardKeywordSection
 
 Validate Dashboard Test Statistics Rerun View
     [Documentation]    A run merged with `rebot --merge` keeps the attempt history of its tests: the

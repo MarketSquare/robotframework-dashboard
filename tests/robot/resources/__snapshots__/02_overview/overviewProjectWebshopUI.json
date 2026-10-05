@@ -1,0 +1,160 @@
+{
+  "WebshopUIGraph0": {
+    "datasets": [
+      {
+        "data": [
+          94,
+          11
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph1": {
+    "datasets": [
+      {
+        "data": [
+          97,
+          8
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph2": {
+    "datasets": [
+      {
+        "data": [
+          97,
+          6,
+          10
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "skipped",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph3": {
+    "datasets": [
+      {
+        "data": [
+          86,
+          27
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph4": {
+    "datasets": [
+      {
+        "data": [
+          105,
+          8
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph5": {
+    "datasets": [
+      {
+        "data": [
+          100,
+          8
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph6": {
+    "datasets": [
+      {
+        "data": [
+          101,
+          7
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph7": {
+    "datasets": [
+      {
+        "data": [
+          94,
+          6,
+          8
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "skipped",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph8": {
+    "datasets": [
+      {
+        "data": [
+          91,
+          6,
+          11
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "skipped",
+      "failed"
+    ]
+  },
+  "WebshopUIGraph9": {
+    "datasets": [
+      {
+        "data": [
+          91,
+          6,
+          11
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "skipped",
+      "failed"
+    ]
+  }
+}

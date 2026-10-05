@@ -1,0 +1,122 @@
+{
+  "WebshopAPIGraph0": {
+    "datasets": [
+      {
+        "data": [
+          45,
+          5
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopAPIGraph1": {
+    "datasets": [
+      {
+        "data": [
+          44,
+          6
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopAPIGraph2": {
+    "datasets": [
+      {
+        "data": [
+          49,
+          1
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "skipped"
+    ]
+  },
+  "WebshopAPIGraph3": {
+    "datasets": [
+      {
+        "data": [
+          46,
+          4
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopAPIGraph4": {
+    "datasets": [
+      {
+        "data": [
+          50
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed"
+    ]
+  },
+  "WebshopAPIGraph5": {
+    "datasets": [
+      {
+        "data": [
+          47,
+          3
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "WebshopAPIGraph6": {
+    "datasets": [
+      {
+        "data": [
+          43,
+          1,
+          6
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "skipped",
+      "failed"
+    ]
+  },
+  "WebshopAPIGraph7": {
+    "datasets": [
+      {
+        "data": [
+          46,
+          4
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  }
+}

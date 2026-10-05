@@ -1,0 +1,15 @@
+{
+  "rows": [
+    ["2026-08-17 02:15:12", "WebshopUI.Account Orders History.Order History Shows Recent Orders", "Order History Shows Recent Orders", 1, 0, 0, "13.901", "2026-08-17 02:15:15.329450", "", "[account,orders,regression,smoke]", "output-20260817-021512", "s1-s1-t1", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Orders History.Order History Filter By Status", "Order History Filter By Status", 1, 0, 0, "11.74", "2026-08-17 02:15:29.241700", "", "[account,orders,regression]", "output-20260817-021512", "s1-s1-t2", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Orders History.Order Details Page", "Order Details Page", 1, 0, 0, "12.927", "2026-08-17 02:15:40.994100", "", "[account,orders,regression]", "output-20260817-021512", "s1-s1-t3", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Orders History.Reorder From History", "Reorder From History", 1, 0, 0, "14.489", "2026-08-17 02:15:53.931700", "", "[account,orders,regression]", "output-20260817-021512", "s1-s1-t4", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Orders History.Download Invoice", "Download Invoice", 1, 0, 0, "12.754", "2026-08-17 02:16:08.431750", "", "[account,orders,regression]", "output-20260817-021512", "s1-s1-t5", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Orders History.Track Shipment", "Track Shipment", 0, 1, 0, "13.581", "2026-08-17 02:16:21.196350", "Text of 'css=.tracking-status' should have been 'Out for delivery' but was ''", "[account,orders,regression]", "output-20260817-021512", "s1-s1-t6", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Profile.Update Profile Name", "Update Profile Name", 1, 0, 0, "11.413", "2026-08-17 02:16:35.088600", "", "[account,regression,smoke]", "output-20260817-021512", "s1-s2-t1", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Profile.Update Profile Email Requires Verification", "Update Profile Email Requires Verification", 1, 0, 0, "11.955", "2026-08-17 02:16:46.512800", "", "[account,regression]", "output-20260817-021512", "s1-s2-t2", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Profile.Change Password", "Change Password", 1, 0, 0, "15.711", "2026-08-17 02:16:58.478250", "", "[account,regression]", "output-20260817-021512", "s1-s2-t3", ""],
+    ["2026-08-17 02:15:12", "WebshopUI.Account Profile.Change Password With Wrong Current Password", "Change Password With Wrong Current Password", 1, 0, 0, "11.705", "2026-08-17 02:17:14.200500", "", "[account,regression]", "output-20260817-021512", "s1-s2-t4", ""]
+  ],
+  "total": 1489
+}

@@ -1,0 +1,80 @@
+WebshopUI
+Total Runs: 10 | Passed Runs: 0.00%
+Sort
+ 
+Most Recent
+Oldest
+Most Failed
+Most Skipped
+Most Passed
+Version: 1.2
+#10
+Passed: 94
+Failed: 11
+Skipped: 0
+ 21m 58s
+Passed Runs: 0.00%
+Version: 1.2
+#9
+Passed: 97
+Failed: 8
+Skipped: 0
+ 21m 57s
+Passed Runs: 0.00%
+Version: 1.2
+#8
+Passed: 97
+Failed: 10
+Skipped: 6
+ 22m 35s
+Passed Runs: 0.00%
+Version: 1.1
+#7
+Passed: 86
+Failed: 27
+Skipped: 0
+Rerun: 49 (fixed 22)
+ 23m 3s
+Passed Runs: 0.00%
+Version: 1.1
+#6
+Passed: 105
+Failed: 8
+Skipped: 0
+ 23m 27s
+Passed Runs: 0.00%
+Version: 1.1
+#5
+Passed: 100
+Failed: 8
+Skipped: 0
+ 21m 20s
+Passed Runs: 0.00%
+Version: 1.0
+#4
+Passed: 101
+Failed: 7
+Skipped: 0
+ 20m 49s
+Passed Runs: 0.00%
+Version: 1.0
+#3
+Passed: 94
+Failed: 8
+Skipped: 6
+ 20m 57s
+Passed Runs: 0.00%
+Version: 1.0
+#2
+Passed: 91
+Failed: 11
+Skipped: 6
+ 20m 56s
+Passed Runs: 0.00%
+Version: 1.0
+#1
+Passed: 91
+Failed: 11
+Skipped: 6
+ 20m 26s
+Passed Runs: 0.00%
