@@ -24,12 +24,26 @@ MERGE_ATTEMPT_RE = compile(
     DOTALL,
 )
 # The variant rebot writes when the re-execution was skipped: the original result is
-# kept and the skipped attempt is only mentioned in the message.
+# kept and the skipped attempt is only mentioned in the message:
+#   *HTML* Test has been re-executed and results merged. Latter result had <span class="skip">SKIP</span>
+#   status and was ignored. Message:\n<skip message><hr>Original message:\n<original message>
+# The original message is HTML escaped, or embedded as-is without its *HTML* marker when it
+# was HTML itself (e.g. the merge message of an earlier rerun).
 MERGE_SKIPPED_RE = compile(
     r"^\*HTML\*\s*(?:Test|Task) has been re-executed and results merged\. Latter result had "
-    r"<span class=\"skip\">SKIP</span> status and was ignored\. Message:\n(.*?)(?:<hr>(.*))?$",
+    r"<span class=\"skip\">SKIP</span> status and was ignored\. Message:\n(.*?)"
+    r"(?:<hr>Original message:\n(.*))?$",
     DOTALL,
 )
+
+
+def _parse_original_message(original: str, status: str):
+    """Parse the original message embedded in a skipped-rerun message, restoring the *HTML*
+    marker rebot stripped so an earlier merge history is still recognised"""
+    as_html = f"*HTML* {original}"
+    if MERGE_HEADER_RE.match(as_html) or MERGE_SKIPPED_RE.match(as_html):
+        return parse_merged_message(as_html, status)
+    return unescape(original.strip()), []
 
 
 def parse_merged_message(message: str, status: str):
@@ -42,7 +56,7 @@ def parse_merged_message(message: str, status: str):
     skipped = MERGE_SKIPPED_RE.match(message)
     if skipped:
         skip_message, previous = skipped.group(1), skipped.group(2) or ""
-        previous_message, attempts = parse_merged_message(previous, status)
+        previous_message, attempts = _parse_original_message(previous, status)
         if not attempts:
             attempts = [{"status": status, "message": previous_message}]
         attempts.append({"status": "SKIP", "message": unescape(skip_message.strip())})

@@ -313,6 +313,16 @@ function get_run_projects(run) {
     return projects;
 }
 
+// every overview project (run names and project_ tags) found in a list of runs, sorted. A name
+// and a tag that are spelled the same are one project, like the overview's own grouping.
+function get_project_names(runList) {
+    const names = new Set();
+    for (const run of runList) {
+        for (const project of get_run_projects(run)) names.add(project.replace(/^(tag|name):/, ""));
+    }
+    return [...names].sort();
+}
+
 function generate_id() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
@@ -378,6 +388,7 @@ export {
     strip_tz_suffix,
     parse_test_tags,
     get_run_projects,
+    get_project_names,
     generate_id,
     apply_bg_class,
     fill_color_picker,

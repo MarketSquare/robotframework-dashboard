@@ -83,9 +83,11 @@ class robotdashboardlistener:
         self.output = output if output != None else "output.xml"
         self.customfilters = customfilters
         self.auth = (user, password) if user and password else None
-        self.path: str
-        self.log_path: str
-        self.last_execution: str
+        # set by Robot Framework through output_file/log_file/end_suite, which are not called
+        # when the output or log is disabled (--output NONE, --log NONE)
+        self.path: str = None
+        self.log_path: str = None
+        self.last_execution: str = None
 
     def _parse_ssl_verify(self, sslverify: str):
         """Parse the sslverify parameter: 'true'/'false' as bool, anything else as a CA bundle path"""
@@ -172,12 +174,18 @@ class robotdashboardlistener:
         )
 
     def output_file(self, path):
-        self.path = str(path)
+        self.path = str(path) if path else None  # None with --output NONE
 
     def log_file(self, path):
-        self.log_path = str(path)
+        self.log_path = str(path) if path else None
 
     def close(self):
+        # only the normal run and the last pabot execution process the output
+        if self.last_execution in (None, "1") and not self.path:
+            self._print_listener(
+                "ERROR no output.xml was written (--output NONE?), skipped automatic processing"
+            )
+            return
         if (
             self.last_execution and self.last_execution == "1"
         ):  # pabot usage and it's the very last execution
@@ -297,12 +305,18 @@ class robotdashboardlistener:
     def _remove_runs_over_limit(self):
         if self.limit > 0:
             body = dumps({"limit": int(self.limit)}).encode("utf-8")
-            response = self._request(
-                f"{self._base_url()}/remove-outputs",
-                "DELETE",
-                data=body,
-                content_type="application/json",
-            )
+            try:
+                response = self._request(
+                    f"{self._base_url()}/remove-outputs",
+                    "DELETE",
+                    data=body,
+                    content_type="application/json",
+                )
+            except URLError:
+                self._print_listener(
+                    f"ERROR the server is not running or the url {self._base_url()}/remove-outputs is not correct!"
+                )
+                return
             if response.status_code == 200:
                 self._print_console_message(response)
             else:

@@ -248,7 +248,11 @@ function apply_custom_filter_dimension(runs, dimName, checkedValues, mode) {
         if (mode === "NOT") { // Use NOT logic: the run must not have any of the selected values
             return !checkedValues.has(effectiveValue);
         }
-        // Default OR/AND logic: the run must have one of the selected values
+        if (mode === "AND") { // Use AND logic: the run must have every selected value. A run holds
+            // one value per key, so this only matches while a single value is selected
+            return [...checkedValues].every(value => value === effectiveValue);
+        }
+        // Default OR logic: the run must have one of the selected values
         return checkedValues.has(effectiveValue);
     });
 }
@@ -333,13 +337,15 @@ function filter_project_versions(runs) {
     return apply_project_version_filter(runs, selectedProjectVersions);
 }
 
-// the selected date range as {from, to} Date objects, or null when the range is incomplete
+// the selected date range as {from, to} Date objects, or null when the range is incomplete.
+// The pickers only carry minutes, so the "to" minute is included as a whole: a run started at
+// 10:59:30 is inside a range that ends at 10:59, like it is inside the 10:00 bar of the histogram.
 function build_date_range(fromDate, fromTime, toDate, toTime) {
     if (!fromDate || !fromTime || !toDate || !toTime) {
         return null;
     }
     const from = new Date(`${fromDate} ${fromTime}:00`);
-    const to = new Date(`${toDate} ${toTime}:00`);
+    const to = new Date(`${toDate} ${toTime}:59.999`);
     if (from > to) {
         return null;
     }

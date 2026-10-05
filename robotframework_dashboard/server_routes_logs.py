@@ -81,7 +81,7 @@ def register_log_routes(server, authenticate):
         """Add log file to server endpoint function
         The log file name should match the output.xml alias (e.g., 'log-alias.html' for 'output-alias.xml')
 
-        Report files (filename containing 'report') are handled differently: reports are not tracked in the
+        Report files (filename starting with 'report') are handled differently: reports are not tracked in the
         database, so no output-matching is attempted. The file is saved as-is and this endpoint only checks
         whether a corresponding 'log' file already exists next to it (so it can be reached via the link Robot
         Framework builds into log.html) and warns, rather than errors, if it does not.
@@ -105,9 +105,10 @@ def register_log_routes(server, authenticate):
                     buffer.write(file_bytes)
 
             log_name = Path(log_path).name
-            is_report = "report" in log_name
+            # the prefix decides, like the log-/output- pairing: a log of a "reporting" suite is still a log
+            is_report = log_name.startswith("report")
             if is_report:
-                expected_log_name = log_name.replace("report", "log")
+                expected_log_name = "log" + log_name[len("report"):]
                 if exists(join(server.log_dir, expected_log_name)):
                     console += f"SUCCESS: matching log file '{expected_log_name}' found, the report is reachable from it.\n"
                 else:

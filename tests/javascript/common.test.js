@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
 
 import {
+    get_project_names,
     get_next_folder_level,
     format_duration,
     compare_to_average,
@@ -445,5 +446,16 @@ describe('get_run_projects', () => {
     it('handles runs without tags', () => {
         expect(get_run_projects({ name: 'A', tags: '' })).toEqual(['name:A']);
         expect(get_run_projects({ name: 'A' })).toEqual(['name:A']);
+    });
+});
+
+describe('get_project_names', () => {
+    it('lists every run name and project_ tag once, sorted', () => {
+        const runList = [
+            { name: 'WebshopUI', tags: 'project_shop,nightly' },
+            { name: 'WebshopAPI', tags: 'project_shop' },
+            { name: 'WebshopUI', tags: '' },
+        ];
+        expect(get_project_names(runList)).toEqual(['WebshopAPI', 'WebshopUI', 'project_shop']);
     });
 });

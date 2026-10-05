@@ -5,6 +5,7 @@ import {
     format_duration,
     format_relative_time,
     format_run_start_exact,
+    get_project_names,
     debounce,
     show_loading_overlay,
     hide_loading_overlay,
@@ -35,28 +36,32 @@ import {
     overviewProjectNavFilter,
     escape_html_for_merge,
 } from '../variables/globals.js';
-import { runs, tests, use_logs } from '../variables/data.js';
+import { runs, use_logs } from '../variables/data.js';
 import { get_rerun_summary } from '../graph_data/helpers.js';
-import { parse_custom_filters, get_hidden_custom_filters } from '../filter/pipeline.js';
+import { parse_custom_filters, get_hidden_custom_filters, get_transformed_data } from '../filter/pipeline.js';
 import { clear_all_filters, update_filter_active_indicator } from '../filter/controls.js';
 
-// rerun summary (rebot --merge attempt history) per run, keyed by the run_start without
-// milliseconds/timezone so it matches run_start values that were reformatted by the filters
+// rerun summary (rebot --merge attempt history) per run. The run cards get their run_start from
+// the filtered runs, which the milliseconds/timezone settings reformat (and convert to the viewer's
+// timezone), so the tests are taken through the same transformation and the map is rebuilt when
+// those settings change
 let rerunSummaryByRun = null;
+let rerunSummarySource = null;
 function get_rerun_summary_for_run(runStart) {
-    if (!rerunSummaryByRun) {
+    const transformedTests = get_transformed_data("tests");
+    if (rerunSummarySource !== transformedTests) {
+        rerunSummarySource = transformedTests;
         rerunSummaryByRun = new Map();
         const testsByRun = new Map();
-        for (const test of tests) {
-            const key = String(test.run_start).slice(0, 19);
-            if (!testsByRun.has(key)) testsByRun.set(key, []);
-            testsByRun.get(key).push(test);
+        for (const test of transformedTests) {
+            if (!testsByRun.has(test.run_start)) testsByRun.set(test.run_start, []);
+            testsByRun.get(test.run_start).push(test);
         }
         for (const [key, runTests] of testsByRun) {
             rerunSummaryByRun.set(key, get_rerun_summary(runTests));
         }
     }
-    return rerunSummaryByRun.get(String(runStart ?? "").slice(0, 19)) || { reran: 0, recovered: 0, failedAllAttempts: 0 };
+    return rerunSummaryByRun.get(runStart) || { reran: 0, recovered: 0, failedAllAttempts: 0 };
 }
 
 function prepare_projects_grouped_data() {
@@ -424,10 +429,12 @@ See Settings > Overview for more options.`;
 
 function create_project_overview() {
     const projectData = { ...projects_by_name, ...projects_by_tag };
-    // create run cards for each project
-    Object.keys(projectData).sort().forEach(projectName => {
-        create_project_cards_container(projectName, projectData[projectName]);
-    });
+    // the bars are built once, so every project in the data gets one, also when the active filter
+    // leaves it without runs: it is hidden until a wider filter brings its runs back
+    for (const projectName of get_project_names(runs)) {
+        if (projectData[projectName]) create_project_cards_container(projectName, projectData[projectName]);
+        else create_project_bar(projectName, [], 0, "0.00");
+    }
     // setup collapsables specifically for overview project sections
     setup_collapsables();
     // set project bar visibility based on switch settings
@@ -792,19 +799,14 @@ function update_duration_comparison_for_all_projects() {
     });
 }
 
-// hide project bars based on switch config
+// hide project bars based on switch config and bars of projects without runs under the filter
 function update_projectbar_visibility() {
-    const bars = document.querySelectorAll('.overview-project-card');
-    const tagged = [];
-    const untagged = [];
-    for (const el of bars) {
-        (el.id.startsWith("project_") ? tagged : untagged).push(el);
+    const projectData = { ...projects_by_name, ...projects_by_tag };
+    for (const bar of document.querySelectorAll('.overview-project-card')) {
+        const projectName = bar.id.replace(/Section$/, "");
+        const settingsVisible = projectName.startsWith("project_") ? settings.switch.runTags : settings.switch.runName;
+        bar.hidden = !settingsVisible || !projectData[projectName];
     }
-    const toggleVisibility = (elements, visible) => {
-        for (const el of elements) el.hidden = !visible;
-    };
-    toggleVisibility(tagged, settings.switch.runTags);
-    toggleVisibility(untagged, settings.switch.runName);
 }
 
 function update_overview_prefix_display() {
