@@ -1,0 +1,1912 @@
+{
+  "testDurationDeviationGraph": {
+    "datasets": [
+      {
+        "data": [
+          ["13.901", "16.356", "18.544", "21.059", "23.574", "30.192", "31.268", "31.285", "33.598", "36.127"],
+          ["11.74", "12.048", "11.89", "11.662", "11.793", "11.728", "13.492", "11.789", "13.543", "11.713"],
+          ["12.927", "12.33", "13.029", "13.668", "11.777", "11.906", "13.415", "11.96", "11.846", "12.062"],
+          ["14.489", "12.951", "12.948", "12.775", "12.757", "12.775", "14.072", "12.82", "12.831", "12.869"],
+          ["12.754", "12.939", "13.024", "12.769", "12.71", "12.66", "8.941", "12.643", "12.704", "12.889"],
+          ["13.581", "13.72", "14.2", "13.252", "12.944", "11.532", "5.352", "8.932", "13.175", "13.037"]
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "Order History Shows Recent Orders",
+      "Order History Filter By Status",
+      "Order Details Page",
+      "Reorder From History",
+      "Download Invoice",
+      "Track Shipment"
+    ]
+  },
+  "testDurationGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 13.9
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 16.36
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 18.54
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 21.06
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 23.57
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 30.19
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 31.27
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 31.29
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 33.6
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 36.13
+          }
+        ],
+        "label": "Order History Shows Recent Orders"
+      },
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 11.74
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 12.05
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 11.89
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 11.66
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 11.79
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 11.73
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 13.49
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 11.79
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 13.54
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 11.71
+          }
+        ],
+        "label": "Order History Filter By Status"
+      },
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 12.93
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 12.33
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 13.03
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 13.67
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 11.78
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 11.91
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 13.42
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 11.96
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 11.85
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 12.06
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 14.49
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 12.95
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 12.95
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 12.78
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 12.76
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 12.78
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 14.07
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 12.82
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 12.83
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 12.87
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 12.75
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 12.94
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 13.02
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 12.77
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 12.71
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 12.66
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 8.94
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 12.64
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 12.7
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 12.89
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "_run_start": "2026-08-17 02:15:12",
+            "x": "2026-08-17 02:15:12",
+            "y": 13.58
+          },
+          {
+            "_run_start": "2026-08-18 02:15:45",
+            "x": "2026-08-18 02:15:45",
+            "y": 13.72
+          },
+          {
+            "_run_start": "2026-08-19 14:40:31",
+            "x": "2026-08-19 14:40:31",
+            "y": 14.2
+          },
+          {
+            "_run_start": "2026-08-21 02:15:03",
+            "x": "2026-08-21 02:15:03",
+            "y": 13.25
+          },
+          {
+            "_run_start": "2026-08-24 09:05:58",
+            "x": "2026-08-24 09:05:58",
+            "y": 12.94
+          },
+          {
+            "_run_start": "2026-08-26 02:15:22",
+            "x": "2026-08-26 02:15:22",
+            "y": 11.53
+          },
+          {
+            "_run_start": "2026-08-28 16:20:40",
+            "x": "2026-08-28 16:20:40",
+            "y": 5.35
+          },
+          {
+            "_run_start": "2026-09-01 02:15:19",
+            "x": "2026-09-01 02:15:19",
+            "y": 8.93
+          },
+          {
+            "_run_start": "2026-09-04 11:30:07",
+            "x": "2026-09-04 11:30:07",
+            "y": 13.18
+          },
+          {
+            "_run_start": "2026-09-09 02:15:36",
+            "x": "2026-09-09 02:15:36",
+            "y": 13.04
+          }
+        ],
+        "label": "Track Shipment"
+      }
+    ],
+    "labels": []
+  },
+  "testMessagesGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Text of 'css=.tracking-status' should have been 'Out for delivery' but was ''"
+          }
+        ],
+        "label": "Text of 'css=.tracking-status' should have been 'Out for delivery' but was ''"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Timeout 15000ms exceeded waiting for 'css=.tracking-status' to be visible"
+          }
+        ],
+        "label": "Timeout 15000ms exceeded waiting for 'css=.tracking-status' to be visible"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Timeout 15000ms exceeded waiting for 'css=.order-row' to be visible"
+          }
+        ],
+        "label": "Timeout 15000ms exceeded waiting for 'css=.order-row' to be visible"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Element 'id=nav-account' not visible after 30000ms"
+          }
+        ],
+        "label": "Element 'id=nav-account' not visible after 30000ms"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Setup failed:\nApplication returned 502 Bad Gateway"
+          }
+        ],
+        "label": "Setup failed:\nApplication returned 502 Bad Gateway"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Element 'id=order-invoice' is not clickable"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Element 'id=order-invoice' is not clickable"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Element 'id=order-invoice' is not clickable"
+          }
+        ],
+        "label": "Element 'id=order-invoice' is not clickable"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Element 'id=nav-account' not visible after 30000ms"
+          }
+        ],
+        "label": "Element 'id=nav-account' not visible after 30000ms"
+      }
+    ],
+    "labels": [
+      "Element 'id=order-invoice' is not clickable",
+      "Element 'id=nav-account' not visible after 30000ms",
+      "Text of 'css=.tracking-status' should have been 'Out for delivery' but was ''",
+      "Timeout 15000ms exceeded waiting for 'css=.tracking-status' to be visible",
+      "Timeout 15000ms exceeded waiting for 'css=.order-row' to be visible",
+      "Setup failed:\nApplication returned 502 Bad Gateway"
+    ]
+  },
+  "testMostFailedGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      }
+    ],
+    "labels": [
+      "Track Shipment",
+      "Download Invoice"
+    ]
+  },
+  "testMostFlakyGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order Details Page"
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order Details Page"
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      }
+    ],
+    "labels": [
+      "Track Shipment",
+      "Order Details Page",
+      "Reorder From History",
+      "Download Invoice"
+    ]
+  },
+  "testMostTimeConsumingGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order History Shows Recent Orders"
+          }
+        ],
+        "label": "Order History Shows Recent Orders"
+      }
+    ],
+    "labels": [
+      "Order History Shows Recent Orders",
+      "Reorder From History"
+    ]
+  },
+  "testRecentMostFailedGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      }
+    ],
+    "labels": [
+      "Download Invoice",
+      "Track Shipment"
+    ]
+  },
+  "testRecentMostFlakyGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order Details Page"
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order Details Page"
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      }
+    ],
+    "labels": [
+      "Download Invoice",
+      "Track Shipment",
+      "Order Details Page",
+      "Reorder From History"
+    ]
+  },
+  "testStatisticsGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order History Shows Recent Orders"
+          }
+        ],
+        "label": "Order History Shows Recent Orders"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order History Filter By Status"
+          }
+        ],
+        "label": "Order History Filter By Status"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order Details Page"
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order Details Page"
+          }
+        ],
+        "label": "Order Details Page"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": "Reorder From History"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": "Track Shipment"
+      },
+      {
+        "data": [
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": "Download Invoice"
+      }
+    ],
+    "labels": [
+      "Order History Shows Recent Orders",
+      "Order History Filter By Status",
+      "Order Details Page",
+      "Reorder From History",
+      "Download Invoice",
+      "Track Shipment"
+    ]
+  }
+}

@@ -15,6 +15,7 @@ Test Teardown    Close Dashboard
 Validate Latest Runs
     Open Overview Page
     Validate Component    id=overviewLatestRunsSection    name=latestRuns    folder=overview
+    Validate Section Data    id=overviewLatestRunsSection    name=latestRuns    text=${True}
 
 Validate Latest Runs Use Run Tags
     Open Overview Page
@@ -22,12 +23,13 @@ Validate Latest Runs Use Run Tags
     Click    selector=id=overview-tab
     Click    selector=id=switchRunTags
     Click    selector=id=closeSettings
-    Validate Component    id=overviewLatestRunsSection    name=latestRunsRunTags    folder=overview
+    Validate Section Data    id=overviewLatestRunsSection    name=latestRunsRunTags    text=${True}
 
 Validate Total Statistics
     Open Overview Page
     Click    selector=id=collapsegridOverviewTotal
     Validate Component    id=overviewTotalStatsSection    name=totalStatistics    folder=overview
+    Validate Section Data    id=overviewTotalStatsSection    name=totalStatistics    text=${True}
 
 Validate Total Statistics Use Run Tags
     Open Overview Page
@@ -36,17 +38,18 @@ Validate Total Statistics Use Run Tags
     Click    selector=id=switchRunTags
     Click    selector=id=closeSettings
     Click    selector=id=collapsegridOverviewTotal
-    Validate Component    id=overviewTotalStatsSection    name=totalStatisticsRunTags    folder=overview
+    Validate Section Data    id=overviewTotalStatsSection    name=totalStatisticsRunTags    text=${True}
 
 Validate Project WebshopUI
     Open Overview Page
     Click    selector=id=collapseWebshopUIBody
     Validate Component    id=WebshopUISection    name=prjWebshopUI    folder=overview
+    Validate Section Data    id=WebshopUISection    name=prjWebshopUI    text=${True}
 
 Validate Project WebshopAPI
     Open Overview Page
     Click    selector=id=collapseWebshopAPIBody
-    Validate Component    id=WebshopAPISection    name=prjWebshopAPI    folder=overview
+    Validate Section Data    id=WebshopAPISection    name=prjWebshopAPI    text=${True}
 
 Overview Section Track Follows The Project Bar Settings
     [Documentation]    Switching the project bars on or off changes which overview sections exist, so

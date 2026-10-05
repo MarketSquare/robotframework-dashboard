@@ -1,0 +1,62 @@
+{
+  "overviewLatestWebshopAPIGraph0": {
+    "datasets": [
+      {
+        "data": [
+          45,
+          5
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "overviewLatestWebshopUIGraph0": {
+    "datasets": [
+      {
+        "data": [
+          94,
+          11
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "overviewLatestproject_1Graph0": {
+    "datasets": [
+      {
+        "data": [
+          94,
+          11
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  },
+  "overviewLatestproject_2Graph0": {
+    "datasets": [
+      {
+        "data": [
+          45,
+          5
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "passed",
+      "failed"
+    ]
+  }
+}

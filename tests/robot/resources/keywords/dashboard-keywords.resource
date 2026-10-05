@@ -4,6 +4,7 @@ Library    String
 Library    json
 Library    Browser
 Library    DocTest.VisualTest    embed_screenshots=True    screenshot_format=png
+Library    SnapshotLibrary    snapshot_directory=${CURDIR}/../__snapshots__
 Resource    ../variables/variables.resource
 
 
@@ -106,6 +107,59 @@ Validate Component
     Wait For Dashboard Idle
     Take Screenshot    filename=${SCREENSHOT_FOLDER}/${name}    selector=id=${id}
     Validate Screenshot    screenshot=${name}    reference=${name}    folder=${folder}    threshold=${threshold}
+
+Get Section Graph Data
+    [Documentation]    Labels and dataset values of every Chart.js graph inside a section, keyed by
+    ...    canvas id. Dates are returned as local wall-clock text, so the result does not depend
+    ...    on the browser time zone (runDurationGraph holds Date objects).
+    [Arguments]    ${section}
+    ${data}    Evaluate JavaScript    ${None}
+    ...    () => {
+    ...        const local = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 19).replace('T', ' ');
+    ...        const plain = v => v instanceof Date ? local(v)
+    ...            : Array.isArray(v) ? v.map(plain)
+    ...            : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)]))
+    ...            : v;
+    ...        return Object.fromEntries(
+    ...            [...document.querySelectorAll('#${section} canvas')]
+    ...                .map(canvas => [canvas.id, Chart.getChart(canvas)])
+    ...                .filter(([id, chart]) => chart)
+    ...                .map(([id, chart]) => [id, {
+    ...                    labels: plain(chart.data.labels),
+    ...                    datasets: chart.data.datasets.map(d => ({label: d.label ?? null, data: plain(d.data)}))
+    ...                }]));
+    ...    }
+    RETURN    ${data}
+
+Validate Section Data
+    [Documentation]    Data counterpart of Validate Component: compares what the graphs of a section
+    ...    plot with the snapshot resources/__snapshots__/<suite>/<name>.json. Exact, unlike the
+    ...    pixel comparison, and a failure names the changed value. With ``text=True`` the visible
+    ...    text of the section is compared as well (<name>_text.txt), for HTML cards such as the
+    ...    overview. Use it for states that only change the data; keep one Validate Component per
+    ...    section for how it looks.
+    [Arguments]    ${id}    ${name}    ${text}=${False}
+    Wait For Dashboard Idle
+    Wait For Elements State    selector=id=${id}    state=attached
+    ${data}    Get Section Graph Data    ${id}
+    Should Match Snapshot    ${data}    name=${name}    shared=True
+    IF    ${text}
+        ${content}    Browser.Get Text    selector=id=${id}
+        Should Match Snapshot    ${content}    name=${name}_text    shared=True
+    END
+
+Validate Table Data
+    [Documentation]    Compares the rows a DataTable shows on its current page, plus its total row
+    ...    count, with the snapshot resources/__snapshots__/<suite>/<name>.json. The full table
+    ...    content is already covered by the database tests.
+    [Arguments]    ${table}    ${name}
+    Wait For Dashboard Idle
+    ${data}    Evaluate JavaScript    ${None}
+    ...    () => ({
+    ...        total: window['${table}'].rows({search: 'applied'}).count(),
+    ...        rows: window['${table}'].rows({page: 'current'}).data().toArray()
+    ...    })
+    Should Match Snapshot    ${data}    name=${name}    shared=True
 
 Set Test Statistics Rerun View
     [Arguments]    ${view}

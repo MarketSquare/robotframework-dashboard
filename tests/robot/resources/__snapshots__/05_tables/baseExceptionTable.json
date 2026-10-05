@@ -1,0 +1,15 @@
+{
+  "rows": [
+    ["2026-08-17 02:15:12", "ConnectionError: Connection reset by peer", 2, "output-20260817-021512"],
+    ["2026-08-17 02:15:12", "GatewayError: 502 Bad Gateway", 1, "output-20260817-021512"],
+    ["2026-08-17 02:15:12", "GatewayError: 504 Gateway Timeout from payment provider", 2, "output-20260817-021512"],
+    ["2026-08-17 02:15:12", "StaleElementError: element is not attached to the page document", 2, "output-20260817-021512"],
+    ["2026-08-17 06:00:04", "GatewayError: 502 Bad Gateway", 1, "output-20260817-060004"],
+    ["2026-08-17 06:00:04", "ConnectionError: HTTPSConnectionPool(host='api.shop.local', port=443): Max retries exceeded", 1, "output-20260817-060004"],
+    ["2026-08-17 06:00:04", "Expected status 200 but got 500 (request-id 4bd97cb4)", 1, "output-20260817-060004"],
+    ["2026-08-18 02:15:45", "ConnectionError: HTTPSConnectionPool(host='shop.local', port=443): Max retries exceeded", 2, "output-20260818-021545"],
+    ["2026-08-19 14:40:31", "ConnectionError: HTTPSConnectionPool(host='shop.local', port=443): Max retries exceeded", 2, "output-20260819-144031"],
+    ["2026-08-19 14:40:31", "StaleElementError: element is not attached to the page document", 2, "output-20260819-144031"]
+  ],
+  "total": 64
+}

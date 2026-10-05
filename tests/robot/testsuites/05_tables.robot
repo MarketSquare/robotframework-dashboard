@@ -14,22 +14,23 @@ Test Teardown    Close Dashboard
 Validate Compare Run Table Base View
     Open Tables Page
     Validate Component    id=runTableCanvas    name=baseRunTable    folder=tables
+    Validate Table Data    table=runTable    name=baseRunTable
 
 Validate Compare Suite Table Base View
     Open Tables Page
-    Validate Component    id=suiteTableCanvas    name=baseSuiteTable    folder=tables
+    Validate Table Data    table=suiteTable    name=baseSuiteTable
 
 Validate Compare Test Table Base View
     Open Tables Page
-    Validate Component    id=testTableCanvas    name=baseTestTable    folder=tables
+    Validate Table Data    table=testTable    name=baseTestTable
 
 Validate Compare Keyword Table Base View
     Open Tables Page
-    Validate Component    id=keywordTableCanvas    name=baseKeywordTable    folder=tables
+    Validate Table Data    table=keywordTable    name=baseKeywordTable
 
 Validate Compare Exception Table Base View
     Open Tables Page
-    Validate Component    id=exceptionTableCanvas    name=baseExceptionTable    folder=tables
+    Validate Table Data    table=exceptionTable    name=baseExceptionTable
 
 Tables Track Holds One Item Per Shown Table
     [Documentation]    The tables page carries the same segmented track as the dashboard, one pill per

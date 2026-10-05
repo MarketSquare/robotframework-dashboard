@@ -1,0 +1,45 @@
+{
+  "runDonutGraph": {
+    "datasets": [
+      {
+        "data": [],
+        "label": null
+      }
+    ],
+    "labels": []
+  },
+  "runDonutTotalGraph": {
+    "datasets": [
+      {
+        "data": [],
+        "label": null
+      }
+    ],
+    "labels": []
+  },
+  "runDurationGraph": {
+    "datasets": [],
+    "labels": []
+  },
+  "runHeatmapGraph": {
+    "datasets": [],
+    "labels": []
+  },
+  "runStatisticsGraph": {
+    "datasets": [
+      {
+        "data": [],
+        "label": "Failed"
+      },
+      {
+        "data": [],
+        "label": "Skipped"
+      },
+      {
+        "data": [],
+        "label": "Passed"
+      }
+    ],
+    "labels": []
+  }
+}

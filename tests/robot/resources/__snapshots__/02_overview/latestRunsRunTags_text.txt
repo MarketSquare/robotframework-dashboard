@@ -1,0 +1,45 @@
+Latest Runs
+showing 4 projects
+Sort
+ 
+Most Recent
+Oldest
+Most Failed
+Most Skipped
+Most Passed
+WebshopUI
+#10
+Passed: 94
+Failed: 11
+Skipped: 0
+ 21m 58s
+Passed Runs: 0.00%
+Version:
+1.2
+WebshopAPI
+#8
+Passed: 45
+Failed: 5
+Skipped: 0
+ 1m 48s
+Passed Runs: 25.00%
+Version:
+1.2
+project_1
+#10
+Passed: 94
+Failed: 11
+Skipped: 0
+ 21m 58s
+Passed Runs: 0.00%
+Version:
+1.2
+project_2
+#8
+Passed: 45
+Failed: 5
+Skipped: 0
+ 1m 48s
+Passed Runs: 25.00%
+Version:
+1.2

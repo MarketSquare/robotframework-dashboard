@@ -18,27 +18,25 @@ Validate Filters Modal Buttons Are Right Aligned
 
 Validate Dashboard Run Name Filter
     Set Run Filter    value=WebshopUI
-    Validate Component    id=runStatisticsSection    name=runNameFilter    folder=run
+    Validate Section Data    id=runStatisticsSection    name=runNameFilter
 
 Validate Dashboard Run Tags Filter
     Should Show 18 Of 18 Runs
 
     Set Run Tags Filter    dev
-    Validate Component    id=runStatisticsSection    name=runTagsFilterDev    folder=run
+    Validate Section Data    id=runStatisticsSection    name=runTagsFilterDev
     Should Show 14 Of 14 Runs
 
     Set Run Tags Filter    prod
-    # the validation of the screenshot below should be 1 (99% accurate) because there is no data which makes the dates
-    # in the duration graph change to "current date" which causes unwanted issues
-    Validate Component    id=runStatisticsSection    name=runTagsFilterDevProd    folder=run    threshold=0.01
+    Validate Section Data    id=runStatisticsSection    name=runTagsFilterDevProd
     Should Show 0 Of 0 Runs
 
     Set Run Tags Filter    prod    strict=True
-    Validate Component    id=runStatisticsSection    name=runTagsFilterProd    folder=run
+    Validate Section Data    id=runStatisticsSection    name=runTagsFilterProd
     Should Show 4 Of 4 Runs
 
     Set Run Tags Filter    dev    amount    strict=True
-    Validate Component    id=runStatisticsSection    name=runTagsFilterAmount    folder=run
+    Validate Section Data    id=runStatisticsSection    name=runTagsFilterAmount
     Should Show 1 Of 1 Runs
 
 Validate Dashboard Run Tags Filter From Overview Project Card
@@ -75,7 +73,7 @@ Validate Overview Keeps Filters That Were Changed By Hand
 
 Validate Dashboard Date Filter
     Set Date Filter    fromDate=08252026    fromTime=1200am
-    Validate Component    id=runStatisticsSection    name=runDateFilter    folder=run
+    Validate Section Data    id=runStatisticsSection    name=runDateFilter
 
 Validate Date Histogram Bars
     Open Filter Dialog
@@ -128,7 +126,7 @@ Validate Date Histogram Follows The Other Filters
 
 Validate Dashboard Amount Filter
     Set Amount Filter    amount=5
-    Validate Component    id=runStatisticsSection    name=runAmountFilter    folder=run
+    Validate Section Data    id=runStatisticsSection    name=runAmountFilter
 
 Validate Dashboard Amount Filter Is Applied Per Project
     [Documentation]    Issue #347: the amount is applied per project (the run name and every

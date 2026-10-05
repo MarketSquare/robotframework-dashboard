@@ -1,0 +1,87 @@
+{
+  "runDonutGraph": {
+    "datasets": [
+      {
+        "data": [
+          44,
+          6
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "Passed",
+      "Failed"
+    ]
+  },
+  "runDonutTotalGraph": {
+    "datasets": [
+      {
+        "data": [
+          44,
+          6
+        ],
+        "label": null
+      }
+    ],
+    "labels": [
+      "Passed",
+      "Failed"
+    ]
+  },
+  "runDurationGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "_run_start": "2026-09-05 13:00:49",
+            "x": "2026-09-05 13:00:49",
+            "y": 99.9
+          }
+        ],
+        "label": "WebshopAPI"
+      }
+    ],
+    "labels": []
+  },
+  "runHeatmapGraph": {
+    "datasets": [
+      {
+        "data": [
+          {
+            "v": 50,
+            "x": 13.5,
+            "y": 6.5
+          }
+        ],
+        "label": "Test Execution Heatmap"
+      }
+    ],
+    "labels": []
+  },
+  "runStatisticsGraph": {
+    "datasets": [
+      {
+        "data": [
+          12
+        ],
+        "label": "Failed"
+      },
+      {
+        "data": [
+          0
+        ],
+        "label": "Skipped"
+      },
+      {
+        "data": [
+          88
+        ],
+        "label": "Passed"
+      }
+    ],
+    "labels": [
+      "2026-09-05 13:00:49"
+    ]
+  }
+}

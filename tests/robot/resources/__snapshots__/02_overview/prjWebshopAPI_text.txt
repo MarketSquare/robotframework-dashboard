@@ -1,0 +1,66 @@
+WebshopAPI
+Total Runs: 8 | Passed Runs: 25.00%
+Sort
+ 
+Most Recent
+Oldest
+Most Failed
+Most Skipped
+Most Passed
+Version: 1.2
+#8
+Passed: 45
+Failed: 5
+Skipped: 0
+ 1m 48s
+Passed Runs: 25.00%
+Version: 1.2
+#7
+Passed: 44
+Failed: 6
+Skipped: 0
+ 1m 39s
+Passed Runs: 25.00%
+Version: 1.1
+#6
+Passed: 49
+Failed: 0
+Skipped: 1
+ 1m 40s
+Passed Runs: 25.00%
+Version: 1.1
+#5
+Passed: 46
+Failed: 4
+Skipped: 0
+Rerun: 17 (fixed 13)
+ 1m 48s
+Passed Runs: 25.00%
+Version: 1.1
+#4
+Passed: 50
+Failed: 0
+Skipped: 0
+ 1m 42s
+Passed Runs: 25.00%
+Version: 1.0
+#3
+Passed: 47
+Failed: 3
+Skipped: 0
+ 1m 49s
+Passed Runs: 25.00%
+Version: 1.0
+#2
+Passed: 43
+Failed: 6
+Skipped: 1
+ 1m 35s
+Passed Runs: 25.00%
+Version: 1.0
+#1
+Passed: 46
+Failed: 4
+Skipped: 0
+ 1m 42s
+Passed Runs: 25.00%
