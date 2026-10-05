@@ -4,11 +4,10 @@ import { add_alert, generate_id } from "../common.js";
 import { apply_widget_control_icons } from "../theme.js";
 import { open_log_from_label } from "../log.js";
 import { get_transformed_data } from "../filter/pipeline.js";
-import { get_suite_data_exclusion } from "../graph_data/helpers.js";
+import { get_suite_data_exclusion, get_keyword_select_key, get_test_section_predicate } from "../graph_data/helpers.js";
 import {
     escape_html_for_merge,
-    inFullscreen,
-    inFullscreenGraph,
+    set_fullscreen_state,
     filteredRuns,
     filteredSuites,
     filteredTests,
@@ -18,7 +17,6 @@ import {
 import { CUSTOM_GRAPH_SECTIONS, validate_custom_graph_spec } from "./spec.js";
 import { run_custom_graph_query } from "./engine.js";
 import { build_custom_graph_chart_config, build_custom_graph_table_html } from "./viz.js";
-import { open_custom_graph_builder } from "./builder.js";
 
 // graphs switched to their data table with the "show data" button, for this page load only
 const customGraphDataView = new Set();
@@ -31,10 +29,13 @@ let customGraphFullscreenId = null;
 let customGraphScrollY = 0;
 
 // graphs written by hand into a json config may lack a (unique) id or a section; they get stable
-// ones here, the index keeps the id the same across page loads so the saved layout still matches
-function get_custom_graphs(sectionKey = null) {
-    const graphs = (Array.isArray(settings.customGraphs) ? settings.customGraphs : [])
-        .filter(graph => graph && typeof graph === "object" && !Array.isArray(graph));
+// ones once, before the grids are built, and are saved. The index keeps a generated id the same
+// across page loads, so the saved layout still matches until the graphs are saved
+function normalize_custom_graphs() {
+    const stored = Array.isArray(settings.customGraphs) ? settings.customGraphs : [];
+    const graphs = stored
+        .filter(graph => graph && typeof graph === "object" && !Array.isArray(graph))
+        .map(graph => ({ ...graph }));
     const usedIds = new Set();
     const needsId = [];
     graphs.forEach((graph, index) => {
@@ -48,6 +49,11 @@ function get_custom_graphs(sectionKey = null) {
         graph.id = id;
         usedIds.add(id);
     }
+    if (JSON.stringify(graphs) !== JSON.stringify(stored)) set_local_storage_item("customGraphs", graphs);
+}
+
+function get_custom_graphs(sectionKey = null) {
+    const graphs = Array.isArray(settings.customGraphs) ? settings.customGraphs : [];
     return sectionKey ? graphs.filter(graph => graph.section === sectionKey) : graphs;
 }
 
@@ -80,31 +86,19 @@ function get_custom_graph_section_filter(spec) {
         return null;
     }
     if (spec.section === "test") {
-        const suite = get_custom_graph_select_value("suiteSelectTests") || "All";
-        const test = get_custom_graph_select_value("testSelect") || "All";
-        const tag = get_custom_graph_select_value("testTagsSelect") || "All";
-        const usePaths = settings.switch.suitePathsTestSection;
-        if (spec.source === "tests") {
-            return (row) => {
-                if (suite !== "All") {
-                    const expectedFull = `${suite}.${row.name}`;
-                    const isMatch = usePaths
-                        ? row.full_name === expectedFull
-                        : row.full_name.includes(`.${suite}.${row.name}`) || row.full_name === expectedFull;
-                    if (!isMatch) return false;
-                }
-                if (test !== "All" && row.name !== test) return false;
-                return tag === "All" || row.tags.includes(tag);
-            };
+        if (!document.getElementById("suiteSelectTests")) return null;
+        if (spec.source === "tests") return get_test_section_predicate();
+        if (spec.source === "suites") {
+            const suite = get_custom_graph_select_value("suiteSelectTests") || "All";
+            const usePaths = settings.switch.suitePathsTestSection;
+            return (row) => suite === "All" || (usePaths ? row.full_name === suite : row.name === suite);
         }
-        if (spec.source === "suites") return (row) => suite === "All" || (usePaths ? row.full_name === suite : row.name === suite);
         return null;
     }
     if (spec.section === "keyword" && spec.source === "keywords") {
         const selected = get_custom_graph_select_value("keywordSelect");
         if (!selected) return null;
-        const useLibraryNames = settings.switch.useLibraryNames === true;
-        return (row) => (useLibraryNames && row.library ? `${row.library}.${row.name}` : row.name) === selected;
+        return (row) => get_keyword_select_key({ name: row.name, owner: row.library }) === selected;
     }
     return null;
 }
@@ -149,6 +143,7 @@ function draw_custom_graph_into(body, rawSpec, chartId, { forceCreate = false, s
         result = run_custom_graph_query(spec, get_custom_graph_data(spec), {
             runLabel: get_run_label,
             rowFilter: get_custom_graph_section_filter(spec),
+            suitePaths: settings.switch.suitePathsTestSection === true,
         });
     } catch (error) {
         console.error("Custom graph could not be calculated", error);
@@ -206,8 +201,7 @@ function toggle_custom_graph_fullscreen(id, entering) {
     if (!graph || !content) return;
     if (entering) customGraphScrollY = window.scrollY;
     customGraphFullscreenId = entering ? id : null;
-    inFullscreen = entering;
-    inFullscreenGraph = entering ? `customGraph-${id}-Fullscreen` : "";
+    set_fullscreen_state(entering, entering ? `customGraph-${id}-Fullscreen` : "");
     document.getElementById("navigation").style.display = entering ? "none" : "";
     document.getElementById(`customGraph-${id}-Fullscreen`).hidden = entering;
     document.getElementById(`customGraph-${id}-Close`).hidden = !entering;
@@ -348,8 +342,10 @@ function copy_custom_graph_definition(id) {
         .catch(() => add_alert("Could not copy the graph definition", "danger"));
 }
 
-// one delegated listener for every tile button, so tiles added or re-rendered later need no wiring
-function setup_custom_graph_buttons() {
+// one delegated listener for every tile button, so tiles added or re-rendered later need no wiring.
+// open_builder(sectionKey, graph) opens the edit dialog; it is passed in so this module does not
+// import the builder, which imports this module
+function setup_custom_graph_buttons(open_builder) {
     document.addEventListener("click", (event) => {
         const button = event.target.closest(".edit-custom-graph, .duplicate-custom-graph, .delete-custom-graph, .data-custom-graph, .copy-custom-graph, .custom-graph-controls .fullscreen-graph, .custom-graph-controls .close-graph");
         if (!button) return;
@@ -360,7 +356,7 @@ function setup_custom_graph_buttons() {
         }
         if (button.classList.contains("edit-custom-graph")) {
             const graph = get_custom_graphs().find(item => item.id === id);
-            if (graph) open_custom_graph_builder(graph.section, graph);
+            if (graph) open_builder(graph.section, graph);
         } else if (button.classList.contains("duplicate-custom-graph")) {
             duplicate_custom_graph(id);
         } else if (button.classList.contains("delete-custom-graph")) {
@@ -384,6 +380,7 @@ function setup_custom_graph_buttons() {
 }
 
 export {
+    normalize_custom_graphs,
     render_custom_graphs,
     create_custom_graphs,
     update_custom_graphs,

@@ -45,7 +45,7 @@ Presets that need input (a test name, a tag) put the cursor in that field when y
 | **Split by** | An optional second grouping: one line or bar color per value (at most 10, the rest is reported above the graph). |
 | **Metric** | What to calculate per group. |
 | **Order and limit** | How the X axis is sorted and how many values are kept. |
-| **Chart** | Line, bar, stacked bar, horizontal bar, donut, heatmap or table. Bar charts can show percentages per column. |
+| **Chart** | Line, bar, stacked bar, horizontal bar, donut, heatmap or table. Bar charts with a split by can show percentages per column, for metrics that add up (count, sum, distinct count, passed, failed, skipped, flips). |
 | **Apply the global filters** | On (default): the graph follows the [filter modal](filtering.md) like every other graph. Off: the graph always uses all runs. |
 | **Follow the section filters** | Only in the Suite, Test and Keyword sections, off by default. See [Section filters](#section-filters). |
 
@@ -58,25 +58,28 @@ Every data source offers the fields of its own rows plus the fields of the run i
 | All sources | Run, run date, run name, run tags, project version, metadata (`key`), custom filter (`key`) |
 | Runs | Status, passed, failed, skipped, total, duration |
 | Suites | Suite name, suite full name, parent suite, status, passed, failed, skipped, total, duration |
-| Tests | Test name, test full name, suite, test tags, message, status, passed, failed, skipped, duration, attempts |
+| Tests | Test, test name, test full name, suite, test tags, message, status, passed, failed, skipped, duration, attempts |
 | Keywords | Keyword name, library, status, passed, failed, skipped, times run, total/average/min/max duration |
 | Exceptions | Exception message, amount |
 
-- **Run date** can be grouped per day, week (starting on Monday) or month.
+- **Test** is the test name, or the full name when **Use Suite Paths** is on in the Test section, the same as the built-in test graphs. With suite paths on, two tests with the same name in different suites stay apart. The gallery presets use this field.
+- **Run date** can be grouped per day, week (starting on Monday) or month. Run dates are compared as the run's own local time, and *in the last N days* counts from the clock of the browser.
 - **Metadata** and **custom filter** take a key, e.g. metadata `Browser` or custom filter `Pipeline`.
 - **Tags**: a test with several tags counts once for every tag when you group on tags.
-- **Status** of a run, suite or keyword is *failed* when it has a failure, *skipped* when it only has skips, and *passed* otherwise. Grouping runs, suites or keywords on status uses their passed/failed/skipped counts, so "statistics per run" gives the same numbers from runs as from tests.
+- **Status** of a run, suite or keyword is *failed* when it has a failure, *skipped* when it only has skips, and *passed* otherwise. Grouping runs, suites or keywords on status uses their passed/failed/skipped counts, so "statistics per run" gives the same numbers from runs as from tests. A run with both passed and failed tests is part of both groups, so these groupings only offer the metrics count, passed, failed and skipped: the *Failed* value of the *Passed* group is 0. Tests have a single status and can use every metric.
 
 ### Filter operators
 
 | Field type | Operators |
 |---|---|
-| Text | is, is not, contains, does not contain, matches regex (case insensitive) |
+| Text | is, is not, contains, does not contain, matches regex (case insensitive, at most 100 characters) |
 | Number / duration | =, ≠, >, ≥, <, ≤ (durations in seconds) |
 | Status | is, is not |
 | Tags | has, does not have, has a tag containing |
 | Metadata / custom filter | is, is not, contains |
 | Run date | on or after, before, in the last N days |
+
+A regular expression that repeats a group which already repeats, like `(a+)+`, is refused: on some messages it can take so long that the dashboard freezes.
 
 ### Metrics
 
@@ -86,7 +89,7 @@ Every data source offers the fields of its own rows plus the fields of the run i
 | Sum, Average, Minimum, Maximum, Median, 90th / 95th percentile | Over a number or duration field |
 | Distinct count | The number of different values of a field, e.g. distinct tests per run |
 | Pass rate (%) | passed / (passed + failed + skipped), or without skipped when **Ignore skipped** is on |
-| Passed, Failed, Skipped | The sum of that status column |
+| Passed, Failed, Skipped | The sum of that status column (only the matching status group when grouped on status) |
 | Status flips (flakiness) | How often the same test (or suite/keyword) changed between pass and fail in consecutive runs; skips are left out |
 
 ### Section filters
@@ -108,6 +111,8 @@ A heatmap shows the X axis as columns, the split by as rows and the metric as th
 ### Order and limit
 
 *Automatic* sorts a run or date axis chronologically and keeps the most recent values when a limit is set; any other axis is ranked from highest to lowest value. A ranking of counts (most failed, most flaky) leaves out the items with a value of 0. The other orders are *highest value first*, *lowest value first* and *alphabetical*.
+
+With a split by, values that add up are ranked on their total, and the other metrics (average, percentiles, pass rate, …) on the average of the series.
 
 ## Working with custom graphs
 
@@ -141,4 +146,6 @@ The **JSON** tab of the builder shows the graph definition. Paste a definition s
 }
 ```
 
-Custom graphs are stored in localStorage under `customGraphs` and are part of the settings JSON, so they can be shipped to a whole team with [`--jsonconfig` / `--forcejsonconfig`](settings.md). A graph in a JSON config may leave out `id` and `section`: it is then placed in the Run section.
+Custom graphs are stored in localStorage under `customGraphs` and are part of the settings JSON, so they can be shipped to a whole team with [`--jsonconfig` / `--forcejsonconfig`](settings.md). A graph in a JSON config may leave out `id` and `section`: it is then placed in the Run section and given an id when the dashboard loads.
+
+`v` is the version of the graph definition. A definition with a higher version than the dashboard knows was made with a newer dashboard and is not drawn; the tile says so instead.

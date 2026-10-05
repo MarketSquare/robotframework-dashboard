@@ -2,45 +2,20 @@ import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { barConfig, lineConfig } from "../variables/chartconfig.js";
 import { compareRunIds } from "../variables/graphs.js";
-import { get_suite_data_exclusion } from "./helpers.js";
+import { get_suite_data_exclusion, get_keyword_select_key, get_test_section_predicate } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for duration graphs
 function get_duration_graph_data(dataType, graphType, objectDataAttribute, filteredData) {
     const suiteSelectSuitesCombined = document.getElementById("suiteSelectSuites").value === "All Suites Combined";
-    const suiteSelectTests = document.getElementById("suiteSelectTests").value;
-    const testSelect = document.getElementById("testSelect").value;
-    const testTagsSelect = document.getElementById("testTagsSelect").value;
     const keywordSelect = document.getElementById("keywordSelect").value;
-    const useLibraryNames = settings?.switch?.useLibraryNames === true;
     const limit = inFullscreen && inFullscreenGraph.includes("Duration") ? 100 : 30;
     const exclude_from_suite_data = get_suite_data_exclusion(dataType);
+    const matches_test_section = dataType === "test" ? get_test_section_predicate() : null;
     const should_include = (value) => {
-        if (dataType === "keyword") {
-            const keywordKey = useLibraryNames && value.owner
-                ? `${value.owner}.${value.name}`
-                : value.name;
-
-            if (keywordKey !== keywordSelect) return false;
-        }
+        if (dataType === "keyword" && get_keyword_select_key(value) !== keywordSelect) return false;
         if (exclude_from_suite_data(value)) return false;
-        if (settings.switch.suitePathsTestSection) {
-            if (dataType === "test" && suiteSelectTests !== "All" &&
-                value.full_name !== `${suiteSelectTests}.${value.name}`) {
-                return false;
-            }
-        } else {
-            if (dataType === "test" && suiteSelectTests !== "All" &&
-                !value.full_name.includes(`.${suiteSelectTests}.${value.name}`) &&
-                value.full_name !== `${suiteSelectTests}.${value.name}`) {
-                return false;
-            }
-        }
-        if (dataType === "test" && testSelect !== "All" && value.name !== testSelect) return false;
-        if (dataType === "test" && testTagsSelect !== "All") {
-            const tags = value.tags?.replace(/\[|\]/g, "").split(",").map(t => t.trim()) || [];
-            if (!tags.includes(testTagsSelect)) return false;
-        }
+        if (matches_test_section && !matches_test_section(value)) return false;
         return true;
     };
 

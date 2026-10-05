@@ -29,6 +29,29 @@ const CUSTOM_GRAPH_ORDERS = [
 const CUSTOM_GRAPH_PERCENT_VIZ_TYPES = ["bar", "stacked_bar", "hbar"];
 const CUSTOM_GRAPH_MAX_TITLE = 60;
 const CUSTOM_GRAPH_MAX_LIMIT = 500;
+const CUSTOM_GRAPH_MAX_REGEX = 100;
+// a quantified group that itself contains a quantifier, like (a+)+ or (\w*)*: the shape behind
+// catastrophic backtracking. A regex runs on every row on every redraw, and json configs are
+// shared, so such a pattern could freeze the dashboard on load
+const CUSTOM_GRAPH_NESTED_QUANTIFIER = /\((?:[^()\\]|\\.)*[+*}](?:[^()\\]|\\.)*\)(?:[+*]|\{\d*,)/;
+
+// returns the problem with a "matches regex" filter value, or "" when it can be used
+function get_custom_graph_regex_problem(pattern) {
+    if (pattern.length > CUSTOM_GRAPH_MAX_REGEX) return `regular expressions can be at most ${CUSTOM_GRAPH_MAX_REGEX} characters`;
+    if (CUSTOM_GRAPH_NESTED_QUANTIFIER.test(pattern)) return `"${pattern}" repeats a group that already repeats (like (a+)+), which can freeze the dashboard`;
+    try { new RegExp(pattern); } catch { return `"${pattern}" is not a valid regular expression`; }
+    return "";
+}
+
+function is_custom_graph_status_grouped(spec) {
+    return [spec.x, spec.series].some(group => group && get_custom_graph_field(spec.source, group.field)?.type === "status");
+}
+
+// percent splits every column into the share of each series, which needs series to split
+// into and values that add up
+function custom_graph_supports_percent(spec) {
+    return CUSTOM_GRAPH_PERCENT_VIZ_TYPES.includes(spec.viz?.type) && !!spec.series && !!get_custom_graph_agg(spec.metric?.agg)?.sums;
+}
 
 function create_default_custom_graph_spec(section = "run") {
     return {
@@ -85,8 +108,9 @@ function validate_custom_graph_condition(raw, source, errors) {
         condition.key = String(raw.key ?? "").trim();
         if (!condition.key) errors.push(`Filter: choose which ${field.label.toLowerCase()} key to filter on`);
     }
-    if (condition.op === "matches") {
-        try { new RegExp(condition.value); } catch { errors.push(`Filter: "${condition.value}" is not a valid regular expression`); }
+    if (condition.op === "matches" && condition.value.trim() !== "") {
+        const problem = get_custom_graph_regex_problem(condition.value.trim());
+        if (problem) errors.push(`Filter: ${problem}`);
     }
     return condition;
 }
@@ -98,6 +122,10 @@ function validate_custom_graph_spec(raw) {
     const defaults = create_default_custom_graph_spec();
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
         return { spec: defaults, errors: ["The graph definition is not an object"] };
+    }
+    // a newer spec version may mean something else by the same keys, so it is not reinterpreted
+    if (Number(raw.v) > CUSTOM_GRAPH_SPEC_VERSION) {
+        return { spec: defaults, errors: ["This graph was made with a newer version of the dashboard"] };
     }
     const spec = {
         v: CUSTOM_GRAPH_SPEC_VERSION,
@@ -130,8 +158,11 @@ function validate_custom_graph_spec(raw) {
     }
 
     const agg = get_custom_graph_agg(raw.metric?.agg);
+    const statusGrouped = is_custom_graph_status_grouped(spec);
     if (!agg || !get_custom_graph_aggs(spec.source).includes(agg)) {
         errors.push(`Metric: "${raw.metric?.agg}" is not available for ${spec.source}`);
+    } else if (!get_custom_graph_aggs(spec.source, statusGrouped).includes(agg)) {
+        errors.push(`Metric: ${spec.source} grouped by status can only show count, passed, failed or skipped`);
     } else {
         spec.metric = { agg: agg.key };
         if (agg.needs) {
@@ -144,10 +175,8 @@ function validate_custom_graph_spec(raw) {
 
     const vizType = CUSTOM_GRAPH_VIZ_TYPES.find(viz => viz.key === raw.viz?.type);
     if (!vizType) errors.push(`Chart: "${raw.viz?.type}" is not a known chart type`);
-    spec.viz = {
-        type: vizType ? vizType.key : "bar",
-        percent: raw.viz?.percent === true && CUSTOM_GRAPH_PERCENT_VIZ_TYPES.includes(vizType?.key),
-    };
+    spec.viz = { type: vizType ? vizType.key : "bar", percent: false };
+    spec.viz.percent = raw.viz?.percent === true && custom_graph_supports_percent(spec);
     if (spec.viz.type === "donut" && spec.series) {
         errors.push("Chart: a donut shows a single series, remove the split by");
     }
@@ -179,8 +208,7 @@ function sanitize_custom_graph_spec(draft) {
     if (spec.series && !is_custom_graph_group_valid(spec.series, source)) spec.series = null;
     if (spec.x && spec.series && spec.x.field === spec.series.field && spec.x.key === spec.series.key) spec.series = null;
     if (spec.viz?.type === "donut") spec.series = null;
-    if (spec.viz && !CUSTOM_GRAPH_PERCENT_VIZ_TYPES.includes(spec.viz.type)) spec.viz.percent = false;
-    const aggs = get_custom_graph_aggs(source);
+    const aggs = get_custom_graph_aggs(source, is_custom_graph_status_grouped(spec));
     let agg = aggs.find(item => item.key === spec.metric?.agg);
     if (!agg) {
         agg = aggs[0];
@@ -193,6 +221,7 @@ function sanitize_custom_graph_spec(draft) {
         delete spec.metric.field;
     }
     if (agg.key !== "pass_rate") delete spec.metric.ignoreSkips;
+    if (spec.viz && !custom_graph_supports_percent(spec)) spec.viz.percent = false;
     return spec;
 }
 
@@ -207,4 +236,7 @@ export {
     create_default_custom_graph_spec,
     validate_custom_graph_spec,
     sanitize_custom_graph_spec,
+    get_custom_graph_regex_problem,
+    is_custom_graph_status_grouped,
+    custom_graph_supports_percent,
 };

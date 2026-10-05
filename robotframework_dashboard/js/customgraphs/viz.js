@@ -55,7 +55,8 @@ function build_custom_graph_line_config(spec, result, xTitle, valueTitle) {
     if (result.xKind === "run") {
         const datasets = result.series.map((item, index) => ({
             label: item.label,
-            data: result.x.map((key, i) => ({ x: strip_tz_suffix(String(key)), y: item.values[i], _run_start: result.xLabels[i] })),
+            // _run_start is the tooltip title, the run start like the built-in duration graphs
+            data: result.x.map((key, i) => ({ x: strip_tz_suffix(String(key)), y: item.values[i], _run_start: key })),
             ...get_custom_graph_color(index, item.status),
             ...lineConfig,
             spanGaps: true,
@@ -144,13 +145,18 @@ function get_custom_graph_heatmap_color(spec, value, max) {
     return value === 0 ? "rgba(128, 128, 128, 0.08)" : `rgba(${rgb}, ${(0.15 + 0.85 * ratio).toFixed(2)})`;
 }
 
+// the cells are placed on the unique keys, not on the labels: runs with the same name (run name
+// or alias labels) would otherwise share a column and draw on top of each other
 function build_custom_graph_heatmap_config(spec, result, xTitle) {
-    const rows = result.series.map(item => item.label);
+    const columns = result.x.map(String);
+    const rows = result.series.map(item => String(item.key));
+    const columnLabels = new Map(columns.map((key, index) => [key, String(result.xLabels[index])]));
+    const rowLabels = new Map(result.series.map(item => [String(item.key), String(item.label)]));
     const data = [];
     let max = 0;
     result.series.forEach(item => {
         item.values.forEach((value, index) => {
-            data.push({ x: result.xLabels[index], y: item.label, v: value });
+            data.push({ x: columns[index], y: String(item.key), v: value });
             if (value !== null && value > max) max = value;
         });
     });
@@ -164,7 +170,7 @@ function build_custom_graph_heatmap_config(spec, result, xTitle) {
                 backgroundColor: (context) => get_custom_graph_heatmap_color(spec, context.raw?.v, max),
                 borderWidth: 1,
                 borderColor: "rgba(128, 128, 128, 0.2)",
-                width: ({ chart }) => Math.max(1, (chart.chartArea?.width ?? 0) / Math.max(1, result.xLabels.length) - 2),
+                width: ({ chart }) => Math.max(1, (chart.chartArea?.width ?? 0) / Math.max(1, columns.length) - 2),
                 height: ({ chart }) => Math.max(1, (chart.chartArea?.height ?? 0) / Math.max(1, rows.length) - 2),
             }],
         },
@@ -175,7 +181,7 @@ function build_custom_graph_heatmap_config(spec, result, xTitle) {
             scales: {
                 x: {
                     type: "category",
-                    labels: result.xLabels.map(String),
+                    labels: columns,
                     offset: true,
                     grid: { display: false },
                     title: { display: settings.show.axisTitles, text: result.xKind === "run" ? "Run" : xTitle },
@@ -183,18 +189,18 @@ function build_custom_graph_heatmap_config(spec, result, xTitle) {
                         minRotation: 45,
                         maxRotation: 45,
                         display: result.xKind !== "run" || settings.show.dateLabels,
-                        callback(value) { return String(this.getLabelForValue(value)).slice(0, 40); },
+                        callback(value) { return (columnLabels.get(this.getLabelForValue(value)) ?? "").slice(0, 40); },
                     },
                 },
                 y: {
                     type: "category",
-                    labels: rows.map(String),
+                    labels: rows,
                     // rows come ordered highest first; a vertical category axis starts at the bottom
                     reverse: true,
                     offset: true,
                     grid: { display: false },
                     title: { display: settings.show.axisTitles, text: seriesField ? seriesField.label : "" },
-                    ticks: { callback(value) { return String(this.getLabelForValue(value)).slice(0, 40); } },
+                    ticks: { callback(value) { return (rowLabels.get(this.getLabelForValue(value)) ?? "").slice(0, 40); } },
                 },
             },
             plugins: {
@@ -210,7 +216,7 @@ function build_custom_graph_heatmap_config(spec, result, xTitle) {
                 },
                 tooltip: {
                     callbacks: {
-                        title: (items) => `${items[0].raw.y} · ${items[0].raw.x}`,
+                        title: (items) => `${rowLabels.get(items[0].raw.y)} · ${columnLabels.get(items[0].raw.x)}`,
                         label: (item) => `${result.meta.metricLabel}: ${format_custom_graph_value(item.raw.v, result.meta.valueType) || "no data"}`,
                     },
                 },

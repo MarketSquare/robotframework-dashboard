@@ -5,10 +5,10 @@ vi.mock('@js/variables/globals.js', () => ({ inFullscreen: false }));
 import {
     run_custom_graph_query,
     get_custom_graph_rows,
-    parse_custom_graph_tags,
     parse_custom_graph_metadata,
     parse_custom_graph_custom_filters,
 } from '@js/customgraphs/engine.js';
+import { parse_test_tags } from '@js/common.js';
 import { validate_custom_graph_spec } from '@js/customgraphs/spec.js';
 import { make_dataset } from './dataset.js';
 
@@ -24,10 +24,11 @@ function series_values(result, key = '') {
 
 describe('parsers', () => {
     it('parses test tags and run tags', () => {
-        expect(parse_custom_graph_tags('[smoke, login]')).toEqual(['smoke', 'login']);
-        expect(parse_custom_graph_tags('dev,project_1')).toEqual(['dev', 'project_1']);
-        expect(parse_custom_graph_tags('[]')).toEqual([]);
-        expect(parse_custom_graph_tags(null)).toEqual([]);
+        expect(parse_test_tags('[smoke, login]')).toEqual(['smoke', 'login']);
+        expect(parse_test_tags('dev,project_1')).toEqual(['dev', 'project_1']);
+        expect(parse_test_tags('[]')).toEqual([]);
+        expect(parse_test_tags(null)).toEqual([]);
+        expect(parse_test_tags(['a'])).toEqual(['a']);
     });
 
     it('parses the python list repr of metadata, including values with colons', () => {
@@ -62,6 +63,14 @@ describe('rows', () => {
         expect(get_custom_graph_rows('tests', data)).toBe(first);
         expect(get_custom_graph_rows('tests', { ...data, tests: [...data.tests] })).not.toBe(first);
     });
+
+    it('resolves the test field to the name or, with suite paths, the full name', () => {
+        const data = make_dataset();
+        expect(get_custom_graph_rows('tests', data)[0].test).toBe('Valid Login');
+        const withPaths = get_custom_graph_rows('tests', data, { suitePaths: true });
+        expect(withPaths[0].test).toBe('Web.Login.Valid Login');
+        expect(get_custom_graph_rows('tests', data, { suitePaths: true })).toBe(withPaths);
+    });
 });
 
 describe('grouping and aggregation', () => {
@@ -87,7 +96,7 @@ describe('grouping and aggregation', () => {
 
     it('explodes tags so a test counts once per tag', () => {
         const result = query({ source: 'tests', x: { field: 'tags' }, metric: { agg: 'count' }, order: 'label' });
-        expect(result.x).toEqual(['(no tags)', 'login', 'smoke']);
+        expect(result.xLabels).toEqual(['(no tags)', 'login', 'smoke']);
         expect(series_values(result)).toEqual([3, 6, 3]);
     });
 
@@ -121,7 +130,7 @@ describe('grouping and aggregation', () => {
 
     it('groups on metadata and custom filter keys', () => {
         const byBrowser = query({ source: 'runs', x: { field: 'metadata', key: 'Browser' }, metric: { agg: 'count' }, order: 'label' });
-        expect(byBrowser.x).toEqual(['(none)', 'chromium', 'firefox']);
+        expect(byBrowser.xLabels).toEqual(['(none)', 'chromium', 'firefox']);
         const byPipeline = query({ source: 'runs', x: { field: 'custom_filters', key: 'Pipeline' }, metric: { agg: 'count' }, order: 'label' });
         expect(byPipeline.x).toEqual(['nightly', 'release']);
         expect(series_values(byPipeline)).toEqual([2, 1]);
@@ -140,6 +149,28 @@ describe('grouping and aggregation', () => {
         expect(series_values(counts, 'Valid Login')).toEqual([1, 0]);
         const averages = query({ source: 'tests', x: { field: 'run' }, series: { field: 'name' }, metric: { agg: 'avg', field: 'elapsed_s' }, where: [{ field: 'status', op: 'is', value: 'failed' }] });
         expect(series_values(averages, 'Valid Login')).toEqual([3, null]);
+    });
+
+    it('keeps real values that look like the placeholder groups apart from them', () => {
+        const data = make_dataset();
+        data.tests = data.tests.map(test => test.name === 'Invalid Login' ? { ...test, tags: '[(no tags)]' } : test);
+        const result = query({ source: 'tests', x: { field: 'tags' }, metric: { agg: 'count' }, order: 'label' }, data);
+        expect(result.xLabels).toEqual(['(no tags)', '(no tags)', 'login', 'smoke']);
+        expect(new Set(result.x).size).toBe(4);
+    });
+
+    it('splits the counts of runs by status into the matching status only', () => {
+        const base = { source: 'runs', x: { field: 'run' }, series: { field: 'status' } };
+        const failed = query({ ...base, metric: { agg: 'fail_count' } });
+        expect(series_values(failed, 'passed')).toEqual([0, 0, 0]);
+        expect(series_values(failed, 'failed')).toEqual([0, 1, 1]);
+        const passed = query({ ...base, metric: { agg: 'pass_count' } });
+        expect(series_values(passed, 'passed')).toEqual([3, 1, 2]);
+        expect(series_values(passed, 'skipped')).toEqual([0, 0, 0]);
+        // with status on the x axis the same rule applies
+        const byStatus = query({ source: 'runs', x: { field: 'status' }, metric: { agg: 'fail_count' } });
+        expect(byStatus.xLabels).toEqual(['Failed']);
+        expect(series_values(byStatus)).toEqual([2]);
     });
 
     it('normalizes columns to percentages', () => {
@@ -189,6 +220,13 @@ describe('filters', () => {
         expect(run_custom_graph_query(spec, make_dataset()).series[0].values).toEqual([9]);
     });
 
+    it('ignores regular expressions that could freeze the dashboard', () => {
+        // validation reports it; a spec that skipped validation still does not run it
+        const spec = { ...validate_custom_graph_spec({ source: 'tests', x: null, metric: { agg: 'count' }, viz: { type: 'bar' } }).spec,
+            where: [{ field: 'message', op: 'matches', value: '(a+)+$' }] };
+        expect(run_custom_graph_query(spec, make_dataset()).series[0].values).toEqual([9]);
+    });
+
     it('applies the extra row filter of the section filters', () => {
         const result = query({ source: 'tests', x: null, metric: { agg: 'count' } }, make_dataset(), { rowFilter: row => row.suite === 'Web.Cart' });
         expect(result.series[0].values).toEqual([3]);
@@ -203,6 +241,14 @@ describe('ordering and limits', () => {
     it('ranks categories by value and keeps the top N', () => {
         const result = query({ source: 'tests', x: { field: 'name' }, metric: { agg: 'avg', field: 'elapsed_s' }, order: 'value_desc', limit: 2 });
         expect(result.x).toEqual(['Add To Cart', 'Valid Login']);
+    });
+
+    it('ranks on the mean of the series for values that do not add up', () => {
+        // Login has two tests of 3s, Cart one test of 5s: summed Login (6) would rank above Cart (5)
+        const data = make_dataset();
+        data.tests = data.tests.map(test => ({ ...test, elapsed_s: test.name === 'Add To Cart' ? '5' : '3' }));
+        const result = query({ source: 'tests', x: { field: 'suite' }, series: { field: 'name' }, metric: { agg: 'avg', field: 'elapsed_s' }, order: 'value_desc' }, data);
+        expect(result.x).toEqual(['Web.Cart', 'Web.Login']);
     });
 
     it('leaves zero values out of a ranking of counts', () => {

@@ -149,6 +149,13 @@ let tablesNavStore = {
     resizeHandler: null,
 };
 
+// assigning an imported binding only works once the bundler has stripped the imports, so the
+// fullscreen state is changed here, in the module that owns it
+function set_fullscreen_state(active, graphId) {
+    inFullscreen = active;
+    inFullscreenGraph = graphId;
+}
+
 var defaultFaviconHref = (() => {
     const link = document.querySelector("link[rel~='icon']");
     return link ? link.getAttribute('href') : null;
@@ -192,5 +199,6 @@ export {
     lastMergeResult,
     filterRows,
     defaultFaviconHref,
-    escape_html_for_merge
+    escape_html_for_merge,
+    set_fullscreen_state
 };

@@ -1,5 +1,7 @@
 // starting points offered in the gallery; picking one loads it into the builder.
-// focusFilter is the index of a where-condition the user still has to fill in
+// focusFilter is the index of a where-condition the user still has to fill in.
+// Tests are grouped on "test", which follows the suite paths switch like the built-in test graphs,
+// so two tests with the same name in different suites are not merged when suite paths are on
 const CUSTOM_GRAPH_PRESETS = [
     {
         key: "statisticsPerRun",
@@ -19,7 +21,7 @@ const CUSTOM_GRAPH_PRESETS = [
         description: "The duration of a single test across runs.",
         spec: {
             title: "Duration trend", source: "tests",
-            where: [{ field: "name", op: "is", value: "" }],
+            where: [{ field: "test", op: "is", value: "" }],
             x: { field: "run" }, series: null,
             metric: { agg: "avg", field: "elapsed_s" }, viz: { type: "line" },
         },
@@ -31,7 +33,7 @@ const CUSTOM_GRAPH_PRESETS = [
         description: "The 10 tests that failed most often.",
         spec: {
             title: "Most failed tests", source: "tests", where: [],
-            x: { field: "name" }, series: null,
+            x: { field: "test" }, series: null,
             metric: { agg: "fail_count" }, order: "value_desc", limit: 10, viz: { type: "hbar" },
         },
     },
@@ -41,7 +43,7 @@ const CUSTOM_GRAPH_PRESETS = [
         description: "The 10 tests that switch between pass and fail most often.",
         spec: {
             title: "Most flaky tests", source: "tests", where: [],
-            x: { field: "name" }, series: null,
+            x: { field: "test" }, series: null,
             metric: { agg: "flips" }, order: "value_desc", limit: 10, viz: { type: "hbar" },
         },
     },
@@ -51,7 +53,7 @@ const CUSTOM_GRAPH_PRESETS = [
         description: "The 10 tests with the highest average duration.",
         spec: {
             title: "Slowest tests", source: "tests", where: [],
-            x: { field: "name" }, series: null,
+            x: { field: "test" }, series: null,
             metric: { agg: "avg", field: "elapsed_s" }, order: "value_desc", limit: 10, viz: { type: "hbar" },
         },
     },
@@ -102,7 +104,7 @@ const CUSTOM_GRAPH_PRESETS = [
         description: "Which tests failed in which of the last 30 runs.",
         spec: {
             title: "Failure heatmap", source: "tests", where: [],
-            x: { field: "run" }, series: { field: "name" },
+            x: { field: "run" }, series: { field: "test" },
             metric: { agg: "fail_count" }, limit: 30, viz: { type: "heatmap" },
         },
     },

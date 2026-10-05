@@ -1,6 +1,7 @@
 import { settings } from "../variables/settings.js";
 import { barConfig } from "../variables/chartconfig.js";
 import { inFullscreen}  from "../variables/globals.js";
+import { parse_test_tags } from "../common.js";
 
 // helper function to more easily use the logic of filtering suite graph data based on the selected filters
 // returns a function that returns true if a value should be excluded, false if it should be included
@@ -44,6 +45,33 @@ function get_suite_data_exclusion(dataType) {
 
 // function to group timeline rows by label and run_start in one pass
 // returns Map(label -> Map(run_start -> [rows])), rows whose labels are not in labels are skipped
+// the name a keyword has in the keyword section select: "Library.Keyword" when library names are shown
+function get_keyword_select_key(keyword) {
+    return settings?.switch?.useLibraryNames === true && keyword.owner
+        ? `${keyword.owner}.${keyword.name}`
+        : keyword.name;
+}
+
+// returns a predicate telling whether a test ({ name, full_name, tags }) matches the suite, test
+// and tag selects of the test section; the selects are read once here instead of once per test
+function get_test_section_predicate() {
+    const suite = document.getElementById("suiteSelectTests")?.value || "All";
+    const test = document.getElementById("testSelect")?.value || "All";
+    const tag = document.getElementById("testTagsSelect")?.value || "All";
+    const usePaths = settings.switch.suitePathsTestSection;
+    return (value) => {
+        if (suite !== "All") {
+            const expectedFull = `${suite}.${value.name}`;
+            const isMatch = usePaths
+                ? value.full_name === expectedFull
+                : value.full_name.includes(`.${suite}.${value.name}`) || value.full_name === expectedFull;
+            if (!isMatch) return false;
+        }
+        if (test !== "All" && value.name !== test) return false;
+        return tag === "All" || parse_test_tags(value.tags).includes(tag);
+    };
+}
+
 function group_timeline_values(data, labels, get_labels) {
     const groups = new Map(labels.map(label => [label, new Map()]));
     for (const value of data) {
@@ -186,6 +214,8 @@ function format_attempt_lines(attempts, maxMessageLength = 80) {
 
 export {
     get_suite_data_exclusion,
+    get_keyword_select_key,
+    get_test_section_predicate,
     group_timeline_values,
     update_height,
     convert_timeline_data,

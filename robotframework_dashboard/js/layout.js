@@ -30,7 +30,7 @@ import {
     wire_delete_section_buttons,
     open_add_custom_section_modal,
 } from "./customsections.js";
-import { render_custom_graphs, setup_custom_graph_buttons } from "./customgraphs/widgets.js";
+import { normalize_custom_graphs, render_custom_graphs, setup_custom_graph_buttons } from "./customgraphs/widgets.js";
 import { open_custom_graph_builder, setup_custom_graph_builder } from "./customgraphs/builder.js";
 
 // Layout history state for undo/redo in edit mode
@@ -329,6 +329,7 @@ function setup_section_order() {
 
 // function to order the grphs according to the localstorage config
 function setup_graph_order() {
+    normalize_custom_graphs()
     setup_grid_graphs("Unified")
     setup_grid_graphs("Run")
     setup_grid_graphs("Suite")
@@ -860,7 +861,7 @@ function setup_dashboard_section_layout_buttons() {
     setup_add_link_widget_modal();
     setup_add_custom_section_modal();
     setup_custom_graph_builder();
-    setup_custom_graph_buttons();
+    setup_custom_graph_buttons(open_custom_graph_builder);
 }
 
 // function to separately add the eventlisteners for overview section layout buttons

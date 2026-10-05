@@ -4,7 +4,7 @@ import { get_messages_data } from "../graph_data/messages.js";
 import { get_duration_deviation_data } from "../graph_data/duration_deviation.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { build_tooltip_meta, lookup_tooltip_meta, format_status } from "../graph_data/tooltip_helpers.js";
-import { update_height, format_attempt_lines } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines, get_test_section_predicate } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filteredTests } from "../variables/globals.js";
@@ -206,24 +206,7 @@ function _build_test_duration_config() {
 
 function _get_test_most_filtered_data() {
     if (!settings.switch.sectionFiltersApplyTest) return filteredTests;
-    const suiteSelectTests = document.getElementById("suiteSelectTests").value;
-    const testSelectVal = document.getElementById("testSelect").value;
-    const testTagsSelect = document.getElementById("testTagsSelect").value;
-    return filteredTests.filter(test => {
-        if (suiteSelectTests !== "All") {
-            const expectedFull = `${suiteSelectTests}.${test.name}`;
-            const isMatch = settings.switch.suitePathsTestSection
-                ? test.full_name === expectedFull
-                : test.full_name.includes(`.${suiteSelectTests}.${test.name}`) || test.full_name === expectedFull;
-            if (!isMatch) return false;
-        }
-        if (testSelectVal !== "All" && test.name !== testSelectVal) return false;
-        if (testTagsSelect !== "All") {
-            const tagList = test.tags.replace(/\[|\]/g, "").split(",").map(t => t.trim());
-            if (!tagList.includes(testTagsSelect)) return false;
-        }
-        return true;
-    });
+    return filteredTests.filter(get_test_section_predicate());
 }
 
 function _build_test_messages_config() {

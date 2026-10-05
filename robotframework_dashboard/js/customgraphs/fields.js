@@ -1,11 +1,13 @@
 // field catalog for the custom graphs: which fields each source offers, what type they are,
 // and which filter operators / aggregations / groupings that type allows
 
+// counts: a row carries passed/failed/skipped counts (a run, suite or keyword summed over its
+// tests or calls) instead of the 0/1 flags of a single test
 const CUSTOM_GRAPH_SOURCES = [
-    { key: "runs", label: "Runs" },
-    { key: "suites", label: "Suites" },
+    { key: "runs", label: "Runs", counts: true },
+    { key: "suites", label: "Suites", counts: true },
     { key: "tests", label: "Tests" },
-    { key: "keywords", label: "Keywords" },
+    { key: "keywords", label: "Keywords", counts: true },
     { key: "exceptions", label: "Exceptions" },
 ];
 
@@ -42,6 +44,9 @@ const CUSTOM_GRAPH_SOURCE_FIELDS = {
         { key: "elapsed_s", label: "Duration", type: "duration" },
     ],
     tests: [
+        // the test name, or the full name when the "suite paths" switch of the test section is on,
+        // like the built-in test graphs (resolved when the rows are built)
+        { key: "test", label: "Test", type: "string" },
         { key: "name", label: "Test name", type: "string" },
         { key: "full_name", label: "Test full name", type: "string" },
         { key: "suite", label: "Suite", type: "string" },
@@ -117,21 +122,23 @@ const CUSTOM_GRAPH_DATE_BUCKETS = [
 
 // needs: null = no field, "numeric" = a number/duration field, "any" = any non-kv field
 // status: only offered on sources with passed/failed/skipped columns
+// sums: values add up, so an empty cell is 0 and a column can be split into percentages
+// statusSplit: still correct when a source with counts is grouped by status (see engine.js)
 const CUSTOM_GRAPH_AGGS = [
-    { key: "count", label: "Count", needs: null },
-    { key: "sum", label: "Sum", needs: "numeric" },
+    { key: "count", label: "Count", needs: null, sums: true, statusSplit: true },
+    { key: "sum", label: "Sum", needs: "numeric", sums: true },
     { key: "avg", label: "Average", needs: "numeric" },
     { key: "min", label: "Minimum", needs: "numeric" },
     { key: "max", label: "Maximum", needs: "numeric" },
     { key: "median", label: "Median", needs: "numeric" },
     { key: "p90", label: "90th percentile", needs: "numeric" },
     { key: "p95", label: "95th percentile", needs: "numeric" },
-    { key: "distinct", label: "Distinct count", needs: "any" },
+    { key: "distinct", label: "Distinct count", needs: "any", sums: true },
     { key: "pass_rate", label: "Pass rate (%)", needs: null, status: true },
-    { key: "pass_count", label: "Passed", needs: null, status: true },
-    { key: "fail_count", label: "Failed", needs: null, status: true },
-    { key: "skip_count", label: "Skipped", needs: null, status: true },
-    { key: "flips", label: "Status flips (flakiness)", needs: null, status: true },
+    { key: "pass_count", label: "Passed", needs: null, status: true, sums: true, statusSplit: true },
+    { key: "fail_count", label: "Failed", needs: null, status: true, sums: true, statusSplit: true },
+    { key: "skip_count", label: "Skipped", needs: null, status: true, sums: true, statusSplit: true },
+    { key: "flips", label: "Status flips (flakiness)", needs: null, status: true, sums: true },
 ];
 
 const CUSTOM_GRAPH_STATUS_LABELS = { passed: "Passed", failed: "Failed", skipped: "Skipped" };
@@ -165,9 +172,16 @@ function get_custom_graph_filterable_fields(source) {
     return get_custom_graph_source_fields(source).filter(field => get_custom_graph_ops(field.type).length > 0);
 }
 
-function get_custom_graph_aggs(source) {
+function custom_graph_source_has_counts(source) {
+    return CUSTOM_GRAPH_SOURCES.some(item => item.key === source && item.counts);
+}
+
+// statusGrouped: the x axis or the split by is the status. A run with 48 passed and 2 failed tests
+// then lands in both status groups, which only the count based aggregations can tell apart
+function get_custom_graph_aggs(source, statusGrouped = false) {
     const hasStatus = custom_graph_source_has_status(source);
-    return CUSTOM_GRAPH_AGGS.filter(agg => !agg.status || hasStatus);
+    const countsOnly = statusGrouped && custom_graph_source_has_counts(source);
+    return CUSTOM_GRAPH_AGGS.filter(agg => (!agg.status || hasStatus) && (!countsOnly || agg.statusSplit));
 }
 
 function get_custom_graph_agg(key) {
@@ -192,6 +206,7 @@ export {
     get_custom_graph_field,
     get_custom_graph_ops,
     custom_graph_source_has_status,
+    custom_graph_source_has_counts,
     is_custom_graph_groupable,
     get_custom_graph_groupable_fields,
     get_custom_graph_filterable_fields,

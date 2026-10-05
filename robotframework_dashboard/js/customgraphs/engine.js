@@ -1,19 +1,30 @@
-import { strip_tz_suffix } from "../common.js";
+import { strip_tz_suffix, parse_test_tags } from "../common.js";
 import { get_custom_graph_field, get_custom_graph_agg, CUSTOM_GRAPH_STATUS_LABELS } from "./fields.js";
+import { get_custom_graph_regex_problem } from "./spec.js";
 
 const CUSTOM_GRAPH_MAX_SERIES = 10;
 // a heatmap draws its series as rows, so it can show many more of them than lines or bars
 const CUSTOM_GRAPH_MAX_HEATMAP_ROWS = 50;
 const CUSTOM_GRAPH_STATUS_ORDER = ["passed", "failed", "skipped"];
-const CUSTOM_GRAPH_SUM_AGGS = new Set(["count", "sum", "distinct", "pass_count", "fail_count", "skip_count", "flips"]);
+// group keys for rows without a value; they start with a character no real value has, so a test
+// tagged "(no tags)" never lands in the group of untagged tests
+const CUSTOM_GRAPH_EMPTY_KEYS = { empty: "\u0000empty", none: "\u0000none", noTags: "\u0000notags" };
+const CUSTOM_GRAPH_EMPTY_LABELS = {
+    [CUSTOM_GRAPH_EMPTY_KEYS.empty]: "(empty)",
+    [CUSTOM_GRAPH_EMPTY_KEYS.none]: "(none)",
+    [CUSTOM_GRAPH_EMPTY_KEYS.noTags]: "(no tags)",
+};
 
 // keyed by the source array: the filter pipeline hands over new arrays on every filter change,
 // so the rows are only rebuilt then and are shared by all custom graphs in between
 const customGraphRowCache = new WeakMap();
 
-function parse_custom_graph_tags(value) {
-    if (!value) return [];
-    return String(value).replace(/^\[|\]$/g, "").split(",").map(tag => tag.trim()).filter(Boolean);
+function is_custom_graph_sum_agg(aggKey) {
+    return !!get_custom_graph_agg(aggKey)?.sums;
+}
+
+function get_custom_graph_key_label(key) {
+    return CUSTOM_GRAPH_EMPTY_LABELS[key] ?? key;
 }
 
 // metadata is stored as a python list repr: "['Browser: chromium', 'Team: Storefront']"
@@ -58,7 +69,8 @@ function get_custom_graph_row_status(row) {
     return "passed";
 }
 
-function build_custom_graph_rows(source, data) {
+// options.suitePaths: the "test" field is the full name instead of the name
+function build_custom_graph_rows(source, data, options = {}) {
     const runsByStart = new Map((data.runs || []).map(run => [run.run_start, run]));
     return (data[source] || []).map(item => {
         const run = source === "runs" ? item : runsByStart.get(item.run_start);
@@ -67,7 +79,7 @@ function build_custom_graph_rows(source, data) {
             runItem: run || item,
             run_date: strip_tz_suffix(String(item.run_start ?? "")),
             run_name: run?.name ?? "",
-            run_tags: parse_custom_graph_tags(run?.tags),
+            run_tags: parse_test_tags(run?.tags),
             project_version: run?.project_version || "",
             metadata: parse_custom_graph_metadata(run?.metadata),
             custom_filters: parse_custom_graph_custom_filters(run?.custom_filters),
@@ -90,8 +102,9 @@ function build_custom_graph_rows(source, data) {
         } else if (source === "tests") {
             row.name = item.name ?? "";
             row.full_name = item.full_name ?? "";
+            row.test = options.suitePaths ? row.full_name : row.name;
             row.suite = get_custom_graph_parent(item.full_name);
-            row.tags = parse_custom_graph_tags(item.tags);
+            row.tags = parse_test_tags(item.tags);
             row.message = item.message ?? "";
             row.elapsed_s = to_custom_graph_number(item.elapsed_s);
             row.attempts = to_custom_graph_number(item.attempts) || 1;
@@ -111,12 +124,13 @@ function build_custom_graph_rows(source, data) {
     });
 }
 
-function get_custom_graph_rows(source, data) {
+function get_custom_graph_rows(source, data, options = {}) {
     const items = data[source] || [];
+    const suitePaths = options.suitePaths === true;
     const cached = customGraphRowCache.get(items);
-    if (cached && cached.runs === data.runs) return cached.rows;
-    const rows = build_custom_graph_rows(source, data);
-    customGraphRowCache.set(items, { runs: data.runs, rows });
+    if (cached && cached.runs === data.runs && cached.suitePaths === suitePaths) return cached.rows;
+    const rows = build_custom_graph_rows(source, data, { suitePaths });
+    customGraphRowCache.set(items, { runs: data.runs, suitePaths, rows });
     return rows;
 }
 
@@ -142,8 +156,8 @@ function compile_custom_graph_condition(condition, source, now) {
                 ? (row) => row[key][condition.key]
                 : (row) => row[key];
             if (condition.op === "matches") {
-                let regex;
-                try { regex = new RegExp(text, "i"); } catch { return null; }
+                if (get_custom_graph_regex_problem(text)) return null;
+                const regex = new RegExp(text, "i");
                 return (row) => regex.test(String(read(row) ?? ""));
             }
             return {
@@ -207,9 +221,11 @@ function get_custom_graph_date_bucket(dateTime, bucket) {
 }
 
 // every group a row falls into, with the weight it counts for: a row with several tags lands in
-// every tag group, and a status group on a run/suite/keyword row is weighted by its counts
+// every tag group, and a status group on a run/suite/keyword row is weighted by its counts. A
+// status group also carries its status, so the accumulators only count that status of the row.
+// A row whose counts are all 0 (a run without tests) has no status and falls in no status group
 function get_custom_graph_group_values(group, row, field) {
-    if (!group || !field) return [{ key: "", weight: 1 }];
+    if (!group || !field) return [{ key: "", weight: 1, status: null }];
     const value = row[field.key];
     switch (field.type) {
         case "run":
@@ -219,15 +235,17 @@ function get_custom_graph_group_values(group, row, field) {
         case "status":
             return CUSTOM_GRAPH_STATUS_ORDER
                 .filter(status => row[status] > 0)
-                .map(status => ({ key: status, weight: row[status] }));
+                .map(status => ({ key: status, weight: row[status], status }));
         case "tags":
             return value.length > 0
                 ? value.map(tag => ({ key: tag, weight: 1 }))
-                : [{ key: "(no tags)", weight: 1 }];
-        case "kv":
-            return [{ key: value[group.key] ?? "(none)", weight: 1 }];
+                : [{ key: CUSTOM_GRAPH_EMPTY_KEYS.noTags, weight: 1 }];
+        case "kv": {
+            const kvValue = value[group.key];
+            return [{ key: kvValue === undefined || kvValue === "" ? CUSTOM_GRAPH_EMPTY_KEYS.none : kvValue, weight: 1 }];
+        }
         default:
-            return [{ key: value === "" || value === undefined ? "(empty)" : String(value), weight: 1 }];
+            return [{ key: value === "" || value === undefined ? CUSTOM_GRAPH_EMPTY_KEYS.empty : String(value), weight: 1 }];
     }
 }
 
@@ -292,9 +310,14 @@ function create_custom_graph_accumulator(metric) {
         case "pass_count":
         case "fail_count":
         case "skip_count": {
+            // in a status group only the count of that status belongs to the group: the "passed"
+            // group of a run with 2 failures has 0 failures
             const column = { pass_count: "passed", fail_count: "failed", skip_count: "skipped" }[metric.agg];
             let total = 0;
-            return { add: (row) => { total += row[column]; }, value: () => total };
+            return {
+                add: (row, weight, status) => { if (!status || status === column) total += row[column]; },
+                value: () => total,
+            };
         }
         case "flips": {
             // a flip is a pass <-> fail change of the same item between consecutive runs;
@@ -359,7 +382,7 @@ function order_custom_graph_keys(keys, totals, order, chronological, limit) {
     } else if (order === "value_asc") {
         ordered = [...keys].sort((a, b) => totals.get(a) - totals.get(b));
     } else if (order === "label") {
-        ordered = [...keys].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+        ordered = [...keys].sort((a, b) => String(get_custom_graph_key_label(a)).localeCompare(String(get_custom_graph_key_label(b)), undefined, { numeric: true }));
     } else {
         ordered = [...keys].sort((a, b) => {
             const left = strip_tz_suffix(String(a));
@@ -370,6 +393,16 @@ function order_custom_graph_keys(keys, totals, order, chronological, limit) {
     if (!limit || limit <= 0 || ordered.length <= limit) return ordered;
     // a time axis keeps the most recent values, a ranking keeps the top
     return chronological && order === "auto" ? ordered.slice(-limit) : ordered.slice(0, limit);
+}
+
+// the value a column or series is ranked on: the total for values that add up, otherwise the mean
+// of its values (a sum of averages or percentiles means nothing)
+function create_custom_graph_score(sums) {
+    let total = 0, count = 0;
+    return {
+        add: (value) => { if (value !== null) { total += value; count++; } },
+        value: () => sums ? total : count > 0 ? total / count : 0,
+    };
 }
 
 // runs a validated panel spec against the data ({ runs, suites, tests, keywords, exceptions })
@@ -386,11 +419,12 @@ function run_custom_graph_query(spec, data, options = {}) {
     const xField = spec.x ? get_custom_graph_field(source, spec.x.field) : null;
     const seriesField = spec.series ? get_custom_graph_field(source, spec.series.field) : null;
     const xKind = get_custom_graph_x_kind(spec);
+    const sums = is_custom_graph_sum_agg(spec.metric.agg);
 
     const cells = new Map();
     const runLabels = new Map();
     let rowCount = 0;
-    for (const row of get_custom_graph_rows(source, data)) {
+    for (const row of get_custom_graph_rows(source, data, { suitePaths: options.suitePaths })) {
         if (!predicates.every(predicate => predicate(row))) continue;
         if (rowFilter && !rowFilter(row)) continue;
         rowCount++;
@@ -400,32 +434,34 @@ function run_custom_graph_query(spec, data, options = {}) {
             const column = cells.get(xGroup.key);
             for (const seriesGroup of get_custom_graph_group_values(spec.series, row, seriesField)) {
                 if (!column.has(seriesGroup.key)) column.set(seriesGroup.key, create_custom_graph_accumulator(spec.metric));
-                column.get(seriesGroup.key).add(row, xGroup.weight * seriesGroup.weight);
+                column.get(seriesGroup.key).add(row, xGroup.weight * seriesGroup.weight, xGroup.status ?? seriesGroup.status ?? null);
             }
         }
     }
 
     const values = new Map();
     const xTotals = new Map();
-    const seriesTotals = new Map();
+    const seriesScores = new Map();
     for (const [xKey, column] of cells) {
         const columnValues = new Map();
-        let xTotal = 0;
+        const xScore = create_custom_graph_score(sums);
         for (const [seriesKey, accumulator] of column) {
             const value = round_custom_graph_value(accumulator.value());
             columnValues.set(seriesKey, value);
-            xTotal += value ?? 0;
-            seriesTotals.set(seriesKey, (seriesTotals.get(seriesKey) ?? 0) + (value ?? 0));
+            xScore.add(value);
+            if (!seriesScores.has(seriesKey)) seriesScores.set(seriesKey, create_custom_graph_score(sums));
+            seriesScores.get(seriesKey).add(value);
         }
         values.set(xKey, columnValues);
-        xTotals.set(xKey, xTotal);
+        xTotals.set(xKey, xScore.value());
     }
+    const seriesTotals = new Map([...seriesScores].map(([key, score]) => [key, score.value()]));
 
     const chronological = xKind === "run" || xKind === "time";
     const order = spec.order || "auto";
     let candidateKeys = [...cells.keys()];
     // a "most failed" style ranking should not be padded with items that never failed
-    if (CUSTOM_GRAPH_SUM_AGGS.has(spec.metric.agg) && (order === "value_desc" || (order === "auto" && !chronological))) {
+    if (sums && (order === "value_desc" || (order === "auto" && !chronological))) {
         candidateKeys = candidateKeys.filter(key => xTotals.get(key) > 0);
     }
     const xKeys = order_custom_graph_keys(candidateKeys, xTotals, order, chronological, spec.limit);
@@ -438,19 +474,19 @@ function run_custom_graph_query(spec, data, options = {}) {
         seriesKeys = [...seriesTotals.keys()].sort((a, b) => seriesTotals.get(b) - seriesTotals.get(a));
     }
     // rows of only zeros would bury the few rows with failures in a failure heatmap
-    if (heatmap && CUSTOM_GRAPH_SUM_AGGS.has(spec.metric.agg)) {
+    if (heatmap && sums) {
         seriesKeys = seriesKeys.filter(key => seriesTotals.get(key) > 0);
     }
     const maxSeries = heatmap ? CUSTOM_GRAPH_MAX_HEATMAP_ROWS : CUSTOM_GRAPH_MAX_SERIES;
     const hiddenSeries = Math.max(0, seriesKeys.length - maxSeries);
     seriesKeys = seriesKeys.slice(0, maxSeries);
 
-    const emptyValue = CUSTOM_GRAPH_SUM_AGGS.has(spec.metric.agg) ? 0 : null;
+    const emptyValue = sums ? 0 : null;
     const series = seriesKeys.map(seriesKey => ({
         key: seriesKey,
         label: !seriesField
             ? get_custom_graph_metric_label(spec)
-            : seriesField.type === "status" ? CUSTOM_GRAPH_STATUS_LABELS[seriesKey] : seriesKey,
+            : seriesField.type === "status" ? CUSTOM_GRAPH_STATUS_LABELS[seriesKey] : get_custom_graph_key_label(seriesKey),
         status: seriesField?.type === "status" ? seriesKey : null,
         values: xKeys.map(xKey => values.get(xKey)?.get(seriesKey) ?? emptyValue),
     }));
@@ -471,7 +507,7 @@ function run_custom_graph_query(spec, data, options = {}) {
             if (xKind === "run") return runLabels.get(xKey) ?? xKey;
             if (xKind === "none") return "All";
             if (xField?.type === "status") return CUSTOM_GRAPH_STATUS_LABELS[xKey] ?? xKey;
-            return xKey;
+            return get_custom_graph_key_label(xKey);
         }),
         series,
         meta: {
@@ -488,7 +524,6 @@ export {
     get_custom_graph_rows,
     get_custom_graph_metric_label,
     get_custom_graph_x_kind,
-    parse_custom_graph_tags,
     parse_custom_graph_metadata,
     parse_custom_graph_custom_filters,
 };

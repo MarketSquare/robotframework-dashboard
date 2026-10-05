@@ -2,6 +2,8 @@ import { get_run_label, settings } from '../variables/settings.js';
 import { compareRunIds } from '../variables/graphs.js';
 import { set_local_storage_item } from '../localstorage.js';
 import { filteredKeywords, filteredRuns, filteredSuites, filteredTests } from '../variables/globals.js';
+import { parse_test_tags } from '../common.js';
+import { get_keyword_select_key } from '../graph_data/helpers.js';
 
 // function to update the available runs in the selects
 function setup_runs_in_compare_selects() {
@@ -127,11 +129,11 @@ function setup_testtags_in_select() {
     const testTags = [...new Set(filteredTests.reduce((tags, test) => {
         if (settings.switch.suitePathsTestSection) {
             if (test.full_name.includes(`${suiteSelectTests}.${test.name}`) || suiteSelectTests === "All") {
-                test.tags.replace(/\[|\]/g, "").split(",").forEach(tag => tags.push(tag.trim()));
+                tags.push(...parse_test_tags(test.tags));
             }
         } else {
             if (test.full_name.includes(`.${suiteSelectTests}.${test.name}`) || suiteSelectTests === "All") {
-                test.tags.replace(/\[|\]/g, "").split(",").forEach(tag => tags.push(tag.trim()));
+                tags.push(...parse_test_tags(test.tags));
             }
         }
         return tags;
@@ -145,17 +147,7 @@ function setup_testtags_in_select() {
 function setup_keywords_in_select() {
     const keywordSelect = document.getElementById("keywordSelect");
     keywordSelect.innerHTML = "";
-    const useLibraryNames = settings?.switch?.useLibraryNames === true;
-
-    const keywordNames = [
-        ...new Set(
-            filteredKeywords.map(keyword =>
-                useLibraryNames && keyword.owner
-                    ? `${keyword.owner}.${keyword.name}`
-                    : keyword.name
-            )
-        )
-    ].sort();
+    const keywordNames = [...new Set(filteredKeywords.map(get_keyword_select_key))].sort();
 
     keywordNames.forEach(keywordName => {
         keywordSelect.options.add(new Option(keywordName, keywordName));

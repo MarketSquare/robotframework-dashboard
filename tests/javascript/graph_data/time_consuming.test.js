@@ -23,7 +23,8 @@ vi.mock('@js/variables/chartconfig.js', () => ({
         borderColor: 'rgba(54, 162, 235)',
     },
 }));
-vi.mock('@js/graph_data/helpers.js', () => ({
+vi.mock('@js/graph_data/helpers.js', async () => ({
+    ...(await vi.importActual('@js/graph_data/helpers.js')),
     convert_timeline_data: (datasets) => {
         const grouped = {};
         for (const ds of datasets) {

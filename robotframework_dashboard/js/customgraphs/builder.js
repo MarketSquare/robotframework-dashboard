@@ -1,5 +1,6 @@
 import { debounce } from "../common.js";
 import { escape_html_for_merge } from "../variables/globals.js";
+import { settings } from "../variables/settings.js";
 import {
     CUSTOM_GRAPH_SOURCES,
     CUSTOM_GRAPH_DATE_BUCKETS,
@@ -15,10 +16,11 @@ import {
 import {
     CUSTOM_GRAPH_VIZ_TYPES,
     CUSTOM_GRAPH_ORDERS,
-    CUSTOM_GRAPH_PERCENT_VIZ_TYPES,
     create_default_custom_graph_spec,
     validate_custom_graph_spec,
     sanitize_custom_graph_spec,
+    is_custom_graph_status_grouped,
+    custom_graph_supports_percent,
 } from "./spec.js";
 import { CUSTOM_GRAPH_PRESETS } from "./presets.js";
 import { get_custom_graph_rows } from "./engine.js";
@@ -33,6 +35,7 @@ let customGraphDraft = create_default_custom_graph_spec();
 let customGraphEditingId = null;
 let customGraphSection = "run";
 let customGraphJsonError = "";
+// the filter value to focus once the builder tab is shown after picking a preset
 let customGraphPendingFocus = null;
 
 // theme.js swaps the outline button classes once when the theme is applied, so buttons built
@@ -53,7 +56,10 @@ function custom_graph_datalist(id, values) {
 // without kvKey a kv field suggests its keys instead of its values
 function get_custom_graph_suggestions(field, kvKey = undefined) {
     const values = new Set();
-    for (const row of get_custom_graph_rows(customGraphDraft.source, get_custom_graph_data(customGraphDraft))) {
+    const rows = get_custom_graph_rows(customGraphDraft.source, get_custom_graph_data(customGraphDraft), {
+        suitePaths: settings.switch.suitePathsTestSection === true,
+    });
+    for (const row of rows) {
         const value = row[field.key];
         if (field.type === "tags") value.forEach(tag => values.add(tag));
         else if (field.type === "kv" && kvKey === undefined) Object.keys(value).forEach(key => values.add(key));
@@ -141,7 +147,7 @@ function render_custom_graph_form() {
     render_custom_graph_group("Series", draft.series, "None");
 
     const agg = get_custom_graph_agg(draft.metric.agg);
-    document.getElementById("customGraphAgg").innerHTML = get_custom_graph_aggs(draft.source)
+    document.getElementById("customGraphAgg").innerHTML = get_custom_graph_aggs(draft.source, is_custom_graph_status_grouped(draft))
         .map(item => custom_graph_option(item.key, item.label, item.key === draft.metric.agg)).join("");
     const aggField = document.getElementById("customGraphAggField");
     aggField.hidden = !agg?.needs;
@@ -157,7 +163,7 @@ function render_custom_graph_form() {
     document.getElementById("customGraphViz").innerHTML = CUSTOM_GRAPH_VIZ_TYPES
         .map(viz => `<button type="button" class="btn ${get_custom_graph_button_class()} btn-sm custom-graph-viz-btn${viz.key === draft.viz.type ? " active" : ""}"
                         data-viz="${viz.key}" aria-pressed="${viz.key === draft.viz.type}">${viz.label}</button>`).join("");
-    document.getElementById("customGraphPercentGroup").hidden = !CUSTOM_GRAPH_PERCENT_VIZ_TYPES.includes(draft.viz.type);
+    document.getElementById("customGraphPercentGroup").hidden = !custom_graph_supports_percent(draft);
     document.getElementById("customGraphPercent").checked = draft.viz.percent === true;
     document.getElementById("customGraphGlobalFilters").checked = draft.useGlobalFilters !== false;
     const sectionData = CUSTOM_GRAPH_SECTION_FILTER_DATA[customGraphSection];
@@ -335,12 +341,10 @@ function setup_custom_graph_builder() {
         } else if (event.target.closest("#customGraphAddFilter")) {
             const draft = read_custom_graph_form();
             const fields = get_custom_graph_filterable_fields(draft.source);
-            const field = fields.find(item => item.key === "name") || fields[0];
+            const field = fields.find(item => item.key === "test") || fields.find(item => item.key === "name") || fields[0];
             draft.where.push({ field: field.key, op: get_custom_graph_ops(field.type)[0].key, value: "" });
-            customGraphPendingFocus = draft.where.length - 1;
             apply_custom_graph_change(draft);
-            document.querySelector(`#customGraphFilters .custom-graph-filter-field[data-index="${customGraphPendingFocus}"]`)?.focus();
-            customGraphPendingFocus = null;
+            document.querySelector(`#customGraphFilters .custom-graph-filter-field[data-index="${draft.where.length - 1}"]`)?.focus();
         }
     });
 

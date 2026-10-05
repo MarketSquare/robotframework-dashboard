@@ -1,16 +1,13 @@
 import { settings, get_run_label } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
-import { convert_timeline_data, group_timeline_values, parse_test_attempts } from "./helpers.js";
+import { convert_timeline_data, group_timeline_values, parse_test_attempts, get_keyword_select_key } from "./helpers.js";
 import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
 import { strip_tz_suffix } from "../common.js";
 
 // function to prepare the data in the correct format for most failed graphs
 function get_most_failed_data(dataType, graphType, filteredData, recent) {
-    const useLibraryNames = settings?.switch?.useLibraryNames === true;
     function getTestKey(value, dataType) {
-        if (dataType === "keyword" && useLibraryNames && value.owner) {
-            return `${value.owner}.${value.name}`;
-        }
+        if (dataType === "keyword") return get_keyword_select_key(value);
         if (dataType === "suite" && settings.switch.suitePathsSuiteSection) {
             return value.full_name;
         } else if (dataType === "test" && settings.switch.suitePathsTestSection) {

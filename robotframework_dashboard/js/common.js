@@ -288,6 +288,13 @@ function fade_out(element, duration = 200) {
     }).finally(() => element.classList.remove("fading"));
 }
 
+// test tags are stored as "[tag1, tag2]"; an array (already parsed) is returned as-is
+function parse_test_tags(value) {
+    if (Array.isArray(value)) return value;
+    if (!value) return [];
+    return String(value).replace(/^\[|\]$/g, "").split(",").map(tag => tag.trim()).filter(Boolean);
+}
+
 function strip_tz_suffix(s) {
     const suffix = s.slice(-6);
     return /^[+-]\d{2}:\d{2}$/.test(suffix) ? s.slice(0, -6) : s;
@@ -369,6 +376,7 @@ export {
     fade_in,
     fade_out,
     strip_tz_suffix,
+    parse_test_tags,
     get_run_projects,
     generate_id,
     apply_bg_class,
