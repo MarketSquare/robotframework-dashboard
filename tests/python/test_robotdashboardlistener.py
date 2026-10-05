@@ -381,6 +381,23 @@ def test_upload_log_file_enabled_but_no_log_path_warns(capsys):
     assert "WARNING uploadlog enabled but no log file was provided" in capsys.readouterr().out
 
 
+def test_upload_log_file_without_log_file_call_warns(capsys):
+    # robot --log NONE never calls log_file(), the listener must not depend on it
+    rd = _make_listener(uploadlog=True)
+    rd._upload_log_file()
+    assert "WARNING uploadlog enabled but no log file was provided" in capsys.readouterr().out
+
+
+def test_close_without_output_file_call_skips_processing(capsys):
+    # robot --output NONE calls output_file(None)
+    rd = _make_listener()
+    rd.output_file(None)
+    rd._add_output_to_database = MagicMock()
+    rd.close()
+    rd._add_output_to_database.assert_not_called()
+    assert "ERROR no output.xml was written" in capsys.readouterr().out
+
+
 def test_upload_log_file_missing_file_warns(capsys):
     rd = _make_listener(uploadlog=True)
     rd.log_path = "does-not-exist.html"
@@ -450,6 +467,13 @@ def test_remove_runs_over_limit_calls_delete(monkeypatch, capsys):
     assert req.get_method() == "DELETE"
     assert req.data == dumps({"limit": 10}).encode("utf-8")
     assert "removed 3 runs" in capsys.readouterr().out
+
+
+def test_remove_runs_over_limit_connection_error_does_not_raise(monkeypatch, capsys):
+    monkeypatch.setattr(listener_module, "urlopen", MagicMock(side_effect=URLError("refused")))
+    rd = _make_listener(limit="10")
+    rd._remove_runs_over_limit()
+    assert "ERROR the server is not running" in capsys.readouterr().out
 
 
 def test_remove_runs_over_limit_non_200_prints_error(monkeypatch, capsys):

@@ -594,14 +594,78 @@ def test_parse_merged_message_chained_reruns_oldest_first():
 def test_parse_merged_message_skipped_rerun_keeps_original():
     message = (
         '*HTML* Test has been re-executed and results merged. Latter result had '
-        '<span class="skip">SKIP</span> status and was ignored. Message:\nno environment<hr>boom'
+        '<span class="skip">SKIP</span> status and was ignored. Message:\nno environment'
+        '<hr>Original message:\nExpected &lt;1&gt;'
     )
     final_message, attempts = parse_merged_message(message, "FAIL")
-    assert final_message == "boom"
+    assert final_message == "Expected <1>"
     assert attempts == [
-        {"status": "FAIL", "message": "boom"},
+        {"status": "FAIL", "message": "Expected <1>"},
         {"status": "SKIP", "message": "no environment"},
     ]
+
+
+RERUN_SUITE = """*** Test Cases ***
+Flaky
+    IF    "${STATUS}" == "SKIP"    Skip    no environment
+    Should Be Equal    ${STATUS}    PASS    attempt ${ATTEMPT}: <${STATUS}>    values=False
+"""
+
+
+def _merged_test_message(tmp_path, statuses):
+    """Run the suite once per status and `rebot --merge` the outputs like `--rerunfailed` does,
+    so the messages are the exact ones Robot Framework writes."""
+    from io import StringIO
+    from robot import run
+    from robot.api import ExecutionResult
+    from robot.rebot import rebot_cli
+
+    suite = tmp_path / "rerun.robot"
+    suite.write_text(RERUN_SUITE)
+    outputs = []
+    for attempt, status in enumerate(statuses, start=1):
+        output = tmp_path / f"output{attempt}.xml"
+        run(str(suite), output=str(output), log=None, report=None, stdout=StringIO(),
+            variable=[f"STATUS:{status}", f"ATTEMPT:{attempt}"])
+        outputs.append(output)
+    merged = outputs[0]
+    for index, output in enumerate(outputs[1:], start=1):
+        target = tmp_path / f"merged{index}.xml"
+        rebot_cli(["--merge", "--output", str(target), "--log", "NONE", "--report", "NONE",
+                   "--console", "none", str(merged), str(output)], exit=False)
+        merged = target
+    test = ExecutionResult(str(merged)).suite.tests[0]
+    return test.message, test.status
+
+
+def test_parse_merged_message_real_skipped_rerun(tmp_path):
+    message, status = _merged_test_message(tmp_path, ["FAIL", "SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert final_message == "attempt 1: <FAIL>"
+    assert attempts == [
+        {"status": "FAIL", "message": "attempt 1: <FAIL>"},
+        {"status": "SKIP", "message": "no environment"},
+    ]
+
+
+def test_parse_merged_message_real_skipped_rerun_after_merge(tmp_path):
+    # the skipped third attempt embeds the earlier merge message without its *HTML* marker
+    message, status = _merged_test_message(tmp_path, ["FAIL", "FAIL", "SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert final_message == "attempt 2: <FAIL>"
+    assert attempts == [
+        {"status": "FAIL", "message": "attempt 1: <FAIL>"},
+        {"status": "FAIL", "message": "attempt 2: <FAIL>"},
+        {"status": "SKIP", "message": "no environment"},
+    ]
+
+
+def test_parse_merged_message_real_chained_reruns(tmp_path):
+    message, status = _merged_test_message(tmp_path, ["FAIL", "FAIL", "PASS"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert final_message == ""
+    assert [a["status"] for a in attempts] == ["FAIL", "FAIL", "PASS"]
+    assert [a["message"] for a in attempts] == ["attempt 1: <FAIL>", "attempt 2: <FAIL>", ""]
 
 
 class _MergedTest(_NewStyleTest):

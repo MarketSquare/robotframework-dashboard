@@ -113,7 +113,7 @@ The four fields below the chart are the range itself, and they stay editable by 
 - Each unique **key** from the `key=value` pairs becomes its own filter dropdown.
 - **All** (ticked by default) means no filter is applied for that dimension.
 - **None** covers runs that have no value stored for that key.
-- Use the **Mode** dropdown to control matching: **OR** (default), **AND**, or **NOT**.
+- Use the **Mode** dropdown to control matching: **OR** (default, runs with any of the selected values), **AND** (runs with all selected values) or **NOT** (runs with none of them). A run holds one value per key, so AND only matches runs while a single value is selected.
 - A dot next to the label indicates the filter is active.
 - Custom filter values are also printed on the Overview run cards, one `key: value` line per attribute the run has.
 - Attributes you do not want can be hidden per page under **Settings → Filters**; a hidden attribute gets no dropdown here and is not applied on that page. See [Settings - Filters Tab](/settings#filter-settings-filters-tab).

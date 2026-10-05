@@ -708,6 +708,38 @@ def test_add_log_file_report_gzipped(tmp_path, monkeypatch):
     server.robotdashboard.update_output_path.assert_not_called()
 
 
+def test_add_log_file_log_with_report_in_its_name_is_linked(tmp_path, monkeypatch):
+    # only the "report" prefix marks a report, a log of e.g. a reporting suite is still a log
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    server.log_dir = str(tmp_path / "robot_logs")
+    client = _client(server)
+    response = client.post(
+        "/add-log-file",
+        files={"file": ("log-reporting-api.html", b"<html>log</html>", "text/html")},
+    )
+    assert response.json()["success"] == "1"
+    server.robotdashboard.update_output_path.assert_called_once()
+
+
+def test_add_log_file_report_only_replaces_the_prefix(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    log_dir = tmp_path / "robot_logs"
+    log_dir.mkdir()
+    (log_dir / "log-report_api.html").write_text("<html>log</html>")
+    server.log_dir = str(log_dir)
+    client = _client(server)
+    response = client.post(
+        "/add-log-file",
+        files={"file": ("report-report_api.html", b"<html>report</html>", "text/html")},
+    )
+    data = response.json()
+    assert data["success"] == "1"
+    assert "WARNING" not in data["console"]
+    assert "log-report_api.html" in data["console"]
+
+
 def test_remove_log_specific_file(tmp_path):
     log_dir = tmp_path / "robot_logs"
     log_dir.mkdir()

@@ -1,8 +1,7 @@
-import { add_alert } from "./common.js";
+import { add_alert, get_project_names } from "./common.js";
 import { overviewSections } from "./variables/graphs.js";
 import { settings } from "./variables/settings.js";
-import { force_json_config, json_config } from "./variables/data.js";
-import { projects_by_name, projects_by_tag } from "./variables/globals.js";
+import { force_json_config, json_config, runs } from "./variables/data.js";
 
 // function to setup localstorage on first load
 function setup_local_storage() {
@@ -257,17 +256,8 @@ function update_graph_type(graph, type) {
 // function to setup the overview sections that are dynamically created
 function setup_overview_localstorage() {
     const staticSections = ["overviewLatestRuns", "overviewTotalStats"];
-    const projectNames = [];
-    if (Object.keys(projects_by_name).length > 0) {
-        Object.keys(projects_by_name).forEach(projectName => {
-            projectNames.push(projectName);
-        });
-    }
-    if (Object.keys(projects_by_tag).length > 0) {
-        Object.keys(projects_by_tag).forEach(tagName => {
-            projectNames.push(tagName);
-        });
-    }
+    // every project in the data, not only the ones the active filter leaves on the overview
+    const projectNames = get_project_names(runs);
     // Populate overviewSections used elsewhere
     projectNames.forEach(name => overviewSections.push(name));
 
