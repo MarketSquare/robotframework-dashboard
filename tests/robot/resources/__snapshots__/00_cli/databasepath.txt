@@ -7,18 +7,17 @@
 
 ======================================================================================
  1. Database preparation
-  using provided databaseclass: *example/database/sqlite3.py
-  created database: '*.db'
+  created database: '<DB>'
 ======================================================================================
  2. Processing output XML(s)
-  Processing output XML 'output-20260910-060011.xml'
-  Processed output XML 'output-20260910-060011.xml' in * seconds
+  skipping step
 ======================================================================================
  3. Listing all available runs in the database
-  Run 0   | 2026-09-10 06:00:11.098769+??:?? | WebshopAPI
+  WARNING: There are no runs so the dashboard will be empty!
 ======================================================================================
  4. Removing runs from the database
   skipping step
 ======================================================================================
  5. Creating dashboard HTML
-  created dashboard '*' in * seconds
+  WARNING: There are no runs so the dashboard will be empty!
+  created dashboard '<DIR>/robot_dashboard_<TIMESTAMP>.html' in <DURATION>

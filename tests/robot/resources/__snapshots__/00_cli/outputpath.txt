@@ -7,17 +7,17 @@
 
 ======================================================================================
  1. Database preparation
-  created database: '*.db'
+  created database: '<DB>'
 ======================================================================================
  2. Processing output XML(s)
-  skipping step
+  Processing output XML 'output-20260818-021545.xml'
+  Processed output XML 'output-20260818-021545.xml' in <DURATION>
 ======================================================================================
  3. Listing all available runs in the database
-  WARNING: There are no runs so the dashboard will be empty!
+  Run 0   | 2026-08-18 02:15:45.246914<TZ> | WebshopUI
 ======================================================================================
  4. Removing runs from the database
   skipping step
 ======================================================================================
  5. Creating dashboard HTML
-  WARNING: There are no runs so the dashboard will be empty!
-  created dashboard *
+  created dashboard '<DIR>/robot_dashboard_<TIMESTAMP>.html' in <DURATION>
