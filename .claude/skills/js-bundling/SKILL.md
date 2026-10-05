@@ -1,6 +1,6 @@
 ---
 name: js-bundling
-description: How dashboard JS and CSS are bundled into the single HTML file by the Python DependencyProcessor (import-graph discovery, topological sort, import/export stripping), how third-party libraries are switched between CDN and offline copies, and how run data is zlib+base64 embedded and decoded. Use when adding a JS/CSS file, upgrading a library, debugging a missing module in the generated HTML, or working on dependencies.py / dashboard.py.
+description: How Python's DependencyProcessor bundles JS/CSS into the single HTML (import graph, topo sort), CDN vs offline libraries, zlib+base64 data. Use when adding a JS/CSS file, upgrading a library, or a module is missing from the HTML.
 ---
 
 # JavaScript and CSS Bundling

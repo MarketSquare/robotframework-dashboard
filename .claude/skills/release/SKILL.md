@@ -1,6 +1,7 @@
 ---
 name: release
 description: "Step-by-step release procedure: bump version.py and setup.py, update the CLI version fixture, regenerate example/robot_dashboard.html and example/robot_results.db, write the CHANGELOG entry, and produce Slack release notes. Use when the user says \"do the release actions\" or asks to prepare/cut a release."
+disable-model-invocation: true
 ---
 
 # Release Actions

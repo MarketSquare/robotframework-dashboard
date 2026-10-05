@@ -1,6 +1,6 @@
 ---
 name: dashboard-graphs
-description: What each dashboard page (Overview, Dashboard, Compare, Tables) shows, the Chart.js architecture (get_graph_config, chart_factory, supported chart types), which graph_data / graph_creation module owns each graph, and the step-by-step checklist for adding a new graph (graphmetadata entry, naming rules, data + creation modules, tooltips, tests, docs). Use when adding or changing a graph, chart type, tooltip, or page section.
+description: Dashboard pages, Chart.js architecture, which graph_data/graph_creation module owns each graph, and the checklist for adding a graph. Use when adding or changing a graph, chart type, tooltip, or page section.
 ---
 
 # Dashboard Pages and Charts
