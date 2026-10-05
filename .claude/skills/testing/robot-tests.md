@@ -24,8 +24,8 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 
 | Suite | What it tests | Method |
 |---|---|---|
-| `00_cli.robot` | Every CLI flag (short + long form); `--databaseclass` is exercised with `example/database/sqlite3.py`, the reference copy of the built-in class (`--server` is covered by `09_server.robot`, MySQL cannot run in CI) | Runs `robotdashboard` as a subprocess, checks stdout against snapshots in `tests/robot/testsuites/__snapshots__/00_cli/` |
-| `01_database.robot` | SQLite table contents after parsing | Queries the DB via DatabaseLibrary, compares rows against snapshots in `tests/robot/testsuites/__snapshots__/01_database/` |
+| `00_cli.robot` | Every CLI flag (short + long form); `--databaseclass` is exercised with `example/database/sqlite3.py`, the reference copy of the built-in class (`--server` is covered by `09_server.robot`, MySQL cannot run in CI) | Runs `robotdashboard` as a subprocess, checks stdout against snapshots in `tests/robot/resources/__snapshots__/00_cli/` |
+| `01_database.robot` | SQLite table contents after parsing | Queries the DB via DatabaseLibrary, compares rows against snapshots in `tests/robot/resources/__snapshots__/01_database/` |
 | `02_overview.robot` | Overview page rendering | Screenshot diff vs. reference images |
 | `03_dashboard.robot` | Dashboard tab charts/layout, section filters (suite/test/tag/keyword selects), compare page run selects, suite-path switch, Status + Only Changes filters | Screenshot diff + Chart.js data assertions (`Get Graph Labels`, `Get Graph Dataset Labels`) |
 | `04_compare.robot` | Compare page | Screenshot diff |
@@ -50,7 +50,7 @@ If any test fails, the script reruns **only the failed tests** once (`--rerunfai
 | `tests/robot/resources/keywords/server-keywords.resource` | `Start Dashboard Server` / `Stop Dashboard Server` (one server process per test on port 8600+index, cwd under `results/`), `Server Request`, `Add Output Via Server`, `Remove Outputs Via Server`, `Add Log Via Server`, `Open Served Dashboard`, `Run Robot With Dashboard Listener` |
 | `tests/robot/resources/listener/listener_suite.robot` | Fixture suite (one passing, one failing test) that `09_server.robot` runs with `--listener robotframework_dashboard.robotdashboardlistener` against the test's server; not collected by the test run |
 | `tests/robot/resources/outputs/` | The 18 `output.xml` + `log.html` fixtures — **generated** by `tests/robot/resources/generator/generate.py` (see its README), never edited by hand. `Generate Dashboard` tags them `prod`/`dev`, `project_1`/`project_2`, `version_1.0`–`1.2` |
-| `tests/robot/testsuites/__snapshots__/<suite>/` | Text snapshots written by `SnapshotLibrary`: `00_cli/<expected>.txt`, `01_database/<table>.json` |
+| `tests/robot/resources/__snapshots__/<suite>/` | Text snapshots written by `SnapshotLibrary`: `00_cli/<expected>.txt`, `01_database/<table>.json` |
 | `tests/robot/resources/dashboard_output/<folder>/<name>.png` | Reference screenshots |
 | `tests/robot/resources/test_config.json` | Passed via `-j` by `Generate Shared Dashboard`; disables chart animations (`show.animation: false`) so Chart.js draws synchronously. Add flags for notices/banners here if they ever overlay screenshots |
 
@@ -76,17 +76,18 @@ After regenerating fixtures: rerun **all** robot suites in Docker and refresh th
 
 ## Text snapshots (CLI and database)
 
-`00_cli` and `01_database` compare against files recorded by [robotframework-snapshot](https://github.com/timdegroot1996/robotframework-snapshot) (`SnapshotLibrary`), stored in `tests/robot/testsuites/__snapshots__/<suite>/`. Every call uses `shared=True` with `name=<expected>` / `name=<table>`, so the short and long form of a CLI option compare against the same file.
+`00_cli` and `01_database` compare against files recorded by [robotframework-snapshot](https://github.com/timdegroot1996/robotframework-snapshot) (`SnapshotLibrary`), stored in `tests/robot/resources/__snapshots__/<suite>/`. Every call uses `shared=True` with `name=<expected>` / `name=<table>`, so the short and long form of a CLI option compare against the same file.
 
 - A mismatch fails with a unified diff in the message and `log.html`.
 - **Update after an intended change** (new flag in `help.txt`, version bump, regenerated fixtures), in Docker:
   ```bash
   bash scripts/docker/run-in-robot-container.sh robot --variable REFERENCE_RUN:True --outputdir results tests/robot/testsuites/00_cli.robot
   ```
-  Review `git diff tests/robot/testsuites/__snapshots__/` and commit. Never record outside Docker: the `--help` wrapping and keyword-duration rounding differ per Python version.
+  Review `git diff tests/robot/resources/__snapshots__/` and commit. Never record outside Docker: the `--help` wrapping and keyword-duration rounding differ per Python version.
 - **New snapshot**: run the suite without strict mode (plain `robot`, or `SNAPSHOT_STRICT=False bash scripts/robot-tests.sh`); the missing file is recorded with a warning. `scripts/robot-tests.sh` (CI) is strict and fails on a missing file.
 - **Values that change per run** are replaced before comparing/recording: `duration` and `timezone` built-in normalizers, plus test-scoped custom ones in `Validate CLI` for `.db` names, the `--databaseclass` path, the dashboard directory and the default `robot_dashboard_<TIMESTAMP>.html` name. Add a normalizer there rather than weakening a snapshot by hand.
 - **Removing a test or renaming an `expected=`** leaves an unused file; the `unused` check in `scripts/robot-tests.sh` fails the run. Delete it, or run `python -m SnapshotLibrary unused results --delete` after a full green run.
+- **Renaming or deleting a suite file** leaves its `__snapshots__/<suite>/` folder behind. Because the snapshots live in one central folder (`snapshot_directory` on every `Library    SnapshotLibrary` import) instead of next to each suite, the `unused` check cannot tell that folder is orphaned: move or delete it by hand. Every resource that imports `SnapshotLibrary` must pass `snapshot_directory=${CURDIR}/../__snapshots__`.
 
 ---
 

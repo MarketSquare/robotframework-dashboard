@@ -1,13 +1,13 @@
 *** Settings ***
 Library    OperatingSystem
-Library    SnapshotLibrary    normalizers=duration,timezone
+Library    SnapshotLibrary    normalizers=duration,timezone    snapshot_directory=${CURDIR}/../__snapshots__
 
 
 *** Keywords ***
 Validate CLI
     [Documentation]    Runs the command and, when ``expected`` is given, compares its output with the
     ...    snapshot of that name. Snapshots are shared: the short and the long form of an option
-    ...    compare against the same file in testsuites/__snapshots__/00_cli/.
+    ...    compare against the same file in resources/__snapshots__/00_cli/.
     [Arguments]    ${command}    ${expected}=${NONE}
     ${result}    Run    command=${command}
     IF    '${expected}' != '${NONE}'

@@ -3,7 +3,7 @@ Library    Collections
 Library    OperatingSystem
 Library    String
 Library    DatabaseLibrary
-Library    SnapshotLibrary
+Library    SnapshotLibrary    snapshot_directory=${CURDIR}/../__snapshots__
 Resource    ../variables/variables.resource
 
 

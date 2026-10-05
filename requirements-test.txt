@@ -3,4 +3,4 @@ robotframework-pabot==5.2.2
 robotframework-browser==20.5.0
 robotframework-databaselibrary==2.5.0
 robotframework-doctestlibrary==0.33.0
-robotframework-snapshot==0.1.0
+robotframework-snapshot==0.1.1

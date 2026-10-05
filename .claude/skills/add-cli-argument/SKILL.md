@@ -52,8 +52,8 @@ input_group.add_argument(
 - `tests/python/test_main.py` / `test_robotdashboard.py`: update the positional call expectations and helper defaults (`_make_rd`).
 - `tests/python/test_server.py` if the server learned the flag.
 - `tests/robot/testsuites/00_cli.robot`: **two** cases, short and long form, named `Validate RobotDashboard <x>` / `Validate RobotDashboard <myflag>`, using `Validate CLI    command=robotdashboard -d <name>.db --myflag …    expected=<myflag>`.
-- `tests/robot/testsuites/__snapshots__/00_cli/<myflag>.txt`: expected stdout, recorded by `SnapshotLibrary` (DB names, paths, durations and UTC offsets are normalized to placeholders by `Validate CLI`).
-- `tests/robot/testsuites/__snapshots__/00_cli/help.txt`: **always** changes — the `-h` test compares the full help text.
+- `tests/robot/resources/__snapshots__/00_cli/<myflag>.txt`: expected stdout, recorded by `SnapshotLibrary` (DB names, paths, durations and UTC offsets are normalized to placeholders by `Validate CLI`).
+- `tests/robot/resources/__snapshots__/00_cli/help.txt`: **always** changes — the `-h` test compares the full help text.
 - Record/update both by running `00_cli.robot` in Docker with `--variable REFERENCE_RUN:True` (`testing` skill, "Text snapshots"), then review the snapshot diff.
 
 ## 5. Docs (`documentation` skill)
