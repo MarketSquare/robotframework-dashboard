@@ -638,13 +638,13 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         entry = self._collect_log_entry(run_start) if self.log_removed_path else None
         with self.connection:
             cursor = self.connection.cursor()
-            cursor.execute(DELETE_FROM_RUNS.format(run_start=run_start))
+            cursor.execute(DELETE_RUN_BY_RUN_START, (run_start,))
             if cursor.rowcount > 0:
-                cursor.execute(DELETE_FROM_SUITES.format(run_start=run_start))
-                cursor.execute(DELETE_FROM_TESTS.format(run_start=run_start))
-                cursor.execute(DELETE_FROM_KEYWORDS.format(run_start=run_start))
+                cursor.execute(DELETE_SUITES_BY_RUN_START, (run_start,))
+                cursor.execute(DELETE_TESTS_BY_RUN_START, (run_start,))
+                cursor.execute(DELETE_KEYWORDS_BY_RUN_START, (run_start,))
                 try:
-                    cursor.execute(DELETE_FROM_EXCEPTIONS.format(run_start=run_start))
+                    cursor.execute(DELETE_EXCEPTIONS_BY_RUN_START, (run_start,))
                 except Exception:
                     pass  # table may not exist in older/custom databases
                 # Log inside the transaction: if the write fails, the transaction
@@ -690,11 +690,9 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         for entry in data:
             entry = self._dict_from_row(entry)
             if output_name in entry["path"] or log_name in entry["path"]:
-                query = UPDATE_RUN_PATH.format(
-                    path=log_path, run_start=entry["run_start"]
-                )
-                console = f"Executed query: {query}\n"
-                self.connection.cursor().execute(query)
+                params = (log_path, entry["run_start"])
+                console = f"Executed query: {UPDATE_RUN_PATH_BY_RUN_START} with {params}\n"
+                self.connection.cursor().execute(UPDATE_RUN_PATH_BY_RUN_START, params)
                 self.connection.commit()
                 break
         if console == "":

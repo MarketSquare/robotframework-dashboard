@@ -55,8 +55,10 @@ Served with **uvicorn** via `fastapi_offline.FastAPIOffline`.
 | `POST` | `/add-log` | Basic (if configured) | Saves HTML log content to `robot_logs/<log_name>` and links it to the matching run in the DB |
 | `POST` | `/add-log-file` | Basic (if configured) | Same as `/add-log` but via multipart file upload (supports `.gz`/`.gzip`). Filenames containing `report` are saved as-is with no DB matching — see Report Handling below. |
 | `DELETE` | `/remove-log` | Basic (if configured) | Removes one log by `log_name`, or all logs with `all: True` |
-| `GET` | `/log` | None | Serves a log HTML file by `?path=` query param; stores parent dir for subsequent resource requests |
-| `GET` | `/{full_path:path}` | None | Catch-all: serves static resources (screenshots, etc.) relative to the last served log's directory. Path-traversal protected. |
+| `GET` | `/log` | None | Serves a log HTML file by `?path=` query param, only if it is inside `log_dir` or is the log of a stored run path (`server_paths.log_path_from_run_path`); otherwise 404 with the path HTML-escaped. Stores parent dir for subsequent resource requests |
+| `GET` | `/{full_path:path}` | None | Catch-all: serves static resources (screenshots, etc.) relative to the last served log's directory. Path-traversal protected (`server_paths.is_within`) and limited to log resource types (`server_paths.is_log_resource`: images, videos, HTML). |
+
+**Path safety (#374):** every file name taken from a request (`log_name`, upload `filename`, `output_alias`) goes through `server_paths.safe_file_name`, which rejects anything with a folder part. Output uploads are written to a `TemporaryDirectory`, never the working directory. Keep both rules for any new endpoint that touches files.
 
 ---
 

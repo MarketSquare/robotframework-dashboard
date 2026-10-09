@@ -241,7 +241,9 @@ Returns a dict mapping `run_start` to `path` for all runs currently in the datab
 
 This is used by the server's `/remove-outputs` endpoint to automatically delete the corresponding `log.html` file from the `robot_logs` folder whenever an output is removed.  
 
-If not implemented, the default returns `{}` and no log files will be automatically cleaned up on output removal. Only relevant when using the Dashboard Server with `uselogs=True`.
+The server's `/log` endpoint also uses it to decide which logs it may serve: a log outside `robot_logs` is only served when it sits next to an output path returned here (`output-XYZ.xml` ↔ `log-XYZ.html`).
+
+If not implemented, the default returns `{}`: no log files will be automatically cleaned up on output removal, and the server only serves logs from the `robot_logs` folder. Only relevant when using the Dashboard Server with `uselogs=True`.
 
 
 ## Important Notes

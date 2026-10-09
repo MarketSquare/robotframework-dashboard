@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from uvicorn import run
 
+from html import escape
 from os.path import join, abspath, dirname
 from pathlib import Path
 from typing import Optional
@@ -22,6 +23,7 @@ from .server_models import (
     RemoveOutputs,
     ResponseMessage,
 )
+from .server_paths import is_log_resource, is_within, log_path_from_run_path
 from .server_routes_logs import register_log_routes
 from .server_routes_outputs import register_output_routes
 from .version import __version__
@@ -156,23 +158,26 @@ class ApiServer:
         # stays next to the catch-all route below: it is the only place latest_log_dir is set
         @self.app.get("/log", response_class=HTMLResponse, include_in_schema=False)
         async def log_page(path: str):
-            """Serve log HTML and store the log directory for resources."""
+            """Serve log HTML and store the log directory for resources.
+            Only logs the server knows about are served: files in the log folder or the log next to a stored output."""
             try:
                 log_path = Path(path).resolve()
-                log_html = log_path.read_text(encoding="utf-8")
-                self.latest_log_dir = log_path.parent
-
-            except Exception:
-                log_html = f"""<!DOCTYPE html>
-                    <html lang="en">
-                        <head><meta charset="UTF-8"><title>404 - File Not Found</title></head>
-                        <body>
-                            <h1>404 - File Not Found</h1>
-                            <p>The file you are looking for ({path}) could not be found on the server!</p>
-                        </body>
-                    </html>
-                """
-            return HTMLResponse(content=log_html)
+                if self._is_known_log(log_path) and log_path.is_file():
+                    log_html = log_path.read_text(encoding="utf-8")
+                    self.latest_log_dir = log_path.parent
+                    return HTMLResponse(content=log_html)
+            except (OSError, ValueError):
+                pass  # a malformed path (e.g. a null byte) or an unreadable file gets the 404 page as well
+            log_html = f"""<!DOCTYPE html>
+                <html lang="en">
+                    <head><meta charset="UTF-8"><title>404 - File Not Found</title></head>
+                    <body>
+                        <h1>404 - File Not Found</h1>
+                        <p>The file you are looking for ({escape(path)}) could not be found on the server!</p>
+                    </body>
+                </html>
+            """
+            return HTMLResponse(content=log_html, status_code=404)
 
         register_output_routes(self, authenticate)
         register_log_routes(self, authenticate)
@@ -188,13 +193,30 @@ class ApiServer:
                 raise HTTPException(404, "No log file opened yet")
 
             resource_path = (self.latest_log_dir / full_path).resolve()
-            if not str(resource_path).startswith(str(self.latest_log_dir)):
+            if not is_within(resource_path, self.latest_log_dir) or not is_log_resource(resource_path):
                 raise HTTPException(403, "Access denied")
 
             if not resource_path.exists():
                 raise HTTPException(404, f"Resource {full_path} not found")
 
             return FileResponse(resource_path)
+
+    def _is_known_log(self, log_path: Path) -> bool:
+        """A log may be served when it is in the log folder or is the log of an output stored in the database"""
+        if is_within(log_path, Path(self.log_dir)):
+            return True
+        try:
+            run_paths = self.robotdashboard.get_run_paths().values()
+        except Exception:
+            return False
+        for run_path in run_paths:
+            if not run_path or run_path.startswith(("http://", "https://")):
+                continue
+            expected_log = log_path_from_run_path(run_path)
+            # compare the names first so only a likely match costs a filesystem lookup
+            if expected_log.name == log_path.name and expected_log.resolve() == log_path:
+                return True
+        return False
 
     def set_robotdashboard(self, robotdashboard: RobotDashboard):
         """Function to initialize the RobotDashboard class"""
