@@ -42,12 +42,21 @@ SELECT_FROM_TESTS = """ SELECT * FROM tests """
 SELECT_FROM_KEYWORDS = """ SELECT * FROM keywords """
 SELECT_FROM_EXCEPTIONS = """ SELECT * FROM exceptions """
 
+DELETE_RUN_BY_RUN_START = """ DELETE FROM runs WHERE run_start=? """
+DELETE_SUITES_BY_RUN_START = """ DELETE FROM suites WHERE run_start=? """
+DELETE_TESTS_BY_RUN_START = """ DELETE FROM tests WHERE run_start=? """
+DELETE_KEYWORDS_BY_RUN_START = """ DELETE FROM keywords WHERE run_start=? """
+DELETE_EXCEPTIONS_BY_RUN_START = """ DELETE FROM exceptions WHERE run_start=? """
+
+UPDATE_RUN_PATH_BY_RUN_START = """ UPDATE runs SET path=? WHERE run_start=? """
+
+# Deprecated: .format() versions, only kept so custom database classes built from an older
+# example/database/sqlite3.py keep importing them. Use the parameterized queries above.
 DELETE_FROM_RUNS = """ DELETE FROM runs WHERE run_start="{run_start}" """
 DELETE_FROM_SUITES = """ DELETE FROM suites WHERE run_start="{run_start}" """
 DELETE_FROM_TESTS = """ DELETE FROM tests WHERE run_start="{run_start}" """
 DELETE_FROM_KEYWORDS = """ DELETE FROM keywords WHERE run_start="{run_start}" """
 DELETE_FROM_EXCEPTIONS = """ DELETE FROM exceptions WHERE run_start="{run_start}" """
-
 UPDATE_RUN_PATH = """ UPDATE runs SET path="{path}" WHERE run_start="{run_start}" """
 
 VACUUM_DATABASE = """ VACUUM """

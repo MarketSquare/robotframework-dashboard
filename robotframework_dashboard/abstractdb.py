@@ -61,6 +61,8 @@ class AbstractDatabaseProcessor(ABC):
 
     def _get_run_paths(self) -> dict:  # pragma: no cover
         """Optional: Returns a dict mapping run_start -> path for all runs.
-        Required by the server when automatically deleting log files after removing outputs.
-        If not implemented, log files will not be automatically deleted on output removal."""
+        Required by the server when automatically deleting log files after removing outputs,
+        and by /log to serve a log that sits next to a stored output.
+        If not implemented, log files will not be automatically deleted on output removal
+        and /log only serves logs from the server's log folder."""
         return {}

@@ -6,6 +6,7 @@ from gzip import decompress
 from pathlib import Path
 from typing import List
 
+from .server_paths import safe_file_name
 from .server_models import AddLog, GetLog, RemoveLog, ResponseMessage, model_examples
 
 
@@ -41,7 +42,7 @@ def register_log_routes(server, authenticate):
         try:
             if not exists(server.log_dir):
                 mkdir(server.log_dir)
-            log_path = join(server.log_dir, add_log.log_name)
+            log_path = join(server.log_dir, safe_file_name(add_log.log_name))
             console += server.robotdashboard.update_output_path(log_path)
             if "ERROR" in console:
                 raise Exception(
@@ -90,6 +91,7 @@ def register_log_routes(server, authenticate):
         try:
             if not exists(server.log_dir):
                 mkdir(server.log_dir)
+            safe_file_name(file.filename)
             file_bytes = await file.read()
             # Accept gzipped uploads (.gz/.gzip) to reduce bandwidth; decompress before saving
             if file.filename.endswith(".gzip") or file.filename.endswith(".gz"):
@@ -173,7 +175,7 @@ def register_log_routes(server, authenticate):
                     remove(join(server.log_dir, file))
                     console += f"Removed {file} from the folder {server.log_dir}\n"
             else:
-                log_path = join(server.log_dir, remove_log.log_name)
+                log_path = join(server.log_dir, safe_file_name(remove_log.log_name))
                 remove(log_path)
                 console += f"Removed {remove_log.log_name} from the folder {server.log_dir}\n"
             console += "======================================================================================\n"

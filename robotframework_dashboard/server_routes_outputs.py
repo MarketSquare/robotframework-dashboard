@@ -1,11 +1,13 @@
 from fastapi import Body, Depends, File, Form, UploadFile
 
-from os.path import abspath, exists, join
+from os.path import exists, join
 from os import remove
 from gzip import decompress
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import List
 
+from .server_paths import log_name_from_output_name, safe_file_name
 from .server_models import (
     AddOutput,
     GetOutput,
@@ -116,20 +118,18 @@ def register_output_routes(server, authenticate):
             if add_output.output_data != None:
                 input = ""
                 if add_output.output_alias != None:
-                    input = f"{add_output.output_alias}.xml"
-                    file = open(input, "w", encoding="utf-8")
-                    output_path = abspath(input)
+                    input = safe_file_name(f"{add_output.output_alias}.xml")
                 else:
                     input = "temp_output.xml"
-                    file = open(input, "w", encoding="utf-8")
-                    output_path = abspath(input)
-                file.write(add_output.output_data)
-                file.close()
-                outputs = [[output_path, output_tags]]
-                console = server.robotdashboard.process_outputs(
-                    output_file_info_list=outputs
-                )
-                remove(input)
+                # a private temporary folder, so an upload can never overwrite or delete a file in the working directory
+                with TemporaryDirectory() as temp_dir:
+                    output_path = join(temp_dir, input)
+                    with open(output_path, "w", encoding="utf-8") as file:
+                        file.write(add_output.output_data)
+                    outputs = [[output_path, output_tags]]
+                    console = server.robotdashboard.process_outputs(
+                        output_file_info_list=outputs
+                    )
             if not server.no_autoupdate:
                 console += server.robotdashboard.create_dashboard()
             response = {
@@ -160,19 +160,16 @@ def register_output_routes(server, authenticate):
         """
         console = "no console output"
         try:
+            safe_file_name(file.filename)
             file_bytes = await file.read()
             # Accept gzipped uploads to reduce bandwidth; decompress before processing
             if file.filename.endswith(".gzip") or file.filename.endswith(".gz"):
                 output_filename = Path(file.filename).with_suffix("")
                 if output_filename.suffix == "":
                     output_filename = output_filename.with_suffix(".xml")
-                output_path = abspath(output_filename)
-                with open(output_path, "wb") as buffer:
-                    buffer.write(decompress(file_bytes))
+                file_bytes = decompress(file_bytes)
             else:
-                output_path = abspath(file.filename)
-                with open(output_path, "wb") as buffer:
-                    buffer.write(file_bytes)
+                output_filename = Path(file.filename)
 
             output_tags = []
             if tags:
@@ -186,11 +183,15 @@ def register_output_routes(server, authenticate):
             server.robotdashboard.custom_filters = custom_filters
             server.robotdashboard.log_url = log_url or None
 
-            outputs = [[output_path, output_tags]]
-            console = server.robotdashboard.process_outputs(
-                output_file_info_list=outputs
-            )
-            remove(output_path)
+            # a private temporary folder, so an upload can never overwrite or delete a file in the working directory
+            with TemporaryDirectory() as temp_dir:
+                output_path = join(temp_dir, output_filename.name)
+                with open(output_path, "wb") as buffer:
+                    buffer.write(file_bytes)
+                outputs = [[output_path, output_tags]]
+                console = server.robotdashboard.process_outputs(
+                    output_file_info_list=outputs
+                )
 
             if not server.no_autoupdate:
                 console += server.robotdashboard.create_dashboard()
@@ -255,7 +256,7 @@ def register_output_routes(server, authenticate):
             paths_after = server.robotdashboard.get_run_paths()
             removed_paths = [v for k, v in paths_before.items() if k not in paths_after and v]
             for path in removed_paths:
-                log_filename = Path(path).name.replace("output", "log").replace(".xml", ".html")
+                log_filename = log_name_from_output_name(Path(path).name)
                 log_path = join(server.log_dir, log_filename)
                 if exists(log_path):
                     remove(log_path)

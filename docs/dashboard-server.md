@@ -201,10 +201,12 @@ Beyond the main API endpoints listed above, the server exposes two additional ro
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /log?path=<path>` | Serves a stored `log.html` file by its path. Used internally by log linking to render uploaded logs in the browser. |
-| `GET /{full_path:path}` | Catch-all route that serves static resources (screenshots, images, etc.) relative to the last opened log directory. This allows embedded screenshots in log files to display correctly. |
+| `GET /log?path=<path>` | Serves a stored `log.html` file by its path. Used internally by log linking to render uploaded logs in the browser. Only known logs are served: files in `robot_logs/`, or the log next to an output stored in the database (`output-XYZ.xml` ↔ `log-XYZ.html`). Any other path returns a 404. |
+| `GET /{full_path:path}` | Catch-all route that serves static resources (screenshots, images, etc.) relative to the last opened log directory. This allows embedded screenshots in log files to display correctly. Only file types a log can embed or link to are served (images, videos and HTML such as the report); other files and paths outside that directory are rejected. |
 
 ## Gzip Upload Support
+
+File names sent to `/add-output-file`, `/add-log-file`, `/add-log`, `/remove-log` and the `output_alias` of `/add-outputs` must be plain file names: names that contain a folder (for example `../log.html` or `sub/log.html`) are rejected. Uploaded outputs are processed from a temporary folder and never written to the server's working directory.
 
 Both `/add-output-file` and `/add-log-file` endpoints support gzip-compressed uploads. If the uploaded filename ends with `.gz` or `.gzip`, the server automatically decompresses the file before processing. This is used by the [listener integration](/listener-integration.md) to reduce upload bandwidth.
 

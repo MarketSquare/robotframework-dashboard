@@ -358,6 +358,17 @@ def test_update_output_path_found(populated_db):
     assert "Executed query" in console
 
 
+def test_update_output_path_with_quote_in_path(populated_db):
+    populated_db.open_database()
+    # a quote in the path used to end the SQL string literal
+    log_path = f'/logs/a"b/{SAMPLE_LOG.name}'
+    console = populated_db.update_output_path(log_path)
+    run_paths = populated_db._get_run_paths()
+    populated_db.close_database()
+    assert "Executed query" in console
+    assert log_path in run_paths.values()
+
+
 def test_update_output_path_not_found(populated_db):
     populated_db.open_database()
     console = populated_db.update_output_path("path/to/nonexistent-log.html")

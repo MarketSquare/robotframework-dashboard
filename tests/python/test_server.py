@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 
 from robotframework_dashboard.server import ApiServer, ResponseMessage
+from robotframework_dashboard.server_paths import is_within, log_path_from_run_path, safe_file_name
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
@@ -796,6 +797,7 @@ def test_log_page_serves_existing_file(tmp_path):
     log_file = tmp_path / "log-abc.html"
     log_file.write_text("<html>log</html>")
     server = _make_server()
+    server.log_dir = str(tmp_path)
     client = _client(server)
     response = client.get(f"/log?path={log_file}")
     assert response.status_code == 200
@@ -807,8 +809,8 @@ def test_log_page_missing_file_returns_404_html():
     server = _make_server()
     client = _client(server)
     response = client.get("/log?path=/nonexistent/path/log.html")
-    assert response.status_code == 200  # returns HTML error page, not HTTP 404
-    assert "404" in response.text or "not found" in response.text.lower()
+    assert response.status_code == 404
+    assert "not found" in response.text.lower()
 
 
 def test_catch_all_no_log_opened_returns_404(tmp_path):
@@ -848,7 +850,7 @@ def test_catch_all_missing_resource_returns_404(tmp_path):
     server = _make_server()
     server.latest_log_dir = log_dir
     client = _client(server)
-    response = client.get("/nonexistent_resource.txt")
+    response = client.get("/nonexistent_resource.png")
     assert response.status_code == 404
 
 
@@ -1058,3 +1060,212 @@ def test_catch_all_path_escapes_log_dir_returns_403(tmp_path):
     with _patch.object(pathlib.Path, "resolve", mock_resolve):
         response = client.get("/outside.txt")
     assert response.status_code == 403
+
+
+# --- path restrictions (#374) ---
+
+
+def test_safe_file_name_accepts_plain_names():
+    assert safe_file_name("log-abc.html") == "log-abc.html"
+    assert safe_file_name("output 1.xml.gz") == "output 1.xml.gz"
+
+
+def test_safe_file_name_rejects_paths():
+    for name in ["", ".", "..", "../log.html", "sub/log.html", "..\\log.html", "C:\\x\\log.html", "/etc/passwd"]:
+        try:
+            safe_file_name(name)
+        except ValueError:
+            continue
+        raise AssertionError(f"{name!r} was accepted")
+
+
+def test_is_within_rejects_sibling_folder_with_same_prefix(tmp_path):
+    assert is_within(tmp_path / "logs" / "a.png", tmp_path / "logs")
+    assert not is_within(tmp_path / "logs-secret" / "a.png", tmp_path / "logs")
+    assert not is_within(tmp_path / "logs" / ".." / "a.png", tmp_path / "logs")
+
+
+def test_log_path_from_run_path_mirrors_the_dashboard():
+    assert log_path_from_run_path("/runs/output-123.xml") == Path("/runs/log-123.html")
+    assert log_path_from_run_path("/runs/log-123.html") == Path("/runs/log-123.html")
+
+
+def test_log_page_rejects_file_outside_known_logs(tmp_path):
+    secret = tmp_path / "secret.txt"
+    secret.write_text("top secret")
+    server = _make_server()
+    server.log_dir = str(tmp_path / "robot_logs")
+    client = _client(server)
+    response = client.get("/log", params={"path": str(secret)})
+    assert response.status_code == 404
+    assert "top secret" not in response.text
+    assert server.latest_log_dir is None
+
+
+def test_log_page_rejects_relative_traversal(tmp_path, monkeypatch):
+    (tmp_path / "secret.html").write_text("top secret")
+    (tmp_path / "robot_logs").mkdir()
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    client = _client(server)
+    response = client.get("/log", params={"path": "robot_logs/../secret.html"})
+    assert response.status_code == 404
+    assert "top secret" not in response.text
+
+
+def test_log_page_serves_relative_path_in_log_dir(tmp_path, monkeypatch):
+    (tmp_path / "robot_logs").mkdir()
+    (tmp_path / "robot_logs" / "log-abc.html").write_text("<html>uploaded</html>")
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    client = _client(server)
+    response = client.get("/log", params={"path": "robot_logs/log-abc.html"})
+    assert response.status_code == 200
+    assert "uploaded" in response.text
+
+
+def test_log_page_serves_log_next_to_stored_output(tmp_path):
+    (tmp_path / "log-abc.html").write_text("<html>cli log</html>")
+    (tmp_path / "other.html").write_text("other")
+    server = _make_server()
+    server.robotdashboard.get_run_paths.return_value = {"2025-01-01": str(tmp_path / "output-abc.xml")}
+    client = _client(server)
+    response = client.get("/log", params={"path": str(tmp_path / "log-abc.html")})
+    assert response.status_code == 200
+    assert "cli log" in response.text
+    assert server.latest_log_dir == tmp_path
+    # another file in that folder is not a known log
+    assert client.get("/log", params={"path": str(tmp_path / "other.html")}).status_code == 404
+
+
+def test_log_page_escapes_path_in_not_found_page():
+    server = _make_server()
+    client = _client(server)
+    response = client.get("/log", params={"path": "<script>alert(1)</script>"})
+    assert response.status_code == 404
+    assert "<script>" not in response.text
+    assert "&lt;script&gt;" in response.text
+
+
+def test_add_log_rejects_traversal_name(tmp_path, monkeypatch):
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+    monkeypatch.chdir(work_dir)
+    server = _make_server()
+    server.log_dir = str(work_dir / "robot_logs")
+    client = _client(server)
+    payload = {"log_name": "../../evil.html", "log_data": "<html>evil</html>"}
+    response = client.post("/add-log", json=payload)
+    assert response.json()["success"] == "0"
+    assert not (tmp_path / "evil.html").exists()
+    server.robotdashboard.update_output_path.assert_not_called()
+
+
+def test_add_log_file_rejects_traversal_name(tmp_path, monkeypatch):
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+    monkeypatch.chdir(work_dir)
+    server = _make_server()
+    server.log_dir = str(work_dir / "robot_logs")
+    client = _client(server)
+    response = client.post(
+        "/add-log-file",
+        files={"file": ("../../evil.html", b"<html>evil</html>", "text/html")},
+    )
+    assert response.json()["success"] == "0"
+    assert not (tmp_path / "evil.html").exists()
+
+
+def test_remove_log_rejects_traversal_name(tmp_path):
+    log_dir = tmp_path / "robot_logs"
+    log_dir.mkdir()
+    victim = tmp_path / "victim.txt"
+    victim.write_text("keep me")
+    server = _make_server()
+    server.log_dir = str(log_dir)
+    client = _client(server)
+    response = client.request("DELETE", "/remove-log", json={"log_name": "../victim.txt"})
+    assert response.json()["success"] == "0"
+    assert victim.exists()
+
+
+def test_add_output_file_rejects_traversal_name(tmp_path, monkeypatch):
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+    victim = tmp_path / "victim.xml"
+    victim.write_text("keep me")
+    monkeypatch.chdir(work_dir)
+    server = _make_server()
+    client = _client(server)
+    for name in ["../victim.xml", "../victim.xml.gz"]:
+        payload = gzip.compress(b"evil") if name.endswith(".gz") else b"evil"
+        response = client.post("/add-output-file", files={"file": (name, payload, "application/xml")})
+        assert response.json()["success"] == "0"
+        assert victim.read_text() == "keep me"
+    server.robotdashboard.process_outputs.assert_not_called()
+
+
+def test_add_output_file_leaves_working_directory_untouched(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    existing = tmp_path / "robot_results.db"
+    existing.write_bytes(b"database")
+    server = _make_server()
+    client = _client(server)
+    response = client.post(
+        "/add-output-file",
+        files={"file": ("robot_results.db", b"not a database", "application/xml")},
+    )
+    assert response.json()["success"] == "1"
+    assert existing.read_bytes() == b"database"
+    assert [p.name for p in tmp_path.iterdir()] == ["robot_results.db"]
+
+
+def test_add_outputs_by_data_rejects_traversal_alias(tmp_path, monkeypatch):
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+    monkeypatch.chdir(work_dir)
+    server = _make_server()
+    client = _client(server)
+    payload = {"output_data": "<robot/>", "output_alias": "../evil"}
+    response = client.post("/add-outputs", json=payload)
+    assert response.json()["success"] == "0"
+    assert not (tmp_path / "evil.xml").exists()
+
+
+def test_add_outputs_by_data_leaves_working_directory_untouched(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    server = _make_server()
+    client = _client(server)
+    payload = {"output_data": SAMPLE_XML.read_text(encoding="utf-8"), "output_alias": "my_run"}
+    response = client.post("/add-outputs", json=payload)
+    assert response.json()["success"] == "1"
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_log_page_malformed_path_returns_404():
+    server = _make_server()
+    client = _client(server)
+    response = client.get("/log", params={"path": "log\x00.html"})
+    assert response.status_code == 404
+
+
+def test_catch_all_only_serves_log_resources(tmp_path):
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    (log_dir / "robot_results.db").write_bytes(b"database")
+    (log_dir / ".env").write_text("SECRET=1")
+    (log_dir / "report-abc.html").write_text("<html>report</html>")
+    server = _make_server()
+    server.latest_log_dir = log_dir
+    client = _client(server)
+    assert client.get("/robot_results.db").status_code == 403
+    assert client.get("/.env").status_code == 403
+    assert client.get("/report-abc.html").status_code == 200
+
+
+def test_safe_file_name_rejects_null_byte():
+    try:
+        safe_file_name("log\x00.html")
+    except ValueError:
+        return
+    raise AssertionError("a null byte was accepted")
