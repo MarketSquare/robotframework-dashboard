@@ -97,6 +97,7 @@ These switches are stored alongside the other dashboard settings and can also be
 | Test Most Failed         | Bar<br>Timeline          | Bar: Tests ranked by total number of failures.<br>Timeline: Displays when failures occurred across runs.                           | Top 10 default, Top 50 fullscreen                                             |
 | Test Recent Most Failed  | Bar<br>Timeline          | Bar: Recent tests ranked by total number of failures.<br>Timeline: Shows when most recent failures occurred.                       | Top 10 default, Top 50 fullscreen                                             |
 | Test Most Time-Consuming | Bar<br>Timeline          | Bar: Ranked by how often a test was the slowest in a run.<br>Timeline: Slowest test per run shown on timeline.                     | Top 10 default, Top 50 fullscreen; "Only Last Run" option for latest run only (persisted) |
+| Test Notes               | Table                    | Only while [notes](notes.md) are turned on. Lists the failed tests and the tests with a note of the filtered runs, newest first, with their status, message and note. A summary above the table counts the failures, the failures without a note and the notes per category. | Pencil button to add or edit a note; follows the section filters like Test Most Failed |
 
 ### Keyword Section
 
@@ -132,6 +133,7 @@ Many graphs include enhanced tooltips that display additional information when h
 - **Test Statistics (Line)**: Tooltips show the test name, status, run start, duration, failure messages and the attempt history of re-executed tests.
 - **Test Duration**: Tooltips show the test status and failure messages.
 - **Compare Tests**: Tooltips show the run label, test status, duration, failure messages and the attempt history of re-executed tests.
+- **Notes**: With [notes](notes.md) turned on, the test graphs also show the note and category of a test.
 
 These enhanced tooltips make it easier to understand test results without needing to navigate to individual log files.
 
@@ -140,6 +142,6 @@ These enhanced tooltips make it easier to understand test results without needin
 | ---------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----- |
 | Runs       | run_start, full_name, name, total, passed, failed, skipped, elapsed_s, start_time, tags, run_alias, path, metadata          | Contains run-level data.                                                      | -     |
 | Suites     | run_start, full_name, name, total, passed, failed, skipped, elapsed_s, start_time, run_alias, id                            | Contains suite-level data.                                                    | -     |
-| Tests      | run_start, full_name, name, passed, failed, skipped, elapsed_s, start_time, message, tags, run_alias, id, attempts          | Contains test-level data.                                                     | `attempts` lists the status of every attempt of a re-executed test, see [Reruns](reruns.md). |
+| Tests      | run_start, full_name, name, passed, failed, skipped, elapsed_s, start_time, message, tags, run_alias, id, attempts, note    | Contains test-level data.                                                     | `attempts` lists the status of every attempt of a re-executed test, see [Reruns](reruns.md). `note` (only while [notes](notes.md) are turned on) shows your note on the test, with a pencil button to add or edit it. |
 | Keywords   | run_start, name, passed, failed, skipped, times_run, total_time_s, average_time_s, min_time_s, max_time_s, run_alias, owner | Contains keyword-level data.                                                  | -     |
 | Exceptions | run_start, message, amount, run_alias                                                                                      | Contains exception messages caught by TRY/EXCEPT blocks, aggregated per run.  | -     |

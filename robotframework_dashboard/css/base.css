@@ -184,6 +184,12 @@ html:has(body.modal-open) {
   scrollbar-gutter: stable;
 }
 
+/* Bootstrap's overflow:hidden on <body> would make the body a scroll container, so the sticky navbar
+   stops pinning to the viewport and jumps up by the current scroll offset. The lock on <html> is enough. */
+body.modal-open {
+  overflow: visible !important;
+}
+
 h4,
 h5,
 h6 {

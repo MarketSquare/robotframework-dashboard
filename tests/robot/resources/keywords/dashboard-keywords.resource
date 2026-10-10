@@ -1034,3 +1034,139 @@ Get Expanded Sidebar Sub Items
 
 Toggle Active Sidebar Group
     Click    selector=css=#sidenavBody .sidenav-group-header.active .sidenav-group-toggle
+
+Enable Test Notes
+    [Documentation]    Turns on the opt-in Test Notes setting (settings.show.notes, off by default).
+    Open Settings Tab    defaults
+    Check Checkbox    id=toggleNotes
+    Close Settings
+
+Disable Test Notes
+    Open Settings Tab    defaults
+    Uncheck Checkbox    id=toggleNotes
+    Close Settings
+
+Right Click Bar In Graph
+    [Documentation]    Right-clicks the first timeline bar of ${status} (failed, passed or skipped) in a graph.
+    ...    Scrolls the graph into view first: a scroll closes the notes menu, so it must be finished before the click.
+    [Arguments]    ${graph}    ${status}=failed
+    Scroll To Element    selector=id=${graph}
+    Wait For Dashboard Idle
+    ${point}    Evaluate JavaScript    ${None}
+    ...    () => {
+    ...        const colors = { failed: 'rgba(206, 62, 1, 0.7)', passed: 'rgba(151, 189, 97, 0.7)', skipped: 'rgba(254, 216, 79, 0.7)' };
+    ...        const canvas = document.getElementById('${graph}');
+    ...        const chart = Chart.getChart(canvas);
+    ...        const rect = canvas.getBoundingClientRect();
+    ...        const index = chart.data.datasets.findIndex(dataset => dataset.backgroundColor === colors['${status}']);
+    ...        const bar = chart.getDatasetMeta(index).data[0].getProps(['x', 'y', 'base'], true);
+    ...        return { x: rect.left + (bar.x + bar.base) / 2, y: rect.top + bar.y };
+    ...    }
+    Mouse Button    click    ${point}[x]    ${point}[y]    button=right
+
+Right Click Empty Area In Graph
+    [Documentation]    Right-clicks the top left corner of a graph canvas, where no bar is drawn.
+    [Arguments]    ${graph}
+    Scroll To Element    selector=id=${graph}
+    Wait For Dashboard Idle
+    ${point}    Evaluate JavaScript    ${None}
+    ...    () => { const rect = document.getElementById('${graph}').getBoundingClientRect(); return { x: rect.left + 3, y: rect.top + 3 }; }
+    Mouse Button    click    ${point}[x]    ${point}[y]    button=right
+
+Note Context Menu Should Offer
+    [Arguments]    @{actions}
+    ${offered}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#noteContextMenu [data-note-action]')].map(item => item.textContent)
+    Lists Should Be Equal    ${offered}    ${actions}
+
+Note Context Menu Should Not Be Shown
+    Get Element Count    selector=id=noteContextMenu    assertion_operator===    assertion_expected=0
+
+Choose Note Menu Action
+    [Documentation]    edit, delete or log
+    [Arguments]    ${action}
+    Click    selector=css=#noteContextMenu [data-note-action="${action}"]
+
+Wait For Note Editor
+    Wait For Function
+    ...    () => { const modal = document.getElementById("noteEditorModal"); return modal.classList.contains("show") && getComputedStyle(modal).opacity === "1"; }
+    ...    timeout=5s
+
+Add Category In Note Editor
+    [Arguments]    ${name}
+    Click    selector=id=noteEditorShowNewCategory
+    Fill Text    selector=id=noteEditorNewCategoryName    txt=${name}
+    Click    selector=id=noteEditorAddCategory
+
+Save Note In Editor
+    [Arguments]    ${text}
+    Wait For Note Editor
+    Fill Text    selector=id=noteEditorText    txt=${text}
+    Click    selector=id=noteEditorSave
+    Wait For Elements State    selector=id=noteEditorModal    state=hidden
+    Wait For Dashboard Idle
+
+Get Notes From Local Storage
+    [Documentation]    The stored notes (localStorage key `notes`) as a dictionary.
+    ${notes_str}    LocalStorage Get Item    key=notes
+    ${notes}    Loads    ${notes_str}
+    RETURN    ${notes}
+
+Get Stored Note Texts
+    [Documentation]    The texts of all stored test notes, sorted.
+    ${texts}    Evaluate JavaScript    ${None}
+    ...    () => {
+    ...        const notes = JSON.parse(localStorage.getItem('notes') ?? '{"tests": {}}');
+    ...        return Object.values(notes.tests).flatMap(byTest => Object.values(byTest)).map(note => note.text).sort();
+    ...    }
+    RETURN    ${texts}
+
+Store Notes In Browser
+    [Documentation]    Replaces the stored notes and reloads, as if they were saved in an earlier session.
+    [Arguments]    ${notes}
+    ${notes_str}    Dumps    ${notes}
+    LocalStorage Set Item    key=notes    value=${notes_str}
+    Reload Dashboard
+
+Get Noted Bar Count
+    [Documentation]    Bars in a timeline graph that carry the note border (width 4, the rerun border is 3).
+    [Arguments]    ${graph}=testStatisticsGraph
+    ${count}    Evaluate JavaScript    ${None}    () => window.${graph}.data.datasets.filter(dataset => dataset.borderWidth === 4).reduce((sum, dataset) => sum + dataset.data.length, 0)
+    RETURN    ${count}
+
+Get Test Notes Widget Notes
+    [Documentation]    The note column texts of the Test Notes widget rows that have a note.
+    Scroll To Element    selector=id=testNotesTable
+    ${notes}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#testNotesTable .note-cell')].map(cell => cell.textContent.trim()).filter(Boolean)
+    RETURN    ${notes}
+
+Open Notes Modal
+    [Arguments]    ${tab}=notes-list
+    Click    selector=id=notes
+    Wait For Function
+    ...    () => { const modal = document.getElementById("notesModal"); return modal.classList.contains("show") && getComputedStyle(modal).opacity === "1"; }
+    ...    timeout=10s
+    Click    selector=id=${tab}-tab
+
+Import Notes JSON
+    [Documentation]    Waits for the import message, the dashboard is never idle while the notes modal is open.
+    [Arguments]    ${notes}
+    ${notes_str}    Dumps    ${notes}
+    Fill Text    selector=id=importNotesText    txt=${notes_str}
+    Click    selector=id=importNotes
+    Wait For Elements State    selector=css=#alertContainer .alert    state=visible
+
+Download Notes JSON
+    [Documentation]    Clicks the export button and returns the downloaded notes as a dictionary.
+    ${download}    Promise To Wait For Download    saveAs=${ROOT_FOLDER}/results/notes_export_${DASHBOARD_INDEX}.json
+    Click    selector=id=downloadNotes
+    ${file}    Wait For    ${download}
+    ${content}    Get File    ${file}[saveAs]
+    ${notes}    Loads    ${content}
+    RETURN    ${notes}
+
+Fill Browser Storage
+    [Documentation]    Fills localStorage with ${characters} characters of filler under its own key.
+    [Arguments]    ${characters}
+    Evaluate JavaScript    ${None}    () => localStorage.setItem('filler', 'x'.repeat(${characters}))

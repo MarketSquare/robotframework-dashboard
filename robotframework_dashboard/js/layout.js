@@ -409,9 +409,11 @@ function setup_grid_graphs(section) {
         return pos;
     };
 
+    const graph_enabled = (graph) => settings.show.notes === true || !graphMetadata.find(g => g.label === graph)?.requiresNotes;
     const process_graphs_with_layout = (graphs, is_visible) => {
         graphs
             .filter(graph => graph.startsWith(section === "Unified" ? "" : section))
+            .filter(graph_enabled)
             .forEach(graph => {
                 const graphMeta = graphMetadata.find(g => g.label === graph);
                 const size = graphMeta?.defaultSize || default_size;
@@ -432,6 +434,7 @@ function setup_grid_graphs(section) {
         process_graphs_with_layout(graph_show, true);
         graph_hide
             .filter(graph => graph.startsWith(section === "Unified" ? "" : section))
+            .filter(graph_enabled)
             .forEach(graph => add_hidden_graph(graph));
     }
 

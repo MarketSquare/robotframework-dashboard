@@ -55,6 +55,7 @@ For all available CLI options see the [Basic CLI docs](https://marketsquare.gith
 - 🎛️ **Customizable Layouts** - Drag-and-drop sections with adjustable size and order.  
 - 📊 **Graph Customization** - Toggle legends, axis titles, labels, and control animations.  
 - 📈 **Custom Graphs** - Build your own graphs from a gallery of presets or from scratch: pick the data, filters, grouping, metric and chart type, and share them as JSON.  
+- 🗒️ **Test Notes** - Opt-in: add notes and your own categories to test results, for example a link to the bug, right from the graphs. Notes are kept in the browser and can be exported.  
 - 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity (applied per project). Drag across the runs-over-time histogram to zoom into a period. Every filter option shows how many runs it still matches, and options that match none are greyed out.  
 - ⚖️ **Comparison Mode** - Compare up to 4 runs side by side with visual statistics.  
 - 🔗 **Automatic Log Linking** - Open Robot Framework logs directly from the dashboard.  
@@ -81,6 +82,7 @@ For detailed usage instructions, advanced examples, and full documentation, visi
 - 🔍 [**Filtering**](https://marketsquare.github.io/robotframework-dashboard/filtering.html) - Apply filters to analyze trends in your test data and highlight specific tags, amounts or datetime ranges.
 - 🎨 [**Customization**](https://marketsquare.github.io/robotframework-dashboard/customization.html) - Customize dashboard sections, graph layouts, and visualizations to suit your workflow.
 - 📈 [**Custom Graphs**](https://marketsquare.github.io/robotframework-dashboard/custom-graphs.html) - Build your own graphs on the dashboard data with filters, grouping, metrics and chart types, and share them as JSON.
+- 📝 [**Notes**](https://marketsquare.github.io/robotframework-dashboard/notes.html) - Write down why a test failed, with a link to the bug and a category you define, and see which failures have no note yet.
 - ⚙️ [**Settings**](https://marketsquare.github.io/robotframework-dashboard/settings.html) - Configure dashboard preferences including themes, default views, graph options, and save your settings for consistent team-wide use.
 - 📐 [**Architecture**](https://marketsquare.github.io/robotframework-dashboard/architecture.html) - See how robotdashboard is structured internally, from CLI invocation to a rendered dashboard, in both Regular Mode and Server Mode.
 - 🖥️ [**Dashboard Server**](https://marketsquare.github.io/robotframework-dashboard/dashboard-server.html) - Host the dashboard for multi-user access, programmatic updates, and remote server integration.

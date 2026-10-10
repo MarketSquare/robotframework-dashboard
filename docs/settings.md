@@ -69,6 +69,7 @@ The **Defaults** tab controls initial dashboard behavior and default graph selec
 | Setting | Description |
 |--------|-------------|
 | **Unified Dashboard Sections** | Show all dashboard sections in a single unified view (instead of separate run/suite/test/keyword sections). |
+| **Test Notes** | Off by default. Turns on your own [notes](notes.md) on test results: the Notes button in the menu bar, the right-click menu on test graphs, the Test Notes widget and the note column of the Test table. |
 | **Suite Statistics – Default suite selection (dropdown)** | Selects which suite(s) are shown by default in the Suite Statistics tab. Options: `All Suites Separate`, `All Suites Combined`, or any individual suite. If the selected suite is removed from the data, the first available suite is used automatically. |
 | **Test Statistics – Default suite selection (dropdown)** | Selects which suite is shown by default in the Test Statistics tab. Options: `All` or any individual suite. If the selected suite is removed from the data, the first available suite is used automatically. |
 | **Display Run Counts in Filter Options** | Show behind every filter option how many runs it matches with the other filters applied. See [Filtering](filtering.md#run-counts-and-unavailable-options). |

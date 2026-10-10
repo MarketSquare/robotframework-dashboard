@@ -75,6 +75,9 @@
                 <a class="nav-link information" id="settings" data-bs-toggle="modal"
                     data-bs-target="#settingsModal"></a>
             </li>
+            <li class="nav-item" id="notesNavItem" hidden>
+                <a class="nav-link information" id="notes" data-bs-toggle="modal" data-bs-target="#notesModal"></a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link information" id="themeDark"></a>
             </li>
@@ -102,6 +105,12 @@
             </li>
         </ul>
     </nav>
+    <div class="alert alert-warning mb-0 rounded-0 py-2 notes-storage-warning" id="notesStorageWarning" role="alert" hidden>
+        <span id="notesStorageWarningText"></span>
+        <button type="button" class="btn btn-link alert-link p-0 ms-2 align-baseline" id="notesStorageWarningOpen">Open
+            Notes</button>
+        <button type="button" class="btn-close" id="notesStorageWarningClose" aria-label="Close"></button>
+    </div>
 
     <div class="container-fluid">
         <div class="loader-wrapper" id="loading">
@@ -855,6 +864,13 @@
                                         </div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="information info-label" id="settingNotes">Test Notes <span class="info-icon-small ms-1"></span></span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="toggleNotes">
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <span class="information info-label" id="settingSuiteStatsDefault">Suite Statistics - Default suite selection <span class="info-icon-small ms-1"></span></span>
                                         <div class="d-flex align-items-center">
                                             <select class="form-select form-select-sm"
@@ -1110,6 +1126,182 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Modal -->
+        <div class="modal fade" id="notesModal" tabindex="-1" aria-labelledby="notesModalLabel">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title" id="notesModalLabel">Notes</h1>
+                        <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-5" data-bs-dismiss="modal"
+                            id="closeNotes">Close</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger" id="notesLoadError" hidden>
+                            <span id="notesLoadErrorMessage"></span>
+                            <button type="button" class="btn btn-sm btn-danger ms-2" id="resetNotesStorage">Reset
+                                Notes</button>
+                        </div>
+                        <p><i>Notes and categories are stored in this browser only. Every dashboard opened from the same
+                                location shares them. Export them to keep a copy or to move them to another browser.</i></p>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Browser storage</span>
+                                <span id="notesStorageUsageText"></span>
+                            </div>
+                            <div class="progress notes-storage-progress">
+                                <div class="progress-bar" id="notesStorageUsageBar" role="progressbar"
+                                    aria-label="Browser storage used"></div>
+                            </div>
+                        </div>
+                        <ul class="nav nav-tabs" id="notesTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="notes-list-tab" data-bs-toggle="tab"
+                                    data-bs-target="#notes-list" type="button" role="tab" aria-controls="notes-list"
+                                    aria-selected="true">Notes <span class="badge text-bg-secondary"
+                                        id="notesListCount">0</span></button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="notes-unmatched-tab" data-bs-toggle="tab"
+                                    data-bs-target="#notes-unmatched" type="button" role="tab"
+                                    aria-controls="notes-unmatched" aria-selected="false">Unmatched <span
+                                        class="badge text-bg-secondary" id="notesUnmatchedCount">0</span></button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="notes-categories-tab" data-bs-toggle="tab"
+                                    data-bs-target="#notes-categories" type="button" role="tab"
+                                    aria-controls="notes-categories" aria-selected="false">Categories</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="notes-transfer-tab" data-bs-toggle="tab"
+                                    data-bs-target="#notes-transfer" type="button" role="tab"
+                                    aria-controls="notes-transfer" aria-selected="false">Import / Export</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content pt-3" id="notesTabContent">
+                            <div class="tab-pane fade show active" id="notes-list" role="tabpanel"
+                                aria-labelledby="notes-list-tab">
+                                <div class="d-flex justify-content-end align-items-center gap-2 mb-2">
+                                    <div id="notesListBulkActions" hidden>
+                                        <button type="button" class="btn btn-outline-light btn-sm"
+                                            id="deleteSelectedNotes">Delete Selected</button>
+                                        <button type="button" class="btn btn-outline-light btn-sm"
+                                            id="deleteAllNotes">Delete All Notes</button>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-light btn-sm" id="notesListUpdateToggle"
+                                        aria-pressed="false">Update mode</button>
+                                </div>
+                                <p><i>Notes on the tests of this dashboard, newest first.</i></p>
+                                <div id="notesList"></div>
+                            </div>
+                            <div class="tab-pane fade" id="notes-unmatched" role="tabpanel"
+                                aria-labelledby="notes-unmatched-tab">
+                                <p><i>Notes whose run or test is not in this dashboard. They belong to a removed run or
+                                        to another dashboard opened from the same location, so they are never deleted
+                                        automatically.</i></p>
+                                <div class="d-flex gap-2 mb-2">
+                                    <button type="button" class="btn btn-outline-light btn-sm"
+                                        id="deleteSelectedUnmatchedNotes">Delete Selected</button>
+                                    <button type="button" class="btn btn-outline-light btn-sm"
+                                        id="deleteAllUnmatchedNotes">Delete All Unmatched</button>
+                                </div>
+                                <div id="notesUnmatchedList"></div>
+                            </div>
+                            <div class="tab-pane fade" id="notes-categories" role="tabpanel"
+                                aria-labelledby="notes-categories-tab">
+                                <p><i>Categories group notes, for example by cause of the failure. A note has at most one
+                                        category, and a bar with a note gets the category color as border.</i></p>
+                                <div class="row g-2 align-items-end mb-3">
+                                    <div class="col">
+                                        <label for="newNoteCategoryName" class="form-label">New category</label>
+                                        <input class="form-control form-control-sm" type="text" id="newNoteCategoryName"
+                                            maxlength="40" placeholder="e.g. Product bug">
+                                    </div>
+                                    <div class="col-auto">
+                                        <label for="newNoteCategoryColor" class="form-label">Color</label>
+                                        <input class="form-control form-control-sm form-control-color" type="color"
+                                            id="newNoteCategoryColor">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-outline-light btn-sm"
+                                            id="addNoteCategory">Add Category</button>
+                                    </div>
+                                </div>
+                                <div id="noteCategoriesList"></div>
+                            </div>
+                            <div class="tab-pane fade" id="notes-transfer" role="tabpanel"
+                                aria-labelledby="notes-transfer-tab">
+                                <h6>Export</h6>
+                                <p><i>All stored notes and categories, including the unmatched notes.</i></p>
+                                <div class="d-flex gap-2 mb-4">
+                                    <button type="button" class="btn btn-outline-light btn-sm" id="downloadNotes">Download
+                                        Notes JSON</button>
+                                    <button type="button" class="btn btn-outline-light btn-sm" id="copyNotes">Copy Notes
+                                        JSON</button>
+                                </div>
+                                <h6>Import</h6>
+                                <p><i>Adds the imported notes. When a note exists in both, the newer one is kept. An
+                                        imported category with the name of an existing category is merged into it.</i></p>
+                                <input class="form-control form-control-sm mb-2" type="file" id="importNotesFile"
+                                    accept=".json,application/json" aria-label="Notes JSON file">
+                                <textarea class="form-control mb-2" id="importNotesText" rows="8"
+                                    placeholder="Choose a file or paste the notes JSON" aria-label="Notes JSON"></textarea>
+                                <button type="button" class="btn btn-outline-light btn-sm" id="importNotes">Import
+                                    Notes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Note Editor Modal -->
+        <div class="modal fade" id="noteEditorModal" tabindex="-1" aria-labelledby="noteEditorModalLabel">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content mt-5">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="noteEditorModalLabel">Note</h5>
+                        <div class="d-flex gap-2 ms-auto">
+                            <button type="button" class="btn btn-outline-light btn-sm" id="noteEditorDelete" hidden>
+                                Delete Note</button>
+                            <button type="button" class="btn btn-outline-light btn-sm" id="noteEditorSave">Save Note</button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <dl class="note-editor-target" id="noteEditorTarget"></dl>
+                        <div class="mb-3">
+                            <label for="noteEditorCategory" class="form-label">Category</label>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="noteEditorCategory"></select>
+                                <button type="button" class="btn btn-outline-light btn-sm text-nowrap"
+                                    id="noteEditorShowNewCategory">New Category</button>
+                            </div>
+                            <div class="row g-2 align-items-center mt-1" id="noteEditorNewCategory" hidden>
+                                <div class="col">
+                                    <input class="form-control form-control-sm" type="text" id="noteEditorNewCategoryName"
+                                        maxlength="40" placeholder="Category name" aria-label="New category name">
+                                </div>
+                                <div class="col-auto">
+                                    <input class="form-control form-control-sm form-control-color" type="color"
+                                        id="noteEditorNewCategoryColor" aria-label="New category color">
+                                </div>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-outline-light btn-sm"
+                                        id="noteEditorAddCategory">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                        <label for="noteEditorText" class="form-label">Note</label>
+                        <textarea class="form-control" id="noteEditorText" rows="6"
+                            placeholder="For example a link to the bug, or why this failure can be ignored."></textarea>
+                        <div class="form-text d-flex justify-content-between">
+                            <span>Links starting with http:// or https:// become clickable. Ctrl+Enter saves.</span>
+                            <span id="noteEditorCount"></span>
                         </div>
                     </div>
                 </div>
