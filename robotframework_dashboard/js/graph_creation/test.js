@@ -12,6 +12,7 @@ import { settings, get_run_label } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_flaky_config, build_most_time_consuming_config } from "./config_helpers.js";
 import { get_test_stats_data } from "../graph_data/stats.js";
+import { set_chart_note_target, test_note_target, timeline_test_note_target, test_note_lines } from "../notes/chart_notes.js";
 
 function _build_test_statistics_config() {
     const graphType = settings.graphTypes.testStatisticsGraphType || "timeline";
@@ -44,6 +45,7 @@ function _build_test_statistics_timeline_config() {
                         lines.push(`Message: ${truncated}`);
                     }
                     lines.push(...format_attempt_lines(meta.attempts));
+                    lines.push(...test_note_lines(meta));
                 }
                 return lines;
             },
@@ -69,6 +71,7 @@ function _build_test_statistics_timeline_config() {
             open_log_file(event, chartElement, runStarts)
         }
     };
+    set_chart_note_target("testStatisticsGraph", timeline_test_note_target(testMetaMap, runStarts));
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     update_height("testStatisticsVertical", config.data.labels.length, "timeline");
     return config;
@@ -160,6 +163,7 @@ function _build_test_statistics_line_config() {
                                 lines.push(`Message: ${truncated}`);
                             }
                             lines.push(...format_attempt_lines(point.attempts));
+                            lines.push(...test_note_lines(point));
                             return lines;
                         },
                     },
@@ -176,6 +180,11 @@ function _build_test_statistics_line_config() {
             }
         }
     };
+    set_chart_note_target("testStatisticsGraph", (chart, elements) => {
+        const point = pointMeta[elements[0].index];
+        if (!point) return null;
+        return test_note_target(point, get_run_label({ run_start: point.runStart, run_alias: point.runAlias, run_name: point.runName }));
+    });
     update_height("testStatisticsVertical", testLabels.length, "timeline");
     return config;
 }

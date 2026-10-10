@@ -7,6 +7,7 @@ import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
+import { set_chart_note_target, timeline_test_note_target, test_note_lines } from "../notes/chart_notes.js";
 
 function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataType = null, callbackLookup = null) {
     const lookupFn = callbackLookup || ((val) => callbackData[val]);
@@ -32,6 +33,7 @@ function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataTy
                 }
                 if (dataType === "test") {
                     lines.push(...format_attempt_lines(meta.attempts));
+                    lines.push(...test_note_lines(meta));
                 }
                 return lines;
             },
@@ -66,6 +68,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
     const callbackData = data[1];
     const pointMeta = data[2] || null;
     const limit = inFullscreen && inFullscreenGraph.includes(graphKey) ? 50 : 10;
+    set_chart_note_target(`${graphKey}Graph`, null);
     var config;
     if (graphType == "bar") {
         config = get_graph_config("bar", graphData, `Top ${limit}`, dataLabel, "Fails");
@@ -83,6 +86,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
         config.options.scales.x.type = "timelineScale";
         config.options.scales.y.ticks.autoSkip = false;
+        if (dataType === "test") set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData));
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -95,6 +99,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
     const graphData = data[0];
     const callbackData = data[1];
     const pointMeta = data[2] || null;
+    set_chart_note_target(`${graphKey}Graph`, null);
     var config;
     if (graphType == "bar") {
         config = get_graph_config("bar", graphData, `Top ${limit}`, "Test", "Status Flips");
@@ -105,6 +110,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
         config.options.scales.x.type = "timelineScale";
         config.options.scales.y.ticks.autoSkip = false;
+        set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData));
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;

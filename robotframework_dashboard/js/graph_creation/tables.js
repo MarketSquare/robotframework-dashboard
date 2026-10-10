@@ -1,5 +1,12 @@
 import { filteredRuns, filteredSuites, filteredTests, filteredKeywords, filteredExceptions } from "../variables/globals.js";
 import { parse_test_attempts } from "../graph_data/helpers.js";
+import { settings } from "../variables/settings.js";
+import { notesStore, get_raw_run_start, get_test_note } from "../notes/store.js";
+import { note_search_text, note_cell_html } from "../notes/format.js";
+
+// the note column renders its edit button from the source row, DataTables numbers the rows in the
+// order they were added (also after clear), so meta.row is the index into this array
+let testTableRows = [];
 
 function _get_run_table_data() {
     return filteredRuns.map(run => [
@@ -17,11 +24,17 @@ function _get_suite_table_data() {
 }
 
 function _get_test_table_data() {
-    return filteredTests.map(test => [
-        test.run_start, test.full_name, test.name, test.passed, test.failed, test.skipped,
-        test.elapsed_s, test.start_time, test.message, test.tags, test.run_alias, test.id,
-        parse_test_attempts(test).map(attempt => attempt.status).join(" → "),
-    ]);
+    testTableRows = filteredTests;
+    const withNotes = settings.show.notes;
+    return filteredTests.map(test => {
+        const row = [
+            test.run_start, test.full_name, test.name, test.passed, test.failed, test.skipped,
+            test.elapsed_s, test.start_time, test.message, test.tags, test.run_alias, test.id,
+            parse_test_attempts(test).map(attempt => attempt.status).join(" → "),
+        ];
+        if (withNotes) row.push(note_search_text(get_test_note(notesStore, get_raw_run_start(test), test.full_name)));
+        return row;
+    });
 }
 
 function _get_keyword_table_data() {
@@ -44,6 +57,17 @@ function _get_exception_table_data() {
 function run_start_column() { return { title: "run", type: "date" }; }
 function number_column(title) { return { title, type: "num" }; }
 function text_column(title, type = "string") { return { title, type }; }
+function test_note_column() {
+    return {
+        title: "note", type: "string",
+        render: (data, type, row, meta) => {
+            const test = testTableRows[meta.row];
+            if (type !== "display" || !test) return data;
+            const runStart = get_raw_run_start(test);
+            return note_cell_html(runStart, test.full_name, get_test_note(notesStore, runStart, test.full_name));
+        },
+    };
+}
 const runColumns = [
     run_start_column(), text_column("full_name"), text_column("name"), number_column("total"),
     number_column("passed"), number_column("failed"), number_column("skipped"), number_column("elapsed_s"),
@@ -83,7 +107,9 @@ function create_data_table(tableId, columns, getDataFn) {
 }
 function create_run_table() { create_data_table("runTable", runColumns, _get_run_table_data); }
 function create_suite_table() { create_data_table("suiteTable", suiteColumns, _get_suite_table_data); }
-function create_test_table() { create_data_table("testTable", testColumns, _get_test_table_data); }
+// the note column only exists while notes are enabled (settings.show.notes)
+function get_test_columns() { return settings.show.notes ? [...testColumns, test_note_column()] : testColumns; }
+function create_test_table() { create_data_table("testTable", get_test_columns(), _get_test_table_data); }
 function create_keyword_table() { create_data_table("keywordTable", keywordColumns, _get_keyword_table_data); }
 function create_exception_table() { create_data_table("exceptionTable", exceptionColumns, _get_exception_table_data); }
 
@@ -95,7 +121,15 @@ function update_data_table(tableId, columns, getDataFn) {
 }
 function update_run_table() { update_data_table("runTable", runColumns, _get_run_table_data); }
 function update_suite_table() { update_data_table("suiteTable", suiteColumns, _get_suite_table_data); }
-function update_test_table() { update_data_table("testTable", testColumns, _get_test_table_data); }
+function update_test_table() {
+    const columns = get_test_columns();
+    // toggling notes adds or removes a column, which needs a new table
+    if (window.testTable && window.testTable.columns().count() !== columns.length) {
+        create_data_table("testTable", columns, _get_test_table_data);
+        return;
+    }
+    update_data_table("testTable", columns, _get_test_table_data);
+}
 function update_keyword_table() { update_data_table("keywordTable", keywordColumns, _get_keyword_table_data); }
 function update_exception_table() { update_data_table("exceptionTable", exceptionColumns, _get_exception_table_data); }
 

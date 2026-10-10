@@ -124,6 +124,14 @@ describe('filter.js pure logic', () => {
             settings.show.milliseconds = true;
             expect(get_transformed_data('runs')[0].run_start).toBe('2025-01-15 09:05:03.123');
         });
+
+        it('keeps the stored run_start on transformed runs for the notes', () => {
+            settings.show.milliseconds = false;
+            settings.show.convertTimezone = true;
+            const transformed = get_transformed_data('runs')[0];
+            expect(transformed.run_start).not.toBe('2025-01-15 09:05:03.123+02:00');
+            expect(transformed.raw_run_start).toBe('2025-01-15 09:05:03.123+02:00');
+        });
     });
 
     describe('remove_milliseconds logic', () => {

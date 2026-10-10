@@ -25,9 +25,19 @@ function get_transformed_data(name) {
     }
     if (!(name in transformedDataCache.data)) {
         const sourceData = { runs, suites, tests, keywords, exceptions }[name];
-        transformedDataCache.data[name] = remove_timezones(convert_timezone(remove_milliseconds(sourceData)));
+        const transformed = remove_timezones(convert_timezone(remove_milliseconds(sourceData)));
+        if (name === "runs" || name === "tests") keep_raw_run_start(sourceData, transformed);
+        transformedDataCache.data[name] = transformed;
     }
     return transformedDataCache.data[name];
+}
+
+// notes are keyed on the stored run_start; the transforms map row by row, so indexes still line up
+function keep_raw_run_start(sourceData, transformed) {
+    if (transformed === sourceData) return;
+    for (let index = 0; index < transformed.length; index++) {
+        transformed[index].raw_run_start = sourceData[index].run_start;
+    }
 }
 
 const dashboardPages = ["overview", "dashboard", "compare", "tables"];

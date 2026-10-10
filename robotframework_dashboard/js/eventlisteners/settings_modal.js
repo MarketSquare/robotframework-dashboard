@@ -10,12 +10,19 @@ import { setup_lowest_highest_dates } from "../filter/modal_options.js";
 import { set_filter_dropdown_visible } from "../filter/controls.js";
 import { update_duration_comparison_for_all_projects } from "../graph_creation/overview.js";
 import { confirm_action } from "./confirm_modal.js";
+import { apply_notes_enabled } from "../notes/ui.js";
 
 // function to create customized view eventlisteners
 function setup_settings_modal() {
     // function to catch the closing of the settings modal
     document.getElementById("settingsModal").addEventListener("hidden.bs.modal", function () {
-        setup_data_and_graphs();
+        const scrollY = window.scrollY;
+        apply_notes_enabled();
+        // the rebuild hides the pages, which collapses the page height and loses the scroll position
+        document.addEventListener("graphs-finalized", () => {
+            requestAnimationFrame(() => window.scrollTo(0, scrollY));
+        }, { once: true });
+        setup_data_and_graphs(true);
     });
     // function to catch the closing of the settings modal
     document.getElementById("settingsModal").addEventListener("shown.bs.modal", function () {
@@ -136,6 +143,7 @@ function setup_settings_modal() {
 
     [
         { key: "show.unified", elementId: "toggleUnified" },
+        { key: "show.notes", elementId: "toggleNotes" },
         { key: "show.dateLabels", elementId: "toggleLabels" },
         { key: "show.legends", elementId: "toggleLegends" },
         { key: "show.aliases", elementId: "toggleAliases", datatype: "string", event: "change" },

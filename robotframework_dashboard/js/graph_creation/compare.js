@@ -7,6 +7,7 @@ import { format_duration } from "../common.js";
 import { filteredRuns, filteredSuites, filteredTests } from "../variables/globals.js";
 import { settings } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
+import { set_chart_note_target, timeline_test_note_target, test_note_lines } from "../notes/chart_notes.js";
 
 function _build_compare_statistics_config() {
     const graphData = get_compare_statistics_graph_data(filteredRuns);
@@ -42,6 +43,7 @@ function _build_compare_tests_config() {
                         lines.push(`Message: ${truncated}`);
                     }
                     lines.push(...format_attempt_lines(meta.attempts));
+                    lines.push(...test_note_lines(meta));
                 }
                 return lines;
             },
@@ -66,6 +68,7 @@ function _build_compare_tests_config() {
             open_log_file(event, chartElement, runStarts)
         }
     };
+    set_chart_note_target("compareTestsGraph", timeline_test_note_target(testMetaMap, runStarts));
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     update_height("compareTestsVertical", config.data.labels.length, "timeline");
     return config;

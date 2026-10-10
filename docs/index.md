@@ -51,6 +51,9 @@ features:
   - title: 📈 Custom Graphs
     details: Build your own graphs from presets or from scratch, with filters, grouping and metrics, and share them as JSON.
     link: /custom-graphs.md
+  - title: 📝 Notes
+    details: Write down why a test failed, with a link to the bug and a category you define, and keep track of which failures nobody looked at yet.
+    link: /notes.md
   - title: ⚙️ Settings
     details: Configure dashboard preferences including themes, default views, graph options, and save your settings for consistent team-wide use.
     link: /settings.md

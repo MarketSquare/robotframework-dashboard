@@ -102,6 +102,7 @@ import {
     update_keyword_table,
     update_exception_table
 } from "./tables.js";
+import { create_test_notes_graph, update_test_notes_graph } from "./notes.js";
 import { update_custom_stat_widgets } from "../statwidgets.js";
 import { create_custom_graphs, update_custom_graphs } from "../customgraphs/widgets.js";
 
@@ -135,6 +136,7 @@ function create_dashboard_graphs() {
         create_test_most_failed_graph();
         create_test_recent_most_failed_graph();
         create_test_most_time_consuming_graph();
+        create_test_notes_graph();
         create_test_stat_widgets();
         create_keyword_statistics_graph();
         create_keyword_times_run_graph();
@@ -193,6 +195,7 @@ function update_dashboard_graphs() {
         update_test_most_failed_graph();
         update_test_recent_most_failed_graph();
         update_test_most_time_consuming_graph();
+        update_test_notes_graph();
         update_test_stat_widgets();
         update_keyword_statistics_graph();
         update_keyword_times_run_graph();

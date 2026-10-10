@@ -16,6 +16,7 @@ import {
 import { settings, get_run_label } from "../variables/settings.js";
 import { convert_timeline_data, get_suite_data_exclusion, get_keyword_select_key, parse_test_attempts, resolve_test_status } from "./helpers.js";
 import { compareRunIds } from "../variables/graphs.js";
+import { get_raw_run_start, get_test_note_marker } from "../notes/store.js";
 
 // function to prepare the data in the correct format for statistics graphs
 function get_statistics_graph_data(dataType, graphType, filteredData) {
@@ -191,16 +192,20 @@ function get_test_statistics_data(filteredTests) {
         const attempts = parse_test_attempts(test);
         const statusName = resolve_test_status(test, attempts, filters.rerunView);
         const markRerun = attempts.length > 0 && filters.rerunView !== "final";
+        const rawRunStart = get_raw_run_start(test);
         datasets.push({
             label: testLabel,
             data: [{ x: [runAxis, runAxis + 1], y: testLabel }],
             ...get_test_status_config(statusName, markRerun),
+            ...get_test_note_marker(rawRunStart, test.full_name),
         });
         testMetaMap[`${testLabel}::${runAxis}`] = {
             message: test.message || '',
             elapsed_s: test.elapsed_s || 0,
             status: statusName,
             attempts,
+            run_start: rawRunStart,
+            full_name: test.full_name,
         };
     }
     let finalDatasets = convert_timeline_data(datasets);
@@ -276,6 +281,8 @@ function get_test_statistics_line_data(filteredTests) {
             runName: test.run_name,
             elapsed: test.elapsed_s,
             testLabel: testLabel,
+            run_start: get_raw_run_start(test),
+            full_name: test.full_name,
         });
     }
 
@@ -319,13 +326,15 @@ function get_test_statistics_line_data(filteredTests) {
                 p.status === "Failed" ? failedBackgroundColor :
                 skippedBackgroundColor
             );
+            const noteMarker = get_test_note_marker(p.run_start, p.full_name);
             allBorderColors.push(
+                noteMarker ? noteMarker.borderColor :
                 p.markRerun ? rerunBorderColor :
                 p.status === "Passed" ? passedBackgroundBorderColor :
                 p.status === "Failed" ? failedBackgroundBorderColor :
                 skippedBackgroundBorderColor
             );
-            allBorderWidths.push(p.markRerun ? rerunBorderWidth : 1);
+            allBorderWidths.push(noteMarker ? noteMarker.borderWidth : p.markRerun ? rerunBorderWidth : 1);
             allMeta.push(p);
         }
     }

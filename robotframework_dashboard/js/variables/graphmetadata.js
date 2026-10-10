@@ -473,6 +473,31 @@ const graphMetadata = [
                 </div>`,
     },
     {
+        key: "testNotes",
+        label: "Test Notes",
+        // only part of the layout while notes are enabled (settings.show.notes)
+        requiresNotes: true,
+        defaultType: "table",
+        viewOptions: ["Table"],
+        hasFullscreenButton: false,
+        defaultSize: { w: 12, h: 5 },
+        minSize: { w: 4, h: 3 },
+        html: `<div class="graph-header">
+                    <h6 id="testNotesTitle">Test Notes</h6>
+                    <div class="graph-controls">
+                        <a class="information information-icon" id="testNotesInformation"></a>
+                        <a class="move-to-first-graph information" id="testNotesMoveToFirst" moveToFirstHidden></a>
+                        <a class="move-to-last-graph information" id="testNotesMoveToLast" moveToLastHidden></a>
+                        <a class="shown-graph information" id="testNotesShown" showGraphHidden></a>
+                        <a class="hidden-graph information" id="testNotesHidden" hideGraphHidden></a>
+                    </div>
+                </div>
+                <div class="graph-body test-notes-body">
+                    <div class="test-notes-summary" id="testNotesSummary"></div>
+                    <table class="table table-sm table-striped test-notes-table" id="testNotesTable"></table>
+                </div>`,
+    },
+    {
         key: "keywordStatistics",
         label: "Keyword Statistics",
         defaultType: "percentages",

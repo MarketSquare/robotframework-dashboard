@@ -186,6 +186,7 @@ export default defineConfig({
           { text: '🔍 Filtering', link: '/filtering.md' },
           { text: '🎨 Customization', link: '/customization.md' },
           { text: '📈 Custom Graphs', link: '/custom-graphs.md' },
+          { text: '📝 Notes', link: '/notes.md' },
           { text: '⚙️ Settings', link: '/settings.md' },
         ]
       },

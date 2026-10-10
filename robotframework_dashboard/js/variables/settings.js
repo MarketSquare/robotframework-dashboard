@@ -45,6 +45,7 @@ var settings = {
     show: {
         overviewDurationPercentage: 20,
         unified: false,
+        notes: false,
         dateLabels: true,
         legends: true,
         aliases: "run_start",

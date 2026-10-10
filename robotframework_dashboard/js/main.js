@@ -7,18 +7,22 @@ import { setup_filter_modal } from "./eventlisteners/filter_modal.js";
 import { setup_settings_modal } from "./eventlisteners/settings_modal.js";
 import { setup_menu, setup_navbar_overflow } from "./menu.js";
 import { load_data } from "./variables/data.js";
+import { setup_notes } from "./notes/ui.js";
+import { setup_notes_modal } from "./eventlisteners/notes_modal.js";
 
 // function that triggers all functions that should be executed when the dashboard is loaded first
 // in the correct order!
 async function main() {
     await load_data();
     setup_local_storage();
+    setup_notes();
     setup_database_stats();
     setup_dashboard_section_layout_buttons();
     setup_sections_filters();
     setup_collapsables();
     setup_filter_modal();
     setup_settings_modal();
+    setup_notes_modal();
     setup_menu();
     setup_navbar_overflow();
 }

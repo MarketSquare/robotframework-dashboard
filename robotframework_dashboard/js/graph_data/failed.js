@@ -3,6 +3,7 @@ import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { convert_timeline_data, group_timeline_values, parse_test_attempts, get_keyword_select_key } from "./helpers.js";
 import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
 import { strip_tz_suffix } from "../common.js";
+import { get_raw_run_start, get_test_note_marker } from "../notes/store.js";
 
 // function to prepare the data in the correct format for most failed graphs
 function get_most_failed_data(dataType, graphType, filteredData, recent) {
@@ -99,6 +100,7 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                     // tests re-executed with robot --rerunfailed (rebot --merge history) get the rerun border
                     const attempts = dataType === "test" && (settings.switch.testRerunView || "reruns") !== "final"
                         ? parse_test_attempts(value) : [];
+                    const rawRunStart = get_raw_run_start(value);
                     pointMeta[`${label}::${runAxis}`] = {
                         status: "FAIL",
                         elapsed_s: value.elapsed_s || 0,
@@ -107,12 +109,15 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                         failed: value.failed || 0,
                         skipped: value.skipped || 0,
                         attempts,
+                        run_start: rawRunStart,
+                        full_name: value.full_name,
                     };
                     datasets.push({
                         label: label,
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
                         ...failedConfig,
                         ...(attempts.length > 0 ? { borderColor: rerunBorderColor, borderWidth: rerunBorderWidth } : {}),
+                        ...(dataType === "test" ? get_test_note_marker(rawRunStart, value.full_name) : null),
                     });
                     foundValues.forEach(v => runLabelsSet.add(get_run_label(v)));
                 }
