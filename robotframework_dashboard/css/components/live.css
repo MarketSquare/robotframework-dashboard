@@ -50,6 +50,8 @@
     cursor: pointer; border-radius: 3px;
 }
 #live .live-step:hover { background: var(--bs-tertiary-bg); }
+/* names on the right (test, steps, step details) use the size of the test list on the left */
+#live #liveTestName, #live .live-step, #live #liveDetailTitle, #live .live-tab { font-size: 13px; }
 #live .live-step.selected { background: var(--live-selected); box-shadow: inset 3px 0 0 var(--live-run); }
 #live .live-step.NOT-RUN { color: var(--live-muted); }
 #live .live-glyph { width: 16px; text-align: center; font-weight: 700; font-size: 11px; flex-shrink: 0; }
