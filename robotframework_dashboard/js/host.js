@@ -9,8 +9,7 @@
 //   { type: "replay", events, name }, { type: "replayError", message },
 //   { type: "dashboardData", runs, suites, tests, keywords, exceptions } (--embed, answer to "dataRequest")
 // page -> host messages: { type: "ready" }, { type: "openSource", source, lineno }, { type: "openLog", path },
-//   { type: "replayEvents", paths, name }, { type: "dataRequest" } (--embed: the page waits for its data),
-//   { type: "openTrace", path } (a Playwright trace zip of Browser library: open it in the trace viewer)
+//   { type: "replayEvents", paths, name }, { type: "dataRequest" } (--embed: the page waits for its data)
 //   (openLog: path as stored by robotdashboard, absolute or relative to the dashboard file, optionally "#<id>")
 
 const vscodeApi = typeof acquireVsCodeApi === "function" ? acquireVsCodeApi() : null;

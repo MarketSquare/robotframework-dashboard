@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { message_images, resolve_attachment, node_images, detail_images, file_url, message_trace, node_traces, test_traces } from '@js/live/attachments.js';
+import { message_images, resolve_attachment, node_images, detail_images, file_url } from '@js/live/attachments.js';
 import { create_run_state, apply_event } from '@js/live/projection.js';
 
 // what Browser library and SeleniumLibrary log
@@ -71,30 +71,5 @@ describe('screenshots of a failure', () => {
         ].forEach((ev) => apply_event(state, ev));
         expect(detail_images(state, state.steps.get('s1-t1-k1'), '/out')).toEqual(['/out/shots/fail.png']);
         expect(node_images(state, state.steps.get('s1-t1-k1'), '/out')).toEqual([]);
-    });
-});
-
-describe('Playwright traces of Browser library', () => {
-    const TRACE = 'C:\\out\\browser\\traces\\trace_context=53c7ab64.zip';
-    const message = `Successfully created context and trace file will be saved to: ${TRACE}`;
-
-    it('reads the trace path from the New Context message', () => {
-        expect(message_trace(message)).toBe(TRACE);
-        expect(message_trace('Successfully created context. ')).toBeNull();
-    });
-
-    it('a test has the traces of its own steps and of the setup of its suites', () => {
-        const state = create_run_state();
-        [
-            { type: 'suite.started', id: 's1', name: 'S', longname: 'S', tests: 2 },
-            { type: 'step.started', id: 's1-k1', parent: 's1', kind: 'SETUP', name: 'New Context' },
-            { type: 'message.logged', parent: 's1-k1', level: 'INFO', text: message },
-            { type: 'test.started', id: 's1-t1', parent: 's1', name: 'T', longname: 'S.T' },
-            { type: 'step.started', id: 's1-t1-k1', parent: 's1-t1', kind: 'KEYWORD', name: 'New Context' },
-            { type: 'message.logged', parent: 's1-t1-k1', level: 'INFO', text: message.replace('53c7ab64', 'aaaa') },
-        ].forEach((e, i) => apply_event(state, { v: 1, seq: i + 1, t: 100, ...e }));
-        const test = state.tests.get('s1-t1');
-        expect(node_traces(state, test)).toEqual([TRACE.replace('53c7ab64', 'aaaa')]);
-        expect(test_traces(state, test)).toEqual([TRACE.replace('53c7ab64', 'aaaa'), TRACE]);
     });
 });
