@@ -12,7 +12,7 @@ usage: robotdashboard [-v] [-h] [-o [PATH ...]] [-f [PATH ...]]
                       [--logremoved [TYPES_PATH]] [-c PATH]
                       [--novacuum [BOOL]] [-g [BOOL]] [-l [BOOL]] [-n NAME]
                       [-t TITLE] [-q INT] [--offlinedependencies [BOOL]]
-                      [-u [BOOL]] [--logurl URL] [-j PATH]
+                      [--embed [BOOL]] [-u [BOOL]] [--logurl URL] [-j PATH]
                       [--forcejsonconfig [BOOL]] [-m PATH]
                       [-s [HOST:PORT:USERNAME:PASSWORD]]
                       [--noautoupdate [BOOL]] [--ssl-certfile PATH]
@@ -110,6 +110,11 @@ dashboard:
                           • '-q 25'
   --offlinedependencies [BOOL]
                         `boolean` [default: False] Embed JS/CSS locally instead of loading from CDN.
+  --embed [BOOL]        `boolean` [default: False] Generate a dashboard for an editor host (VS Code, PyCharm) without data.
+                          • The page asks its host for the data ('dataRequest' message) instead of inlining it
+                          • Implies '--offlinedependencies'; script tags get a nonce placeholder for a Content-Security-Policy
+                        Examples:
+                          • '--embed'
 
 log linking:
   -u [BOOL], --uselogs [BOOL]

@@ -205,6 +205,16 @@ robotdashboard --offlinedependencies True
 - By default, urls to the actual JS and CSS CDN are used. 
 - See [Advanced CLI & Examples](/advanced-cli-examples#offline-dependencies) for more information.
 
+### Generate a dashboard for an editor host
+```bash
+robotdashboard --embed  
+robotdashboard --embed True  
+```
+- Optional: `--embed` generates a dashboard for an editor that shows it in a panel (for example RobotCode in VS Code or PyCharm), without data.  
+- The page asks its host for the data with a `dataRequest` message; the host answers with a `dashboardData` message that holds the same encoded data a normal dashboard inlines (`RobotDashboard.get_embed_data()` in Python). Opened in a plain browser the page stays empty.
+- Implies `--offlinedependencies`, because an editor panel has no network access.
+- Every `<script>` tag gets `nonce="__ROBOTDASHBOARD_NONCE__"`; the host replaces it with a fresh nonce and sets a Content-Security-Policy such as `script-src 'nonce-…'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:`.
+
 ## Log Linking
 
 ### Enable Log Linking in the dashboard

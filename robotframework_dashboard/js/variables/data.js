@@ -1,3 +1,5 @@
+import { host } from "../host.js";
+
 // the input data, filled by load_data() which main() awaits before anything reads it
 let runs = [];
 let suites = [];
@@ -6,6 +8,10 @@ let keywords = [];
 let exceptions = [];
 
 async function load_data() {
+    if (embed_mode === true) {
+        await load_host_data();
+        return;
+    }
     [runs, suites, tests, keywords, exceptions] = await Promise.all([
         decode_and_decompress("placeholder_runs"),
         decode_and_decompress("placeholder_suites"),
@@ -15,9 +21,24 @@ async function load_data() {
     ]);
 }
 
+// --embed: the page has no data of its own; it asks its host, which answers in the same encoded form.
+// Without a host (an embed page opened in a browser) the page stays empty.
+async function load_host_data() {
+    if (!host.present) {
+        console.warn("robotdashboard: this page was generated with --embed and needs a host that sends its data");
+        return;
+    }
+    const answer = host.next("dashboardData");
+    host.post({ type: "dataRequest" });
+    const data = await answer;
+    [runs, suites, tests, keywords, exceptions] = await Promise.all(
+        ["runs", "suites", "tests", "keywords", "exceptions"].map((key) => decode_and_decompress(data[key])),
+    );
+}
+
 // the payloads are zlib compressed JSON, inflated with the native DecompressionStream
 async function decode_and_decompress(base64Str) {
-    if (base64Str.includes("placeholder_")) return [];
+    if (!base64Str || base64Str.includes("placeholder_")) return [];
     // a plain loop is much faster than Uint8Array.from with a map callback on large payloads
     const binaryStr = atob(base64Str);
     const compressedData = new Uint8Array(binaryStr.length);
@@ -37,6 +58,7 @@ var filteredAmountDefault = 0
 const use_logs = "placeholder_use_logs"
 const server = "placeholder_server"
 const no_auto_update = "placeholder_no_autoupdate"
+const embed_mode = "placeholder_embed"
 if (!message_config.includes("placeholder_message_config")) { message_config = JSON.parse(message_config) }
 
 export {
@@ -54,5 +76,6 @@ export {
     use_logs,
     server,
     unified_dashboard_title,
-    no_auto_update
+    no_auto_update,
+    embed_mode
 };

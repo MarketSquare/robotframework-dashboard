@@ -426,6 +426,20 @@ class ArgumentParser:
             const=True,
             default=False,
         )
+        dashboard_group.add_argument(
+            "--embed",
+            metavar="BOOL",
+            help=(
+                "`boolean` [default: False] Generate a dashboard for an editor host (VS Code, PyCharm) without data.\n"
+                "  • The page asks its host for the data ('dataRequest' message) instead of inlining it\n"
+                "  • Implies '--offlinedependencies'; script tags get a nonce placeholder for a Content-Security-Policy\n"
+                "Examples:\n"
+                "  • '--embed'\n"
+            ),
+            nargs="?",
+            const=True,
+            default=False,
+        )
 
         log_group = parser.add_argument_group("log linking")
         log_group.add_argument(
@@ -596,6 +610,10 @@ class ArgumentParser:
         )
         no_vacuum = self._normalize_bool(arguments.novacuum, "novacuum")
         no_autoupdate = self._normalize_bool(arguments.noautoupdate, "noautoupdate")
+        embed = self._normalize_bool(arguments.embed, "embed")
+        if embed:
+            # an editor webview has no network access
+            offline_dependencies = True
 
         # generates the datetime used in the file dashboard name and the html title
         generation_datetime = datetime.now()
@@ -729,5 +747,6 @@ class ArgumentParser:
             "ssl_keyfile": ssl_keyfile,
             "log_url": arguments.logurl,
             "log_removed": log_removed,
+            "embed": embed,
         }
         return dotdict(provided_args)

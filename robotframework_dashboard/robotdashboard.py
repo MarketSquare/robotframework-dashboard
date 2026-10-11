@@ -36,6 +36,7 @@ class RobotDashboard:
         log_url: Optional[str] = None,
         custom_filters: str = "",
         log_removed: Optional[LogRemovedConfig] = None,
+        embed: bool = False,
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -60,6 +61,7 @@ class RobotDashboard:
         self.log_url = log_url
         self.custom_filters = custom_filters
         self.log_removed = log_removed
+        self.embed = embed
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
@@ -267,6 +269,7 @@ class RobotDashboard:
                 self.offline_dependencies,
                 self.force_json_config,
                 self.no_autoupdate,
+                self.embed,
             )
             end = time()
             console += self._print_console(
@@ -277,6 +280,15 @@ class RobotDashboard:
                 " 5. Creating dashboard HTML\n  skipping step"
             )
         return console
+
+    def get_embed_data(self):
+        """The data of a dashboard generated with --embed, for its host to send in a 'dashboardData' message:
+        {"runs": ..., "suites": ..., "tests": ..., "keywords": ..., "exceptions": ...}, each value encoded
+        the way a normal dashboard inlines it. Paths follow --uselogs, relative to the dashboard file."""
+        self.database.open_database()
+        data = self.database.get_data()
+        self.database.close_database()
+        return DashboardGenerator().encode_data(data, self.dashboard_name, self.use_logs, self.server)
 
     def update_output_path(self, log_path):
         """Function to update the output_path using the log path that the server has used"""

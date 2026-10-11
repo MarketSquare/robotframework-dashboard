@@ -133,6 +133,7 @@ def _make_namespace(**kwargs):
         "logurl": None,
         "custom_filters": None,
         "logremoved": None,
+        "embed": False,
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
@@ -538,3 +539,10 @@ def test_check_argument_errors_logurl_no_placeholder_multiple_outputs_exits(caps
         ArgumentParser()._process_arguments(args)
     captured = capsys.readouterr()
     assert "logurl" in captured.out.lower()
+
+
+def test_process_arguments_embed_implies_offline_dependencies():
+    result = ArgumentParser()._process_arguments(_make_namespace(embed=True))
+    assert result.embed is True and result.offline_dependencies is True
+    result = ArgumentParser()._process_arguments(_make_namespace(embed="false"))
+    assert result.embed is False and result.offline_dependencies is False

@@ -104,3 +104,6 @@ Validate RobotDashboard uselogs
 
 Validate RobotDashboard offlinedependencies
     Validate CLI    command=robotdashboard -d offlinedependencies.db --offlinedependencies    expected=offlinedependencies
+
+Validate RobotDashboard embed
+    Validate CLI    command=robotdashboard -d embed.db --embed    expected=embed

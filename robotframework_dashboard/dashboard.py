@@ -4,9 +4,15 @@ from datetime import datetime
 from json import dumps
 from zlib import compress
 from base64 import b64encode
+import re
 
 from .dependencies import DependencyProcessor
 from .version import __version__
+
+
+# replaced by an editor host with a fresh nonce for its Content-Security-Policy (--embed)
+NONCE_PLACEHOLDER = "__ROBOTDASHBOARD_NONCE__"
+DATA_KEYS = ("runs", "suites", "tests", "keywords", "exceptions")
 
 
 class DashboardGenerator:
@@ -28,9 +34,11 @@ class DashboardGenerator:
         offline: bool,
         force_json_config: bool,
         no_autoupdate: bool,
+        embed: bool = False,
     ):
         """
         Function that generates the dashboard by replacing all relevant placeholders.
+        With embed the data is left out: the page asks its host for it (see get_embed_data).
         """
         dependency_processor = DependencyProcessor()
 
@@ -51,26 +59,12 @@ class DashboardGenerator:
             dashboard_data = dashboard_data.replace(
                 '"placeholder_version"', __version__
             )
-            if use_logs and not server:
-                runs_data = self._make_paths_relative(data["runs"], name_dashboard)
-            else:
-                runs_data = data["runs"]
+            if not embed:
+                encoded = self.encode_data(data, name_dashboard, use_logs, server)
+                for key in DATA_KEYS:
+                    dashboard_data = dashboard_data.replace(f'"placeholder_{key}"', f'"{encoded[key]}"')
             dashboard_data = dashboard_data.replace(
-                '"placeholder_runs"', f'"{self._compress_and_encode(runs_data)}"'
-            )
-            dashboard_data = dashboard_data.replace(
-                '"placeholder_suites"', f'"{self._compress_and_encode(data["suites"])}"'
-            )
-            dashboard_data = dashboard_data.replace(
-                '"placeholder_tests"', f'"{self._compress_and_encode(data["tests"])}"'
-            )
-            dashboard_data = dashboard_data.replace(
-                '"placeholder_keywords"',
-                f'"{self._compress_and_encode(data["keywords"])}"',
-            )
-            dashboard_data = dashboard_data.replace(
-                '"placeholder_exceptions"',
-                f'"{self._compress_and_encode(data.get("exceptions", []))}"',
+                '"placeholder_embed"', str(embed).lower()
             )
             dashboard_data = dashboard_data.replace(
                 '"placeholder_amount"', str(quantity)
@@ -116,6 +110,13 @@ class DashboardGenerator:
         # minify html
         dashboard_data = self._minify_text(dashboard_data)
 
+        if embed:
+            # every script tag may run under a host's Content-Security-Policy with this nonce; after minifying
+            # tags start a line, "<script" inside library code (sanitizers, regexes) does not
+            dashboard_data = re.sub(
+                r"(?m)^<script(?=[\s>])", f'<script nonce="{NONCE_PLACEHOLDER}"', dashboard_data
+            )
+
         # write template
         with open(name_dashboard, "w", encoding="utf-8") as file:
             file.write(dashboard_data)
@@ -123,6 +124,13 @@ class DashboardGenerator:
         # warn in case of empty database
         if len(data["runs"]) == 0:
             print("  WARNING: There are no runs so the dashboard will be empty!")
+
+    def encode_data(self, data, name_dashboard, use_logs, server):
+        """The dashboard data as the page reads it: per key zlib compressed JSON in base64"""
+        runs = data["runs"]
+        if use_logs and not server:
+            runs = self._make_paths_relative(runs, name_dashboard)
+        return {key: self._compress_and_encode(runs if key == "runs" else data.get(key, [])) for key in DATA_KEYS}
 
     def _make_paths_relative(self, runs, dashboard_name):
         dashboard_dir = dirname(abspath(dashboard_name))

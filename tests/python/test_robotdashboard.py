@@ -235,3 +235,16 @@ def test_process_outputs_folder_scan_corrupt_xml_logs_error(tmp_path):
     output_folder_configs = [[str(tmp_path), []]]
     console = rd.process_outputs(output_folder_configs=output_folder_configs)
     assert "ERROR" in console
+
+
+def test_get_embed_data_gives_the_data_a_dashboard_would_inline(tmp_path):
+    import base64, json, zlib
+
+    rd = _make_rd(tmp_path, generate_dashboard=True, embed=True)
+    rd.initialize_database()
+    rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), ["dev"])])
+    rd.create_dashboard()
+    data = rd.get_embed_data()
+    assert set(data) == {"runs", "suites", "tests", "keywords", "exceptions"}
+    runs = json.loads(zlib.decompress(base64.b64decode(data["runs"])))
+    assert len(runs) == 1 and data["runs"] not in Path(rd.dashboard_name).read_text(encoding="utf-8")

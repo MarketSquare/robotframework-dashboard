@@ -406,3 +406,45 @@ def test_generate_dashboard_missing_exceptions_key_defaults_to_empty(tmp_path):
     import json, zlib, base64, re
     decoded = _embedded_payload(content, "exceptions")
     assert decoded == []
+
+
+# --- --embed: a dashboard for an editor host, without data ---------------------------------------
+
+_DATA_WITH_RUN = {
+    "runs": [{"run_start": "2025-01-01 10:00:00", "name": "Suite", "path": "/results/output.xml"}],
+    "suites": [], "tests": [], "keywords": [], "exceptions": [],
+}
+
+
+def test_generate_dashboard_embed_leaves_out_the_data(tmp_path):
+    content = _call_generate(tmp_path, data=_DATA_WITH_RUN, embed=True).read_text(encoding="utf-8")
+    encoded = DashboardGenerator().encode_data(_DATA_WITH_RUN, str(tmp_path / "dashboard.html"), False, False)
+    assert encoded["runs"] not in content
+    assert re.findall(r'decode_and_decompress\("([^"]+)"\)', content) == [f"placeholder_{k}" for k in EMBEDDED_PAYLOAD_ORDER]
+    assert re.search(r"const embed_mode\s*=\s*true", content)
+
+
+def test_generate_dashboard_embed_puts_a_nonce_on_every_script(tmp_path):
+    from robotframework_dashboard.dashboard import NONCE_PLACEHOLDER
+
+    content = _call_generate(tmp_path, embed=True, offline=True).read_text(encoding="utf-8")
+    scripts = re.findall(r"(?m)^<script\b[^>]*>", content)  # tags, not "<script" inside library code
+    assert len(scripts) == content.count("</script>")
+    assert scripts and all(f'nonce="{NONCE_PLACEHOLDER}"' in tag for tag in scripts)
+
+
+def test_generate_dashboard_without_embed_has_no_nonce(tmp_path):
+    content = _call_generate(tmp_path, data=_DATA_WITH_RUN).read_text(encoding="utf-8")
+    assert "__ROBOTDASHBOARD_NONCE__" not in content
+    assert re.search(r"const embed_mode\s*=\s*false", content)
+    assert _embedded_payload(content, "runs") == _DATA_WITH_RUN["runs"]
+
+
+def test_encode_data_matches_what_a_dashboard_inlines(tmp_path):
+    output = tmp_path / "dashboard.html"
+    encoded = DashboardGenerator().encode_data(_DATA_WITH_RUN, str(output), True, False)
+    content = _call_generate(tmp_path, data=_DATA_WITH_RUN, use_logs=True).read_text(encoding="utf-8")
+    for key in EMBEDDED_PAYLOAD_ORDER:
+        assert f'"{encoded[key]}"' in content
+    runs = json.loads(zlib.decompress(base64.b64decode(encoded["runs"])))
+    assert not Path(runs[0]["path"]).is_absolute()  # --uselogs: relative to the dashboard file

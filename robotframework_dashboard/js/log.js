@@ -2,6 +2,7 @@ import { runs, suites, tests, server, use_logs } from './variables/data.js';
 import { format_date_to_string, transform_file_path, combine_paths } from './common.js';
 import { settings, get_run_label } from './variables/settings.js';
 import { filteredRuns } from './variables/globals.js';
+import { host } from './host.js';
 
 // function to open the log files through the graphs
 function open_log_file(event, chartElement, callbackData = undefined, directRunStart = undefined, directTestName = undefined) {
@@ -45,6 +46,11 @@ function open_log_file(event, chartElement, callbackData = undefined, directRunS
 
 // function to open the log file
 function open_log_from_path(path) {
+    // an editor host (VS Code webview) opens files itself; window.open cannot reach them there
+    if (host.present) {
+        host.post({ type: "openLog", path: path });
+        return
+    }
     if (path.startsWith("http://") || path.startsWith("https://")) {
         window.open(path, "_blank")
         return
