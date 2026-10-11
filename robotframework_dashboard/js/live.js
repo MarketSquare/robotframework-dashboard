@@ -257,7 +257,10 @@ function render_suite(rows, suite, depth, match) {
     if (!suite_matches(suite, match)) return;
     const names = [suite.name];
     let inner = suite;
-    while (inner.children.length === 1 && liveState.suites.has(inner.children[0])) {
+    // a suite shares its row with its only child suite, but not while planned tests of the suite lie outside
+    // that child: those need the suite's own row to be listed under
+    while (inner.children.length === 1 && liveState.suites.has(inner.children[0])
+        && !pending_outside(inner, liveState.suites.get(inner.children[0]))) {
         inner = liveState.suites.get(inner.children[0]);
         names.push(inner.name);
     }
@@ -290,6 +293,11 @@ function render_suite(rows, suite, depth, match) {
 // --- planned tests that have not started (shown while the run is going) ------------------
 
 let pendingNames = [];
+
+// a planned test of `suite` that is not in its started child suite `child`
+function pending_outside(suite, child) {
+    return pendingNames.some((name) => name.startsWith(`${suite.longname}.`) && !name.startsWith(`${child.longname}.`));
+}
 
 // full names from the top-level suite.started that no started test has yet; only while running, a
 // finished run lists what really ran. Only the "All" filter shows them, the others ask for a result.
