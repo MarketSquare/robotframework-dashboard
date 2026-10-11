@@ -22,8 +22,10 @@ function create_run_state() {
         tests: new Map(), // id -> test node
         testOrder: [],
         steps: new Map(), // id -> step node
-        runningTestId: null,
+        runningTestId: null, // the running test that started last
         runningStepId: null, // the deepest step that is running
+        // every running test (several at once in a merged pabot run) -> its deepest running step, or null
+        runningSteps: new Map(),
         resultFiles: {}, // kind -> path
         suiteSources: new Map(), // suite id -> source, inherited by tests
     };
@@ -83,11 +85,18 @@ function apply_event(state, ev) {
             state.tests.set(ev.id, test);
             state.runningTestId = ev.id;
             state.runningStepId = null;
+            state.runningSteps.set(ev.id, null);
             break;
         }
         case "test.ended":
             live_finish(state.tests.get(ev.id), ev);
-            if (state.runningTestId === ev.id) { state.runningTestId = null; state.runningStepId = null; }
+            state.runningSteps.delete(ev.id);
+            if (state.runningTestId === ev.id) {
+                // tests that run in parallel: the one that started last of those still running
+                const running = [...state.runningSteps.keys()];
+                state.runningTestId = running.length ? running[running.length - 1] : null;
+                state.runningStepId = state.runningTestId ? state.runningSteps.get(state.runningTestId) : null;
+            }
             break;
         case "step.started": {
             const parent = state.steps.get(ev.parent) || state.tests.get(ev.parent);
@@ -101,16 +110,18 @@ function apply_event(state, ev) {
             state.steps.set(ev.id, step);
             if (parent) parent.children.push(ev.id);
             state.runningStepId = ev.id;
+            if (step.testId && state.runningSteps.has(step.testId)) state.runningSteps.set(step.testId, ev.id);
             break;
         }
         case "step.ended": {
             const step = state.steps.get(ev.id);
             live_finish(step, ev);
-            if (step && state.runningStepId === ev.id) {
-                // the parent step, if it is still running, is the running one again
-                const parent = state.steps.get(step.parent);
-                state.runningStepId = parent && parent.status === "RUNNING" ? parent.id : null;
-            }
+            if (!step) break;
+            // the parent step, if it is still running, is the running one again
+            const parent = state.steps.get(step.parent);
+            const back = parent && parent.status === "RUNNING" ? parent.id : null;
+            if (state.runningStepId === ev.id) state.runningStepId = back;
+            if (step.testId && state.runningSteps.get(step.testId) === ev.id) state.runningSteps.set(step.testId, back);
             break;
         }
         case "message.logged": {
@@ -131,6 +142,7 @@ function apply_event(state, ev) {
             state.endT = ev.t;
             state.runningTestId = null;
             state.runningStepId = null;
+            state.runningSteps.clear();
             break;
     }
     if (ev.t) state.lastT = ev.t;

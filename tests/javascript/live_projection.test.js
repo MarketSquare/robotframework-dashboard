@@ -215,3 +215,49 @@ describe('suite tree', () => {
         expect(state.suites.get('s1').message).toBe('Suite teardown failed');
     });
 });
+
+describe('live projection with tests that run at the same time (merged pabot run)', () => {
+    function parallel() {
+        const state = create_run_state();
+        [
+            ev('run.started', { run: 'r', rf: '7.5' }),
+            ev('suite.started', { id: 's1', name: 'Suites', longname: 'Suites', tests: 0 }),
+            ev('suite.started', { id: 's1-s1', parent: 's1', name: 'A', longname: 'Suites.A', tests: 1 }),
+            ev('suite.started', { id: 's1-s2', parent: 's1', name: 'B', longname: 'Suites.B', tests: 1 }),
+            ev('test.started', { id: 's1-s1-t1', parent: 's1-s1', name: 'A1', longname: 'Suites.A.A1' }),
+            ev('step.started', { id: 's1-s1-t1-k1', parent: 's1-s1-t1', kind: 'KEYWORD', name: 'Sleep' }),
+            ev('test.started', { id: 's1-s2-t1', parent: 's1-s2', name: 'B1', longname: 'Suites.B.B1' }),
+            ev('step.started', { id: 's1-s2-t1-k1', parent: 's1-s2-t1', kind: 'KEYWORD', name: 'Log' }),
+        ].forEach(e => apply_event(state, e));
+        return state;
+    }
+
+    it('keeps the running step of every running test', () => {
+        const state = parallel();
+        expect([...state.runningSteps]).toEqual([['s1-s1-t1', 's1-s1-t1-k1'], ['s1-s2-t1', 's1-s2-t1-k1']]);
+        expect(state.runningTestId).toBe('s1-s2-t1');
+        expect(test_counts(state).RUNNING).toBe(2);
+    });
+
+    it('a step that ends in one test leaves the other test alone', () => {
+        const state = parallel();
+        apply_event(state, ev('step.ended', { id: 's1-s2-t1-k1', status: 'PASS', elapsed: 0 }));
+        expect(state.runningSteps.get('s1-s2-t1')).toBeNull();
+        expect(state.runningSteps.get('s1-s1-t1')).toBe('s1-s1-t1-k1');
+    });
+
+    it('when the latest test ends, the other running test is the running one again', () => {
+        const state = parallel();
+        apply_event(state, ev('step.ended', { id: 's1-s2-t1-k1', status: 'PASS', elapsed: 0 }));
+        apply_event(state, ev('test.ended', { id: 's1-s2-t1', status: 'PASS', elapsed: 0 }));
+        expect(state.runningTestId).toBe('s1-s1-t1');
+        expect(state.runningStepId).toBe('s1-s1-t1-k1');
+        expect([...state.runningSteps.keys()]).toEqual(['s1-s1-t1']);
+    });
+
+    it('nothing runs after run.ended', () => {
+        const state = parallel();
+        apply_event(state, ev('run.ended', { status: 'PASS', stats: { total: 2, passed: 2, failed: 0, skipped: 0 } }));
+        expect(state.runningSteps.size).toBe(0);
+    });
+});

@@ -212,6 +212,7 @@ function test_matcher() {
     return (test) => {
         if (liveUi.filter === "failed" && test.status !== "FAIL") return false;
         if (liveUi.filter === "skipped" && test.status !== "SKIP") return false;
+        if (liveUi.filter === "running" && test.status !== "RUNNING") return false;
         if (!query) return true;
         return `${test.longname || test.name} ${(test.tags || []).join(" ")}`.toLowerCase().includes(query);
     };
@@ -242,6 +243,7 @@ function render_tree() {
     document.getElementById("liveChipAll").textContent = liveState.tests.size;
     document.getElementById("liveChipFailed").textContent = counts.FAIL;
     document.getElementById("liveChipSkipped").textContent = counts.SKIP;
+    document.getElementById("liveChipRunning").textContent = counts.RUNNING;
     for (const chip of document.querySelectorAll("#liveChips .live-chip")) chip.classList.toggle("active", chip.dataset.filter === liveUi.filter);
 }
 
@@ -398,7 +400,8 @@ function render_steps_pane() {
     }
 
     barTotal = live_seconds(test);
-    const runningPath = new Set(liveState.runningStepId ? step_path(liveState, liveState.runningStepId) : []);
+    const runningStep = shown_running_step();
+    const runningPath = new Set(runningStep ? step_path(liveState, runningStep) : []);
     const tree = live_el("div", "live-tree");
     render_steps(tree, test, 0, runningPath);
     if (!test.children.length) tree.append(live_el("div", "text-body-secondary small p-2", test.status === "RUNNING" ? "Starting..." : "No steps."));
@@ -462,7 +465,8 @@ function press_step(id) {
     const step = liveState.steps.get(id);
     if (!step) return;
     stop_following();
-    const runningPath = new Set(liveState.runningStepId ? step_path(liveState, liveState.runningStepId) : []);
+    const runningStep = shown_running_step();
+    const runningPath = new Set(runningStep ? step_path(liveState, runningStep) : []);
     const expanded = step.children.length > 0 && step_expanded(step, runningPath);
     liveUi.selectedStepId = id;
     liveUi.userSelected = true;
@@ -725,11 +729,30 @@ function scroll_list_to(box, row, center) {
     box.scrollTop = target;
 }
 
+// Tests can run at the same time (a merged pabot run). Follow mode stays with the test it shows while that
+// test runs, then moves to the running test that started last; pressing a running test follows that one.
+function followed_test_id() {
+    const shown = liveUi.selectedTestId;
+    return shown && liveState.runningSteps.has(shown) ? shown : liveState.runningTestId;
+}
+
+// the running step of a test; without a running test (suite setup or teardown) the running step of the run
+function running_step_of(testId) {
+    return testId ? liveState.runningSteps.get(testId) ?? null : liveState.runningStepId;
+}
+
+// the running step in the test the right pane shows
+function shown_running_step() {
+    return liveState.runningSteps.get(liveUi.selectedTestId) ?? null;
+}
+
 function follow_running_step() {
     if (!liveUi.follow) return;
-    const test = liveState.runningTestId && document.querySelector(`#liveTests [data-test-id="${CSS.escape(liveState.runningTestId)}"]`);
+    const testId = followed_test_id();
+    const test = testId && document.querySelector(`#liveTests [data-test-id="${CSS.escape(testId)}"]`);
     if (test) scroll_list_to(document.getElementById("liveTreeScroll"), test, false);
-    const step = liveState.runningStepId && document.querySelector(`#liveSteps [data-step-id="${CSS.escape(liveState.runningStepId)}"]`);
+    const stepId = running_step_of(testId);
+    const step = stepId && document.querySelector(`#liveSteps [data-step-id="${CSS.escape(stepId)}"]`);
     if (step) scroll_list_to(document.getElementById("liveTestsScroll"), step, true);
 }
 
@@ -739,8 +762,16 @@ function stop_following() {
     schedule_render();
 }
 
-// the viewer switches to another test: stop following, show its steps and its failure if it has one
+// the viewer switches to another test: a running test is followed from now on; any other test stops
+// following and shows its steps and its failure if it has one
 function focus_test(id) {
+    if (liveState.runningSteps.has(id) && replay === null) {
+        liveUi.selectedTestId = id;
+        liveUi.follow = true;
+        liveUi.userSelected = false;
+        liveUi.detailKey = null;
+        return;
+    }
     stop_following();
     liveUi.selectedTestId = id;
     select_test(id);
@@ -793,14 +824,16 @@ function default_test() {
 
 function render_live() {
     // live view: the details show the running step; after the run they keep the last one
-    if (liveUi.follow && !liveUi.userSelected && liveState.runningStepId) {
-        if (liveUi.selectedStepId !== liveState.runningStepId) liveUi.tab = "call";
-        liveUi.selectedStepId = liveState.runningStepId;
+    const followedTest = liveUi.follow ? followed_test_id() : null;
+    const followedStep = liveUi.follow ? running_step_of(followedTest) : null;
+    if (liveUi.follow && !liveUi.userSelected && followedStep) {
+        if (liveUi.selectedStepId !== followedStep) liveUi.tab = "call";
+        liveUi.selectedStepId = followedStep;
     }
     const selected = liveUi.selectedStepId;
     if (selected && !liveState.steps.has(selected) && !liveState.tests.has(selected)) liveUi.selectedStepId = null;
     // the right pane shows the running test while following, otherwise what the viewer picked
-    if (liveUi.follow && liveState.runningTestId) liveUi.selectedTestId = liveState.runningTestId;
+    if (followedTest) liveUi.selectedTestId = followedTest;
     if (liveUi.selectedTestId && !liveState.tests.has(liveUi.selectedTestId)) liveUi.selectedTestId = null;
     if (!liveUi.selectedTestId) {
         liveUi.selectedTestId = default_test();
