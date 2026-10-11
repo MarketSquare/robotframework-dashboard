@@ -1,5 +1,5 @@
 // Screenshots and other images that steps log as HTML messages (Browser, SeleniumLibrary,
-// Screenshot), for the Screenshots tab. Pure data, no DOM.
+// Screenshot), for the Screenshots tab, and Playwright traces (Browser). Pure data, no DOM.
 
 const IMAGE_SRC = /<img\b[^>]*?\bsrc\s*=\s*(["'])(.*?)\1/gi;
 
@@ -65,4 +65,43 @@ function file_url(path) {
     return encodeURI(normalized.startsWith("/") ? `file://${normalized}` : `file:///${normalized}`);
 }
 
-export { message_images, resolve_attachment, node_images, detail_images, file_url };
+// Browser library's New Context with tracing logs where the Playwright trace will be written (when the
+// context closes): "Successfully created context and trace file will be saved to: <path>.zip"
+const TRACE_MESSAGE = /trace file will be saved to:\s*(\S.*?\.zip)\s*$/i;
+
+function message_trace(text) {
+    const match = TRACE_MESSAGE.exec(String(text || ""));
+    return match ? match[1] : null;
+}
+
+// the traces of a node and everything below it, oldest first
+function node_traces(state, node) {
+    const traces = [];
+    const visit = (current) => {
+        for (const message of current.messages || []) {
+            const trace = message_trace(message.text);
+            if (trace && !traces.includes(trace)) traces.push(trace);
+        }
+        for (const id of current.children || []) {
+            const child = state.steps.get(id);
+            if (child) visit(child);
+        }
+    };
+    visit(node);
+    return traces;
+}
+
+// the traces that cover a test: those its own steps started, and those of a context that a setup of one of
+// its suites opened (one context, and so one trace, for all tests of the suite)
+function test_traces(state, test) {
+    const traces = node_traces(state, test);
+    const suites = new Set();
+    for (let id = test.parent; id; id = state.suites.get(id)?.parent) suites.add(id);
+    for (const step of state.steps.values()) {
+        if (!suites.has(step.parent)) continue;
+        for (const trace of node_traces(state, step)) if (!traces.includes(trace)) traces.push(trace);
+    }
+    return traces;
+}
+
+export { message_images, resolve_attachment, node_images, detail_images, file_url, message_trace, node_traces, test_traces };

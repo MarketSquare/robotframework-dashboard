@@ -6,7 +6,7 @@ import { runs, tests } from "./variables/data.js";
 import { get_run_label } from "./variables/settings.js";
 import { events_paths_for_output, read_events_file, replay_state_at } from "./live/replay.js";
 import { build_duration_history, usual_duration, slower_than_usual, eta_seconds } from "./live/history.js";
-import { detail_images, file_url } from "./live/attachments.js";
+import { detail_images, file_url, test_traces } from "./live/attachments.js";
 import {
     create_run_state,
     apply_event,
@@ -349,6 +349,32 @@ function render_test_row(test, depth) {
 
 // --- steps of the selected test (right pane) ---------------------------------------------
 
+// Playwright traces (Browser library, New Context with tracing) of the shown test: an editor opens them in
+// Playwright's trace viewer; a plain browser cannot start it and shows the command instead
+function render_traces(traces) {
+    const box = document.getElementById("liveTestTraces");
+    const key = traces.join("\n");
+    if (box.dataset.key === key) return; // redrawn many times a second: keep the buttons while nothing changed
+    box.dataset.key = key;
+    box.replaceChildren(...traces.map((trace, index) => {
+        const button = live_el("button", "btn btn-outline-secondary btn-sm py-0 live-trace", traces.length > 1 ? `Trace ${index + 1}` : "Trace");
+        button.type = "button";
+        button.dataset.trace = trace;
+        button.title = host.present
+            ? `Open in Playwright's trace viewer\n${trace}`
+            : `Open with: rfbrowser show-trace "${trace}" (pressing copies the command)`;
+        return button;
+    }));
+}
+
+function press_trace(event) {
+    if (event.button !== 0) return;
+    const trace = event.target.closest("[data-trace]")?.dataset.trace;
+    if (!trace) return;
+    if (host.present) host.post({ type: "openTrace", path: trace });
+    else navigator.clipboard?.writeText(`rfbrowser show-trace "${trace}"`).catch(() => {});
+}
+
 function live_seconds(node) {
     if (node.status === "RUNNING") return Math.max(0, live_now() - node.startT);
     return node.elapsed || 0;
@@ -375,6 +401,7 @@ function render_steps_pane() {
         document.getElementById("liveTestName").textContent = liveState.testOrder.length ? "Select a test" : "";
         document.getElementById("liveTestDuration").textContent = "";
         icon.textContent = "";
+        render_traces([]);
         failurePath.hidden = true;
         steps.replaceChildren();
         return;
@@ -382,6 +409,7 @@ function render_steps_pane() {
     document.getElementById("liveTestPath").textContent = suite_path(test).join(" \u203a ");
     document.getElementById("liveTestName").textContent = test.name || test.longname;
     document.getElementById("liveTestDuration").textContent = live_duration(test);
+    render_traces(test_traces(liveState, test));
     icon.className = `live-glyph ${live_status_class(test.status)}`;
     icon.textContent = GLYPHS[test.status] || "";
 
@@ -1100,6 +1128,7 @@ function setup_live() {
     document.getElementById("liveReplayClose").addEventListener("click", close_replay);
     document.getElementById("liveTests").addEventListener("pointerdown", press_in_tree);
     document.getElementById("liveStepsCard").addEventListener("pointerdown", press_in_steps);
+    document.getElementById("liveTestTraces").addEventListener("pointerdown", press_trace);
     document.getElementById("liveSearch").addEventListener("input", (event) => {
         liveUi.search = event.target.value;
         schedule_render(true);
