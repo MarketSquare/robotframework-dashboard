@@ -68,6 +68,7 @@ For all available CLI options see the [Basic CLI docs](https://marketsquare.gith
 - 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity. Drag across the runs-over-time histogram to zoom into a period. Every filter option shows how many runs it still matches, and options that match none are greyed out.  
 - ⚖️ **Comparison Mode** - Compare up to 4 runs side by side with visual statistics.  
 - 🔗 **Automatic Log Linking** - Open Robot Framework logs directly from the dashboard.  
+- 🔴 **Live View** - Watch runs live, keyword by keyword, and replay finished runs from their robotframework-events file.  
 - 🛠️ **Custom Database Classes** - Extend or replace the database processor for custom backends.  
 - 🖥️ **Server Mode** - Host your dashboard for multi-user access and automatic updates.  
 - 🎧 **Listener Integration** - Automatically updates dashboard after every test run.  

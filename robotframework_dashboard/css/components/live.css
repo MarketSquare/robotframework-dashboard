@@ -1,0 +1,187 @@
+/* Live page: test table with expandable step trees and a detail drawer */
+#live {
+    --live-pass: #4d7a1f;
+    --live-fail: #b02a37;
+    --live-skip: #8a6d00;
+    --live-run: #0b5ed7;
+    --live-muted: var(--bs-secondary-color);
+    --live-selected: rgba(13, 110, 253, 0.10);
+    --live-running-row: rgba(13, 110, 253, 0.07);
+}
+[data-bs-theme="dark"] #live {
+    --live-pass: #9cc46b;
+    --live-fail: #f1898f;
+    --live-skip: #fed84f;
+    --live-run: #6ea8fe;
+    --live-selected: rgba(110, 168, 254, 0.18);
+    --live-running-row: rgba(110, 168, 254, 0.10);
+}
+#live .live-text-pass { color: var(--live-pass); }
+#live .live-text-fail { color: var(--live-fail); }
+#live .live-text-skip { color: var(--live-skip); }
+#live .live-counter { border: 1px solid var(--bs-border-color); border-radius: 6px; padding: 4px 12px; min-width: 84px; }
+#live .live-donut { position: relative; width: 64px; height: 64px; }
+/* the test list uses smaller text, in line with the details card */
+#live .live-table { --bs-table-bg: transparent; font-size: 13px; }
+#live .live-col-status { width: 90px; }
+#live .live-col-time { width: 90px; }
+#live .live-status { font-weight: 600; font-size: 11px; white-space: nowrap; }
+#live .live-status.PASS { color: var(--live-pass); }
+#live .live-status.FAIL { color: var(--live-fail); }
+#live .live-status.SKIP { color: var(--live-skip); }
+#live .live-status.RUNNING { color: var(--live-run); }
+#live .live-status.NOT-RUN { color: var(--live-muted); }
+#live .live-test-row { cursor: pointer; }
+#live .live-test-row.running > td { background: var(--live-running-row); }
+#live .live-test-row:hover > td { background: var(--bs-tertiary-bg); }
+#live .live-test-row.selected > td { background: var(--live-selected); }
+#live .live-test-row.selected > td:first-child { box-shadow: inset 3px 0 0 var(--live-run); }
+#live .live-chevron { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; vertical-align: middle; color: var(--bs-body-color); }
+#live .live-chevron.open::before, #live .live-chevron.closed::before {
+    content: ""; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+}
+#live .live-chevron.closed::before { transform: rotate(-45deg); }
+#live .live-chevron.open::before { transform: translateY(-2px) rotate(45deg); }
+#live .live-message { color: var(--live-muted); font-size: 11px; white-space: pre-wrap; word-break: break-word; }
+#live .live-tree-cell { padding: 0 0 6px 0; }
+#live .live-tree { border-left: 2px solid var(--live-run); margin-left: 96px; padding: 2px 0; }
+#live .live-step {
+    display: flex; align-items: center; gap: 8px; min-height: 22px; padding-right: 8px;
+    cursor: pointer; border-radius: 3px;
+}
+#live .live-step:hover { background: var(--bs-tertiary-bg); }
+#live .live-step.selected { background: var(--live-selected); box-shadow: inset 3px 0 0 var(--live-run); }
+#live .live-step.NOT-RUN { color: var(--live-muted); }
+#live .live-glyph { width: 16px; text-align: center; font-weight: 700; font-size: 11px; flex-shrink: 0; }
+#live .live-glyph.PASS { color: var(--live-pass); }
+#live .live-glyph.FAIL { color: var(--live-fail); }
+#live .live-glyph.SKIP { color: var(--live-skip); }
+#live .live-glyph.RUNNING { color: var(--live-run); }
+#live .live-glyph.NOT-RUN { color: var(--live-muted); }
+#live .live-tag {
+    font-family: var(--bs-font-monospace); font-size: 10px; font-weight: 700; padding: 1px 5px;
+    border-radius: 4px; background: var(--bs-secondary-bg); color: var(--bs-emphasis-color); white-space: nowrap;
+}
+#live .live-name { font-weight: 600; white-space: nowrap; }
+#live .live-owner { color: var(--live-muted); white-space: nowrap; }
+#live .live-args {
+    font-family: var(--bs-font-monospace); font-size: 11px; color: var(--live-muted); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#live .live-time { font-size: 11px; color: var(--live-muted); width: 56px; text-align: right; flex-shrink: 0; }
+#live .live-step-message { color: var(--live-fail); font-size: 11px; white-space: pre-wrap; padding: 0 8px 4px 0; }
+#live .live-folded { color: var(--live-muted); font-size: 11px; cursor: pointer; min-height: 20px; display: flex; align-items: center; }
+#live .live-folded:hover { text-decoration: underline; }
+#live:not([hidden]) {
+    display: flex; flex-direction: column; gap: 12px;
+    height: calc(100vh - var(--live-top, 60px) - 24px); min-height: 520px;
+}
+#live > .card { margin: 0; }
+#live .live-summary-card { flex: none; }
+#live .live-tests-card { flex: 1 1 auto; min-height: 160px; position: relative; overflow: hidden; }
+#live .live-tests-scroll { height: 100%; overflow: auto; overscroll-behavior: contain; overflow-anchor: none; }
+#live .live-detail { flex: none; height: 240px; display: flex; flex-direction: column; overflow: hidden; }
+#live .live-tab {
+    height: 36px; padding: 0 12px; border: none; border-bottom: 2px solid transparent; background: none;
+    color: var(--bs-body-color);
+}
+#live .live-tab.active { border-bottom-color: var(--live-run); color: var(--live-run); font-weight: 600; }
+#live .live-tab.error-tab.active { border-bottom-color: var(--live-fail); color: var(--live-fail); }
+#live .live-tab:disabled { color: var(--live-muted); opacity: 0.6; }
+#live .live-detail-body { padding: 12px 16px; overflow: auto; flex: 1; min-height: 0; }
+#live .live-fields { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 6px 12px; font-size: 12px; }
+#live .live-fields > .label { color: var(--live-muted); }
+#live .live-mono { font-family: var(--bs-font-monospace); white-space: pre-wrap; word-break: break-word; }
+#live .live-log-line { display: grid; grid-template-columns: 70px 48px minmax(0, 1fr); gap: 8px; font-size: 12px; padding: 2px 0; }
+#live .live-log-line .level-WARN { color: var(--live-skip); font-weight: 600; }
+#live .live-log-line .level-ERROR, #live .live-log-line .level-FAIL { color: var(--live-fail); font-weight: 600; }
+#live .live-error-box {
+    border: 1px solid var(--live-fail); border-radius: 6px; padding: 8px 12px; color: var(--live-fail);
+    font-family: var(--bs-font-monospace); font-size: 12px; white-space: pre-wrap; margin-bottom: 12px;
+}
+#live .live-resume { position: absolute; right: 16px; bottom: 16px; z-index: 3; min-height: 40px; }
+@media (max-width: 640px) {
+    #live .live-tree { margin-left: 8px; }
+    #live .live-args, #live .live-owner { display: none; }
+}
+
+/* replay of a finished run from its events file */
+#live .live-replay-run { width: auto; max-width: 18rem; }
+#live .live-replay-name { max-width: 16rem; flex-shrink: 0; }
+#live .live-replay-track { position: relative; min-width: 0; }
+/* the slider's own track is hidden; the rail behind it is the track and carries the dots */
+#live .live-replay-track .form-range { position: relative; display: block; }
+#live .live-replay-track .form-range::-webkit-slider-runnable-track { background: transparent; }
+#live .live-replay-track .form-range::-moz-range-track { background: transparent; }
+#live .live-replay-rail { position: absolute; left: 0; right: 0; top: 50%; height: 0.5rem; transform: translateY(-50%); border-radius: 1rem; background: var(--bs-secondary-bg); }
+/* the thumb's centre stays half a thumb (0.5rem) inside both ends */
+#live .live-replay-dots { position: absolute; inset: 0 0.5rem; }
+#live .live-replay-dot { position: absolute; top: 0; width: 0.5rem; height: 0.5rem; margin-left: -0.25rem; border-radius: 50%; }
+#live .live-replay-dot-pass { background: var(--bs-success); }
+#live .live-replay-dot-skip { background: var(--bs-warning); }
+#live .live-replay-dot-fail { background: var(--bs-danger); }
+#live .live-replay-tooltip { top: auto; bottom: calc(100% + 4px); white-space: nowrap; }
+#live #liveReplayTime { white-space: nowrap; }
+
+/* screenshots of the selected step */
+#live .live-images { display: flex; flex-direction: column; gap: 0.75rem; }
+#live .live-shot { margin: 0; }
+#live .live-shot img { max-width: 100%; height: auto; border: 1px solid var(--bs-border-color); border-radius: 0.25rem; }
+
+/* suite tree: suites fold their tests, like the file groups of Playwright's UI mode */
+#live .live-suite-row { cursor: pointer; }
+#live .live-suite-row td { background-color: var(--bs-card-cap-bg); }
+#live .live-suite-name { font-weight: 600; }
+#live .live-suite-counts { margin-left: 0.75rem; font-size: 0.8rem; }
+#live .live-suite-counts span + span { margin-left: 0.5rem; }
+
+/* split layout: suites and tests on the left, the selected test's steps and the details on the right */
+#live .live-split { flex: 1 1 auto; min-height: 0; display: flex; gap: 12px; }
+#live .live-tree-card { flex: 0 0 340px; max-width: 400px; display: flex; flex-direction: column; min-height: 0; margin: 0; }
+#live .live-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+#live .live-main > .card { margin: 0; }
+#live .live-tree-controls { padding: 10px; border-bottom: 1px solid var(--bs-border-color); display: flex; flex-direction: column; gap: 8px; }
+#live .live-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+#live .live-chip {
+    border: 1px solid var(--bs-border-color); background: none; color: var(--bs-body-color); border-radius: 999px;
+    padding: 2px 10px; font-size: 12px; min-height: 28px;
+}
+#live .live-chip.active { border-color: var(--live-run); background: var(--live-selected); color: var(--live-run); font-weight: 600; }
+#live .live-chip span { color: var(--live-muted); margin-left: 2px; }
+#live .live-tree-scroll { flex: 1; overflow: auto; overscroll-behavior: contain; overflow-anchor: none; padding: 4px 0; }
+#live .live-tree-row {
+    display: flex; align-items: center; gap: 6px; min-height: 28px; padding-right: 10px; font-size: 13px; cursor: pointer;
+}
+#live .live-tree-row:hover { background: var(--bs-tertiary-bg); }
+#live .live-suite-row { background: var(--bs-card-cap-bg); }
+#live .live-suite-row:hover { background: var(--bs-tertiary-bg); }
+/* planned tests that have not started yet */
+#live .live-tree-row.live-pending { color: var(--live-muted); cursor: default; }
+#live .live-suite-name { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#live .live-test-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#live .live-tree-row .live-time { margin-left: auto; }
+#live .live-tree-row .live-suite-counts { margin-left: 6px; white-space: nowrap; }
+#live .live-test-row.running { background: var(--live-running-row); }
+#live .live-test-row.selected { background: var(--live-selected); box-shadow: inset 3px 0 0 var(--live-run); }
+#live .live-slower { font-size: 10px; flex-shrink: 0; }
+#live .live-steps-head { flex: none; padding: 10px 16px; border-bottom: 1px solid var(--bs-border-color); display: flex; flex-direction: column; gap: 4px; }
+#live .live-failure-path {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px;
+    padding: 4px 10px; border-radius: 6px; background: rgba(176, 42, 55, 0.08);
+}
+#live .live-failure-label { color: var(--live-fail); font-weight: 600; }
+#live .live-failure-sep { color: var(--live-muted); }
+#live .live-failure-crumb { font-family: var(--bs-font-monospace); font-size: 11px; cursor: pointer; }
+#live .live-failure-crumb:hover { text-decoration: underline; }
+#live .live-tests-card { display: flex; flex-direction: column; }
+#live .live-tests-scroll { flex: 1; min-height: 0; height: auto; }
+#live .live-tree { border-left: none; margin-left: 0; padding: 4px 0; }
+#live .live-bar { width: 80px; height: 5px; border-radius: 3px; background: var(--bs-secondary-bg); flex-shrink: 0; overflow: hidden; }
+#live .live-bar-fill { display: block; height: 100%; background: var(--live-pass); opacity: 0.55; }
+#live .live-bar-fill.FAIL { background: var(--live-fail); }
+#live .live-bar-fill.RUNNING { background: var(--live-run); }
+#live .live-bar-fill.SKIP, #live .live-bar-fill.NOT-RUN { background: var(--live-muted); }
+@media (max-width: 900px) {
+    #live .live-split { flex-direction: column; }
+    #live .live-tree-card { flex: none; max-width: none; height: 40vh; }
+}

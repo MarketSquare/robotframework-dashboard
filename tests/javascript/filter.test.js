@@ -382,8 +382,8 @@ describe('filter_amount per project logic', () => {
 // lookup here have to stay in sync. These import the real filter.js so a rename fails the test.
 describe('filter.js hidden custom filters per page', () => {
 
-    it('knows the same four pages as the menu settings', () => {
-        expect([...dashboardPages].sort()).toEqual(Object.keys(settings.menu).sort());
+    it('knows the same four pages as the menu settings, apart from Live which has no filters', () => {
+        expect([...dashboardPages].sort()).toEqual(Object.keys(settings.menu).filter(page => page !== 'live').sort());
     });
 
     it('has an empty hidden custom filters default for every page', () => {

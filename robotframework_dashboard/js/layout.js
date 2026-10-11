@@ -236,6 +236,7 @@ function setup_section_order() {
     document.getElementById("dashboard").hidden = !(settings.menu.dashboard && !settings.show.unified);
     document.getElementById("compare").hidden = !settings.menu.compare;
     document.getElementById("tables").hidden = !settings.menu.tables;
+    document.getElementById("live").hidden = !settings.menu.live;
     const order_sections = (sectionsConfig, topAnchorId) => {
         let prevEl = document.getElementById(topAnchorId);
         // Show

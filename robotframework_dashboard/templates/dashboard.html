@@ -2,6 +2,7 @@
 <html data-bs-theme="dark" class="dark-mode w-100 html-scroll">
 
 <head>
+    <meta charset="utf-8">
     <title>"placeholder_dashboard_title"</title>
     <!-- JS/CSS Dependencies -->
     <!-- placeholder_dependencies -->
@@ -44,6 +45,8 @@
             <a class="nav-item nav-link" id="menuCompare">Compare</a>
             <a class="nav-item nav-link" id="menuTables">Tables</a>
             <div class="nav-track" id="tablesNavTrack" hidden></div>
+            <!-- shown only inside an editor host (VS Code, PyCharm): the Live page is fed by the host -->
+            <a class="nav-item nav-link" id="menuLive" hidden>Live</a>
             <a class="nav-item nav-link" id="openDashboard" href="/admin" hidden>Admin</a>
             <button class="btn btn-primary btn-sm ms-3 my-auto" id="refreshDashboard" hidden>
                 &#x21bb;&nbsp; Refresh Dashboard&nbsp;
@@ -437,6 +440,100 @@
                 <!-- Placeholder DIV to keep the graphs, they will be moved based on the config to the card tablesData -->
                 <div id="tableDataHidden" hidden></div>
                 <div class="card-body" id="gridTable"></div>
+            </div>
+        </div>
+
+        <div id="live" hidden>
+            <div class="card live-summary-card" id="liveStatisticsSection">
+                <div class="card-header">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-auto"><h4 class="mb-0">Live Run</h4></div>
+                        <div class="col-auto"><span class="badge rounded-pill text-bg-secondary" id="liveBadge">WAITING</span></div>
+                        <div class="col text-body-secondary small" id="liveRunInfo"></div>
+                        <div class="col-auto d-flex gap-2">
+                            <select class="form-select form-select-sm live-replay-run" id="liveReplayRun" aria-label="Replay a run" hidden>
+                                <option value="">Replay a run...</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-dark btn-sm text-nowrap" id="liveReplayFile">Open events file</button>
+                            <input type="file" id="liveReplayFileInput" accept=".jsonl,.gz" hidden>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body py-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="live-counter"><div class="fs-5 fw-semibold" id="liveDone">0/0</div><div class="small text-body-secondary">tests done</div></div>
+                        <div class="live-counter"><div class="fs-5 fw-semibold live-text-pass" id="livePassed">0</div><div class="small text-body-secondary">passed</div></div>
+                        <div class="live-counter"><div class="fs-5 fw-semibold live-text-fail" id="liveFailed">0</div><div class="small text-body-secondary">failed</div></div>
+                        <div class="live-counter"><div class="fs-5 fw-semibold live-text-skip" id="liveSkipped">0</div><div class="small text-body-secondary">skipped</div></div>
+                        <div class="live-counter"><div class="fs-5 fw-semibold" id="liveElapsed">0.0s</div><div class="small text-body-secondary">elapsed</div></div>
+                        <div class="live-counter"><div class="fs-5 fw-semibold" id="liveEta">&ndash;</div><div class="small text-body-secondary">remaining</div></div>
+                        <div class="live-donut"><canvas id="liveStatusGraph" aria-label="Test status"></canvas></div>
+                    </div>
+                    <div class="progress mt-2" role="progressbar" aria-label="Run progress" style="height: 6px">
+                        <div class="progress-bar" id="liveProgress" style="width: 0%"></div>
+                    </div>
+                    <!-- hidden on a wrapper: d-flex would override the hidden attribute -->
+                    <div id="liveReplayBar" hidden>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <span class="small fw-semibold text-truncate live-replay-name" id="liveReplayName"></span>
+                            <div class="live-replay-track flex-grow-1">
+                                <div class="live-replay-rail"><div class="live-replay-dots" id="liveReplayDots"></div></div>
+                                <input type="range" class="form-range" id="liveReplaySlider" min="0" max="0" value="0" aria-label="Replay position">
+                                <div class="date-histogram-tooltip live-replay-tooltip" id="liveReplayTooltip" hidden></div>
+                            </div>
+                            <span class="small text-body-secondary text-nowrap live-mono" id="liveReplayTime"></span>
+                            <button type="button" class="btn btn-outline-dark btn-sm text-nowrap" id="liveReplayClose">Close replay</button>
+                        </div>
+                    </div>
+                    <div class="small text-danger mt-2" id="liveReplayError" hidden></div>
+                </div>
+            </div>
+            <div class="live-split">
+                <div class="card live-tree-card">
+                    <div class="live-tree-controls">
+                        <input type="search" class="form-control form-control-sm" id="liveSearch" placeholder="Filter by name or tag" aria-label="Filter tests by name or tag">
+                        <div class="live-chips" id="liveChips" role="group" aria-label="Show tests">
+                            <button type="button" class="live-chip active" data-filter="all">All <span id="liveChipAll">0</span></button>
+                            <button type="button" class="live-chip" data-filter="failed">Failed <span id="liveChipFailed">0</span></button>
+                            <button type="button" class="live-chip" data-filter="skipped">Skipped <span id="liveChipSkipped">0</span></button>
+                        </div>
+                    </div>
+                    <div class="live-tree-scroll" id="liveTreeScroll" tabindex="0" aria-label="Suites and tests of the run">
+                        <div id="liveTests"></div>
+                        <div class="text-body-secondary p-3 small" id="liveEmpty">
+                            No live run. Live runs appear here when the dashboard is opened from an editor
+                            that sends robotframework-events, for example RobotCode in VS Code. A finished run can be
+                            replayed from its events file.
+                        </div>
+                    </div>
+                </div>
+                <div class="live-main">
+                    <div class="card live-tests-card" id="liveStepsCard">
+                        <div class="live-steps-head">
+                            <div class="small text-body-secondary text-truncate" id="liveTestPath"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="live-glyph" id="liveTestIcon"></span>
+                                <span class="fw-semibold text-truncate" id="liveTestName"></span>
+                                <span class="small text-body-secondary ms-auto text-nowrap" id="liveTestDuration"></span>
+                            </div>
+                            <div class="live-failure-path" id="liveFailurePath" hidden></div>
+                        </div>
+                        <div class="live-tests-scroll" id="liveTestsScroll" tabindex="0" aria-label="Steps of the selected test">
+                            <div id="liveSteps"></div>
+                        </div>
+                        <button type="button" class="btn btn-primary shadow live-resume" id="liveResume" hidden>Resume live view</button>
+                    </div>
+            <div class="card live-detail" id="liveDetail">
+                <div class="d-flex align-items-center gap-1 px-3 border-bottom">
+                    <span class="fw-semibold me-2 text-truncate" id="liveDetailTitle">Step details</span>
+                    <button type="button" class="live-tab active" data-tab="call">Call</button>
+                    <button type="button" class="live-tab" data-tab="log" id="liveTabLog">Log</button>
+                    <button type="button" class="live-tab" data-tab="error" id="liveTabError">Error</button>
+                    <button type="button" class="live-tab" data-tab="images" id="liveTabImages">Screenshots</button>
+                </div>
+                <div class="live-detail-body" id="liveDetailBody"></div>
+            </div>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,109 @@
+{"v":1,"seq":1,"t":1791651162.106,"type":"run.started","run":"e696900b-26f9-4f58-80cf-d8dda3c5e2c9","rf":"7.5","python":"3.14.2","pid":11520,"cwd":"d:\\CodeProjects\\robotframework-events"}
+{"v":1,"seq":2,"t":1791651162.106,"type":"suite.started","id":"s1","name":"Sample","longname":"Sample","source":"d:\\CodeProjects\\robotframework-events\\tests\\data\\sample.robot","tests":3}
+{"v":1,"seq":3,"t":1791651162.106,"type":"step.started","id":"s1-k1","parent":"s1","kind":"SETUP","lineno":2,"name":"Log","owner":"BuiltIn","args":["suite setup"]}
+{"v":1,"seq":4,"t":1791651162.107,"type":"message.logged","parent":"s1-k1","level":"INFO","text":"suite setup"}
+{"v":1,"seq":5,"t":1791651162.107,"type":"step.ended","id":"s1-k1","status":"PASS","elapsed":0.0007}
+{"v":1,"seq":6,"t":1791651162.107,"type":"test.started","id":"s1-t1","parent":"s1","name":"Passing With Structures","longname":"Sample.Passing With Structures","source":"d:\\CodeProjects\\robotframework-events\\tests\\data\\sample.robot","lineno":6}
+{"v":1,"seq":7,"t":1791651162.108,"type":"step.started","id":"s1-t1-k1","parent":"s1-t1","kind":"SETUP","lineno":7,"name":"Log","owner":"BuiltIn","args":["test setup"]}
+{"v":1,"seq":8,"t":1791651162.108,"type":"message.logged","parent":"s1-t1-k1","level":"INFO","text":"test setup"}
+{"v":1,"seq":9,"t":1791651162.108,"type":"step.ended","id":"s1-t1-k1","status":"PASS","elapsed":0.0005}
+{"v":1,"seq":10,"t":1791651162.109,"type":"step.started","id":"s1-t1-k2","parent":"s1-t1","kind":"KEYWORD","lineno":8,"name":"My Keyword","args":["hello"]}
+{"v":1,"seq":11,"t":1791651162.109,"type":"step.started","id":"s1-t1-k2-k1","parent":"s1-t1-k2","kind":"KEYWORD","lineno":39,"name":"Log","owner":"BuiltIn","args":["${arg}"]}
+{"v":1,"seq":12,"t":1791651162.109,"type":"message.logged","parent":"s1-t1-k2-k1","level":"INFO","text":"hello"}
+{"v":1,"seq":13,"t":1791651162.109,"type":"step.ended","id":"s1-t1-k2-k1","status":"PASS","elapsed":0.0004}
+{"v":1,"seq":14,"t":1791651162.11,"type":"step.started","id":"s1-t1-k2-k2","parent":"s1-t1-k2","kind":"KEYWORD","lineno":40,"name":"Nested Keyword"}
+{"v":1,"seq":15,"t":1791651162.11,"type":"step.started","id":"s1-t1-k2-k2-k1","parent":"s1-t1-k2-k2","kind":"KEYWORD","lineno":43,"name":"No Operation","owner":"BuiltIn"}
+{"v":1,"seq":16,"t":1791651162.11,"type":"step.ended","id":"s1-t1-k2-k2-k1","status":"PASS","elapsed":0.0003}
+{"v":1,"seq":17,"t":1791651162.11,"type":"step.ended","id":"s1-t1-k2-k2","status":"PASS","elapsed":0.0007}
+{"v":1,"seq":18,"t":1791651162.11,"type":"step.ended","id":"s1-t1-k2","status":"PASS","elapsed":0.0018}
+{"v":1,"seq":19,"t":1791651162.11,"type":"step.started","id":"s1-t1-k3","parent":"s1-t1","kind":"FOR","lineno":9,"assign":["${i}"],"flavor":"IN RANGE","values":["3"]}
+{"v":1,"seq":20,"t":1791651162.111,"type":"step.started","id":"s1-t1-k3-k1","parent":"s1-t1-k3","kind":"ITERATION","lineno":9,"assign":{"${i}":"0"}}
+{"v":1,"seq":21,"t":1791651162.111,"type":"step.started","id":"s1-t1-k3-k1-k1","parent":"s1-t1-k3-k1","kind":"IF","lineno":10,"condition":"${i} == 1"}
+{"v":1,"seq":22,"t":1791651162.111,"type":"step.started","id":"s1-t1-k3-k1-k1-k1","parent":"s1-t1-k3-k1-k1","kind":"KEYWORD","lineno":11,"name":"Log","owner":"BuiltIn","args":["one"]}
+{"v":1,"seq":23,"t":1791651162.111,"type":"step.ended","id":"s1-t1-k3-k1-k1-k1","status":"NOT RUN","elapsed":0.0001}
+{"v":1,"seq":24,"t":1791651162.111,"type":"step.ended","id":"s1-t1-k3-k1-k1","status":"NOT RUN","elapsed":0.0004}
+{"v":1,"seq":25,"t":1791651162.111,"type":"step.started","id":"s1-t1-k3-k1-k2","parent":"s1-t1-k3-k1","kind":"ELSE","lineno":12}
+{"v":1,"seq":26,"t":1791651162.112,"type":"step.started","id":"s1-t1-k3-k1-k2-k1","parent":"s1-t1-k3-k1-k2","kind":"KEYWORD","lineno":13,"name":"Log","owner":"BuiltIn","args":["not one","WARN"]}
+{"v":1,"seq":27,"t":1791651162.112,"type":"message.logged","parent":"s1-t1-k3-k1-k2-k1","level":"WARN","text":"not one"}
+{"v":1,"seq":28,"t":1791651162.112,"type":"step.ended","id":"s1-t1-k3-k1-k2-k1","status":"PASS","elapsed":0.0005}
+{"v":1,"seq":29,"t":1791651162.112,"type":"step.ended","id":"s1-t1-k3-k1-k2","status":"PASS","elapsed":0.0008}
+{"v":1,"seq":30,"t":1791651162.112,"type":"step.ended","id":"s1-t1-k3-k1","status":"PASS","elapsed":0.0015}
+{"v":1,"seq":31,"t":1791651162.112,"type":"step.started","id":"s1-t1-k3-k2","parent":"s1-t1-k3","kind":"ITERATION","lineno":9,"assign":{"${i}":"1"}}
+{"v":1,"seq":32,"t":1791651162.113,"type":"step.started","id":"s1-t1-k3-k2-k1","parent":"s1-t1-k3-k2","kind":"IF","lineno":10,"condition":"${i} == 1"}
+{"v":1,"seq":33,"t":1791651162.113,"type":"step.started","id":"s1-t1-k3-k2-k1-k1","parent":"s1-t1-k3-k2-k1","kind":"KEYWORD","lineno":11,"name":"Log","owner":"BuiltIn","args":["one"]}
+{"v":1,"seq":34,"t":1791651162.113,"type":"message.logged","parent":"s1-t1-k3-k2-k1-k1","level":"INFO","text":"one"}
+{"v":1,"seq":35,"t":1791651162.113,"type":"step.ended","id":"s1-t1-k3-k2-k1-k1","status":"PASS","elapsed":0.0004}
+{"v":1,"seq":36,"t":1791651162.113,"type":"step.ended","id":"s1-t1-k3-k2-k1","status":"PASS","elapsed":0.0007}
+{"v":1,"seq":37,"t":1791651162.113,"type":"step.started","id":"s1-t1-k3-k2-k2","parent":"s1-t1-k3-k2","kind":"ELSE","lineno":12}
+{"v":1,"seq":38,"t":1791651162.114,"type":"step.started","id":"s1-t1-k3-k2-k2-k1","parent":"s1-t1-k3-k2-k2","kind":"KEYWORD","lineno":13,"name":"Log","owner":"BuiltIn","args":["not one","WARN"]}
+{"v":1,"seq":39,"t":1791651162.114,"type":"step.ended","id":"s1-t1-k3-k2-k2-k1","status":"NOT RUN","elapsed":0.0001}
+{"v":1,"seq":40,"t":1791651162.114,"type":"step.ended","id":"s1-t1-k3-k2-k2","status":"NOT RUN","elapsed":0.0003}
+{"v":1,"seq":41,"t":1791651162.114,"type":"step.ended","id":"s1-t1-k3-k2","status":"PASS","elapsed":0.0013}
+{"v":1,"seq":42,"t":1791651162.114,"type":"step.started","id":"s1-t1-k3-k3","parent":"s1-t1-k3","kind":"ITERATION","lineno":9,"assign":{"${i}":"2"}}
+{"v":1,"seq":43,"t":1791651162.114,"type":"step.started","id":"s1-t1-k3-k3-k1","parent":"s1-t1-k3-k3","kind":"IF","lineno":10,"condition":"${i} == 1"}
+{"v":1,"seq":44,"t":1791651162.114,"type":"step.started","id":"s1-t1-k3-k3-k1-k1","parent":"s1-t1-k3-k3-k1","kind":"KEYWORD","lineno":11,"name":"Log","owner":"BuiltIn","args":["one"]}
+{"v":1,"seq":45,"t":1791651162.114,"type":"step.ended","id":"s1-t1-k3-k3-k1-k1","status":"NOT RUN","elapsed":0.0001}
+{"v":1,"seq":46,"t":1791651162.114,"type":"step.ended","id":"s1-t1-k3-k3-k1","status":"NOT RUN","elapsed":0.0004}
+{"v":1,"seq":47,"t":1791651162.114,"type":"step.started","id":"s1-t1-k3-k3-k2","parent":"s1-t1-k3-k3","kind":"ELSE","lineno":12}
+{"v":1,"seq":48,"t":1791651162.115,"type":"step.started","id":"s1-t1-k3-k3-k2-k1","parent":"s1-t1-k3-k3-k2","kind":"KEYWORD","lineno":13,"name":"Log","owner":"BuiltIn","args":["not one","WARN"]}
+{"v":1,"seq":49,"t":1791651162.115,"type":"message.logged","parent":"s1-t1-k3-k3-k2-k1","level":"WARN","text":"not one"}
+{"v":1,"seq":50,"t":1791651162.115,"type":"step.ended","id":"s1-t1-k3-k3-k2-k1","status":"PASS","elapsed":0.0005}
+{"v":1,"seq":51,"t":1791651162.115,"type":"step.ended","id":"s1-t1-k3-k3-k2","status":"PASS","elapsed":0.0007}
+{"v":1,"seq":52,"t":1791651162.115,"type":"step.ended","id":"s1-t1-k3-k3","status":"PASS","elapsed":0.0013}
+{"v":1,"seq":53,"t":1791651162.115,"type":"step.ended","id":"s1-t1-k3","status":"PASS","elapsed":0.0048}
+{"v":1,"seq":54,"t":1791651162.115,"type":"step.started","id":"s1-t1-k4","parent":"s1-t1","kind":"TRY","lineno":16}
+{"v":1,"seq":55,"t":1791651162.116,"type":"step.started","id":"s1-t1-k4-k1","parent":"s1-t1-k4","kind":"KEYWORD","lineno":17,"name":"Fail","owner":"BuiltIn","args":["expected"]}
+{"v":1,"seq":56,"t":1791651162.116,"type":"message.logged","parent":"s1-t1-k4-k1","level":"FAIL","text":"expected"}
+{"v":1,"seq":57,"t":1791651162.116,"type":"step.ended","id":"s1-t1-k4-k1","status":"FAIL","message":"expected","elapsed":0.0006}
+{"v":1,"seq":58,"t":1791651162.116,"type":"step.ended","id":"s1-t1-k4","status":"FAIL","message":"expected","elapsed":0.0008}
+{"v":1,"seq":59,"t":1791651162.116,"type":"step.started","id":"s1-t1-k5","parent":"s1-t1","kind":"EXCEPT","lineno":18,"patterns":["expected"]}
+{"v":1,"seq":60,"t":1791651162.117,"type":"step.started","id":"s1-t1-k5-k1","parent":"s1-t1-k5","kind":"KEYWORD","lineno":19,"name":"Log","owner":"BuiltIn","args":["caught"]}
+{"v":1,"seq":61,"t":1791651162.117,"type":"message.logged","parent":"s1-t1-k5-k1","level":"INFO","text":"caught"}
+{"v":1,"seq":62,"t":1791651162.117,"type":"step.ended","id":"s1-t1-k5-k1","status":"PASS","elapsed":0.0003}
+{"v":1,"seq":63,"t":1791651162.117,"type":"step.ended","id":"s1-t1-k5","status":"PASS","elapsed":0.0006}
+{"v":1,"seq":64,"t":1791651162.117,"type":"step.started","id":"s1-t1-k6","parent":"s1-t1","kind":"GROUP","lineno":21,"name":"My group"}
+{"v":1,"seq":65,"t":1791651162.117,"type":"step.started","id":"s1-t1-k6-k1","parent":"s1-t1-k6","kind":"VAR","lineno":22,"name":"${x}","values":["1"]}
+{"v":1,"seq":66,"t":1791651162.117,"type":"message.logged","parent":"s1-t1-k6-k1","level":"INFO","text":"${x} = 1"}
+{"v":1,"seq":67,"t":1791651162.117,"type":"step.ended","id":"s1-t1-k6-k1","status":"PASS","elapsed":0.0002}
+{"v":1,"seq":68,"t":1791651162.118,"type":"step.started","id":"s1-t1-k6-k2","parent":"s1-t1-k6","kind":"KEYWORD","lineno":23,"name":"Log","owner":"BuiltIn","args":["${x}"]}
+{"v":1,"seq":69,"t":1791651162.118,"type":"message.logged","parent":"s1-t1-k6-k2","level":"INFO","text":"1"}
+{"v":1,"seq":70,"t":1791651162.118,"type":"step.ended","id":"s1-t1-k6-k2","status":"PASS","elapsed":0.0004}
+{"v":1,"seq":71,"t":1791651162.118,"type":"step.ended","id":"s1-t1-k6","status":"PASS","elapsed":0.0009}
+{"v":1,"seq":72,"t":1791651162.118,"type":"step.started","id":"s1-t1-k7","parent":"s1-t1","kind":"KEYWORD","lineno":25,"name":"Run Keyword And Ignore Error","owner":"BuiltIn","args":["Fail","ignored"]}
+{"v":1,"seq":73,"t":1791651162.119,"type":"step.started","id":"s1-t1-k7-k1","parent":"s1-t1-k7","kind":"KEYWORD","lineno":25,"name":"Fail","owner":"BuiltIn","args":["ignored"]}
+{"v":1,"seq":74,"t":1791651162.119,"type":"message.logged","parent":"s1-t1-k7-k1","level":"FAIL","text":"ignored"}
+{"v":1,"seq":75,"t":1791651162.119,"type":"step.ended","id":"s1-t1-k7-k1","status":"FAIL","message":"ignored","elapsed":0.0005}
+{"v":1,"seq":76,"t":1791651162.119,"type":"step.ended","id":"s1-t1-k7","status":"PASS","elapsed":0.001}
+{"v":1,"seq":77,"t":1791651162.12,"type":"step.started","id":"s1-t1-k8","parent":"s1-t1","kind":"TEARDOWN","lineno":26,"name":"Log","owner":"BuiltIn","args":["test teardown"]}
+{"v":1,"seq":78,"t":1791651162.12,"type":"message.logged","parent":"s1-t1-k8","level":"INFO","text":"test teardown"}
+{"v":1,"seq":79,"t":1791651162.12,"type":"step.ended","id":"s1-t1-k8","status":"PASS","elapsed":0.0004}
+{"v":1,"seq":80,"t":1791651162.12,"type":"test.ended","id":"s1-t1","status":"PASS","elapsed":0.013}
+{"v":1,"seq":81,"t":1791651162.121,"type":"test.started","id":"s1-t2","parent":"s1","name":"Failing Test","longname":"Sample.Failing Test","source":"d:\\CodeProjects\\robotframework-events\\tests\\data\\sample.robot","lineno":28}
+{"v":1,"seq":82,"t":1791651162.121,"type":"step.started","id":"s1-t2-k1","parent":"s1-t2","kind":"KEYWORD","lineno":29,"name":"My Keyword","args":["a"]}
+{"v":1,"seq":83,"t":1791651162.121,"type":"step.started","id":"s1-t2-k1-k1","parent":"s1-t2-k1","kind":"KEYWORD","lineno":39,"name":"Log","owner":"BuiltIn","args":["${arg}"]}
+{"v":1,"seq":84,"t":1791651162.121,"type":"message.logged","parent":"s1-t2-k1-k1","level":"INFO","text":"a"}
+{"v":1,"seq":85,"t":1791651162.122,"type":"step.ended","id":"s1-t2-k1-k1","status":"PASS","elapsed":0.0004}
+{"v":1,"seq":86,"t":1791651162.122,"type":"step.started","id":"s1-t2-k1-k2","parent":"s1-t2-k1","kind":"KEYWORD","lineno":40,"name":"Nested Keyword"}
+{"v":1,"seq":87,"t":1791651162.122,"type":"step.started","id":"s1-t2-k1-k2-k1","parent":"s1-t2-k1-k2","kind":"KEYWORD","lineno":43,"name":"No Operation","owner":"BuiltIn"}
+{"v":1,"seq":88,"t":1791651162.122,"type":"step.ended","id":"s1-t2-k1-k2-k1","status":"PASS","elapsed":0.0003}
+{"v":1,"seq":89,"t":1791651162.122,"type":"step.ended","id":"s1-t2-k1-k2","status":"PASS","elapsed":0.0006}
+{"v":1,"seq":90,"t":1791651162.122,"type":"step.ended","id":"s1-t2-k1","status":"PASS","elapsed":0.0016}
+{"v":1,"seq":91,"t":1791651162.123,"type":"step.started","id":"s1-t2-k2","parent":"s1-t2","kind":"KEYWORD","lineno":30,"name":"Should Be Equal","owner":"BuiltIn","args":["1","2"]}
+{"v":1,"seq":92,"t":1791651162.123,"type":"message.logged","parent":"s1-t2-k2","level":"FAIL","text":"1 != 2"}
+{"v":1,"seq":93,"t":1791651162.123,"type":"step.ended","id":"s1-t2-k2","status":"FAIL","message":"1 != 2","elapsed":0.0005}
+{"v":1,"seq":94,"t":1791651162.123,"type":"step.started","id":"s1-t2-k3","parent":"s1-t2","kind":"KEYWORD","lineno":31,"name":"Log","owner":"BuiltIn","args":["never runs"]}
+{"v":1,"seq":95,"t":1791651162.123,"type":"step.ended","id":"s1-t2-k3","status":"NOT RUN","elapsed":0.0001}
+{"v":1,"seq":96,"t":1791651162.124,"type":"test.ended","id":"s1-t2","status":"FAIL","message":"1 != 2","elapsed":0.003}
+{"v":1,"seq":97,"t":1791651162.124,"type":"test.started","id":"s1-t3","parent":"s1","name":"Skipped Test","longname":"Sample.Skipped Test","source":"d:\\CodeProjects\\robotframework-events\\tests\\data\\sample.robot","lineno":33}
+{"v":1,"seq":98,"t":1791651162.124,"type":"step.started","id":"s1-t3-k1","parent":"s1-t3","kind":"KEYWORD","lineno":34,"name":"Skip","owner":"BuiltIn","args":["not today"]}
+{"v":1,"seq":99,"t":1791651162.125,"type":"message.logged","parent":"s1-t3-k1","level":"SKIP","text":"not today"}
+{"v":1,"seq":100,"t":1791651162.125,"type":"step.ended","id":"s1-t3-k1","status":"SKIP","message":"not today","elapsed":0.0004}
+{"v":1,"seq":101,"t":1791651162.125,"type":"test.ended","id":"s1-t3","status":"SKIP","message":"not today","elapsed":0.001}
+{"v":1,"seq":102,"t":1791651162.125,"type":"step.started","id":"s1-k2","parent":"s1","kind":"TEARDOWN","lineno":3,"name":"Log","owner":"BuiltIn","args":["suite teardown"]}
+{"v":1,"seq":103,"t":1791651162.126,"type":"message.logged","parent":"s1-k2","level":"INFO","text":"suite teardown"}
+{"v":1,"seq":104,"t":1791651162.126,"type":"step.ended","id":"s1-k2","status":"PASS","elapsed":0.0004}
+{"v":1,"seq":105,"t":1791651162.126,"type":"suite.ended","id":"s1","status":"FAIL","elapsed":0.051,"stats":{"total":3,"passed":1,"failed":1,"skipped":1}}
+{"v":1,"seq":106,"t":1791651162.127,"type":"resultfile.created","kind":"OUTPUT","path":"d:\\CodeProjects\\robotframework-events\\results\\sample\\output.xml"}
+{"v":1,"seq":107,"t":1791651162.152,"type":"resultfile.created","kind":"LOG","path":"d:\\CodeProjects\\robotframework-events\\results\\sample\\log.html"}
+{"v":1,"seq":108,"t":1791651162.159,"type":"resultfile.created","kind":"REPORT","path":"d:\\CodeProjects\\robotframework-events\\results\\sample\\report.html"}
+{"v":1,"seq":109,"t":1791651162.159,"type":"run.ended","status":"FAIL","stats":{"total":3,"passed":1,"failed":1,"skipped":1}}

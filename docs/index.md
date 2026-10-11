@@ -69,6 +69,9 @@ features:
   - title: 📂 Log Linking
     details: Enable clickable log navigation from dashboard graphs. Covers file naming conventions, local and server usage, and remote log uploads.
     link: /log-linking.md
+  - title: 🔴 Live View
+    details: Watch runs live, keyword by keyword, in VS Code with RobotCode, and replay finished runs from their robotframework-events file with a timeline slider.
+    link: /live-view.md
   - title: 🔁 Reruns
     details: Feed merged `--rerunfailed` outputs to the dashboard and see the attempt history of every re-executed test, so retried failures are no longer invisible.
     link: /reruns.md

@@ -58,6 +58,7 @@ For all available CLI options see the [Basic CLI docs](https://marketsquare.gith
 - 🔎 **Global Filters** - Filter runs by name, tags, date, metadata, or quantity (applied per project). Drag across the runs-over-time histogram to zoom into a period. Every filter option shows how many runs it still matches, and options that match none are greyed out.  
 - ⚖️ **Comparison Mode** - Compare up to 4 runs side by side with visual statistics.  
 - 🔗 **Automatic Log Linking** - Open Robot Framework logs directly from the dashboard.  
+- 🔴 **Live View** - Watch runs live, keyword by keyword, and replay finished runs from their robotframework-events file.  
 - 🔁 **Rerun History** - Merged `--rerunfailed` outputs keep the status of every attempt per test.  
 - 🛠️ **Custom Database Classes** - Extend or replace the database processor for custom backends.  
 - 🖥️ **Server Mode** - Host your dashboard for multi-user access and automatic updates.  
@@ -87,6 +88,7 @@ For detailed usage instructions, advanced examples, and full documentation, visi
 - 🗄️ [**Custom Database Class**](https://marketsquare.github.io/robotframework-dashboard/custom-database-class.html) - Extend or replace the default database backend to suit your storage needs, including SQLite, MySQL, or custom implementations.
 - 🔔 [**Listener Integration**](https://marketsquare.github.io/robotframework-dashboard/listener-integration.html) - Use a listener to automatically push test results to the dashboard for every executed run, integrating seamlessly into CI/CD pipelines.
 - 📂 [**Log Linking**](https://marketsquare.github.io/robotframework-dashboard/log-linking.html) - Enable clickable log navigation from dashboard graphs, covering file naming conventions, local and server usage, and remote log uploads.
+- 🔴 [**Live View**](https://marketsquare.github.io/robotframework-dashboard/live-view.html) - Watch runs live in an editor (RobotCode in VS Code) and replay finished runs from their robotframework-events file.
 - 🔁 [**Reruns**](https://marketsquare.github.io/robotframework-dashboard/reruns.html) - Feed merged `--rerunfailed` outputs to the dashboard and see the attempt history of every re-executed test.
 - 📈 [**Performance**](https://marketsquare.github.io/robotframework-dashboard/performance.html) - Performance results across different workload sizes, guidance on scaling to hundreds of runs, and tips for large result sets.
 

@@ -12,8 +12,9 @@ import { setup_section_order, setup_graph_order, setup_overview_section_layout_b
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";
 import { arrowDown, arrowRight } from "./variables/svg.js";
+import { host } from "./host.js";
 
-const PAGE_IDS = ["menuOverview", "menuDashboard", "menuCompare", "menuTables", "openDashboard"];
+const PAGE_IDS = ["menuOverview", "menuDashboard", "menuCompare", "menuTables", "menuLive", "openDashboard"];
 const PAGES_WITH_SECTIONS = ["menuOverview", "menuDashboard", "menuTables"];
 
 function get_sticky_height() {
@@ -78,7 +79,7 @@ function neighbor_indices(bestIndex, length) {
 }
 
 function update_menu(item) {
-    ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
+    ["overview", "dashboard", "compare", "tables", "live"].forEach(menuItem => {
         const id = `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`;
         set_local_storage_item(`menu.${menuItem}`, (item === id));
         document.getElementById(id).classList.toggle("active", id === item);
@@ -95,6 +96,10 @@ function setup_menu() {
     document.getElementById("menuDashboard").addEventListener("click", () => update_menu("menuDashboard"));
     document.getElementById("menuCompare").addEventListener("click", () => update_menu("menuCompare"));
     document.getElementById("menuTables").addEventListener("click", () => update_menu("menuTables"));
+    document.getElementById("menuLive").addEventListener("click", () => update_menu("menuLive"));
+    // the Live page exists only inside an editor host, like the admin page only with --server
+    const liveAvailable = host.present;
+    document.getElementById("menuLive").hidden = !liveAvailable;
 
     const params = new URLSearchParams(window.location.search);
     const pageParam = params.get("page");
@@ -114,6 +119,9 @@ function setup_menu() {
             case "tables":
                 selectedMenu = "menuTables";
                 break;
+            case "live":
+                selectedMenu = "menuLive";
+                break;
         }
         if (selectedMenu) {
             settings.menu = {
@@ -121,6 +129,7 @@ function setup_menu() {
                 dashboard: selectedMenu === "menuDashboard",
                 compare: selectedMenu === "menuCompare",
                 tables: selectedMenu === "menuTables",
+                live: selectedMenu === "menuLive",
             };
         }
     }
@@ -132,7 +141,10 @@ function setup_menu() {
         else if (menuSettings.dashboard) selectedMenu = "menuDashboard";
         else if (menuSettings.compare) selectedMenu = "menuCompare";
         else if (menuSettings.tables) selectedMenu = "menuTables";
+        else if (menuSettings.live) selectedMenu = "menuLive";
     }
+    // ?page=live or a remembered Live page in a plain browser: fall back to the overview
+    if (selectedMenu === "menuLive" && !liveAvailable) selectedMenu = "menuOverview";
     update_menu(selectedMenu);
 
     // hiding, showing or reordering a table changes what the tables track should hold
@@ -183,7 +195,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
 
 // function to add a spinner for slow loads
 function setup_spinner(hide) {
-    const pages = ["overview", "unified", "dashboard", "compare", "tables"].map(id => document.getElementById(id));
+    const pages = ["overview", "unified", "dashboard", "compare", "tables", "live"].map(id => document.getElementById(id));
     const loading = document.getElementById("loading");
     if (hide) {
         fade_out(loading);
@@ -632,6 +644,7 @@ function setup_navbar_overflow() {
                     if (btn) items.push(btn);
                 });
         }
+        push(byId('menuLive'));
         push(byId('openDashboard'));
 
         return items;

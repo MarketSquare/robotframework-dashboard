@@ -24,6 +24,7 @@ Remove Shared Dashboard
     # file without a resolvable path, so the keyword is inlined here instead of imported
     Remove File    path=robotresults_shared.db
     Remove File    path=robotdashboard_shared.html
+    Remove File    path=robotdashboard_shared_host.html
 
 Move All Screenshots
     # All screenshots in pabot dirs have to go to a central screenshot dir to be able to see them in the log.html file

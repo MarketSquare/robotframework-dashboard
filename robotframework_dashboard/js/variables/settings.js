@@ -92,6 +92,7 @@ var settings = {
         dashboard: true,
         compare: false,
         tables: false,
+        live: false,
     },
     graphTypes: defaultGraphTypes,
     view: {
