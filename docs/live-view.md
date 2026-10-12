@@ -18,7 +18,8 @@ no **Live** menu item.
 ## Requirements
 
 - Robot Framework 7.0 or newer
-- `robotframework-events` 0.2.0 or newer in the environment that runs the tests
+- `robotframework-events` 0.2.0 or newer in the environment that runs the tests; 0.5.0 or newer to follow
+  runs started outside the editor and pabot runs, 0.6.0 or newer for history entries of runs that crashed
 
 ```bash
 pip install robotframework-events
@@ -65,6 +66,43 @@ no listener to your runs at all.
 From the command line, `rfevents tail -f results/events.jsonl` (part of robotframework-events) shows a run in
 the terminal while it happens.
 
+### Runs started outside the editor
+
+With the dashboard turned on, RobotCode also follows runs you start yourself, for example in a terminal or a
+task, as long as they write their events inside the workspace (`events*.jsonl`):
+
+```bash
+robot --listener robotframework_events.Listener --outputdir results tests/
+```
+
+The Live page shows them like runs from the Test Explorer, and they go to the history with the `output.xml`,
+`log.html` and `report.html` they wrote. A run that RobotCode started itself is not shown twice.
+
+### Pabot
+
+Give pabot the listener like robot:
+
+```bash
+pabot --processes 4 --listener robotframework_events.Listener --outputdir results tests/
+```
+
+Each pabot process writes its own events file; the Live page shows them as one run, with every running test
+marked **Running** (click one to follow it). When pabot has merged its results, the run goes to the history
+with pabot's merged `output.xml`, and links from the replay open the right test and step in pabot's merged
+`log.html`. Screenshots are found in the process folders (`pabot_results/<n>/`), also without
+`--artifacts`.
+
+Known limits: the number of tests is not known up front, so the header counts the tests it has seen. With
+`--testlevelsplit`, a suite setup or teardown runs in every process, while pabot's log keeps one; links to
+those can open another keyword of the suite or none.
+
+### Runs that crash
+
+A run that is killed or crashes writes no complete `output.xml`. RobotCode then builds one from the run's
+events (`rfevents rebuild`), so the run still gets a history entry: the tests and steps that were running fail
+with "Not finished: the run stopped before this ended.", tests that never started are left out, and the
+top-level suite says that the run did not finish.
+
 ## The Live page
 
 - **Header**: tests done, passed, failed and skipped, the elapsed time and the expected time **remaining**:
@@ -73,7 +111,8 @@ the terminal while it happens.
   history count with the average of the others; when fewer than half of the remaining tests have history,
   no estimate is shown. Needs `robotframework-events` 0.4.0 or newer.
 - **Test list**: every test with its status and duration. The running test opens into its step tree and the
-  list follows the running step; scrolling or clicking stops following until **Resume live view**. A test that
+  list follows the running step (with pabot, several tests run at once: each is marked **Running**, and
+  clicking one follows it); scrolling or clicking stops following until **Resume live view**. A test that
   takes clearly longer than in earlier runs (over 1.5 times its median, and at least a second longer) gets a
   **slower than usual** badge.
 - **Step tree**: keywords and control structures with their arguments. Long loops show their first, last,
