@@ -20,6 +20,7 @@ no **Live** menu item.
 - Robot Framework 7.0 or newer
 - `robotframework-events` 0.2.0 or newer in the environment that runs the tests; 0.5.0 or newer to follow
   runs started outside the editor and pabot runs, 0.6.0 or newer for history entries of runs that crashed
+  and for step screenshots
 
 ```bash
 pip install robotframework-events
@@ -53,7 +54,9 @@ from the Test Explorer:
    environment; projects managed by uv, Poetry, PDM, Pixi, Hatch or conda get the command to run instead.
 2. Run tests. The Live page opens and follows the running step. When the run ends it is added to the history.
 
-The same switch in `robot.toml` works for every RobotCode run, also outside VS Code:
+The same switch in `robot.toml` works for every run RobotCode starts through its debugger, also
+`robotcode debug` outside VS Code (`robot`, `pabot` and `robotcode robot` need the listener on their command
+line, see [Runs started outside the editor](#runs-started-outside-the-editor)):
 
 ```toml
 [tool.robotcode-dashboard]
@@ -124,16 +127,30 @@ top-level suite says that the run did not finish.
 ## Playback of browser tests
 
 With step screenshots turned on, the Live page plays a test back step by step, like Playwright's trace
-viewer: robotframework-events (0.6.0 or newer) takes a screenshot after every Browser, SeleniumLibrary or
-AppiumLibrary keyword that can change the page.
+viewer: robotframework-events (0.6.0 or newer) takes a screenshot after every keyword of the libraries you
+name that can change the page or the screen. Libraries are opt-in: none gets screenshots until it is named.
+Presets cover 22 libraries, among them Browser, SeleniumLibrary, AppiumLibrary, QWeb and FlaUI; the
+[robotframework-events README](https://github.com/timdegroot1996/robotframework-events) lists them all.
 
-```bash
-robot --listener "robotframework_events.Listener;screenshots=actions" tests/
+In VS Code, set `robotcode.dashboard.stepScreenshots` to `actions` and list the libraries in
+`robotcode.dashboard.screenshotLibraries`, or put both in `robot.toml`:
+
+```toml
+[tool.robotcode-dashboard.screenshots]
+mode = "actions"
+libraries = ["Browser", "SeleniumLibrary"]
 ```
 
-In VS Code, set `robotcode.dashboard.stepScreenshots` to `actions` (or `[tool.robotcode-dashboard]
-screenshots = "actions"` in `robot.toml`). Other modes: `all` (every keyword of these libraries) and
-`failure`.
+These settings apply to runs that RobotCode starts. For runs started outside the editor, give the listener
+the same two options:
+
+```bash
+robot --listener "robotframework_events.Listener;screenshots=actions;screenshot_libraries=Browser,SeleniumLibrary" --outputdir results tests/
+pabot --processes 4 --listener "robotframework_events.Listener;screenshots=actions;screenshot_libraries=Browser" --outputdir results tests/
+```
+
+Other modes: `all` (every keyword of the named libraries, read-only ones too) and `failure` (failing keywords
+only).
 
 A test with step screenshots gets a timeline above its name, with a dot for every screenshot (red for a
 failed step). Hover over it to see the page at that moment of the test: moving left and right shows the
