@@ -444,6 +444,16 @@
         </div>
 
         <div id="live" hidden>
+            <!-- a screenshot of the shown test over the whole window: arrow keys go through them, Escape closes -->
+            <div class="live-viewer" id="liveViewer" hidden role="dialog" aria-modal="true" aria-label="Screenshot">
+                <div class="live-viewer-bar">
+                    <span class="live-viewer-caption text-truncate" id="liveViewerCaption"></span>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="liveViewerPrev" aria-label="Previous screenshot">&larr;</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="liveViewerNext" aria-label="Next screenshot">&rarr;</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="liveViewerClose" aria-label="Close">&times;</button>
+                </div>
+                <div class="live-viewer-body" id="liveViewerBody"></div>
+            </div>
             <div class="card live-summary-card" id="liveStatisticsSection">
                 <div class="card-header">
                     <div class="row g-2 align-items-center">
@@ -468,9 +478,6 @@
                         <div class="live-counter"><div class="fs-5 fw-semibold" id="liveElapsed">0.0s</div><div class="small text-body-secondary">elapsed</div></div>
                         <div class="live-counter"><div class="fs-5 fw-semibold" id="liveEta">&ndash;</div><div class="small text-body-secondary">remaining</div></div>
                         <div class="live-donut"><canvas id="liveStatusGraph" aria-label="Test status"></canvas></div>
-                    </div>
-                    <div class="progress mt-2" role="progressbar" aria-label="Run progress" style="height: 6px">
-                        <div class="progress-bar" id="liveProgress" style="width: 0%"></div>
                     </div>
                     <!-- hidden on a wrapper: d-flex would override the hidden attribute -->
                     <div id="liveReplayBar" hidden>
@@ -512,13 +519,19 @@
                 <div class="live-main">
                     <div class="card live-tests-card" id="liveStepsCard">
                         <div class="live-steps-head">
-                            <div class="live-shots" id="liveShots" hidden aria-label="Screenshots of the test: hover to see the page">
-                                <div class="live-shots-rail">
-                                    <div class="live-shots-layer" id="liveShotsRail"></div>
-                                    <div class="live-shots-layer"><div class="live-shots-cursor" id="liveShotsCursor" hidden></div></div>
+                            <!-- hidden on a wrapper: d-flex would override the hidden attribute -->
+                            <div id="liveShotsRow" hidden>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="live-shots flex-grow-1" id="liveShots" aria-label="Screenshots of the test: hover to see the page, double-click to open it full size">
+                                        <div class="live-shots-rail">
+                                            <div class="live-shots-layer" id="liveShotsRail"></div>
+                                            <div class="live-shots-layer"><div class="live-shots-cursor" id="liveShotsCursor" hidden></div></div>
+                                        </div>
+                                        <input type="range" class="form-range" id="liveShotsRange" min="0" max="1000" value="1000" aria-label="Position in the screenshots of the test">
+                                        <div class="live-shots-popup" id="liveShotsPopup" hidden></div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary live-shots-open" id="liveShotsOpen" title="Open the screenshots full size" aria-label="Open the screenshots full size">&#x2922;</button>
                                 </div>
-                                <input type="range" class="form-range" id="liveShotsRange" min="0" max="1000" value="1000" aria-label="Position in the screenshots of the test">
-                                <div class="live-shots-popup" id="liveShotsPopup" hidden></div>
                             </div>
                             <div class="small text-body-secondary text-truncate" id="liveTestPath"></div>
                             <div class="d-flex align-items-center gap-2">

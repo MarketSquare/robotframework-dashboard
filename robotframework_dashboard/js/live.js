@@ -68,6 +68,8 @@ const answeredImages = new Set();
 let shotsHover = null;
 // where the viewer put the timeline's thumb (0..1000) for a test; at the end (the latest screenshot) otherwise
 let shotsPin = { testId: null, value: 1000 };
+// the screenshot shown full size (index into the shown test's screenshots), null when the viewer is closed
+let viewerIndex = null;
 
 function duration_history() {
     if (!durationHistory) durationHistory = build_duration_history(tests);
@@ -170,7 +172,6 @@ function render_header(counts) {
     const now = liveState.endT || (status === "RUNNING" ? live_now() : liveState.lastT);
     document.getElementById("liveElapsed").textContent =
         liveState.startT ? live_format_seconds(Math.max(0, now - liveState.startT)) : "0.0s";
-    document.getElementById("liveProgress").style.width = counts.total ? `${(100 * counts.done) / counts.total}%` : "0%";
     const eta = eta_seconds(duration_history(), liveState, live_now());
     const etaNode = document.getElementById("liveEta");
     etaNode.textContent = eta === null ? "\u2013" : eta === 0 ? "any moment" : `~${live_format_seconds(eta)}`;
@@ -900,11 +901,11 @@ function shots_of(test) {
 
 // a bar over the test with a dot per screenshot; only for tests whose run took step screenshots
 function render_shots(test) {
-    const bar = document.getElementById("liveShots");
     const { frames, span } = shots_of(test);
-    bar.hidden = frames.length === 0;
+    document.getElementById("liveShotsRow").hidden = frames.length === 0;
     if (!frames.length) {
         hide_shot();
+        close_viewer();
         return;
     }
     request_images(frames.map((frame) => frame.file));
@@ -920,6 +921,7 @@ function render_shots(test) {
     if (document.activeElement !== range || shotsHover === null) range.value = String(shotsPin.testId === test.id ? shotsPin.value : 1000);
     // a new screenshot while the pointer rests on the bar: show what is under it now
     if (shotsHover !== null) show_shot(shotsHover);
+    if (viewerIndex !== null) render_viewer();
 }
 
 function shot_position(t, span) {
@@ -932,8 +934,7 @@ function show_shot(fraction) {
     const { frames, span } = shots_of(test);
     if (!frames.length) return hide_shot();
     shotsHover = fraction;
-    const atEnd = fraction >= 0.98;
-    const index = atEnd ? frames.length - 1 : playback_frame_at(frames, span.start + fraction * (span.end - span.start));
+    const index = shot_index(frames, span, fraction);
     const bar = document.getElementById("liveShots");
     const cursor = document.getElementById("liveShotsCursor");
     cursor.hidden = false;
@@ -944,8 +945,9 @@ function show_shot(fraction) {
     const frame = frames[index];
     const children = [];
     const url = frame ? image_url(frame.file) : null;
+    let image = null;
     if (url) {
-        const image = live_el("img");
+        image = live_el("img");
         image.src = url;
         image.alt = frame.file;
         children.push(image);
@@ -953,20 +955,76 @@ function show_shot(fraction) {
         children.push(live_el("div", "text-body-secondary small p-2",
             !frame ? "No screenshot yet." : host.present && !answeredImages.has(frame.file) ? "Loading..." : "Image not available."));
     }
-    if (frame) {
-        const step = liveState.steps.get(frame.stepId);
-        const label = step ? [step_tag(step), step_label(step)].filter(Boolean).join(" ") : "";
-        children.push(live_el("div", "live-shots-caption text-truncate",
-            `${index + 1} / ${frames.length} \u00B7 +${live_format_seconds(frame.t - span.start) || "0ms"} \u00B7 ${label}`));
-    }
+    if (frame) children.push(live_el("div", "live-shots-caption text-truncate", shot_caption(frames, span, index)));
     popup.replaceChildren(...children);
     popup.hidden = false;
-    // the popup follows the pointer and stays inside the bar
-    const width = bar.clientWidth;
-    const layer = document.getElementById("liveShotsRail");
-    const x = layer.offsetLeft + fraction * layer.clientWidth;
-    const popupWidth = popup.offsetWidth;
-    popup.style.left = `${Math.min(Math.max(0, x - popupWidth / 2), Math.max(0, width - popupWidth))}px`;
+    // the popup follows the pointer and stays inside the bar; its width is known once the image is loaded
+    const place = () => {
+        const width = bar.clientWidth;
+        const layer = document.getElementById("liveShotsRail");
+        const x = layer.offsetLeft + fraction * layer.clientWidth;
+        const popupWidth = popup.offsetWidth;
+        popup.style.left = `${Math.min(Math.max(0, x - popupWidth / 2), Math.max(0, width - popupWidth))}px`;
+    };
+    place();
+    if (image && !image.complete) image.addEventListener("load", place, { once: true });
+}
+
+// the screenshot at a place on the bar: the last one taken by that moment; at the right end the latest
+function shot_index(frames, span, fraction) {
+    return fraction >= 0.98 ? frames.length - 1 : playback_frame_at(frames, span.start + fraction * (span.end - span.start));
+}
+
+function shot_caption(frames, span, index) {
+    const frame = frames[index];
+    const step = liveState.steps.get(frame.stepId);
+    const label = step ? [step_tag(step), step_label(step)].filter(Boolean).join(" ") : "";
+    return `${index + 1} / ${frames.length} \u00B7 +${live_format_seconds(frame.t - span.start) || "0ms"} \u00B7 ${label}`;
+}
+
+// --- full-size viewer ---------------------------------------------------------------------------
+
+function open_viewer(index) {
+    const { frames } = shots_of(liveState.tests.get(liveUi.selectedTestId));
+    if (!frames.length) return;
+    viewerIndex = Math.min(Math.max(0, index), frames.length - 1);
+    hide_shot();
+    document.getElementById("liveViewer").hidden = false;
+    render_viewer();
+    document.getElementById("liveViewerClose").focus();
+}
+
+function close_viewer() {
+    if (viewerIndex === null) return;
+    viewerIndex = null;
+    document.getElementById("liveViewer").hidden = true;
+}
+
+function step_viewer(delta) {
+    const { frames } = shots_of(liveState.tests.get(liveUi.selectedTestId));
+    if (viewerIndex === null || !frames.length) return;
+    viewerIndex = Math.min(Math.max(0, viewerIndex + delta), frames.length - 1);
+    render_viewer();
+}
+
+function render_viewer() {
+    const { frames, span } = shots_of(liveState.tests.get(liveUi.selectedTestId));
+    if (!frames.length) return close_viewer();
+    viewerIndex = Math.min(viewerIndex, frames.length - 1);
+    const frame = frames[viewerIndex];
+    const url = image_url(frame.file);
+    const body = document.getElementById("liveViewerBody");
+    if (url) {
+        const image = live_el("img");
+        image.src = url;
+        image.alt = frame.file;
+        body.replaceChildren(image);
+    } else {
+        body.replaceChildren(live_el("div", "small", host.present && !answeredImages.has(frame.file) ? "Loading..." : "Image not available."));
+    }
+    document.getElementById("liveViewerCaption").textContent = shot_caption(frames, span, viewerIndex);
+    document.getElementById("liveViewerPrev").disabled = viewerIndex === 0;
+    document.getElementById("liveViewerNext").disabled = viewerIndex === frames.length - 1;
 }
 
 function hide_shot() {
@@ -993,7 +1051,7 @@ function press_shot(event) {
     const test = liveState.tests.get(liveUi.selectedTestId);
     const { frames, span } = shots_of(test);
     const fraction = Number(event.target.value) / 1000;
-    const index = fraction >= 0.98 ? frames.length - 1 : playback_frame_at(frames, span.start + fraction * (span.end - span.start));
+    const index = shot_index(frames, span, fraction);
     if (index < 0) return;
     stop_following();
     liveUi.selectedStepId = frames[index].stepId;
@@ -1271,6 +1329,26 @@ function setup_live() {
     range.addEventListener("input", drag_shot);
     range.addEventListener("change", press_shot);
     range.addEventListener("blur", () => { if (shotsHover !== null && !shots.matches(":hover")) hide_shot(); });
+    // full size: the button opens the screenshot the thumb is on, a double-click the one under the pointer
+    const shown_index = (fraction) => {
+        const { frames, span } = shots_of(liveState.tests.get(liveUi.selectedTestId));
+        return frames.length ? shot_index(frames, span, fraction) : -1;
+    };
+    document.getElementById("liveShotsOpen").addEventListener("click", () => open_viewer(Math.max(0, shown_index(Number(range.value) / 1000))));
+    shots.addEventListener("dblclick", (event) => open_viewer(Math.max(0, shown_index(shot_fraction(event)))));
+    document.getElementById("liveViewerClose").addEventListener("click", close_viewer);
+    document.getElementById("liveViewerPrev").addEventListener("click", () => step_viewer(-1));
+    document.getElementById("liveViewerNext").addEventListener("click", () => step_viewer(1));
+    // a click on the dark area around the image closes, like other image viewers
+    document.getElementById("liveViewerBody").addEventListener("click", (event) => { if (event.target.tagName !== "IMG") close_viewer(); });
+    document.addEventListener("keydown", (event) => {
+        if (viewerIndex === null) return;
+        if (event.key === "Escape") close_viewer();
+        else if (event.key === "ArrowLeft") step_viewer(-1);
+        else if (event.key === "ArrowRight") step_viewer(1);
+        else return;
+        event.preventDefault();
+    });
     // only the viewer's own input ends live view: scroll events also come from the list being rebuilt
     // and from the page following the running step, many times a second during fast loops
     for (const list of [document.getElementById("liveTestsScroll"), document.getElementById("liveTreeScroll")]) {
