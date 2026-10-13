@@ -486,6 +486,7 @@
                         </div>
                     </div>
                     <div class="small text-danger mt-2" id="liveReplayError" hidden></div>
+                    <div class="live-warnings small mt-2" id="liveWarnings" hidden></div>
                 </div>
             </div>
             <div class="live-split">
@@ -511,6 +512,14 @@
                 <div class="live-main">
                     <div class="card live-tests-card" id="liveStepsCard">
                         <div class="live-steps-head">
+                            <div class="live-shots" id="liveShots" hidden aria-label="Screenshots of the test: hover to see the page">
+                                <div class="live-shots-rail">
+                                    <div class="live-shots-layer" id="liveShotsRail"></div>
+                                    <div class="live-shots-layer"><div class="live-shots-cursor" id="liveShotsCursor" hidden></div></div>
+                                </div>
+                                <input type="range" class="form-range" id="liveShotsRange" min="0" max="1000" value="1000" aria-label="Position in the screenshots of the test">
+                                <div class="live-shots-popup" id="liveShotsPopup" hidden></div>
+                            </div>
                             <div class="small text-body-secondary text-truncate" id="liveTestPath"></div>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="live-glyph" id="liveTestIcon"></span>

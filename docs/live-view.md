@@ -121,6 +121,31 @@ top-level suite says that the run did not finish.
   **Error** and **Screenshots** (images that the step or the steps below it logged, for example Browser or
   SeleniumLibrary screenshots).
 
+## Playback of browser tests
+
+With step screenshots turned on, the Live page plays a test back step by step, like Playwright's trace
+viewer: robotframework-events (0.6.0 or newer) takes a screenshot after every Browser, SeleniumLibrary or
+AppiumLibrary keyword that can change the page.
+
+```bash
+robot --listener "robotframework_events.Listener;screenshots=actions" tests/
+```
+
+In VS Code, set `robotcode.dashboard.stepScreenshots` to `actions` (or `[tool.robotcode-dashboard]
+screenshots = "actions"` in `robot.toml`). Other modes: `all` (every keyword of these libraries) and
+`failure`.
+
+A test with step screenshots gets a timeline above its name, with a dot for every screenshot (red for a
+failed step). Hover over it to see the page at that moment of the test: moving left and right shows the
+screenshot taken by then, the right end the latest one. This works while the test runs, too. The blue
+thumb marks where you are: drag it (or move it with the arrow keys) to go through the screenshots; letting go
+selects the step of the screenshot there. When the mouse is over the timeline, it shows the screenshot under
+the mouse; the thumb stays where you left it. Tests without step screenshots show no timeline.
+
+The screenshots are not added to `log.html`, and they are archived with the run, so a replay plays them back
+too. A screenshot is taken right after a keyword returns: a click that starts a navigation can still show the
+old page.
+
 ## Replaying a run
 
 A finished run opens at its end; the slider moves to any moment of the run, and **Close replay** goes back

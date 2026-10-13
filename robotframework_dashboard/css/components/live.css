@@ -167,6 +167,28 @@
 #live .live-test-row.selected { background: var(--live-selected); box-shadow: inset 3px 0 0 var(--live-run); }
 #live .live-slower { font-size: 10px; flex-shrink: 0; }
 #live .live-steps-head { flex: none; padding: 10px 16px; border-bottom: 1px solid var(--bs-border-color); display: flex; flex-direction: column; gap: 4px; }
+#live .live-warning { color: var(--bs-warning-text-emphasis); background: var(--bs-warning-bg-subtle); border-radius: 0.25rem; padding: 2px 8px; }
+#live .live-warning + .live-warning { margin-top: 2px; }
+/* screenshot timeline of a test (robotframework-events option screenshots): hover shows the page */
+#live .live-shots { position: relative; margin-bottom: 2px; }
+/* like the replay slider: the range's own track is hidden, the rail behind it carries the dots */
+#live .live-shots .form-range { position: relative; display: block; cursor: crosshair; }
+#live .live-shots .form-range::-webkit-slider-runnable-track { background: transparent; }
+#live .live-shots .form-range::-moz-range-track { background: transparent; }
+#live .live-shots-rail { position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); border-radius: 1rem; background: var(--bs-secondary-bg); }
+/* the thumb's centre stays half a thumb (0.5rem) inside both ends */
+#live .live-shots-layer { position: absolute; inset: 0 0.5rem; }
+#live .live-shots-dot { position: absolute; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--live-run); }
+#live .live-shots-dot.fail { background: var(--live-fail); }
+#live .live-shots-dot.active { box-shadow: 0 0 0 3px var(--bs-body-bg), 0 0 0 5px currentColor; }
+#live .live-shots-cursor { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--bs-body-color); opacity: 0.45; pointer-events: none; }
+#live .live-shots-popup {
+    position: absolute; top: calc(100% + 6px); z-index: 30; width: min(520px, 100%); padding: 6px; pointer-events: none;
+    background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+}
+#live .live-shots-popup img { display: block; width: 100%; height: auto; border-radius: 0.25rem; }
+#live .live-shots-caption { font-size: 12px; margin-top: 4px; }
 #live .live-failure-path {
     display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px;
     padding: 4px 10px; border-radius: 6px; background: rgba(176, 42, 55, 0.08);

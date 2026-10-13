@@ -27,6 +27,7 @@ function create_run_state() {
         // every running test (several at once in a merged pabot run) -> its deepest running step, or null
         runningSteps: new Map(),
         resultFiles: {}, // kind -> path
+        screenshotWarnings: [], // step screenshots that stopped or never started: { library, version, reason }
         suiteSources: new Map(), // suite id -> source, inherited by tests
     };
 }
@@ -76,6 +77,7 @@ function apply_event(state, ev) {
             const test = live_new_node(ev, {
                 name: ev.name, longname: ev.longname, lineno: ev.lineno, tags: ev.tags || [],
                 source: ev.source ?? suiteSource ?? null,
+                frames: [], // ids of its steps with a screenshot (step.screenshot), in order
             });
             if (!state.tests.has(ev.id)) {
                 state.testOrder.push(ev.id);
@@ -127,6 +129,19 @@ function apply_event(state, ev) {
         case "message.logged": {
             const owner = state.steps.get(ev.parent) || state.tests.get(ev.parent);
             if (owner) owner.messages.push({ t: ev.t, level: ev.level, text: ev.text || "", html: !!ev.html });
+            break;
+        }
+        case "screenshot.unavailable":
+            state.screenshotWarnings.push({ library: ev.library || "", version: ev.version || "", reason: ev.reason || "" });
+            break;
+        case "step.screenshot": {
+            // the page after a browser step (robotframework-events option `screenshots`)
+            const step = state.steps.get(ev.id);
+            if (!step) break;
+            step.screenshot = ev.path;
+            step.screenshotT = ev.t;
+            const test = state.tests.get(step.testId);
+            if (test && !test.frames.includes(ev.id)) test.frames.push(ev.id);
             break;
         }
         case "status.changed": {

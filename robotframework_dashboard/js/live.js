@@ -6,7 +6,8 @@ import { runs, tests } from "./variables/data.js";
 import { get_run_label } from "./variables/settings.js";
 import { events_paths_for_output, read_events_file, replay_state_at } from "./live/replay.js";
 import { build_duration_history, usual_duration, slower_than_usual, eta_seconds } from "./live/history.js";
-import { detail_images, file_url } from "./live/attachments.js";
+import { detail_images, file_url, resolve_attachment } from "./live/attachments.js";
+import { playback_frame_at, playback_frames, playback_span } from "./live/playback.js";
 import {
     create_run_state,
     apply_event,
@@ -63,6 +64,10 @@ let durationHistory = null;
 const hostImageUrls = new Map();
 const requestedImages = new Set();
 const answeredImages = new Set();
+// where the pointer is on the screenshot timeline (0..1), null when it is not over it
+let shotsHover = null;
+// where the viewer put the timeline's thumb (0..1000) for a test; at the end (the latest screenshot) otherwise
+let shotsPin = { testId: null, value: 1000 };
 
 function duration_history() {
     if (!durationHistory) durationHistory = build_duration_history(tests);
@@ -378,6 +383,7 @@ function render_steps_pane() {
     const steps = document.getElementById("liveSteps");
     const failurePath = document.getElementById("liveFailurePath");
     const icon = document.getElementById("liveTestIcon");
+    render_shots(test);
     if (!test) {
         document.getElementById("liveTestPath").textContent = "";
         document.getElementById("liveTestName").textContent = liveState.testOrder.length ? "Select a test" : "";
@@ -677,17 +683,26 @@ function render_log(step) {
     return wrapper;
 }
 
-// screenshots of the step and the steps below it; an editor host serves the local files
-function render_images(images) {
-    const wrapper = live_el("div", "live-images");
-    const missing = host.present ? images.filter((path) => !hostImageUrls.has(path) && !requestedImages.has(path)) : [];
+// urls for local images; an editor host serves them (a webview cannot load local files), asked once per path
+function request_images(paths) {
+    const missing = host.present ? paths.filter((path) => !hostImageUrls.has(path) && !requestedImages.has(path)) : [];
     if (missing.length) {
         missing.forEach((path) => requestedImages.add(path));
         host.post({ type: "resolveFiles", paths: missing });
     }
+}
+
+function image_url(path) {
+    return host.present ? hostImageUrls.get(path) : file_url(path);
+}
+
+// screenshots of the step and the steps below it; an editor host serves the local files
+function render_images(images) {
+    const wrapper = live_el("div", "live-images");
+    request_images(images);
     for (const path of images) {
         const figure = live_el("figure", "live-shot");
-        const url = host.present ? hostImageUrls.get(path) : file_url(path);
+        const url = image_url(path);
         if (url) {
             const image = live_el("img");
             image.src = url;
@@ -854,8 +869,138 @@ function render_live() {
     render_detail();
     render_resume_button();
     render_replay_bar();
+    render_warnings();
     follow_running_step();
     scroll_to_picked_step();
+}
+
+// step screenshots that stopped or never started in this run: shown, so they get noticed and reported
+function render_warnings() {
+    const box = document.getElementById("liveWarnings");
+    const warnings = liveState.screenshotWarnings || [];
+    box.hidden = warnings.length === 0;
+    const key = JSON.stringify(warnings);
+    if (box.dataset.key === key) return;
+    box.dataset.key = key;
+    box.replaceChildren(...warnings.map((warning) => {
+        const what = [warning.library, warning.version].filter(Boolean).join(" ");
+        return live_el("div", "live-warning", `No step screenshots${what ? ` with ${what}` : ""}: ${warning.reason}`);
+    }));
+}
+
+// --- screenshot timeline -----------------------------------------------------------------------
+
+// the screenshots of the shown test with their image paths, and the time the timeline covers
+function shots_of(test) {
+    const frames = test ? playback_frames(liveState, test.id) : [];
+    const outputdir = liveState.run ? liveState.run.outputdir : null;
+    for (const frame of frames) frame.file = resolve_attachment(frame.path, outputdir);
+    return { frames, span: frames.length ? playback_span(test, live_now()) : null };
+}
+
+// a bar over the test with a dot per screenshot; only for tests whose run took step screenshots
+function render_shots(test) {
+    const bar = document.getElementById("liveShots");
+    const { frames, span } = shots_of(test);
+    bar.hidden = frames.length === 0;
+    if (!frames.length) {
+        hide_shot();
+        return;
+    }
+    request_images(frames.map((frame) => frame.file));
+    const rail = document.getElementById("liveShotsRail");
+    const dots = frames.map((frame, index) => {
+        const dot = live_el("span", `live-shots-dot${frame.status === "FAIL" ? " fail" : ""}`);
+        dot.style.left = `${shot_position(frame.t, span) * 100}%`;
+        dot.dataset.index = String(index);
+        return dot;
+    });
+    rail.replaceChildren(...dots);
+    const range = document.getElementById("liveShotsRange");
+    if (document.activeElement !== range || shotsHover === null) range.value = String(shotsPin.testId === test.id ? shotsPin.value : 1000);
+    // a new screenshot while the pointer rests on the bar: show what is under it now
+    if (shotsHover !== null) show_shot(shotsHover);
+}
+
+function shot_position(t, span) {
+    return Math.min(1, Math.max(0, (t - span.start) / (span.end - span.start)));
+}
+
+// the screenshot under the pointer: the last one taken by that moment; at the right end the latest
+function show_shot(fraction) {
+    const test = liveState.tests.get(liveUi.selectedTestId);
+    const { frames, span } = shots_of(test);
+    if (!frames.length) return hide_shot();
+    shotsHover = fraction;
+    const atEnd = fraction >= 0.98;
+    const index = atEnd ? frames.length - 1 : playback_frame_at(frames, span.start + fraction * (span.end - span.start));
+    const bar = document.getElementById("liveShots");
+    const cursor = document.getElementById("liveShotsCursor");
+    cursor.hidden = false;
+    cursor.style.left = `${fraction * 100}%`;
+    for (const dot of bar.querySelectorAll(".live-shots-dot")) dot.classList.toggle("active", Number(dot.dataset.index) === index);
+
+    const popup = document.getElementById("liveShotsPopup");
+    const frame = frames[index];
+    const children = [];
+    const url = frame ? image_url(frame.file) : null;
+    if (url) {
+        const image = live_el("img");
+        image.src = url;
+        image.alt = frame.file;
+        children.push(image);
+    } else {
+        children.push(live_el("div", "text-body-secondary small p-2",
+            !frame ? "No screenshot yet." : host.present && !answeredImages.has(frame.file) ? "Loading..." : "Image not available."));
+    }
+    if (frame) {
+        const step = liveState.steps.get(frame.stepId);
+        const label = step ? [step_tag(step), step_label(step)].filter(Boolean).join(" ") : "";
+        children.push(live_el("div", "live-shots-caption text-truncate",
+            `${index + 1} / ${frames.length} \u00B7 +${live_format_seconds(frame.t - span.start) || "0ms"} \u00B7 ${label}`));
+    }
+    popup.replaceChildren(...children);
+    popup.hidden = false;
+    // the popup follows the pointer and stays inside the bar
+    const width = bar.clientWidth;
+    const layer = document.getElementById("liveShotsRail");
+    const x = layer.offsetLeft + fraction * layer.clientWidth;
+    const popupWidth = popup.offsetWidth;
+    popup.style.left = `${Math.min(Math.max(0, x - popupWidth / 2), Math.max(0, width - popupWidth))}px`;
+}
+
+function hide_shot() {
+    shotsHover = null;
+    document.getElementById("liveShotsPopup").hidden = true;
+    document.getElementById("liveShotsCursor").hidden = true;
+    for (const dot of document.querySelectorAll("#liveShots .live-shots-dot.active")) dot.classList.remove("active");
+}
+
+function shot_fraction(event) {
+    const rect = document.getElementById("liveShotsRail").getBoundingClientRect();
+    return Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+}
+
+// the thumb was dragged (or moved with the keys): it stays there for this test
+function drag_shot(event) {
+    const value = Number(event.target.value);
+    shotsPin = { testId: liveUi.selectedTestId, value };
+    show_shot(value / 1000);
+}
+
+// the thumb was let go (or the bar clicked): select the step of the screenshot there
+function press_shot(event) {
+    const test = liveState.tests.get(liveUi.selectedTestId);
+    const { frames, span } = shots_of(test);
+    const fraction = Number(event.target.value) / 1000;
+    const index = fraction >= 0.98 ? frames.length - 1 : playback_frame_at(frames, span.start + fraction * (span.end - span.start));
+    if (index < 0) return;
+    stop_following();
+    liveUi.selectedStepId = frames[index].stepId;
+    liveUi.userSelected = true;
+    liveUi.scrollToStepId = frames[index].stepId;
+    liveUi.tab = "call";
+    schedule_render(true);
 }
 
 // the step that failed the test: follow failed children down to the deepest one
@@ -1118,6 +1263,14 @@ function setup_live() {
     for (const tab of document.querySelectorAll("#liveDetail .live-tab")) {
         tab.addEventListener("click", () => { liveUi.tab = tab.dataset.tab; schedule_render(true); });
     }
+    const shots = document.getElementById("liveShots");
+    // hovering shows the screenshot under the pointer, dragging the thumb moves it there
+    shots.addEventListener("pointermove", (event) => show_shot(shot_fraction(event)));
+    shots.addEventListener("pointerleave", hide_shot);
+    const range = document.getElementById("liveShotsRange");
+    range.addEventListener("input", drag_shot);
+    range.addEventListener("change", press_shot);
+    range.addEventListener("blur", () => { if (shotsHover !== null && !shots.matches(":hover")) hide_shot(); });
     // only the viewer's own input ends live view: scroll events also come from the list being rebuilt
     // and from the page following the running step, many times a second during fast loops
     for (const list of [document.getElementById("liveTestsScroll"), document.getElementById("liveTreeScroll")]) {
