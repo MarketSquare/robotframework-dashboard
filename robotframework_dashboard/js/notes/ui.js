@@ -107,14 +107,28 @@ function apply_notes_change(change) {
     return { saved: true, result };
 }
 
-function fill_note_editor_categories(selectedId) {
-    const select = document.getElementById("noteEditorCategory");
-    const options = [`<option value="">No category</option>`];
-    for (const category of notesStore.categories) {
-        options.push(`<option value="${escape_html_for_merge(category.id)}">${escape_html_for_merge(category.name)}</option>`);
+// a Bootstrap dropdown instead of a <select>: a native option can't show the category color in every browser
+function note_category_label(category) {
+    if (!category) return `<span class="note-color-dot note-color-dot-empty"></span><span class="note-category-name">No category</span>`;
+    return `<span class="note-color-dot" style="--note-color: ${category.color}"></span><span class="note-category-name">${escape_html_for_merge(category.name)}</span>`;
+}
+
+function select_note_editor_category(categoryId) {
+    const category = notesStore.categories.find(category => category.id === categoryId);
+    document.getElementById("noteEditorCategory").value = category ? category.id : "";
+    document.getElementById("noteEditorCategoryButton").innerHTML = note_category_label(category);
+    for (const item of document.querySelectorAll("#noteEditorCategoryMenu [data-category-id]")) {
+        const active = item.dataset.categoryId === (category ? category.id : "");
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-current", active ? "true" : "false");
     }
-    select.innerHTML = options.join("");
-    select.value = notesStore.categories.some(category => category.id === selectedId) ? selectedId : "";
+}
+
+function fill_note_editor_categories(selectedId) {
+    const items = [null, ...notesStore.categories].map(category =>
+        `<li><button type="button" class="dropdown-item" data-category-id="${category ? escape_html_for_merge(category.id) : ""}">${note_category_label(category)}</button></li>`);
+    document.getElementById("noteEditorCategoryMenu").innerHTML = items.join("");
+    select_note_editor_category(selectedId);
 }
 
 function update_note_editor_count() {
@@ -211,6 +225,10 @@ function setup_note_editor() {
             document.getElementById("noteEditorNewCategoryColor").value = NOTE_CATEGORY_COLORS[notesStore.categories.length % NOTE_CATEGORY_COLORS.length];
             document.getElementById("noteEditorNewCategoryName").focus();
         }
+    });
+    document.getElementById("noteEditorCategoryMenu").addEventListener("click", (event) => {
+        const item = event.target.closest("[data-category-id]");
+        if (item) select_note_editor_category(item.dataset.categoryId);
     });
     document.getElementById("noteEditorAddCategory").addEventListener("click", add_category_from_editor);
     document.getElementById("noteEditorNewCategoryName").addEventListener("keydown", (event) => {

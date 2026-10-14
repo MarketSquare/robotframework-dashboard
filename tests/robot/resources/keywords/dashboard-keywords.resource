@@ -1098,6 +1098,17 @@ Add Category In Note Editor
     Fill Text    selector=id=noteEditorNewCategoryName    txt=${name}
     Click    selector=id=noteEditorAddCategory
 
+Get Note Editor Category Choices
+    [Documentation]    The entries of the category chooser in the note editor as [name, dot color] pairs, "" for no color.
+    ${choices}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#noteEditorCategoryMenu [data-category-id]')].map(item => [item.textContent.trim(), item.querySelector('.note-color-dot').style.getPropertyValue('--note-color').trim()])
+    RETURN    ${choices}
+
+Choose Category In Note Editor
+    [Arguments]    ${name}
+    Click    selector=id=noteEditorCategoryButton
+    Click    selector=css=#noteEditorCategoryMenu .dropdown-item >> text="${name}"
+
 Save Note In Editor
     [Arguments]    ${text}
     Wait For Note Editor

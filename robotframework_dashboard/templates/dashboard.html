@@ -1216,21 +1216,19 @@
                                 aria-labelledby="notes-categories-tab">
                                 <p><i>Categories group notes, for example by cause of the failure. A note has at most one
                                         category, and a bar with a note gets the category color as border.</i></p>
-                                <div class="row g-2 align-items-end mb-3">
-                                    <div class="col">
+                                <div class="note-category-grid note-category-new mb-3">
+                                    <div>
                                         <label for="newNoteCategoryName" class="form-label">New category</label>
                                         <input class="form-control form-control-sm" type="text" id="newNoteCategoryName"
                                             maxlength="40" placeholder="e.g. Product bug">
                                     </div>
-                                    <div class="col-auto">
+                                    <div>
                                         <label for="newNoteCategoryColor" class="form-label">Color</label>
                                         <input class="form-control form-control-sm form-control-color" type="color"
                                             id="newNoteCategoryColor">
                                     </div>
-                                    <div class="col-auto">
-                                        <button type="button" class="btn btn-outline-light btn-sm"
-                                            id="addNoteCategory">Add Category</button>
-                                    </div>
+                                    <button type="button" class="btn btn-outline-light btn-sm"
+                                        id="addNoteCategory">Add Category</button>
                                 </div>
                                 <div id="noteCategoriesList"></div>
                             </div>
@@ -1275,9 +1273,16 @@
                     <div class="modal-body">
                         <dl class="note-editor-target" id="noteEditorTarget"></dl>
                         <div class="mb-3">
-                            <label for="noteEditorCategory" class="form-label">Category</label>
+                            <label for="noteEditorCategoryButton" class="form-label" id="noteEditorCategoryLabel">Category</label>
                             <div class="d-flex gap-2">
-                                <select class="form-select form-select-sm" id="noteEditorCategory"></select>
+                                <div class="dropdown note-category-dropdown flex-grow-1">
+                                    <input type="hidden" id="noteEditorCategory" value="">
+                                    <button class="form-select form-select-sm text-start" type="button"
+                                        id="noteEditorCategoryButton" data-bs-toggle="dropdown" aria-expanded="false"
+                                        aria-labelledby="noteEditorCategoryLabel noteEditorCategoryButton"></button>
+                                    <ul class="dropdown-menu" id="noteEditorCategoryMenu"
+                                        aria-labelledby="noteEditorCategoryButton"></ul>
+                                </div>
                                 <button type="button" class="btn btn-outline-light btn-sm text-nowrap"
                                     id="noteEditorShowNewCategory">New Category</button>
                             </div>

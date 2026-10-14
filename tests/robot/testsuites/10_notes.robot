@@ -18,6 +18,10 @@ Test Teardown    Close Dashboard
 &{UNMATCHED_TEST}    Other.Suite.Some Test=&{UNMATCHED_NOTE}
 &{UNMATCHED_RUN}    1999-01-01 00:00:00=&{UNMATCHED_TEST}
 &{UNMATCHED_NOTES}    version=${1}    categories=@{EMPTY}    tests=&{UNMATCHED_RUN}
+&{PRODUCT_BUG}    id=cat-product    name=Product bug    color=#d62728
+&{ENVIRONMENT}    id=cat-environment    name=Environment    color=#17becf
+@{TWO_CATEGORIES}    ${PRODUCT_BUG}    ${ENVIRONMENT}
+&{NOTES_WITH_CATEGORIES}    version=${1}    categories=${TWO_CATEGORIES}    tests=&{EMPTY}
 
 
 *** Test Cases ***
@@ -99,6 +103,21 @@ Test Note With A New Category From The Test Table
     ${test_notes}    Get Dictionary Values    ${notes_of_run}[0]
     Should Be Equal    ${test_notes}[0][category]    ${notes}[categories][0][id]
     Browser.Get Text    css=#testTable .note-cell >> nth=0    *=    Test environment was down
+
+The Category Chooser Shows The Color Of Every Category
+    Store Notes In Browser    ${NOTES_WITH_CATEGORIES}
+    Open Tables Page
+    Click    selector=css=#testTable .note-edit-button >> nth=0
+    Wait For Note Editor
+    ${offered}    Get Note Editor Category Choices
+    Should Be Equal    ${offered}    ${{ [["No category", ""], ["Product bug", "#d62728"], ["Environment", "#17becf"]] }}
+    Choose Category In Note Editor    Environment
+    Browser.Get Text    id=noteEditorCategoryButton    ==    Environment
+    Save Note In Editor    Test environment was down
+    ${notes}    Get Notes From Local Storage
+    ${notes_of_run}    Get Dictionary Values    ${notes}[tests]
+    ${test_notes}    Get Dictionary Values    ${notes_of_run}[0]
+    Should Be Equal    ${test_notes}[0][category]    cat-environment
 
 Unmatched Notes Are Kept Until They Are Deleted In The Notes Modal
     Store Notes In Browser    ${UNMATCHED_NOTES}

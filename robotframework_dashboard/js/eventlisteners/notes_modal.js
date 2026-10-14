@@ -113,19 +113,18 @@ function render_note_categories() {
         container.innerHTML = `<p class="text-muted small mb-0">No categories yet.</p>`;
         return;
     }
-    container.innerHTML = notesStore.categories.map(category => `<div class="row g-2 align-items-center mb-2 note-category-row" data-category-id="${escape_html_for_merge(category.id)}">
-            <div class="col">
-                <input class="form-control form-control-sm" type="text" maxlength="${NOTE_CATEGORY_NAME_MAX_LENGTH}"
-                    value="${escape_html_for_merge(category.name)}" data-category-field="name" aria-label="Category name">
-            </div>
-            <div class="col-auto">
-                <input class="form-control form-control-sm form-control-color" type="color" value="${category.color}"
-                    data-category-field="color" aria-label="Category color">
-            </div>
-            <div class="col-auto small text-muted">${format_note_count(count_notes_with_category(notesStore, category.id))}</div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-outline-light" data-category-action="delete">Delete</button>
-            </div>
+    // theme.js swaps the outline button classes only once, so rows built later pick the class of the current theme
+    const buttonClass = document.documentElement.classList.contains("dark-mode") ? "btn-outline-light" : "btn-outline-dark";
+    const header = `<div class="note-category-grid note-category-header small text-muted">
+            <div>Category</div><div class="text-center">Usages</div><div>Color</div><div></div>
+        </div>`;
+    container.innerHTML = header + notesStore.categories.map(category => `<div class="note-category-grid note-category-row" data-category-id="${escape_html_for_merge(category.id)}">
+            <input class="form-control form-control-sm" type="text" maxlength="${NOTE_CATEGORY_NAME_MAX_LENGTH}"
+                value="${escape_html_for_merge(category.name)}" data-category-field="name" aria-label="Category name">
+            <div class="small text-muted text-center">${count_notes_with_category(notesStore, category.id)}</div>
+            <input class="form-control form-control-sm form-control-color" type="color" value="${category.color}"
+                data-category-field="color" aria-label="Category color">
+            <button type="button" class="btn btn-sm ${buttonClass}" data-category-action="delete">Delete</button>
         </div>`).join("");
 }
 

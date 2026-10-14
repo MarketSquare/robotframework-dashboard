@@ -55,7 +55,7 @@ The Test Notes widget follows the filters and the section filters of the Test se
 
 A category groups notes, for example by the cause of the failure. You define the categories yourself, there is no fixed list. Each category has a name and a color, and a note has at most one category.
 
-- To add a category while writing a note, click **New Category** in the note editor.
+- The category chooser in the note editor shows the color of every category. To add a category while writing a note, click **New Category** next to it.
 - To rename, recolor or delete categories, open the Notes button in the menu bar and go to the **Categories** tab.
 
 When you delete a category, the notes that used it keep their text. A note that only had the category and no text is removed.
