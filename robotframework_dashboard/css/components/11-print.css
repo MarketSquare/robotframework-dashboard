@@ -1,0 +1,192 @@
+/* Printing and "Save as PDF" from the browser's print dialog: the current page as shown on screen
+   (theme, filters, layout), without the navigation, editing icons and other on-screen controls.
+   Last in the cascade so these rules win over the screen styles. */
+@media print {
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  /* keep the theme colors of the cards; browsers drop backgrounds by default ("Background graphics").
+     The paper stays white in both themes: dark mode's color-scheme would paint the page margins dark. */
+  html {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    color-scheme: light !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  .container-fluid {
+    padding: 0;
+  }
+
+  #overview,
+  #dashboard,
+  #unified,
+  #compare,
+  #tables {
+    margin-bottom: 0;
+  }
+
+  /* on-screen chrome */
+  #navigation,
+  #sidenav,
+  #sidenavBackdrop,
+  .alert-container,
+  #notesStorageWarning,
+  #loading,
+  #modals,
+  .modal,
+  .modal-backdrop,
+  .tooltip-popup,
+  .graph-loading-overlay,
+  #filterLoadingOverlay,
+  .collapse-icon,
+  .graph-controls,
+  .section-header-icons,
+  .custom-widget-move-controls,
+  .table-section .d-flex > div:has(> .information),
+  .information-icon,
+  .info-icon-small,
+  .card-header .btn,
+  .note-edit-button,
+  .dt-column-order,
+  .dt-search,
+  .dt-length,
+  .dt-paging {
+    display: none !important;
+  }
+
+  /* section filters stay as a record of what the graphs show, printed as plain values */
+  .card-header select,
+  .section-filters select {
+    appearance: none;
+    border: none;
+    background: none;
+    padding: 0;
+    width: auto !important;
+    color: inherit;
+  }
+
+  .card,
+  .grid-stack-item-content,
+  .overview-card > .card {
+    box-shadow: none !important;
+    border: 1px solid var(--color-border);
+  }
+
+  /* a card that fits on a page is never split; a longer one still breaks between its rows */
+  .card {
+    break-inside: avoid;
+  }
+
+  .card-header {
+    break-after: avoid;
+  }
+
+  /* GridStack positions its tiles absolutely, which the browser cannot split over pages. Rebuild the
+     same layout as a CSS grid from the --gs-x/y/w/h variables GridStack sets on every tile; rows scale
+     with the page width (cqw) so tiles keep their on-screen proportions. */
+  .card:has(> .grid-stack) {
+    container-type: inline-size;
+  }
+
+  .grid-stack:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: minmax(calc((100cqw - 2rem) / 15), auto);
+    height: auto !important;
+    max-height: none;
+    /* the tiles carry their own margin; padding here would spill onto an extra page after a full last row */
+    padding-bottom: 0 !important;
+  }
+
+  .grid-stack > .grid-stack-item {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: auto !important;
+    height: auto !important;
+    grid-column: calc(var(--gs-x) + 1) / span var(--gs-w);
+    grid-row: calc(var(--gs-y) + 1) / span var(--gs-h);
+    padding: var(--gs-item-margin-top) var(--gs-item-margin-right) var(--gs-item-margin-bottom) var(--gs-item-margin-left);
+    break-inside: avoid;
+  }
+
+  /* in the flow instead of absolutely positioned (Chrome loses absolutely positioned tiles at page breaks),
+     and !important against the print rules of gridstack.css, which size tiles to their content */
+  .grid-stack > .grid-stack-item > .grid-stack-item-content {
+    position: static !important;
+    height: 100% !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .grid-stack-item-content .graph-body {
+    min-height: 0;
+    overflow: hidden !important;
+  }
+
+  /* a graph never stretches its row; a table does, so every row of it is printed instead of a scrolled box */
+  .grid-stack-item-content .graph-body:not(:has(table)) {
+    contain: size;
+  }
+
+  /* graphs with many bars scroll inside .vertical on screen; print the whole graph in the tile */
+  .grid-stack-item-content .graph-body .vertical {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  /* Chart.js does not redraw for print: scale the on-screen drawing down to the narrower page
+     (overview run cards), or into the tile without distorting it (graphs) */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .graph-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+  }
+
+  /* a fullscreen graph prints alone on one page */
+  body:has(.fullscreen) .card:not(:has(.fullscreen)),
+  body:has(.fullscreen) .card:has(.fullscreen) > .card-header,
+  body:has(.fullscreen) .grid-stack-item:not(:has(.fullscreen)) {
+    display: none !important;
+  }
+
+  /* container-type would make the card the containing block of the fixed tile */
+  body:has(.fullscreen) .card {
+    container-type: normal;
+    border: none;
+  }
+
+  .grid-stack > .grid-stack-item > .grid-stack-item-content.fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+  }
+
+  /* tables print every column of the current page instead of a horizontally scrolling box */
+  .dt-scroll-body,
+  .dt-scroll-head {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .table-section table {
+    font-size: 0.75rem;
+  }
+
+  .table-section tr {
+    break-inside: avoid;
+  }
+}

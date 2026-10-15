@@ -95,22 +95,3 @@ canvas {
   background-color: transparent;
 }
 
-@media print {
-  table {
-    width: 100%;
-    page-break-inside: auto;
-  }
-
-  .grid-stack-item-contentvas {
-    width: 100%;
-    overflow: hidden;
-    page-break-inside: avoid;
-    break-inside: avoid;
-    display: block;
-  }
-
-  canvas {
-    height: auto !important;
-    max-width: 100% !important;
-  }
-}

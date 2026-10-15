@@ -32,3 +32,12 @@ The Compare page enables side-by-side comparison of up to four test runs. It pre
 
 ## Tables Page
 The Tables page gives direct access to the raw data stored in the database. It displays detailed tables for runs, suites, tests, and keywords, making it perfect for debugging, verifying imported data, or performing ad-hoc analyses.
+
+## Printing and PDF
+Every page can be printed, or saved as a PDF with **Save as PDF** in the browser's print dialog (`Ctrl+P` / `Cmd+P`). The printout shows the page as it is on screen: the current theme, filters, layout, custom graphs, widgets and notes. The menu bar, the graph and layout buttons, and the table search and paging controls are left out. The section filters stay in the printout as plain values, so it records what the graphs show.
+
+- Pages print in landscape. Graphs keep the layout and proportions of the dashboard and are never split over two pages.
+- A collapsed section prints as its header only.
+- A graph opened in fullscreen prints alone, filling one page.
+- Tables print the rows of their current page, with all columns.
+- In dark mode the sections keep their dark background on white paper. Switch to the light theme first for an ink-friendly printout.

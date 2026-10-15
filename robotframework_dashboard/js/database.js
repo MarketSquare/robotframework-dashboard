@@ -1,4 +1,3 @@
-import { settings } from './variables/settings.js';
 import { runs, suites, tests, keywords } from './variables/data.js';
 
 // set default values
@@ -29,10 +28,6 @@ function setup_database_stats() {
                 </div>
             </div>
         </div>`
-
-    window.onbeforeprint = () => {
-        return new Promise(res => setTimeout(res, settings.show.duration + 500)); // allow rendering time
-    };
 }
 
 export { setup_database_stats};
