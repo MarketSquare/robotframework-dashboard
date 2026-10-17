@@ -1,5 +1,5 @@
+import { escape_html } from "../escape.js";
 import { runs, tests } from "../variables/data.js";
-import { escape_html_for_merge } from "../variables/globals.js";
 import { add_alert } from "../common.js";
 import { pencilSVG } from "../variables/svg.js";
 import { confirm_action } from "./confirm_modal.js";
@@ -49,11 +49,11 @@ function format_note_updated(updated) {
 
 function note_entry_cells(entry, runLabel) {
     const category = get_note_category(notesStore, entry.note.category);
-    return `<td>${escape_html_for_merge(runLabel)}</td>
-            <td class="notes-table-name">${escape_html_for_merge(entry.full_name)}</td>
+    return `<td>${escape_html(runLabel)}</td>
+            <td class="notes-table-name">${escape_html(entry.full_name)}</td>
             <td>${note_category_badge_html(category)}</td>
             <td class="notes-table-text">${linkify_note_text(entry.note.text)}</td>
-            <td class="text-nowrap">${escape_html_for_merge(format_note_updated(entry.note.updated))}</td>`;
+            <td class="text-nowrap">${escape_html(format_note_updated(entry.note.updated))}</td>`;
 }
 
 function by_newest_note(first, second) {
@@ -118,9 +118,9 @@ function render_note_categories() {
     const header = `<div class="note-category-grid note-category-header small text-muted">
             <div>Category</div><div class="text-center">Usages</div><div>Color</div><div></div>
         </div>`;
-    container.innerHTML = header + notesStore.categories.map(category => `<div class="note-category-grid note-category-row" data-category-id="${escape_html_for_merge(category.id)}">
+    container.innerHTML = header + notesStore.categories.map(category => `<div class="note-category-grid note-category-row" data-category-id="${escape_html(category.id)}">
             <input class="form-control form-control-sm" type="text" maxlength="${NOTE_CATEGORY_NAME_MAX_LENGTH}"
-                value="${escape_html_for_merge(category.name)}" data-category-field="name" aria-label="Category name">
+                value="${escape_html(category.name)}" data-category-field="name" aria-label="Category name">
             <div class="small text-muted text-center">${count_notes_with_category(notesStore, category.id)}</div>
             <input class="form-control form-control-sm form-control-color" type="color" value="${category.color}"
                 data-category-field="color" aria-label="Category color">
@@ -186,7 +186,7 @@ async function copy_notes() {
         await navigator.clipboard.writeText(export_notes_json());
         add_alert("Copied the notes to the clipboard!", "success");
     } catch (error) {
-        add_alert(`The notes could not be copied: ${escape_html_for_merge(error.message)}`, "danger");
+        add_alert(`The notes could not be copied: ${escape_html(error.message)}`, "danger");
     }
 }
 
@@ -196,7 +196,7 @@ function import_notes() {
     try {
         imported = sanitize_notes_store(JSON.parse(textArea.value));
     } catch (error) {
-        add_alert(`The notes could not be imported: ${escape_html_for_merge(error.message)}`, "danger", 10000);
+        add_alert(`The notes could not be imported: ${escape_html(error.message)}`, "danger", 10000);
         return;
     }
     const { saved, result } = apply_notes_change(store => merge_notes_stores(store, imported));
@@ -301,7 +301,7 @@ function setup_notes_modal() {
         const confirmed = await confirm_action("Remove the stored notes that could not be read? This cannot be undone.");
         if (!confirmed) return;
         const error = reset_notes_storage();
-        if (error) add_alert(escape_html_for_merge(error), "danger");
+        if (error) add_alert(escape_html(error), "danger");
         render_notes_modal();
         update_notes_storage_warning();
     });

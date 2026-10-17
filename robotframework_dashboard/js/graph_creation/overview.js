@@ -1,3 +1,4 @@
+import { escape_html } from "../escape.js";
 import { get_graph_config } from '../graph_data/graph_config.js';
 import {
     compare_to_average,
@@ -35,7 +36,6 @@ import {
     areGroupedProjectsPrepared,
     filteredRuns,
     overviewProjectNavFilter,
-    escape_html_for_merge,
 } from '../variables/globals.js';
 import { runs, use_logs } from '../variables/data.js';
 import { get_rerun_summary } from '../graph_data/helpers.js';
@@ -183,7 +183,7 @@ function generate_overview_card_html(
             .filter(key => !hiddenCustomFilters.includes(key))
             .map(key => `
                 <div class="run-card-custom-filter" title="Custom filter attribute">
-                    <span class="text-muted">${escape_html_for_merge(key)}:</span> ${escape_html_for_merge(parsedCustomFilters[key])}
+                    <span class="text-muted">${escape_html(key)}:</span> ${escape_html(parsedCustomFilters[key])}
                 </div>
             `).join('');
         if (customFilterRows) {
@@ -232,7 +232,8 @@ function generate_overview_card_html(
     }
     const totalStatsHeader = isTotalStats ? `<div>Run Stats</div>` : '';
     const totalStatsAverage = isTotalStats ? `<div>Average Run Duration</div>` : '';
-    const logLinkHtml = log_name ? `<a href="#" onclick="event.stopPropagation(); open_log_from_path('${log_path}'); return false;" target="_blank">${log_name}</a>` : '';
+    // opened by the delegated listener of setup_overview_log_links, the path stays data
+    const logLinkHtml = log_name ? `<a href="#" class="run-card-log-link" data-log-path="${escape_html(log_path)}">${escape_html(log_name)}</a>` : '';
     // relative run time (e.g. "3 hours 20 minutes ago") with the exact datetime as tooltip
     const relativeRunTime = isTotalStats ? '' : format_relative_time(runStart);
     const runTimeHtml = relativeRunTime
@@ -620,7 +621,7 @@ function create_project_run_card(run, projectName, runIndex, runNumber, passRate
     const status = isTotalStats
         ? (failedCount > 0 ? 'failed' : (skippedCount > 0 && passedCount === 0 ? 'skipped' : 'passed'))
         : get_run_status(run);
-    const logPath = (!isTotalStats && use_logs) ? transform_file_path(run.path).replaceAll('\\', '\\\\') : '';
+    const logPath = (!isTotalStats && use_logs) ? transform_file_path(run.path) : '';
     const logName = (!isTotalStats && use_logs) ? 'log.html' : '';
     const isDark = document.documentElement.classList.contains("dark-mode");
     const svg = isDark ? clockSVG("white") : clockSVG("black");

@@ -1,7 +1,7 @@
+import { escape_html } from "../escape.js";
 import { settings } from "../variables/settings.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { format_duration, strip_tz_suffix } from "../common.js";
-import { escape_html_for_merge } from "../variables/globals.js";
 import {
     barConfig,
     lineConfig,
@@ -252,13 +252,13 @@ function build_custom_graph_chart_config(spec, result) {
 }
 
 function build_custom_graph_table_html(spec, result) {
-    const xTitle = escape_html_for_merge(get_custom_graph_axis_title(spec) || "");
-    const headers = result.series.map(item => `<th>${escape_html_for_merge(item.label)}</th>`).join("");
+    const xTitle = escape_html(get_custom_graph_axis_title(spec) || "");
+    const headers = result.series.map(item => `<th>${escape_html(item.label)}</th>`).join("");
     const rows = result.xLabels.map((label, index) => {
         const cells = result.series
-            .map(item => `<td>${escape_html_for_merge(format_custom_graph_value(item.values[index], result.meta.valueType))}</td>`)
+            .map(item => `<td>${escape_html(format_custom_graph_value(item.values[index], result.meta.valueType))}</td>`)
             .join("");
-        return `<tr><td>${escape_html_for_merge(label)}</td>${cells}</tr>`;
+        return `<tr><td>${escape_html(label)}</td>${cells}</tr>`;
     }).join("");
     return `<div class="custom-graph-table-wrapper">
                 <table class="table table-sm custom-graph-table">

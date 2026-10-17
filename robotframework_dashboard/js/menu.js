@@ -7,7 +7,7 @@ import { create_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
 import { setup_theme } from "./theme.js";
 import { setup_graph_view_buttons } from "./eventlisteners/graph_view_buttons.js";
-import { setup_overview_order_filters } from "./eventlisteners/overview_listeners.js";
+import { setup_overview_order_filters, setup_overview_log_links } from "./eventlisteners/overview_listeners.js";
 import { setup_section_order, setup_graph_order, setup_overview_section_layout_buttons } from "./layout.js";
 import { setup_information_popups } from "./information.js";
 import { prepare_overview, update_overview_prefix_display } from "./graph_creation/overview.js";
@@ -150,6 +150,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
                 setup_overview_localstorage();
                 setup_overview_section_layout_buttons();
                 setup_overview_order_filters();
+                setup_overview_log_links();
             }
             setup_section_order();
             setup_graph_order();

@@ -1,5 +1,5 @@
+import { escape_html } from "../escape.js";
 import { debounce } from "../common.js";
-import { escape_html_for_merge } from "../variables/globals.js";
 import { settings } from "../variables/settings.js";
 import {
     CUSTOM_GRAPH_SOURCES,
@@ -45,11 +45,11 @@ function get_custom_graph_button_class() {
 }
 
 function custom_graph_option(value, label, selected) {
-    return `<option value="${escape_html_for_merge(value)}"${selected ? " selected" : ""}>${escape_html_for_merge(label)}</option>`;
+    return `<option value="${escape_html(value)}"${selected ? " selected" : ""}>${escape_html(label)}</option>`;
 }
 
 function custom_graph_datalist(id, values) {
-    return `<datalist id="${id}">${values.map(value => `<option value="${escape_html_for_merge(value)}"></option>`).join("")}</datalist>`;
+    return `<datalist id="${id}">${values.map(value => `<option value="${escape_html(value)}"></option>`).join("")}</datalist>`;
 }
 
 // distinct values present in the data, offered as suggestions while typing a filter or key;
@@ -73,7 +73,7 @@ function get_custom_graph_suggestions(field, kvKey = undefined) {
 }
 
 function build_custom_graph_value_input(condition, field, index) {
-    const value = escape_html_for_merge(condition.value ?? "");
+    const value = escape_html(condition.value ?? "");
     const attributes = `class="form-control form-control-sm custom-graph-filter-value" data-index="${index}" aria-label="Value"`;
     if (field.type === "status") {
         const options = Object.entries(CUSTOM_GRAPH_STATUS_LABELS)
@@ -106,7 +106,7 @@ function build_custom_graph_filter_row(condition, index) {
     const keyListId = `customGraphFilterKeys${index}`;
     const keyInput = field.type === "kv"
         ? `<input type="text" class="form-control form-control-sm custom-graph-filter-key" data-index="${index}" aria-label="Key"
-                placeholder="Key" value="${escape_html_for_merge(condition.key ?? "")}" list="${keyListId}">${custom_graph_datalist(keyListId, get_custom_graph_suggestions(field))}`
+                placeholder="Key" value="${escape_html(condition.key ?? "")}" list="${keyListId}">${custom_graph_datalist(keyListId, get_custom_graph_suggestions(field))}`
         : "";
     return `<div class="custom-graph-filter-row" data-index="${index}">
                 <select class="form-select form-select-sm custom-graph-filter-field" data-index="${index}" aria-label="Field">${fieldOptions}</select>
@@ -129,7 +129,7 @@ function render_custom_graph_group(prefix, group, noneLabel) {
     keyInput.value = group?.key ?? "";
     const keyList = document.getElementById(`customGraph${prefix}KeyOptions`);
     keyList.innerHTML = field?.type === "kv"
-        ? get_custom_graph_suggestions(field).map(key => `<option value="${escape_html_for_merge(key)}"></option>`).join("")
+        ? get_custom_graph_suggestions(field).map(key => `<option value="${escape_html(key)}"></option>`).join("")
         : "";
     bucketSelect.hidden = field?.type !== "datetime";
     bucketSelect.innerHTML = CUSTOM_GRAPH_DATE_BUCKETS
@@ -224,7 +224,7 @@ function update_custom_graph_save_button() {
 function render_custom_graph_preview() {
     const errors = update_custom_graph_save_button();
     document.getElementById("customGraphErrors").innerHTML = errors
-        .map(error => `<div>${escape_html_for_merge(error)}</div>`).join("");
+        .map(error => `<div>${escape_html(error)}</div>`).join("");
     const body = document.getElementById("customGraphPreviewBody");
     if (!body.offsetParent) return;
     draw_custom_graph_into(body, customGraphDraft, CUSTOM_GRAPH_PREVIEW_ID, { forceCreate: true });
@@ -243,9 +243,9 @@ function render_custom_graph_gallery() {
         .map(preset => {
             const viz = preset.spec ? CUSTOM_GRAPH_VIZ_TYPES.find(item => item.key === preset.spec.viz.type)?.label : "";
             return `<button type="button" class="custom-graph-preset" data-preset="${preset.key}">
-                        <span class="custom-graph-preset-title">${escape_html_for_merge(preset.label)}</span>
-                        <span class="custom-graph-preset-description">${escape_html_for_merge(preset.description)}</span>
-                        ${viz ? `<span class="custom-graph-preset-chart">${escape_html_for_merge(viz)}</span>` : ""}
+                        <span class="custom-graph-preset-title">${escape_html(preset.label)}</span>
+                        <span class="custom-graph-preset-description">${escape_html(preset.description)}</span>
+                        ${viz ? `<span class="custom-graph-preset-chart">${escape_html(viz)}</span>` : ""}
                     </button>`;
         }).join("");
     document.getElementById("customGraphGallery").innerHTML = cards;
@@ -280,14 +280,14 @@ function apply_custom_graph_json() {
         parsed = JSON.parse(textarea.value);
     } catch (error) {
         customGraphJsonError = `Invalid JSON: ${error.message}`;
-        errorsEl.innerHTML = `<div>${escape_html_for_merge(customGraphJsonError)}</div>`;
+        errorsEl.innerHTML = `<div>${escape_html(customGraphJsonError)}</div>`;
         update_custom_graph_save_button();
         return;
     }
     customGraphJsonError = "";
     const { spec, errors } = validate_custom_graph_spec({ ...parsed, section: customGraphSection });
     customGraphDraft = spec;
-    errorsEl.innerHTML = errors.map(error => `<div>${escape_html_for_merge(error)}</div>`).join("");
+    errorsEl.innerHTML = errors.map(error => `<div>${escape_html(error)}</div>`).join("");
     update_custom_graph_save_button();
 }
 

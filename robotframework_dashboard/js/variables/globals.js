@@ -1,3 +1,4 @@
+import { escape_html } from '../escape.js';
 // UI defaults
 const CARDS_PER_ROW = 3;
 
@@ -48,14 +49,6 @@ var onlyFailedFolders = false; // suite folder donut
 // Merge profiles modal
 let lastMergeResult = {};
 
-function escape_html_for_merge(str) {
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-}
-
 // Each entry describes one checkbox row in the merge settings panel
 const filterRows = [
     {
@@ -63,7 +56,7 @@ const filterRows = [
         label: 'Run',
         fields: ['runs'],
         present: p => p.runs !== undefined,
-        valueHtml: p => escape_html_for_merge(p.runs),
+        valueHtml: p => escape_html(p.runs),
     },
     {
         key: 'runTags',
@@ -71,7 +64,7 @@ const filterRows = [
         fields: ['runTags', 'tagMode'],
         present: p => p.runTags !== undefined,
         valueHtml: p => {
-            const checked = (p.runTags || []).filter(t => t.checked).map(t => escape_html_for_merge(t.id));
+            const checked = (p.runTags || []).filter(t => t.checked).map(t => escape_html(t.id));
             const mode = p.tagMode ?? (p.useOrTags ? 'OR' : 'AND');
             return (checked.length ? checked.join(', ') : '<em>none</em>') + ` <em>(${mode})</em>`;
         },
@@ -82,7 +75,7 @@ const filterRows = [
         fields: ['projectVersions'],
         present: p => p.projectVersions !== undefined,
         valueHtml: p => {
-            const checked = (p.projectVersions || []).filter(v => v.checked).map(v => escape_html_for_merge(v.value));
+            const checked = (p.projectVersions || []).filter(v => v.checked).map(v => escape_html(v.value));
             return checked.length ? checked.join(', ') : '<em>none</em>';
         },
     },
@@ -91,35 +84,35 @@ const filterRows = [
         label: 'From',
         fields: ['fromDate', 'fromTime'],
         present: p => p.fromDate !== undefined || p.fromTime !== undefined,
-        valueHtml: p => escape_html_for_merge(`${p.fromDate || ''} ${p.fromTime || ''}`.trim()),
+        valueHtml: p => escape_html(`${p.fromDate || ''} ${p.fromTime || ''}`.trim()),
     },
     {
         key: 'toDate',
         label: 'To',
         fields: ['toDate', 'toTime'],
         present: p => p.toDate !== undefined || p.toTime !== undefined,
-        valueHtml: p => escape_html_for_merge(`${p.toDate || ''} ${p.toTime || ''}`.trim()),
+        valueHtml: p => escape_html(`${p.toDate || ''} ${p.toTime || ''}`.trim()),
     },
     {
         key: 'metadata',
         label: 'Metadata',
         fields: ['metadata'],
         present: p => p.metadata !== undefined,
-        valueHtml: p => escape_html_for_merge(p.metadata),
+        valueHtml: p => escape_html(p.metadata),
     },
     {
         key: 'amount',
         label: 'Amount',
         fields: ['amount'],
         present: p => p.amount !== undefined,
-        valueHtml: p => escape_html_for_merge(String(p.amount)),
+        valueHtml: p => escape_html(String(p.amount)),
     },
     {
         key: 'suitePath',
         label: 'Suite Path',
         fields: ['suitePath'],
         present: p => p.suitePath !== undefined,
-        valueHtml: p => escape_html_for_merge(String(p.suitePath || 'All')),
+        valueHtml: p => escape_html(String(p.suitePath || 'All')),
     },
     {
         key: 'customFilters',
@@ -129,9 +122,9 @@ const filterRows = [
         valueHtml: p => {
             const modes = p.customFilterModes || {};
             const parts = Object.entries(p.customFilters || {}).map(([dim, items]) => {
-                const checked = (items || []).filter(v => v.checked).map(v => escape_html_for_merge(v.value));
+                const checked = (items || []).filter(v => v.checked).map(v => escape_html(v.value));
                 const mode = modes[dim] || 'OR';
-                return `${escape_html_for_merge(dim)}: ${checked.length ? checked.join('|') : '<em>none</em>'} <em>(${mode})</em>`;
+                return `${escape_html(dim)}: ${checked.length ? checked.join('|') : '<em>none</em>'} <em>(${mode})</em>`;
             });
             return parts.length ? parts.join(', ') : '<em>none</em>';
         },
@@ -199,6 +192,5 @@ export {
     lastMergeResult,
     filterRows,
     defaultFaviconHref,
-    escape_html_for_merge,
     set_fullscreen_state
 };

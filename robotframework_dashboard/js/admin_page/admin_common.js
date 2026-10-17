@@ -20,7 +20,22 @@ function close_alert() {
     document.getElementById("alertContainer").innerHTML = ""
 }
 
+// copy of js/escape.js, the admin bundle only includes the files in js/admin_page/
+function escape_html(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+// DataTables renders cell data as HTML, so the displayed text is escaped
+const textRender = (data, type) => type === "display" ? escape_html(data) : data;
+
 export {
     add_alert,
     close_alert,
+    escape_html,
+    textRender,
 };

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@js/variables/data.js', () => ({ runs: [], suites: [] }));
-vi.mock('@js/variables/globals.js', () => ({ escape_html_for_merge: (value) => value, filteredSuites: [], filteredTests: [] }));
+vi.mock('@js/variables/globals.js', () => ({ filteredSuites: [], filteredTests: [] }));
 vi.mock('@js/filter/availability.js', () => ({ schedule_filter_option_availability_refresh: () => {} }));
 
 import { apply_suite_path_run_filter } from '@js/filter/suite_path.js';

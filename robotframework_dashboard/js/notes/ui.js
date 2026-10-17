@@ -1,6 +1,7 @@
+import { escape_html } from "../escape.js";
 import { settings, get_run_label } from "../variables/settings.js";
 import { runs, tests, use_logs } from "../variables/data.js";
-import { filteredRuns, gridEditMode, escape_html_for_merge } from "../variables/globals.js";
+import { filteredRuns, gridEditMode } from "../variables/globals.js";
 import { add_alert, update_graphs_with_loading } from "../common.js";
 import {
     NOTE_MAX_LENGTH,
@@ -99,7 +100,7 @@ function refresh_note_views() {
 function apply_notes_change(change) {
     const { error, result } = update_notes(change);
     if (error) {
-        add_alert(escape_html_for_merge(error), "danger", 10000);
+        add_alert(escape_html(error), "danger", 10000);
         return { saved: false, result };
     }
     refresh_note_views();
@@ -109,7 +110,7 @@ function apply_notes_change(change) {
 // a Bootstrap dropdown instead of a <select>: a native option can't show the category color in every browser
 function note_category_label(category) {
     if (!category) return `<span class="note-color-dot note-color-dot-empty"></span><span class="note-category-name">No category</span>`;
-    return `<span class="note-color-dot" style="--note-color: ${category.color}"></span><span class="note-category-name">${escape_html_for_merge(category.name)}</span>`;
+    return `<span class="note-color-dot" style="--note-color: ${category.color}"></span><span class="note-category-name">${escape_html(category.name)}</span>`;
 }
 
 function select_note_editor_category(categoryId) {
@@ -125,7 +126,7 @@ function select_note_editor_category(categoryId) {
 
 function fill_note_editor_categories(selectedId) {
     const items = [null, ...notesStore.categories].map(category =>
-        `<li><button type="button" class="dropdown-item" data-category-id="${category ? escape_html_for_merge(category.id) : ""}">${note_category_label(category)}</button></li>`);
+        `<li><button type="button" class="dropdown-item" data-category-id="${category ? escape_html(category.id) : ""}">${note_category_label(category)}</button></li>`);
     document.getElementById("noteEditorCategoryMenu").innerHTML = items.join("");
     select_note_editor_category(selectedId);
 }
@@ -142,12 +143,12 @@ function open_note_editor(target) {
         message: target.message ?? get_note_test_message(target.run_start, target.full_name),
     };
     const note = get_target_note(noteEditorTarget);
-    const rows = [`<dt>Run</dt><dd>${escape_html_for_merge(noteEditorTarget.runLabel)}</dd>`];
-    rows.push(`<dt>Test</dt><dd>${escape_html_for_merge(noteEditorTarget.full_name)}</dd>`);
+    const rows = [`<dt>Run</dt><dd>${escape_html(noteEditorTarget.runLabel)}</dd>`];
+    rows.push(`<dt>Test</dt><dd>${escape_html(noteEditorTarget.full_name)}</dd>`);
     if (noteEditorTarget.message) {
         const message = noteEditorTarget.message;
         const short = message.length > 300 ? `${message.substring(0, 300)}...` : message;
-        rows.push(`<dt>Message</dt><dd class="note-editor-message">${escape_html_for_merge(short)}</dd>`);
+        rows.push(`<dt>Message</dt><dd class="note-editor-message">${escape_html(short)}</dd>`);
     }
     document.getElementById("noteEditorTarget").innerHTML = rows.join("");
     document.getElementById("noteEditorModalLabel").innerText = `${note ? "Edit" : "Add"} Note`;
@@ -399,7 +400,7 @@ function setup_notes() {
     setup_note_context_menu();
     setup_notes_storage_warning();
     if (notesLoadError && notesEnabled) {
-        add_alert(`The stored notes could not be read: ${escape_html_for_merge(notesLoadError)}. Open the Notes modal to reset them.`, "danger", 15000);
+        add_alert(`The stored notes could not be read: ${escape_html(notesLoadError)}. Open the Notes modal to reset them.`, "danger", 15000);
     }
 }
 

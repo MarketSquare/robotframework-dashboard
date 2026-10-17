@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@js/variables/globals.js', () => ({ inFullscreen: false, escape_html_for_merge: (value) => String(value) }));
+vi.mock('@js/variables/globals.js', () => ({ inFullscreen: false }));
 vi.mock('@js/variables/settings.js', () => ({ settings: { show: { axisTitles: true, dateLabels: true, legends: true } } }));
 vi.mock('@js/variables/chartconfig.js', () => import('../mocks/chartconfig.js'));
 vi.mock('@js/graph_data/graph_config.js', () => ({ get_graph_config: () => ({ options: { plugins: {}, scales: { x: {}, y: {} } } }) }));

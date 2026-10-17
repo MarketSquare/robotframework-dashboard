@@ -1,4 +1,5 @@
-import { filteredTests, escape_html_for_merge } from "../variables/globals.js";
+import { escape_html } from "../escape.js";
+import { filteredTests } from "../variables/globals.js";
 import { settings, get_run_label } from "../variables/settings.js";
 import { get_test_section_predicate } from "../graph_data/helpers.js";
 import { notesStore, get_raw_run_start, get_test_note, get_note_category } from "../notes/store.js";
@@ -38,7 +39,7 @@ const testNotesColumns = [
         render: (data, type, row, meta) => {
             const test = testNotesRows[meta.row];
             if (type !== "display" || !test) return data;
-            return `<span title="${escape_html_for_merge(test.full_name)}">${escape_html_for_merge(data)}</span>`;
+            return `<span title="${escape_html(test.full_name)}">${escape_html(data)}</span>`;
         },
     },
     { title: "status", type: "string" },
@@ -47,7 +48,7 @@ const testNotesColumns = [
         render: (data, type) => {
             if (type !== "display") return data;
             const short = data.length > 200 ? `${data.substring(0, 200)}...` : data;
-            return `<span class="test-notes-message" title="${escape_html_for_merge(data)}">${escape_html_for_merge(short)}</span>`;
+            return `<span class="test-notes-message" title="${escape_html(data)}">${escape_html(short)}</span>`;
         },
     },
     {
@@ -83,7 +84,7 @@ function update_test_notes_summary() {
     for (const [id, count] of counts) {
         const category = get_note_category(notesStore, id);
         if (!category) continue;
-        parts.push(`<span class="note-summary-item"><span class="note-color-dot" style="--note-color: ${category.color}"></span>${escape_html_for_merge(category.name)} ${count}</span>`);
+        parts.push(`<span class="note-summary-item"><span class="note-color-dot" style="--note-color: ${category.color}"></span>${escape_html(category.name)} ${count}</span>`);
     }
     if (withoutCategory > 0) parts.push(`<span>No category ${withoutCategory}</span>`);
     summary.innerHTML = parts.join(`<span class="note-summary-separator">&middot;</span>`);

@@ -1,5 +1,6 @@
+import { escape_html } from "../escape.js";
 import { runs, suites } from '../variables/data.js';
-import { escape_html_for_merge, filteredSuites, filteredTests } from '../variables/globals.js';
+import { filteredSuites, filteredTests } from '../variables/globals.js';
 import { schedule_filter_option_availability_refresh } from './availability.js';
 
 function get_suite_path_children(parentPath) {
@@ -36,8 +37,8 @@ function setup_suite_path_navigator(path) {
         parts.forEach((part, i) => segments.push({ label: part, path: parts.slice(0, i + 1).join(".") }));
         breadcrumbEl.innerHTML = segments.map((seg, i) => {
             const isLast = i === segments.length - 1;
-            const escaped = escape_html_for_merge(seg.label);
-            const escapedPath = escape_html_for_merge(seg.path);
+            const escaped = escape_html(seg.label);
+            const escapedPath = escape_html(seg.path);
             if (isLast) return `<span class="fw-semibold">${escaped}</span>`;
             return `<a class="suite-path-nav-link text-decoration-none" data-path="${escapedPath}" style="cursor: pointer;">${escaped}</a>`
                 + `<span class="text-muted mx-1">›</span>`;
@@ -54,7 +55,7 @@ function setup_suite_path_navigator(path) {
     } else {
         childrenEl.innerHTML = children.map(child => {
             const label = child.split(".").pop();
-            return `<button class="btn btn-outline-light btn-sm suite-path-child-btn" data-path="${escape_html_for_merge(child)}" style="margin-bottom: 3px;">${escape_html_for_merge(label)}</button>`;
+            return `<button class="btn btn-outline-light btn-sm suite-path-child-btn" data-path="${escape_html(child)}" style="margin-bottom: 3px;">${escape_html(label)}</button>`;
         }).join("");
         childrenEl.querySelectorAll(".suite-path-child-btn").forEach(btn => {
             btn.addEventListener("click", () => setup_suite_path_navigator(btn.dataset.path));

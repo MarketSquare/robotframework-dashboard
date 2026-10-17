@@ -1,3 +1,4 @@
+import { escape_html } from "../escape.js";
 import { settings, get_run_label } from "../variables/settings.js";
 import { set_local_storage_item } from "../localstorage.js";
 import { add_alert, generate_id } from "../common.js";
@@ -6,7 +7,6 @@ import { open_log_from_label } from "../log.js";
 import { get_transformed_data } from "../filter/pipeline.js";
 import { get_suite_data_exclusion, get_keyword_select_key, get_test_section_predicate } from "../graph_data/helpers.js";
 import {
-    escape_html_for_merge,
     set_fullscreen_state,
     filteredRuns,
     filteredSuites,
@@ -125,7 +125,7 @@ function create_custom_graph_chart(canvas, config, logClick) {
 
 function show_custom_graph_message(body, chartId, message) {
     destroy_custom_graph_chart(chartId);
-    body.innerHTML = `<div class="custom-graph-message">${escape_html_for_merge(message)}</div>`;
+    body.innerHTML = `<div class="custom-graph-message">${escape_html(message)}</div>`;
 }
 
 // draws one spec into a graph body: a chart, its data table, or a message explaining why there
@@ -227,7 +227,7 @@ function toggle_custom_graph_fullscreen(id, entering) {
 }
 
 function build_custom_graph_html(graph, editMode) {
-    const id = escape_html_for_merge(graph.id);
+    const id = escape_html(graph.id);
     const controls = editMode
         ? `<a class="edit-custom-graph information" data-title="Edit graph" data-graph-id="${id}"></a>
            <a class="duplicate-custom-graph information" data-title="Duplicate graph" data-graph-id="${id}"></a>
@@ -239,7 +239,7 @@ function build_custom_graph_html(graph, editMode) {
            <a class="fullscreen-graph information" id="customGraph-${id}-Fullscreen" data-title="Fullscreen" data-graph-id="${id}"></a>
            <a class="close-graph information" id="customGraph-${id}-Close" data-title="Close" data-graph-id="${id}" hidden></a>`;
     return `<div class="graph-header">
-                <h6 id="customGraph-${id}-title">${escape_html_for_merge(graph.title)}</h6>
+                <h6 id="customGraph-${id}-title">${escape_html(graph.title)}</h6>
                 <div class="graph-controls custom-graph-controls">${controls}</div>
             </div>
             <div class="graph-body custom-graph-body" id="customGraph-${id}-body"></div>`;

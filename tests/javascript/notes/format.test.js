@@ -1,14 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// globals.js reads the document when it loads, so only its escape helper is provided
-vi.mock('@js/variables/globals.js', () => ({
-    escape_html_for_merge: (str) => String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;'),
-}));
-
 const { linkify_note_text, note_cell_html, note_search_text } = await import('@js/notes/format.js');
 
 describe('notes format', () => {

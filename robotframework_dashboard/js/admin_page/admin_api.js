@@ -1,4 +1,4 @@
-import { add_alert } from "./admin_common.js";
+import { add_alert, escape_html, textRender } from "./admin_common.js";
 import { confirm_action } from "./admin_eventlisteners.js";
 
 let runTable;
@@ -163,7 +163,7 @@ async function remove_all_outputs() {
             });
             send_request("DELETE", "/remove-outputs", body, "removeAllOutputsSpinner")
         } catch (e) {
-            add_alert("Failed to remove all outputs: " + e, "danger")
+            add_alert("Failed to remove all outputs: " + escape_html(e), "danger")
         }
     }
 }
@@ -193,17 +193,17 @@ function get_outputs() {
                 runTable = new DataTable("#runTable", {
                     columns: [
                         { title: "Run Index" },
-                        { title: "Run Start" },
-                        { title: "Run Name" },
-                        { title: "Run Alias" },
-                        { title: "Run Tags" },
-                        { title: "Custom Filters" },
+                        { title: "Run Start", render: textRender },
+                        { title: "Run Name", render: textRender },
+                        { title: "Run Alias", render: textRender },
+                        { title: "Run Tags", render: textRender },
+                        { title: "Custom Filters", render: textRender },
                     ],
                     data: data,
                 });
             }
         } else {
-            add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
         }
     };
     xhr.send();
@@ -226,11 +226,11 @@ function send_request(method, endpoint, body, spinner, notifications = true) {
                     if (response.console.includes("ERROR")) {
                         add_alert("SUCCESS: The processing was handled but some errors occurred, see the browser console for more details!", "warning")
                     } else {
-                        add_alert(response.message, "success")
+                        add_alert(escape_html(response.message), "success")
                     }
                 }
             } else {
-                add_alert(response.message, "danger")
+                add_alert(escape_html(response.message), "danger")
                 console.log(response.console)
             }
             if (document.body.dataset.noAutoupdate !== "true") {
@@ -239,7 +239,7 @@ function send_request(method, endpoint, body, spinner, notifications = true) {
             }
         } else {
             document.getElementById(spinner).hidden = true
-            add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
         }
     };
     xhr.send(body);
@@ -265,13 +265,13 @@ function get_logs() {
                 logTable = new DataTable("#logTable", {
                     columns: [
                         { title: "Log Index" },
-                        { title: "Log Name" },
+                        { title: "Log Name", render: textRender },
                     ],
                     data: data,
                 });
             }
         } else {
-            add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
         }
     };
     xhr.send();
@@ -333,7 +333,7 @@ async function remove_all_logs() {
             });
             send_request("DELETE", "/remove-log", body, "removeAllLogsSpinner")
         } catch (e) {
-            add_alert("Failed to remove all logs: " + e, "danger")
+            add_alert("Failed to remove all logs: " + escape_html(e), "danger")
         }
     }
 }
@@ -350,13 +350,13 @@ function refresh_dashboard() {
             const response = JSON.parse(xhr.responseText);
             if (response.success == "1") {
                 console.log(response.console)
-                add_alert(response.message, "success")
+                add_alert(escape_html(response.message), "success")
             } else {
-                add_alert(response.message, "danger")
+                add_alert(escape_html(response.message), "danger")
                 console.log(response.console)
             }
         } else {
-            add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
         }
     };
     xhr.send(JSON.stringify({}));

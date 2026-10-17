@@ -3,6 +3,7 @@ import { parse_test_attempts } from "../graph_data/helpers.js";
 import { settings } from "../variables/settings.js";
 import { notesStore, get_raw_run_start, get_test_note } from "../notes/store.js";
 import { note_search_text, note_cell_html } from "../notes/format.js";
+import { escape_html } from "../escape.js";
 
 // the note column renders its edit button from the source row, DataTables numbers the rows in the
 // order they were added (also after clear), so meta.row is the index into this array
@@ -56,7 +57,15 @@ function _get_exception_table_data() {
 // detection, because it can be numeric or free text depending on the project.
 function run_start_column() { return { title: "run", type: "date" }; }
 function number_column(title) { return { title, type: "num" }; }
-function text_column(title, type = "string") { return { title, type }; }
+// DataTables renders cell data as HTML, so the displayed text is escaped
+function text_render(data, type) { return type === "display" ? escape_html(data) : data; }
+function text_column(title, type = "string") { return { title, type, render: text_render }; }
+// a message starting with *HTML* is shown as HTML without the marker, like in the Robot Framework log
+function message_render(data, type) {
+    if (type !== "display") return data;
+    const message = String(data ?? "");
+    return message.startsWith("*HTML*") ? message.slice(6).trimStart() : escape_html(message);
+}
 function test_note_column() {
     return {
         title: "note", type: "string",
@@ -71,7 +80,7 @@ function test_note_column() {
 const runColumns = [
     run_start_column(), text_column("full_name"), text_column("name"), number_column("total"),
     number_column("passed"), number_column("failed"), number_column("skipped"), number_column("elapsed_s"),
-    text_column("start_time"), { title: "version" }, text_column("tags"), text_column("alias"), text_column("metadata"),
+    text_column("start_time"), { title: "version", render: text_render }, text_column("tags"), text_column("alias"), text_column("metadata"),
     text_column("custom_filters"),
 ];
 const suiteColumns = [
@@ -82,7 +91,7 @@ const suiteColumns = [
 const testColumns = [
     run_start_column(), text_column("full_name"), text_column("name"),
     number_column("passed"), number_column("failed"), number_column("skipped"), number_column("elapsed_s"),
-    text_column("start_time"), text_column("message", "html"), text_column("tags"), text_column("alias"), text_column("id"),
+    text_column("start_time"), { title: "message", type: "html", render: message_render }, text_column("tags"), text_column("alias"), text_column("id"),
     text_column("attempts", "string-utf8"),
 ];
 const keywordColumns = [

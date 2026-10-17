@@ -1,5 +1,6 @@
 import { show_loading_overlay, hide_loading_overlay } from "../common.js";
 import { update_menu } from "../menu.js";
+import { open_log_from_path } from "../log.js";
 import { clear_all_filters, set_filter_show_current_version } from "../filter/controls.js";
 import { create_overview_latest_graphs, set_filter_show_current_project } from "../graph_creation/overview.js";
 
@@ -80,4 +81,18 @@ function setup_overview_order_filters() {
     });
 }
 
-export { attach_run_card_version_listener, setup_overview_order_filters };
+// one delegated listener for the log links on the run cards, which are rebuilt on every update
+let overviewLogLinksSetup = false;
+function setup_overview_log_links() {
+    if (overviewLogLinksSetup) return;
+    overviewLogLinksSetup = true;
+    document.addEventListener("click", (event) => {
+        const link = event.target.closest?.(".run-card-log-link");
+        if (!link) return;
+        event.preventDefault();
+        event.stopPropagation();
+        open_log_from_path(link.dataset.logPath);
+    });
+}
+
+export { attach_run_card_version_listener, setup_overview_order_filters, setup_overview_log_links };

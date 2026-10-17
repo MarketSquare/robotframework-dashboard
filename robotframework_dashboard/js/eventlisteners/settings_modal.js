@@ -1,6 +1,6 @@
+import { escape_html } from "../escape.js";
 import { keywords } from "../variables/data.js";
 import { settings } from "../variables/settings.js";
-import { escape_html_for_merge } from "../variables/globals.js";
 import { add_alert } from "../common.js";
 import { set_local_storage_item } from "../localstorage.js";
 import { setup_data_and_graphs } from "../menu.js";
@@ -81,8 +81,8 @@ function setup_settings_modal() {
             const item = document.createElement("li");
             item.className = "list-group-item list-group-item-action d-flex small";
             item.innerHTML = `
-                <input class="form-check-input me-1" type="checkbox" value="${escape_html_for_merge(dimName)}" id="${checkBoxId}" ${isChecked ? "checked" : ""}>
-                <label class="form-check-label ms-2" for="${checkBoxId}">${escape_html_for_merge(dimName)}</label>
+                <input class="form-check-input me-1" type="checkbox" value="${escape_html(dimName)}" id="${checkBoxId}" ${isChecked ? "checked" : ""}>
+                <label class="form-check-label ms-2" for="${checkBoxId}">${escape_html(dimName)}</label>
             `;
             container.appendChild(item);
             item.querySelector("input").addEventListener("change", e => {
