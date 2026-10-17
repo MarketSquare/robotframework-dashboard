@@ -1,6 +1,7 @@
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
-import { generate_id, apply_bg_class, fill_color_picker, build_move_controls_html } from './common.js';
+import { generate_id, apply_bg_class, fill_color_picker, build_move_controls_html, add_alert } from './common.js';
+import { escape_html, is_safe_url } from './escape.js';
 import { gridEditMode } from './variables/globals.js';
 import { STAT_WIDGET_COLORS, STAT_WIDGET_BG_COLORS } from './variables/statwidgetdefs.js';
 import { apply_widget_control_icons } from './theme.js';
@@ -11,16 +12,16 @@ function strip_protocol(url) {
 
 function build_link_widget_html(widget, editMode) {
     const deleteBtn = editMode
-        ? `<a class="delete-custom-link-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${widget.id}"></a>`
+        ? `<a class="delete-custom-link-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${escape_html(widget.id)}"></a>`
         : '';
     // In non-edit mode wrap in a clickable div (not an <a> to avoid GridStack drag conflicts)
     const clickable = editMode ? '' : ' link-widget-clickable';
     const moveBtns = editMode ? build_move_controls_html(deleteBtn) : '';
-    const displayUrl = strip_protocol(widget.url);
-    return `<div class="link-widget-inner${clickable}" data-href="${widget.url}" data-newtab="${widget.newTab ? '1' : '0'}">
+    const displayUrl = strip_protocol(String(widget.url ?? ''));
+    return `<div class="link-widget-inner${clickable}" data-href="${escape_html(widget.url)}" data-newtab="${widget.newTab ? '1' : '0'}">
                 ${moveBtns}
-                <div class="link-widget-label ${widget.color}" id="customLinkWidget-${widget.id}-label">${widget.label}</div>
-                <div class="link-widget-url">${displayUrl}</div>
+                <div class="link-widget-label ${escape_html(widget.color)}" id="customLinkWidget-${escape_html(widget.id)}-label">${escape_html(widget.label)}</div>
+                <div class="link-widget-url">${escape_html(displayUrl)}</div>
             </div>`;
 }
 
@@ -65,7 +66,8 @@ function wire_link_click(itemEl, widget) {
         // Do not navigate if we are in edit mode (e.g. after toggling without re-render)
         if (gridEditMode) return;
         const url = widget.url;
-        if (!url) return;
+        // widgets also come from stored settings and JSON configs, so check the url again
+        if (!url || !is_safe_url(url)) return;
         if (widget.newTab) {
             window.open(url, '_blank', 'noopener,noreferrer');
         } else {
@@ -112,6 +114,10 @@ function setup_add_link_widget_modal() {
         const bgColor  = bgBtn?.dataset.color || '';
 
         if (!url) return;
+        if (!is_safe_url(url)) {
+            add_alert("Only http, https and relative links are allowed", "warning");
+            return;
+        }
 
         const widget = add_custom_link_widget(section, label, url, newTab, color, bgColor);
 

@@ -177,7 +177,7 @@ function set_filter_show_current_version(version) {
     overviewProjectNavFilter.version = version;
     const projectVersionList = document.getElementById("projectVersionList");
     document.getElementById("projectVersionInputItemAll").checked = false;
-    projectVersionList.querySelector(`input[value="${version}"]`).checked = true;
+    projectVersionList.querySelector(`input[value="${CSS.escape(version)}"]`).checked = true;
     update_filter_active_indicator("projectVersionInputItemAll", "filterVersionSelectedIndicator");
 }
 
