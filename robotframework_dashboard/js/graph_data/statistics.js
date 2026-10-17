@@ -169,19 +169,23 @@ function get_test_statistics_data(filteredTests) {
     const [runStarts, datasets] = [[], []];
     const testMetaMap = {};
     var labels = [];
+    // lookups instead of includes/indexOf: this runs for every test row of every run
+    const seenLabels = new Set();
+    const runAxisByRunStart = new Map();
     for (const test of filteredTests) {
         if (_should_skip_test(test, filters)) continue;
         const testLabel = _get_test_label(test);
-        if (!labels.includes(testLabel)) {
+        if (!seenLabels.has(testLabel)) {
+            seenLabels.add(testLabel);
             labels.push(testLabel);
         }
         // a column per run: the label of a run can be shared by other runs (run name labels)
         const runId = test.run_start;
-
-        if (!runStarts.includes(runId)) {
+        if (!runAxisByRunStart.has(runId)) {
+            runAxisByRunStart.set(runId, runStarts.length);
             runStarts.push(runId);
         }
-        const runAxis = runStarts.indexOf(runId);
+        const runAxis = runAxisByRunStart.get(runId);
         const attempts = parse_test_attempts(test);
         const statusName = resolve_test_status(test, attempts, filters.rerunView);
         const markRerun = attempts.length > 0 && filters.rerunView !== "final";

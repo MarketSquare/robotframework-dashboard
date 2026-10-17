@@ -58,9 +58,18 @@ function get_exceptions_data(graphType, filteredData) {
         var datasets = [];
         let runAxis = 0;
         const pointMeta = {};
+        // the entries of every label grouped by run once, instead of filtered per run and label
+        const entriesByLabelAndRun = new Map(labels.map(label => {
+            const byRun = new Map();
+            for (const entry of data.get(label) || []) {
+                if (!byRun.has(entry.run_start)) byRun.set(entry.run_start, []);
+                byRun.get(entry.run_start).push(entry);
+            }
+            return [label, byRun];
+        }));
         for (const runStart of runStarts) {
             for (const label of labels) {
-                const entries = (data.get(label) || []).filter(e => e.run_start === runStart);
+                const entries = entriesByLabelAndRun.get(label).get(runStart) ?? [];
                 if (entries.length > 0) {
                     const entry = entries[0];
                     pointMeta[`${label}::${runAxis}`] = {

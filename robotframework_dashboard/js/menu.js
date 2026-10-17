@@ -2,7 +2,7 @@ import { setup_filtered_data_and_filters } from "./filter/pipeline.js";
 import { clear_overview_project_navigation_filter } from "./filter/controls.js";
 import { areGroupedProjectsPrepared, overviewNavStore, tablesNavStore } from "./variables/globals.js";
 import { space_to_camelcase, fade_in, fade_out } from "./common.js";
-import { set_local_storage_item, setup_overview_localstorage } from "./localstorage.js";
+import { set_local_storage_item, setup_overview_localstorage, with_batched_settings_write } from "./localstorage.js";
 import { create_dashboard_graphs } from "./graph_creation/all.js";
 import { settings } from "./variables/settings.js";
 import { setup_theme } from "./theme.js";
@@ -78,11 +78,11 @@ function neighbor_indices(bestIndex, length) {
 }
 
 function update_menu(item) {
-    ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
+    with_batched_settings_write(() => ["overview", "dashboard", "compare", "tables"].forEach(menuItem => {
         const id = `menu${menuItem.charAt(0).toUpperCase() + menuItem.slice(1)}`;
         set_local_storage_item(`menu.${menuItem}`, (item === id));
         document.getElementById(id).classList.toggle("active", id === item);
-    });
+    }));
     // the overview shows all projects, so a project filter that was applied by clicking an
     // overview card is dropped again when navigating back to it (issue #348)
     if (item === "menuOverview") { clear_overview_project_navigation_filter(); }
@@ -355,32 +355,35 @@ function setup_overview_section_menu_buttons() {
             if (!settings.show.prefixes && name.startsWith('project_')) {
                 name = name.replace(/^project_/, '');
             }
-            btn.textContent = name;
+            if (btn.textContent !== name) btn.textContent = name;
         });
         const bestIndex = compute_best_visible_index(sections);
         const indices = neighbor_indices(bestIndex, sections.length);
 
+        // this runs on every scroll and the navbar MutationObserver rebuilds the sidebar on every change,
+        // so only what really changed is written: the same value or the same position is still a mutation
         // Reorder the visible buttons (up to 3) so they sit in section order inside the track
-        indices.forEach(idx => {
-            const btn = buttonMap.get(sections[idx].id);
-            if (!btn) return;
-            btn.hidden = !showButtons;
-            overviewTrack.appendChild(btn);
-        });
+        const visibleButtons = indices.map(idx => buttonMap.get(sections[idx].id)).filter(Boolean);
+        const trackTail = [...overviewTrack.children].slice(-visibleButtons.length);
+        if (visibleButtons.some((btn, index) => trackTail[index] !== btn)) {
+            visibleButtons.forEach(btn => overviewTrack.appendChild(btn));
+        }
 
         sections.forEach((section, idx) => {
             const btn = buttonMap.get(section.id);
             if (!btn) return;
-            btn.hidden = !showButtons || !indices.includes(idx);
+            const hidden = !showButtons || !indices.includes(idx);
+            if (btn.hidden !== hidden) btn.hidden = hidden;
             const isActive = showButtons && idx === bestIndex;
             btn.classList.toggle("active", isActive);
             if (isActive) {
-                btn.setAttribute("aria-current", "true");
-            } else {
+                if (btn.getAttribute("aria-current") !== "true") btn.setAttribute("aria-current", "true");
+            } else if (btn.hasAttribute("aria-current")) {
                 btn.removeAttribute("aria-current");
             }
         });
-        overviewTrack.hidden = !showButtons || indices.length === 0;
+        const trackHidden = !showButtons || indices.length === 0;
+        if (overviewTrack.hidden !== trackHidden) overviewTrack.hidden = trackHidden;
     };
 
     window.addEventListener("scroll", updateVisibleButtons, { passive: true });

@@ -38,13 +38,13 @@ function get_heatmap_graph_data(filteredData) {
     };
     const colorRGB = baseColors[type] || baseColors['All'];
     if (data.length == 0) { return [[], []] }
+    const maxV = Math.max(...data.map(d => d.v));
     const graphData = {
         datasets: [{
             label: 'Test Execution Heatmap',
             data: data,
             backgroundColor(ctx) {
                 const v = ctx.dataset.data[ctx.dataIndex].v;
-                const maxV = Math.max(...ctx.dataset.data.map(d => d.v));
                 let alpha = v / maxV;
                 alpha = Math.max(alpha, 0.2);
                 return `rgba(${colorRGB[0]}, ${colorRGB[1]}, ${colorRGB[2]}, ${alpha})`;

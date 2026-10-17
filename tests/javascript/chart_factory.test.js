@@ -15,10 +15,22 @@ function make_canvas() {
 }
 
 let canvas;
+let hiddenSection;
+let observed;
 beforeEach(() => {
     canvas = make_canvas();
+    hiddenSection = false;
+    canvas.id = 'runStatisticsGraph';
+    canvas.closest = () => (hiddenSection ? {} : null);
+    observed = [];
     openLogFromLabel.mockClear();
     globalThis.window = {};
+    globalThis.document = { getElementById: () => canvas };
+    globalThis.ResizeObserver = class {
+        constructor(callback) { this.callback = callback; }
+        observe(target) { observed.push({ target, observer: this }); }
+        unobserve() {}
+    };
     globalThis.Chart = class {
         constructor() { this.canvas = canvas; }
         destroy() {}
@@ -43,5 +55,21 @@ describe('create_chart', () => {
         create_chart('runStatisticsGraph', () => ({}), false);
         canvas.click();
         expect(openLogFromLabel).not.toHaveBeenCalled();
+    });
+});
+
+describe('create_chart in a hidden section', () => {
+    it('builds the chart only once the section is shown', () => {
+        const build = vi.fn(() => ({}));
+        hiddenSection = true;
+        create_chart('runStatisticsGraph', build);
+        expect(build).not.toHaveBeenCalled();
+        expect(window.runStatisticsGraph).toBeUndefined();
+        // the section is expanded: the canvas gets a size
+        hiddenSection = false;
+        const { target, observer } = observed[0];
+        observer.callback([{ target, contentRect: { width: 400, height: 300 } }]);
+        expect(build).toHaveBeenCalledTimes(1);
+        expect(window.runStatisticsGraph).toBeDefined();
     });
 });

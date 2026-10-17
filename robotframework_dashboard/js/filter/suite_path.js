@@ -66,12 +66,21 @@ function setup_suite_path_navigator(path) {
     schedule_filter_option_availability_refresh();
 }
 
+// the availability counts filter with the same path and suites once per filter category
+let suitePathRunsCache = { path: null, suites: null, runStarts: null };
+
 function apply_suite_path_run_filter(runs, selectedPath, suiteList) {
     if (!selectedPath || selectedPath === "All") return runs;
 
-    const matches = (full_name) => full_name === selectedPath || full_name.startsWith(selectedPath + ".");
-    const validRunStarts = new Set(suiteList.filter(s => matches(s.full_name)).map(s => s.run_start));
-    return runs.filter(r => validRunStarts.has(r.run_start));
+    if (suitePathRunsCache.path !== selectedPath || suitePathRunsCache.suites !== suiteList) {
+        const matches = (full_name) => full_name === selectedPath || full_name.startsWith(selectedPath + ".");
+        suitePathRunsCache = {
+            path: selectedPath,
+            suites: suiteList,
+            runStarts: new Set(suiteList.filter(s => matches(s.full_name)).map(s => s.run_start)),
+        };
+    }
+    return runs.filter(r => suitePathRunsCache.runStarts.has(r.run_start));
 }
 
 // Run-level part of the suite path filter: removes runs that have no suite matching the path.

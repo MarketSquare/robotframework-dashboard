@@ -67,10 +67,29 @@ function write_settings() {
     }
 }
 
+// every write stringifies all settings (layouts, the logo), so code that sets several items at
+// once wraps them in with_batched_settings_write and the settings are written once at the end
+let batchedWriteDepth = 0;
+let batchedWritePending = false;
+
+function with_batched_settings_write(change) {
+    batchedWriteDepth++;
+    try {
+        return change();
+    } finally {
+        batchedWriteDepth--;
+        if (batchedWriteDepth === 0 && batchedWritePending) {
+            batchedWritePending = false;
+            write_settings();
+        }
+    }
+}
+
 // function to set an item in localstorage based on a dot-separated path
 function set_local_storage_item(path, value) {
     set_nested_setting(settings, path, value);
-    write_settings();
+    if (batchedWriteDepth > 0) batchedWritePending = true;
+    else write_settings();
 }
 
 // function to set a nested setting based on a dot-separated path
@@ -316,6 +335,7 @@ function setup_overview_localstorage() {
 }
 
 export {
+    with_batched_settings_write,
     sanitize_graph_types,
     setup_local_storage,
     set_local_storage_item,

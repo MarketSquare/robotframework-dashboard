@@ -192,14 +192,12 @@ function generate_overview_card_html(
     }
     // for project bars
     const runsForProject = projects_by_name[projectName] ?? projects_by_tag[projectName] ?? [];
-    const projectHasVersions = runsForProject.some(r => r.project_version != null && r.project_version !== "None");
+    const projectHasVersions = project_runs_have_versions(runsForProject);
     // for overview statistics
     // Preserve the original project name (used for logic like tag-detection),
     // but compute a display name that omits the 'project_' prefix when prefixes are hidden.
     const originalProjectName = projectName;
-    const projectEverHasVersions = runs
-        .filter(r => r.name === originalProjectName)
-        .some(r => r.project_version != null && r.project_version !== "None");
+    const projectEverHasVersions = project_name_ever_has_versions(originalProjectName);
     const displayProjectName = settings.show.prefixes ? projectName : projectName.replace(/^project_/, '');
     projectName = displayProjectName;
     let cardTitle = `
@@ -578,8 +576,33 @@ function create_overview_total_graphs(preFilteredRuns = null) {
 }
 
 // create a run card that will be displayed within each project section in overview
+// every run card asked these of all runs of its project, which made the overview quadratic in the runs:
+// the project run lists are rebuilt per filter pass (so cached per list), all runs never change
+const runListHasVersions = new WeakMap();
+let namesWithVersions = null;
+
+const durationSums = new WeakMap();
+
+function get_durations_sum(durations) {
+    if (!durationSums.has(durations)) durationSums.set(durations, durations.reduce((a, b) => a + parseFloat(b), 0));
+    return durationSums.get(durations);
+}
+
+function has_project_version(run) {
+    return run.project_version != null && run.project_version !== "None";
+}
+
+function project_runs_have_versions(projectRuns) {
+    if (!runListHasVersions.has(projectRuns)) runListHasVersions.set(projectRuns, projectRuns.some(has_project_version));
+    return runListHasVersions.get(projectRuns);
+}
+
+function project_name_ever_has_versions(name) {
+    if (!namesWithVersions) namesWithVersions = new Set(runs.filter(has_project_version).map(run => run.name));
+    return namesWithVersions.has(name);
+}
+
 function create_project_run_card(run, projectName, runIndex, runNumber, passRate, percent, durations, isForOverview = false, isTotalStats = false, sectionPrefix = 'overview') {
-    const avg = arr => arr.reduce((a, b) => a + parseFloat(b), 0) / arr.length;
     const passedCount = isTotalStats ? run.passed_runs : run.passed;
     const failedCount = isTotalStats ? run.failed_runs : run.failed;
     const skippedCount = isTotalStats ? run.skipped_runs : run.skipped;
@@ -588,9 +611,12 @@ function create_project_run_card(run, projectName, runIndex, runNumber, passRate
     const duration_rounded = format_duration(Number(duration));
     // durations are in run order and the cards newest first, so runIndex counts from the end; a total
     // stats card compares the average with every run. By position, so runs with the same duration stay in
+    // from the sum of all durations, which the cards of a project share, instead of a sum per card
     const excludedIndex = isTotalStats ? -1 : durations.length - 1 - runIndex;
-    const durationsForAvg = durations.filter((_, index) => index !== excludedIndex);
-    const average = durationsForAvg.length ? avg(durationsForAvg) : duration;
+    const total = get_durations_sum(durations);
+    const otherCount = excludedIndex >= 0 && excludedIndex < durations.length ? durations.length - 1 : durations.length;
+    const otherTotal = otherCount < durations.length ? total - parseFloat(durations[excludedIndex]) : total;
+    const average = otherCount > 0 ? otherTotal / otherCount : duration;
     const status = isTotalStats
         ? (failedCount > 0 ? 'failed' : (skippedCount > 0 && passedCount === 0 ? 'skipped' : 'passed'))
         : get_run_status(run);
@@ -818,16 +844,16 @@ function update_overview_prefix_display() {
 // prevents regeneration of run cards, just changes class for duration highlight
 function update_duration_comparison_for_project(projectName, projectRuns, percentage) {
     const projectRunsReversed = projectRuns.slice().reverse();
+    const durations = projectRunsReversed.map(r => parseFloat(r.elapsed_s));
+    const total = durations.reduce((a, b) => a + b, 0);
     projectRunsReversed.forEach((run, idx) => {
         const comparesElement = document.getElementById(`${projectName}RunCardCompares${idx}`);
         const comparesValueElement = document.getElementById(`${projectName}RunCardComparesValue${idx}`);
         if (!comparesElement || !comparesValueElement) return;
 
         const duration = parseFloat(comparesValueElement.getAttribute("value"));
-        const durationsForAvg = projectRunsReversed
-            .map(r => parseFloat(r.elapsed_s))
-            .filter((_, i) => i !== idx);
-        const averageDuration = durationsForAvg.reduce((a, b) => a + b, 0) / durationsForAvg.length;
+        // the average of the other runs, from the total instead of a new sum per card
+        const averageDuration = (total - durations[idx]) / (durations.length - 1);
         comparesElement.className = compare_to_average(duration, averageDuration, percentage);
     });
 }

@@ -32,6 +32,15 @@ function get_transformed_data(name) {
     return transformedDataCache.data[name];
 }
 
+// the transformed data in wall-clock order, cached like the data itself. The filters after the
+// sort only drop rows, so filtering a sorted copy gives the order a sort of the result would
+function get_sorted_transformed_data(name) {
+    const key = `${name}:sorted`;
+    const transformed = get_transformed_data(name);
+    if (!(key in transformedDataCache.data)) transformedDataCache.data[key] = sort_wall_clock(transformed);
+    return transformedDataCache.data[key];
+}
+
 // the stored run_start of every row: hiding milliseconds or timezones can give two runs the same
 // run_start, so the filters match rows to runs on this one (and notes are keyed on it).
 // The transforms map row by row, so indexes still line up
@@ -66,10 +75,10 @@ function apply_custom_filter_visibility() {
 function setup_filtered_data_and_filters() {
     apply_custom_filter_visibility();
     filteredRuns = get_transformed_data("runs");
-    filteredSuites = get_transformed_data("suites");
-    filteredTests = get_transformed_data("tests");
-    filteredKeywords = get_transformed_data("keywords");
-    filteredExceptions = get_transformed_data("exceptions");
+    filteredSuites = get_sorted_transformed_data("suites");
+    filteredTests = get_sorted_transformed_data("tests");
+    filteredKeywords = get_sorted_transformed_data("keywords");
+    filteredExceptions = get_sorted_transformed_data("exceptions");
     // determine filteredRuns with all run-level filters (suite path + amount last)
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
@@ -86,14 +95,10 @@ function setup_filtered_data_and_filters() {
     filteredExceptions = filter_data(filteredExceptions);
     // narrow suites/tests to the selected path prefix (runs already reduced above)
     filter_suite_path_data();
-    // re-sort all filtered data by wall-clock run_start so mixed-timezone datasets
-    // appear in the correct chronological order on graphs (timestamps may have been
-    // converted or had their offsets stripped above, so re-sort here is the source of truth)
+    // sort by wall-clock run_start so mixed-timezone datasets appear in the correct chronological
+    // order on graphs. The runs are sorted after the amount filter, which keeps the last runs in
+    // their stored order; the other data came sorted from get_sorted_transformed_data
     filteredRuns = sort_wall_clock(filteredRuns);
-    filteredSuites = sort_wall_clock(filteredSuites);
-    filteredTests = sort_wall_clock(filteredTests);
-    filteredKeywords = sort_wall_clock(filteredKeywords);
-    filteredExceptions = sort_wall_clock(filteredExceptions);
     // set titles with amount of filtered items
     const runAmount = Object.keys(filteredRuns).length
     const message = `<h6>showing ${runAmount} of ${filteredAmount} runs</h6>`
@@ -317,8 +322,14 @@ function get_custom_filter_value(run, dimName) {
     return value === undefined ? "None" : value;
 }
 
+// the runs never change after the data is decoded and about 8 places ask for the dimensions on every
+// filter pass, so they are collected once; callers only read the result
+let customFilterDimensionsCache = { runs: null, dimensions: null };
+
 function collect_custom_filter_dimensions() {
+    if (customFilterDimensionsCache.runs === runs) return customFilterDimensionsCache.dimensions;
     const dimensions = {};
+    customFilterDimensionsCache = { runs, dimensions };
     for (const run of runs) {
         if (!run.custom_filters) continue;
         const parsed = parse_custom_filters(run.custom_filters);
@@ -462,9 +473,15 @@ function filter_metadata(filteredRuns) {
 }
 
 // function to filter suites/tests/keywords based on the already filtered runs
+let filterDataRunsCache = { runs: null, runStarts: null };
+
 function filter_data(data) {
     const stored_run_start = (row) => row.raw_run_start ?? row.run_start;
-    const validRunStarts = new Set(filteredRuns.map(stored_run_start));
+    // the suites, tests, keywords and exceptions are filtered against the same runs
+    if (filterDataRunsCache.runs !== filteredRuns) {
+        filterDataRunsCache = { runs: filteredRuns, runStarts: new Set(filteredRuns.map(stored_run_start)) };
+    }
+    const validRunStarts = filterDataRunsCache.runStarts;
     let filteredData = data.filter(v => validRunStarts.has(stored_run_start(v)));
     if (filteredData.length > 0 && "owner" in filteredData[0]) {
         const libraries = settings.libraries || {};

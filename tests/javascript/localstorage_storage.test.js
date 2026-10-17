@@ -11,7 +11,7 @@ vi.mock('@js/common.js', async () => ({
 // the settings defaults read the window size at import
 globalThis.window ??= { innerWidth: 1920, innerHeight: 1080, matchMedia: () => ({ matches: false }) };
 
-const { sanitize_graph_types, set_local_storage_item } = await import('@js/localstorage.js');
+const { sanitize_graph_types, set_local_storage_item, with_batched_settings_write } = await import('@js/localstorage.js');
 const { settings } = await import('@js/variables/settings.js');
 
 beforeEach(() => addAlert.mockClear());
@@ -34,6 +34,23 @@ describe('set_local_storage_item', () => {
         expect(() => set_local_storage_item('branding.title', 'Nightly')).not.toThrow();
         expect(settings.branding.title).toBe('Nightly');
         expect(addAlert).toHaveBeenCalledWith('Settings are not saved, the browser storage is full.', 'danger');
+        delete globalThis.localStorage;
+    });
+});
+
+describe('with_batched_settings_write', () => {
+    it('writes the settings once for several items, also when nested', () => {
+        const setItem = vi.fn();
+        globalThis.localStorage = { setItem, getItem: () => null };
+        with_batched_settings_write(() => {
+            set_local_storage_item('menu.overview', false);
+            with_batched_settings_write(() => set_local_storage_item('menu.dashboard', true));
+            expect(setItem).not.toHaveBeenCalled();
+        });
+        expect(setItem).toHaveBeenCalledTimes(1);
+        expect(JSON.parse(setItem.mock.calls[0][1]).menu.dashboard).toBe(true);
+        set_local_storage_item('menu.tables', false);
+        expect(setItem).toHaveBeenCalledTimes(2);
         delete globalThis.localStorage;
     });
 });

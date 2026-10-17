@@ -1,5 +1,5 @@
 import { settings } from "./variables/settings.js";
-import { set_local_storage_item } from "./localstorage.js";
+import { set_local_storage_item, with_batched_settings_write } from "./localstorage.js";
 import { graphMetadata } from "./variables/graphmetadata.js";
 import { space_to_camelcase, add_alert } from "./common.js";
 import { gridEditMode } from "./variables/globals.js";
@@ -561,7 +561,13 @@ function customize_layout() {
     add_alert("You can now change your layout. Don't forget to save!", "info")
 }
 
+// one settings write for the whole layout instead of one per grid and list
 function save_layout() {
+    with_batched_settings_write(save_layout_settings);
+    add_alert("Layout has been updated and saved to settings in local storage!", "success")
+}
+
+function save_layout_settings() {
     document.getElementById("customizeLayout").hidden = false;
     document.getElementById("saveLayout").hidden = true;
     document.getElementById("mainNavItems").classList.remove("navbar-disabled");
@@ -669,8 +675,6 @@ function save_layout() {
     if (shownOverviewSections.length > 0) {
         set_local_storage_item("view.overview.sections.show", shownOverviewSections)
     }
-
-    add_alert("Layout has been updated and saved to settings in local storage!", "success")
 }
 
 function setup_edit_mode_icons(hidden) {

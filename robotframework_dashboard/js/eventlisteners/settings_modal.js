@@ -17,7 +17,13 @@ const LOGO_MAX_SIZE = 256;
 // function to create customized view eventlisteners
 function setup_settings_modal() {
     // function to catch the closing of the settings modal
+    // closing the modal without a change keeps the page as it is instead of rebuilding every graph
+    let settingsOnOpen = null;
+    document.getElementById("settingsModal").addEventListener("show.bs.modal", function () {
+        settingsOnOpen = JSON.stringify(settings);
+    });
     document.getElementById("settingsModal").addEventListener("hidden.bs.modal", function () {
+        if (settingsOnOpen !== null && JSON.stringify(settings) === settingsOnOpen) return;
         const scrollY = window.scrollY;
         apply_notes_enabled();
         // the rebuild hides the pages, which collapses the page height and loses the scroll position

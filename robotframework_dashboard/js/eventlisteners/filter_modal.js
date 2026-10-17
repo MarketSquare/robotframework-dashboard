@@ -1,7 +1,7 @@
 import { runs, filteredAmount, filteredAmountDefault, server, no_auto_update } from "../variables/data.js";
 import { settings } from "../variables/settings.js";
 import { showingRunTags, showingProjectVersionDialogue } from "../variables/globals.js";
-import { add_alert, show_loading_overlay, hide_loading_overlay } from "../common.js";
+import { add_alert, debounce, show_loading_overlay, hide_loading_overlay } from "../common.js";
 import { update_dashboard_graphs } from "../graph_creation/all.js";
 import { setup_filtered_data_and_filters } from "../filter/pipeline.js";
 import {
@@ -49,6 +49,13 @@ function update_filters_button_indicator() {
     indicator.style.display = anyActive ? "inline-block" : "none";
 }
 
+// every control of the filter modal, so closing it without a change can skip the re-filter
+function capture_filter_modal_state() {
+    return JSON.stringify([...document.querySelectorAll("#filtersModal input, #filtersModal select")]
+        .map(el => (el.type === "checkbox" || el.type === "radio" ? el.checked : el.value)));
+}
+let filterModalStateOnOpen = null;
+
 // function to setup filter modal eventlisteners
 function setup_filter_modal() {
     // eventlistener to catch the closing of the filter modal
@@ -56,6 +63,7 @@ function setup_filter_modal() {
     document.getElementById("filtersModal").addEventListener("hide.bs.modal", function () {
         // no more writing into the modal while it fades out
         set_filter_modal_open(false);
+        if (filterModalStateOnOpen !== null && capture_filter_modal_state() === filterModalStateOnOpen) return;
         show_loading_overlay();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -69,6 +77,7 @@ function setup_filter_modal() {
     // also picking up filters that were set while the modal was closed (overview drill down)
     document.getElementById("filtersModal").addEventListener("show.bs.modal", function () {
         set_filter_modal_open(true);
+        filterModalStateOnOpen = capture_filter_modal_state();
     });
     // Chart.js cannot size a canvas inside a hidden element, so the histogram waits for the modal
     // to be on screen instead of drawing on show.bs.modal
@@ -238,16 +247,14 @@ function setup_filter_modal() {
         update_filters_button_indicator();
     });
     const filterModal = document.getElementById("filtersModal");
-    filterModal.addEventListener("change", function () {
+    const refresh_filter_modal_state = () => {
         update_profile_select_display();
         update_filters_button_indicator();
         schedule_filter_option_availability_refresh();
-    });
-    filterModal.addEventListener("input", function () {
-        update_profile_select_display();
-        update_filters_button_indicator();
-        schedule_filter_option_availability_refresh();
-    });
+    };
+    filterModal.addEventListener("change", refresh_filter_modal_state);
+    // typing in a text or number field fires on every key; the profile comparison waits for a pause
+    filterModal.addEventListener("input", debounce(refresh_filter_modal_state, 150));
 }
 
 export { setup_filter_modal, update_filters_button_indicator };
