@@ -218,3 +218,19 @@ The Page Behind An Open Modal Does Not Scroll
     ${after}    Evaluate JavaScript    ${None}
     ...    () => new Promise(res => requestAnimationFrame(() => requestAnimationFrame(() => res(window.scrollY))))
     Should Be Equal    ${before}    ${after}    msg=the page scrolled behind the open modal
+
+Rerun View Change Rebuilds The Test Graphs Once After Page Switches
+    [Documentation]    Every page switch rebuilds the page and runs the setup of the graph controls again. The
+    ...    rerun view select is in the template, so its change listener used to be added again on every
+    ...    switch and one change then rebuilt the test graphs once per switch.
+    FOR    ${_}    IN RANGE    3
+        Open Compare Page
+        Open Dashboard Page
+        Wait For Dashboard Idle
+    END
+    Evaluate JavaScript    ${None}
+    ...    () => { window.rerunViewUpdates = 0; const original = window.update_graphs_with_loading;
+    ...    window.update_graphs_with_loading = (...args) => { window.rerunViewUpdates++; return original(...args); }; }
+    Set Test Statistics Rerun View    final
+    ${updates}    Evaluate JavaScript    ${None}    () => window.rerunViewUpdates
+    Should Be Equal As Integers    ${updates}    1

@@ -134,20 +134,38 @@ function build_profile_from_checks() {
     return profile;
 }
 
-function profiles_match(saved, current) {
-    for (const key of Object.keys(saved)) {
-        const s = saved[key];
-        const c = current[key];
-        if (Array.isArray(s)) {
-            if (!Array.isArray(c) || s.length !== c.length) return false;
-            for (let i = 0; i < s.length; i++) {
-                if (JSON.stringify(s[i]) !== JSON.stringify(c[i])) return false;
-            }
-        } else {
-            if (String(s) !== String(c)) return false;
-        }
+// checkbox lists (run tags, versions, custom filter values) are compared on what is checked, so a
+// different order or an option that appeared in newer data, unchecked, still matches the profile
+function is_checkbox_list(value) {
+    return Array.isArray(value) && value.every(item => item && typeof item === "object" && "checked" in item);
+}
+
+function checked_options(list) {
+    return new Set(list.filter(item => item.checked).map(item => String(item.id ?? item.value)));
+}
+
+function filter_values_match(saved, current) {
+    if (is_checkbox_list(saved)) {
+        if (!is_checkbox_list(current)) return false;
+        const savedChecked = checked_options(saved);
+        const currentChecked = checked_options(current);
+        return savedChecked.size === currentChecked.size && [...savedChecked].every(option => currentChecked.has(option));
     }
-    return true;
+    if (Array.isArray(saved)) {
+        return Array.isArray(current) && saved.length === current.length
+            && saved.every((item, index) => JSON.stringify(item) === JSON.stringify(current[index]));
+    }
+    // custom filters and their modes are objects keyed by dimension
+    if (saved && typeof saved === "object") {
+        if (!current || typeof current !== "object") return false;
+        const keys = new Set([...Object.keys(saved), ...Object.keys(current)]);
+        return [...keys].every(key => filter_values_match(saved[key], current[key]));
+    }
+    return String(saved) === String(current);
+}
+
+function profiles_match(saved, current) {
+    return Object.keys(saved).every(key => filter_values_match(saved[key], current[key]));
 }
 
 function find_matching_profile() {
@@ -216,7 +234,7 @@ function apply_filter_profile(profile, name) {
         const tagMap = {};
         profile.runTags.forEach(t => tagMap[t.id] = t.checked);
         tagInputs.forEach(el => {
-            tag=el.id.replace(/^runTagCheckBox/, "")
+            const tag = el.id.replace(/^runTagCheckBox/, "");
             if (tagMap[tag] !== undefined) el.checked = tagMap[tag];
         });
         update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
@@ -360,6 +378,7 @@ export {
     enter_profile_edit_mode,
     exit_profile_edit_mode,
     populate_filter_profile_select,
+    profiles_match,
     save_filter_profile_to_storage,
     update_active_profile,
     update_profile_select_display,

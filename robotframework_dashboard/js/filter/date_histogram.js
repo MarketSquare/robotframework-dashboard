@@ -1,3 +1,4 @@
+import { get_run_status } from '../common.js';
 import { settings } from '../variables/settings.js';
 import { failedBackgroundBorderColor, failedConfig, passedBackgroundBorderColor, passedConfig, skippedBackgroundBorderColor, skippedConfig } from '../variables/chartconfig.js';
 import { build_date_range, get_run_start_date } from './pipeline.js';
@@ -89,12 +90,6 @@ function advance_bucket(date, unit) {
 
 // the same rule the overview run cards use: any failure makes the run failed, a run without
 // passes that skipped something is skipped
-function get_run_status(run) {
-    if (run.failed > 0) { return "failed"; }
-    if (run.skipped > 0 && run.passed === 0) { return "skipped"; }
-    return "passed";
-}
-
 function find_bucket_index(buckets, time) {
     let low = 0;
     let high = buckets.length - 1;

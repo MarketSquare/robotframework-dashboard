@@ -1,11 +1,17 @@
 import { add_alert, get_project_names } from "./common.js";
 import { overviewSections } from "./variables/graphs.js";
+import { graphMetadata } from "./variables/graphmetadata.js";
 import { settings } from "./variables/settings.js";
 import { force_json_config, json_config, runs } from "./variables/data.js";
 
 // function to setup localstorage on first load
 function setup_local_storage() {
-    const storedSettings = localStorage.getItem('settings');
+    let storedSettings = null;
+    try {
+        storedSettings = localStorage.getItem('settings');
+    } catch {
+        // blocked storage (some private modes and file:// policies): run on the defaults, unsaved
+    }
     const hasJsonConfig = typeof json_config !== "string";
 
     const mergeWithDefaults = (config) => merge_deep(config, settings);
@@ -35,13 +41,36 @@ function setup_local_storage() {
     }
 
     settings = resolvedSettings;
-    localStorage.setItem('settings', JSON.stringify(settings));
+    sanitize_graph_types(settings.graphTypes);
+    write_settings();
+}
+
+// a graph type that is not one of the graph's view options (an old or hand-edited json config) would leave
+// the graph builders without a config, so it falls back to the graph's default type
+function sanitize_graph_types(graphTypes) {
+    if (!graphTypes || typeof graphTypes !== "object") return graphTypes;
+    for (const graph of graphMetadata) {
+        const key = `${graph.key}GraphType`;
+        const allowed = [graph.defaultType, ...graph.viewOptions.map(option => option.toLowerCase())];
+        if (!allowed.includes(graphTypes[key])) graphTypes[key] = graph.defaultType;
+    }
+    return graphTypes;
+}
+
+// the settings stay in memory when they can't be written, so the open dashboard keeps working
+function write_settings() {
+    try {
+        localStorage.setItem('settings', JSON.stringify(settings));
+    } catch (error) {
+        const reason = error?.name === "QuotaExceededError" ? "the browser storage is full" : "the browser storage is not available";
+        add_alert(`Settings are not saved, ${reason}.`, "danger");
+    }
 }
 
 // function to set an item in localstorage based on a dot-separated path
 function set_local_storage_item(path, value) {
     set_nested_setting(settings, path, value);
-    localStorage.setItem('settings', JSON.stringify(settings));
+    write_settings();
 }
 
 // function to set a nested setting based on a dot-separated path
@@ -287,6 +316,7 @@ function setup_overview_localstorage() {
 }
 
 export {
+    sanitize_graph_types,
     setup_local_storage,
     set_local_storage_item,
     set_nested_setting,

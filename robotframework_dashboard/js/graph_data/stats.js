@@ -11,20 +11,22 @@ function get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKey
     };
     let passedRuns = 0, failedRuns = 0, skippedRuns = 0;
     let totalRunDuration = 0;
-    const passRates = filteredRuns.map(run => {
-        totalRunDuration += parseFloat(run.elapsed_s);
+    const passRates = [];
+    for (const run of filteredRuns) {
+        totalRunDuration += parseFloat(run.elapsed_s) || 0;
         if (parseInt(run.failed) > 0) failedRuns++;
         else if (parseInt(run.skipped) === parseInt(run.total) && parseInt(run.total) > 0) skippedRuns++;
         else passedRuns++;
-        return Math.round((run.passed / run.total) * 100);
-    });
+        // a run without tests has no pass rate, and would make the average NaN
+        if (parseInt(run.total) > 0) passRates.push(Math.round((run.passed / run.total) * 100));
+    }
     const runPct = (n) => filteredRuns.length > 0 ? Math.round(n / filteredRuns.length * 100) : 0;
     data.passedRuns = `${passedRuns} (${runPct(passedRuns)}%)`;
     data.failedRuns = `${failedRuns} (${runPct(failedRuns)}%)`;
     data.skippedRuns = `${skippedRuns} (${runPct(skippedRuns)}%)`;
     data.totalRunTime = Math.round(totalRunDuration);
-    data.averageRunTime = Math.round(totalRunDuration / data.totalRuns);
-    data.averagePassRate = `${Math.round(passRates.reduce((a, b) => a + b, 0) / passRates.length)}%`;
+    data.averageRunTime = data.totalRuns > 0 ? Math.round(totalRunDuration / data.totalRuns) : 0;
+    data.averagePassRate = `${passRates.length > 0 ? Math.round(passRates.reduce((a, b) => a + b, 0) / passRates.length) : 0}%`;
     return data;
 }
 

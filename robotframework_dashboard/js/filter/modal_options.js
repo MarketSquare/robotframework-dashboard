@@ -1,5 +1,6 @@
 import { settings } from '../variables/settings.js';
 import { runs } from '../variables/data.js';
+import { parse_metadata_items } from '../common.js';
 import { collect_custom_filter_dimensions } from './pipeline.js';
 import { set_filter_dropdown_visible, setup_filter_active_indicator, setup_filter_checkbox_handler_listeners, setup_filter_checkbox_subfilter } from './controls.js';
 
@@ -61,19 +62,6 @@ function setup_lowest_highest_dates() {
         document.getElementById("toDate").value = high.date;
         document.getElementById("toTime").value = high.time;
     }
-}
-
-// metadata strings never change after the data is decoded, so the parsed items are cached:
-// the option list is rebuilt on every refresh of the filter option counts
-const parsedMetadataCache = new Map();
-
-function parse_metadata_items(metadata) {
-    if (!metadata) return [];
-    const cached = parsedMetadataCache.get(metadata);
-    if (cached) return cached;
-    const parsed = JSON.parse(metadata.replace(/'/g, '"'));
-    parsedMetadataCache.set(metadata, parsed);
-    return parsed;
 }
 
 // the metadata key:value pairs found in the run data, sorted for display

@@ -45,7 +45,6 @@ function get_exceptions_data(graphType, filteredData) {
     } else if (graphType === "timeline") {
         const labels = [];
         const runStartsSet = new Set();
-        const runLabelsSet = new Set();
         let count = 0;
         for (const [message, entries] of sortedData) {
             if (count === limit) break;
@@ -73,19 +72,16 @@ function get_exceptions_data(graphType, filteredData) {
                         data: [{ x: [runAxis, runAxis + 1], y: label }],
                         ...failedConfig,
                     });
-                    runLabelsSet.add(get_run_label(entry));
                 }
             }
             runAxis++;
         }
         datasets = convert_timeline_data(datasets);
-        const runStartsArray = (settings.show.aliases === "alias" || settings.show.aliases === "run_name")
-            ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,
         };
-        return [graphData, runStartsArray, pointMeta];
+        return [graphData, runStarts, pointMeta];
     }
 }
 

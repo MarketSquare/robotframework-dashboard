@@ -41,6 +41,22 @@ import { update_compare_tests_graph } from "../graph_creation/compare.js";
 import { save_section_filter_values, restore_section_filter_values } from "./section_filters.js";
 
 // function to setup eventlisteners for changing the graph view buttons
+// setup_graph_view_buttons runs on every rebuild of the page. The graph controls are created again with
+// the graph html, but the document, the rerun view selects and the section filters modal are in the
+// template and keep their listeners, so those are only added the first time
+function add_listener_once(target, type, handler) {
+    const flag = `graphViewButtons${type}Bound`;
+    if (target === document) {
+        if (documentListenersBound.has(type)) return;
+        documentListenersBound.add(type);
+    } else {
+        if (target.dataset[flag]) return;
+        target.dataset[flag] = "true";
+    }
+    target.addEventListener(type, handler);
+}
+const documentListenersBound = new Set();
+
 function setup_graph_view_buttons() {
     // eventlisteners for fullscreen buttons
     for (let fullscreenButton of fullscreenButtons) {
@@ -128,7 +144,7 @@ function setup_graph_view_buttons() {
         });
     }
     // close fullscreen on Escape key
-    document.addEventListener("keydown", (event) => {
+    add_listener_once(document, "keydown", (event) => {
         if (event.key === "Escape" && inFullscreen) {
             const closeBtn = document.querySelector(`.close-graph[id$="Close"]:not([hidden])`);
             if (closeBtn) closeBtn.click();
@@ -218,7 +234,7 @@ function setup_graph_view_buttons() {
         ["onlyLastRunKeyword", "keywordMostTimeConsumingGraph", update_keyword_most_time_consuming_graph, "switch.onlyLastRunKeyword", "checkbox"],
         ["onlyLastRunKeywordMostUsed", "keywordMostUsedGraph", update_keyword_most_used_graph, "switch.onlyLastRunKeywordMostUsed", "checkbox"],
     ].forEach(([elementId, graphId, updateFn, settingsKey, type]) => {
-        document.getElementById(elementId).addEventListener("change", () => {
+        add_listener_once(document.getElementById(elementId), "change", () => {
             const el = document.getElementById(elementId);
             const newValue = type === "select" ? el.value : el.checked;
             set_local_storage_item(settingsKey, newValue);
@@ -227,7 +243,7 @@ function setup_graph_view_buttons() {
     });
     // the rerun view (mark reruns / final result / first attempt) is read by every test graph that
     // marks re-executed tests or resolves their status, not only by the test statistics graph
-    document.getElementById("testRerunView").addEventListener("change", () => {
+    add_listener_once(document.getElementById("testRerunView"), "change", () => {
         set_local_storage_item("switch.testRerunView", document.getElementById("testRerunView").value);
         update_graphs_with_loading(
             ["testStatisticsGraph", "testMessagesGraph", "testMostFlakyGraph", "testRecentMostFlakyGraph",
@@ -333,7 +349,7 @@ function setup_graph_view_buttons() {
         update_active_graph_type_buttons(graphChangeButton, activeGraphType);
     });
 
-    document.getElementById("sectionFiltersModal").addEventListener("show.bs.modal", function () {
+    add_listener_once(document.getElementById("sectionFiltersModal"), "show.bs.modal", function () {
         ["suite", "test", "keyword"].forEach(section => {
             const filters = document.getElementById(`${section}SectionFilters`);
             const cardBody = document.getElementById(`${section}SectionFiltersCardBody`);
@@ -341,7 +357,7 @@ function setup_graph_view_buttons() {
         });
     });
 
-    document.getElementById("sectionFiltersModal").addEventListener("hide.bs.modal", function () {
+    add_listener_once(document.getElementById("sectionFiltersModal"), "hide.bs.modal", function () {
         ["suite", "test", "keyword"].forEach(section => {
             const filters = document.getElementById(`${section}SectionFilters`);
             const container = document.getElementById(`${section}SectionFiltersContainer`);

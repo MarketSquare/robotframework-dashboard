@@ -1,4 +1,4 @@
-import { settings, get_run_label } from "../variables/settings.js";
+import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { convert_timeline_data, group_timeline_values, parse_test_attempts, get_keyword_select_key } from "./helpers.js";
 import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
@@ -79,7 +79,6 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
     else if (graphType === "timeline") {
         const labels = [];
         const runStartsSet = new Set();
-        const runLabelsSet = new Set();
         let count = 0;
         for (const [name, runStarts] of sortedData) {
             if (count === limit) break;
@@ -119,18 +118,16 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
                         ...(attempts.length > 0 ? { borderColor: rerunBorderColor, borderWidth: rerunBorderWidth } : {}),
                         ...(dataType === "test" ? get_test_note_marker(rawRunStart, value.full_name) : null),
                     });
-                    foundValues.forEach(v => runLabelsSet.add(get_run_label(v)));
                 }
             }
             runAxis++;
         }
         datasets = convert_timeline_data(datasets);
-        const runStartsArray = (settings.show.aliases === "alias" || settings.show.aliases === "run_name") ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,
         };
-        return [graphData, runStartsArray, pointMeta];
+        return [graphData, runStarts, pointMeta];
     }
 }
 

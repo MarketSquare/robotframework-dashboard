@@ -108,8 +108,7 @@ function compute_filter_option_availability(runList, selections, suiteList = nul
     availability.projectVersions.set("All", versionBase.length);
     for (const run of versionBase) { count_option(availability.projectVersions, get_project_version_value(run)); }
 
-    // the metadata filter matches its value against the whole metadata string of a run, so the
-    // count of an option has to use the same substring check instead of the parsed items
+    // counted with the filter itself, so a count always matches what selecting the option leaves
     availability.metadata = new Map();
     const metadataBase = apply_filters_except(runList, selections, "metadata", null, suiteList);
     availability.metadata.set("All", metadataBase.length);

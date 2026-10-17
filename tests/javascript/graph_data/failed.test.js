@@ -223,22 +223,24 @@ describe('get_most_failed_data', () => {
             expect(runStartsArray[1]).toBe('2025-01-16 10:00:00');
         });
 
-        it('uses aliases for runStartsArray when show.aliases is true', () => {
+        it('returns the run_start of every column whatever the run labels are', () => {
             settings.show.aliases = 'alias';
             const data = makeTestData([
                 { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', failed: 1 },
             ]);
-            const [, runStartsArray] = get_most_failed_data('test', 'timeline', data, false);
-            expect(runStartsArray).toContain('Alias1');
+            const [, runStarts] = get_most_failed_data('test', 'timeline', data, false);
+            expect(runStarts).toEqual(['2025-01-15 10:00:00']);
         });
 
-        it('uses run_name for runStartsArray when show.aliases is run_name', () => {
+        it('keeps a column per run when runs share a run name', () => {
             settings.show.aliases = 'run_name';
             const data = makeTestData([
-                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'My Run', failed: 1 },
+                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'Nightly', failed: 1 },
+                { name: 'Test A', run_start: '2025-01-16 10:00:00', run_alias: 'Alias2', run_name: 'Nightly', failed: 1 },
             ]);
-            const [, runStartsArray] = get_most_failed_data('test', 'timeline', data, false);
-            expect(runStartsArray).toContain('My Run');
+            const [graphData, runStarts] = get_most_failed_data('test', 'timeline', data, false);
+            expect(runStarts).toEqual(['2025-01-15 10:00:00', '2025-01-16 10:00:00']);
+            expect(graphData.datasets.flatMap(dataset => dataset.data.map(point => point.x[0]))).toEqual([0, 1]);
         });
     });
 

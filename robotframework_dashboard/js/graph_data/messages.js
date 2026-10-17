@@ -1,4 +1,4 @@
-import { settings, get_run_label } from "../variables/settings.js";
+import { settings } from "../variables/settings.js";
 import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { failedConfig, rerunBorderColor, rerunBorderWidth } from "../variables/chartconfig.js";
 import { message_config } from "../variables/data.js";
@@ -40,15 +40,24 @@ function get_messages_data(dataType, graphType, filteredData) {
                 if (matches_message_config(message, config)) {
                     if (!data.has(config)) {
                         data.set(config, []);
+                        aliases.set(config, []);
+                        run_names.set(config, []);
                     }
+                    // the alias and run name lists move along, the tooltips read them per message
                     data.get(config).push(...runStarts);
+                    aliases.get(config).push(...aliases.get(message));
+                    run_names.get(config).push(...run_names.get(message));
                     data.delete(message)
+                    aliases.delete(message);
+                    run_names.delete(message);
                 }
             }
         }
 
         for (const [message, runStarts] of data) {
             data.set(message, [...new Set(runStarts)])
+            aliases.set(message, [...new Set(aliases.get(message))]);
+            run_names.set(message, [...new Set(run_names.get(message))]);
         }
     }
     const limit = inFullscreen && inFullscreenGraph.includes("Messages") ? 50 : 10;
@@ -86,7 +95,6 @@ function get_messages_data(dataType, graphType, filteredData) {
     } else if (graphType === "timeline") {
         const labels = [];
         const runStartsSet = new Set();
-        const runLabelsSet = new Set();
         let count = 0;
         for (const [message, runStarts] of sortedData) { // Collect unique run starts and labels
             if (count == limit) break;
@@ -121,18 +129,16 @@ function get_messages_data(dataType, graphType, filteredData) {
                         ...failedConfig,
                         ...(attempts.length > 0 ? { borderColor: rerunBorderColor, borderWidth: rerunBorderWidth } : {}),
                     });
-                    foundValues.forEach(value => runLabelsSet.add(get_run_label(value)));
                 }
             }
             runAxis++;
         }
         datasets = convert_timeline_data(datasets)
-        const runStartsArray = (settings.show.aliases === "alias" || settings.show.aliases === "run_name") ? Array.from(runLabelsSet) : runStarts;
         const graphData = {
             labels,
             datasets,
         };
-        return [graphData, runStartsArray, pointMeta];
+        return [graphData, runStarts, pointMeta];
     }
 }
 

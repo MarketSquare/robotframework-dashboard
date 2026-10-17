@@ -26,6 +26,7 @@ vi.mock('@js/common.js', () => ({
 }));
 
 import { get_messages_data } from '@js/graph_data/messages.js';
+import { settings } from '@js/variables/settings.js';
 
 function make_test(run_start, message) {
     return { name: 'Test', run_start, run_alias: run_start, passed: 0, failed: 1, skipped: 0, elapsed_s: 1, message, attempts: '' };
@@ -57,5 +58,19 @@ describe('get_messages_data with a message config', () => {
             'Something else@2',
         ]);
         expect(pointMeta['Element ${locator} not found::1'].message).toBe('Element id:cart not found');
+    });
+});
+
+describe('get_messages_data with a message config and run aliases', () => {
+    it('keeps the aliases of the merged messages for the tooltips', () => {
+        settings.show.aliases = 'alias';
+        const data = [
+            { ...make_test('2025-01-15 10:00:00', 'Element id:login not found'), run_alias: 'run-a' },
+            { ...make_test('2025-01-16 10:00:00', 'Element id:cart not found'), run_alias: 'run-b' },
+            { ...make_test('2025-01-16 10:00:00', 'Element id:menu not found'), run_alias: 'run-b' },
+        ];
+        const [, callbackData] = get_messages_data('test', 'bar', data);
+        expect(callbackData['Element ${locator} not found']).toEqual(['run-a', 'run-b']);
+        settings.show.aliases = 'run_start';
     });
 });

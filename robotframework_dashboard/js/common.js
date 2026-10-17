@@ -185,6 +185,8 @@ function combine_paths(baseUrlStr, relativePath) {
 }
 
 // function to add an alert to the page
+let alertTimeoutId = null;
+
 function add_alert(message, category, timeout = 5000) {
     const alertHTML = `<div class="row alert alert-${category} alert-dismissible" role="alert">
                 <div class="col">${message}</div>
@@ -196,7 +198,9 @@ function add_alert(message, category, timeout = 5000) {
             </div>`
     document.getElementById("alertContainer").innerHTML = alertHTML
 
-    setTimeout(() => {
+    // the container holds one alert, so the timer of a replaced alert must not close the new one
+    clearTimeout(alertTimeoutId);
+    alertTimeoutId = setTimeout(() => {
         close_alert()
     }, timeout);
 }
@@ -313,6 +317,21 @@ function get_run_projects(run) {
     return projects;
 }
 
+// metadata is stored as a python list repr: "['Browser: chromium', 'Team: Storefront']". Each item is read
+// as a quoted string, so a repr escape such as \x07 or a custom database format can't break the parsing
+// the way JSON.parse did. Metadata strings never change after the data is decoded, so the result is cached
+const parsedMetadataCache = new Map();
+
+function parse_metadata_items(metadata) {
+    if (!metadata) return [];
+    const cached = parsedMetadataCache.get(metadata);
+    if (cached) return cached;
+    const items = (String(metadata).match(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g) || [])
+        .map(item => item.slice(1, -1).replace(/\\(['"\\])/g, "$1"));
+    parsedMetadataCache.set(metadata, items);
+    return items;
+}
+
 // every overview project (run names and project_ tags) found in a list of runs, sorted. A name
 // and a tag that are spelled the same are one project, like the overview's own grouping.
 function get_project_names(runList) {
@@ -321,6 +340,14 @@ function get_project_names(runList) {
         for (const project of get_run_projects(run)) names.add(project.replace(/^(tag|name):/, ""));
     }
     return [...names].sort();
+}
+
+// one status per run, shared by the overview cards, their pass rates and the date histogram:
+// a run with only skipped tests is skipped, not passed
+function get_run_status(run) {
+    if (run.failed > 0) { return "failed"; }
+    if (run.skipped > 0 && run.passed === 0) { return "skipped"; }
+    return "passed";
 }
 
 function generate_id() {
@@ -389,7 +416,9 @@ export {
     parse_test_tags,
     get_run_projects,
     get_project_names,
+    parse_metadata_items,
     generate_id,
+    get_run_status,
     apply_bg_class,
     fill_color_picker,
     build_move_controls_html,

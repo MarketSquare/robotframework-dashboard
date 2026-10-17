@@ -165,13 +165,13 @@ describe('get_exceptions_data', () => {
             expect(graphData.labels.length).toBe(10);
         });
 
-        it('uses run_alias for run labels when settings.show.aliases is "alias"', () => {
+        it('returns the run_start of every column with alias labels, the graph maps them to labels', () => {
             settings.show.aliases = 'alias';
             const data = makeExceptionData([
                 { run_start: '2025-01-15 10:00:00', run_alias: 'nightly-1', message: 'Error', amount: 1 },
             ]);
-            const [, runStartsArray] = get_exceptions_data('timeline', data);
-            expect(runStartsArray).toEqual(['nightly-1']);
+            const [, runStarts] = get_exceptions_data('timeline', data);
+            expect(runStarts).toEqual(['2025-01-15 10:00:00']);
         });
     });
 });
