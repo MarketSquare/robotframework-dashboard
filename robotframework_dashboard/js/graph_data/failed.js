@@ -52,10 +52,6 @@ function get_most_failed_data(dataType, graphType, filteredData, recent) {
         for (const [name, runStarts] of sortedData) {
             if (count === limit) break;
             labels.push(name);
-            if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") {
-                const labelMap = settings.show.aliases === "run_name" ? run_names : aliases;
-                data.set(name, labelMap.get(name));
-            }
             datasets.push(runStarts.length);
             runStartsLabels.set(name, runStarts);
             count++;

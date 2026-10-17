@@ -4,10 +4,8 @@ import { get_statistics_graph_data } from "../graph_data/statistics.js";
 import { get_duration_graph_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { get_exceptions_data } from "../graph_data/exceptions.js";
-import { format_duration } from "../common.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
-import { get_keyword_stats_data } from "../graph_data/stats.js";
 import { update_height, get_keyword_select_key, get_run_label_by_run_start } from "../graph_data/helpers.js";
 
 function _build_keyword_statistics_config() {
@@ -159,18 +157,6 @@ function update_keyword_most_time_consuming_graph() { update_chart("keywordMostT
 function update_keyword_most_used_graph() { update_chart("keywordMostUsedGraph", _build_keyword_most_used_config); }
 function update_keyword_exceptions_graph() { update_chart("keywordExceptionsGraph", _build_keyword_exceptions_config); }
 
-function create_keyword_stat_widgets() {
-    const data = get_keyword_stats_data(filteredKeywords);
-    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-    setVal('keywordStatExecutionsValue', data.totalExecutions);
-    setVal('keywordStatUniqueValue',     data.uniqueKeywords);
-    setVal('keywordStatPassedValue',     data.passedKeywords);
-    setVal('keywordStatFailedValue',     data.failedKeywords);
-    setVal('keywordStatTotalTimeValue',  format_duration(data.totalTime));
-    setVal('keywordStatAvgTimeValue',    format_duration(data.avgTime));
-}
-function update_keyword_stat_widgets() { create_keyword_stat_widgets(); }
-
 export {
     create_keyword_statistics_graph,
     create_keyword_times_run_graph,
@@ -182,7 +168,6 @@ export {
     create_keyword_most_time_consuming_graph,
     create_keyword_most_used_graph,
     create_keyword_exceptions_graph,
-    create_keyword_stat_widgets,
     update_keyword_statistics_graph,
     update_keyword_times_run_graph,
     update_keyword_total_duration_graph,
@@ -193,5 +178,4 @@ export {
     update_keyword_most_time_consuming_graph,
     update_keyword_most_used_graph,
     update_keyword_exceptions_graph,
-    update_keyword_stat_widgets,
 };

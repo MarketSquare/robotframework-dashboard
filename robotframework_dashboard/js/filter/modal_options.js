@@ -37,12 +37,7 @@ function setup_lowest_highest_dates() {
     } else {
         // No conversion: strip the timezone suffix and treat the stored wall-clock datetime
         // as-is, so picker defaults match exactly what the user sees in the dashboard.
-        const wallClocks = runs.map(run => {
-            const rs = run.run_start;
-            const suffix = rs.slice(-6);
-            const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
-            return hasTz ? rs.slice(0, 19) : rs.slice(0, 19);
-        });
+        const wallClocks = runs.map(run => run.run_start.slice(0, 19));
         wallClocks.sort();
         const lowestStr = wallClocks[0];
         const highestStr = wallClocks[wallClocks.length - 1];

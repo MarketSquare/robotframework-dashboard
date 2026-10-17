@@ -476,11 +476,6 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
     destroy_overview_donuts(overviewCardsContainer);
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
-    const durationsByProject = {};
-    for (const [projectName, projectRuns] of Object.entries(allProjects)) {
-        const durations = projectRuns.map(r => r.elapsed_s);
-        durationsByProject[projectName] = durations;
-    }
     let latestRunByProject = {};
     if (!preFilteredRuns) {
         settings.switch.runName && Object.assign(latestRunByProject, latestRunByProjectName);
@@ -537,11 +532,6 @@ function create_overview_total_graphs(preFilteredRuns = null) {
     destroy_overview_donuts(overviewCardsContainer);
     overviewCardsContainer.innerHTML = '';
     const allProjects = { ...projects_by_name, ...projects_by_tag };
-    const durationsByProject = {};
-    for (const [projectName, projectRuns] of Object.entries(allProjects)) {
-        const durations = projectRuns.map(r => r.elapsed_s);
-        durationsByProject[projectName] = durations;
-    }
     let latestRunByProject = {};
     if (!preFilteredRuns) {
         settings.switch.runName && Object.assign(latestRunByProject, latestRunByProjectName);
@@ -758,13 +748,6 @@ function update_overview_filter_visibility() {
     });
 }
 
-function update_donut_charts() {
-    document.querySelectorAll(".overview-canvas").forEach(canvas => {
-        const chart = canvas.querySelector("canvas").chartInstance;
-        if (chart) chart.update();
-    });
-}
-
 function update_grouped_data_for_filter() {
     Object.keys(projects_by_tag).forEach(k => delete projects_by_tag[k]);
     Object.keys(projects_by_name).forEach(k => delete projects_by_name[k]);
@@ -815,21 +798,7 @@ function update_projectbar_visibility() {
 
 function update_overview_prefix_display() {
     const showPrefixes = !!(settings && settings.show && settings.show.prefixes);
-    // Update Overview Statistics card titles
-    const overviewCards = document.querySelectorAll('#overviewRunCardsContainer .overview-card');
-    overviewCards.forEach(card => {
-        const id = card.id; // e.g., overviewproject_1Card0
-        const match = id.match(/^overview(.+?)Card\d+$/);
-        if (!match) return;
-        const originalProjectName = match[1];
-        const headerTitle = card.querySelector('.col.text-center h5.card-title');
-        if (!headerTitle) return;
-        headerTitle.textContent = showPrefixes
-            ? originalProjectName
-            : (originalProjectName.startsWith('project_')
-                ? originalProjectName.replace(/^project_/, '')
-                : originalProjectName);
-    });
+    // the run card titles get the prefix setting when the cards are created
 
     // Update Project Bar section headers
     const projectBars = document.querySelectorAll('.overview-project-card');
@@ -885,7 +854,6 @@ export {
     create_project_overview,
     update_projectbar_visibility,
     update_overview_prefix_display,
-    update_donut_charts,
     clear_project_filter,
     set_filter_show_current_project,
     prepare_overview,

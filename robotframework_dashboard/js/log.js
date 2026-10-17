@@ -66,7 +66,7 @@ function open_log_from_path(path) {
     } else { // relative path — resolve against the dashboard's own location
         fileUrl = new URL(path, window.location.href).href
     }
-    const win = window.open(fileUrl, "_blank")
+    window.open(fileUrl, "_blank")
 }
 
 // function to open the log when clicking on the labels

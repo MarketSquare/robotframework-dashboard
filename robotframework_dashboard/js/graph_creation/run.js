@@ -3,7 +3,6 @@ import { get_statistics_graph_data } from '../graph_data/statistics.js';
 import { get_donut_graph_data, get_donut_total_graph_data } from '../graph_data/donut.js';
 import { get_duration_graph_data } from '../graph_data/duration.js';
 import { get_heatmap_graph_data } from '../graph_data/heatmap.js';
-import { get_stats_data } from '../graph_data/stats.js';
 import { build_tooltip_meta, lookup_tooltip_meta, format_status } from '../graph_data/tooltip_helpers.js';
 import { format_duration } from '../common.js';
 import { open_log_file } from '../log.js';
@@ -120,34 +119,12 @@ function create_run_statistics_graph() { create_chart("runStatisticsGraph", _bui
 function create_run_donut_graph() { create_chart("runDonutGraph", _build_run_donut_config, false); }
 function create_run_donut_total_graph() { create_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
 
-function update_run_stat_dom(data) {
-    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-    setVal('runStatExecutedRunsValue',     data.totalRuns);
-    setVal('runStatExecutedSuitesValue',   data.totalSuites);
-    setVal('runStatExecutedTestsValue',    data.totalTests);
-    setVal('runStatExecutedKeywordsValue', data.totalKeywords);
-    setVal('runStatUniqueTestsValue',      data.totalUniqueTests);
-    setVal('runStatPassedValue',           data.totalPassed);
-    setVal('runStatFailedValue',           data.totalFailed);
-    setVal('runStatSkippedValue',          data.totalSkipped);
-    setVal('runStatTotalTimeValue',        format_duration(data.totalRunTime));
-    setVal('runStatAvgRunTimeValue',       format_duration(data.averageRunTime));
-    setVal('runStatAvgTestTimeValue',      format_duration(data.averageTestTime));
-    setVal('runStatAvgPassRateValue',      data.averagePassRate);
-}
-
-function create_run_stat_widgets() {
-    const data = get_stats_data(filteredRuns, filteredSuites, filteredTests, filteredKeywords);
-    update_run_stat_dom(data);
-}
-
 function create_run_duration_graph() { create_chart("runDurationGraph", _build_run_duration_config); }
 function create_run_heatmap_graph() { create_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
 function update_run_statistics_graph() { update_chart("runStatisticsGraph", _build_run_statistics_config); }
 function update_run_donut_graph() { update_chart("runDonutGraph", _build_run_donut_config, false); }
 function update_run_donut_total_graph() { update_chart("runDonutTotalGraph", _build_run_donut_total_config, false); }
-function update_run_stat_widgets() { create_run_stat_widgets(); }
 function update_run_duration_graph() { update_chart("runDurationGraph", _build_run_duration_config); }
 function update_run_heatmap_graph() { update_chart("runHeatmapGraph", _build_run_heatmap_config, false); }
 
@@ -155,13 +132,11 @@ export {
     create_run_statistics_graph,
     create_run_donut_graph,
     create_run_donut_total_graph,
-    create_run_stat_widgets,
     create_run_duration_graph,
     create_run_heatmap_graph,
     update_run_statistics_graph,
     update_run_donut_graph,
     update_run_donut_total_graph,
-    update_run_stat_widgets,
     update_run_duration_graph,
     update_run_heatmap_graph
 };

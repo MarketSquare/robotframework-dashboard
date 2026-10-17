@@ -72,10 +72,6 @@ function get_messages_data(dataType, graphType, filteredData) {
             labels.push(message);
             datasets.push(runStarts.length);
             runStartsForCb.set(message, runStarts);
-            if (settings.show.aliases === "alias" || settings.show.aliases === "run_name") {
-                const labelMap = settings.show.aliases === "run_name" ? run_names : aliases;
-                data.set(message, labelMap.get(message));
-            }
             count++;
         }
         const graphData = {

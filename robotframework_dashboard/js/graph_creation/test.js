@@ -11,7 +11,6 @@ import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filter
 import { settings, get_run_label } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_flaky_config, build_most_time_consuming_config } from "./config_helpers.js";
-import { get_test_stats_data } from "../graph_data/stats.js";
 import { set_chart_note_target, test_note_target, timeline_test_note_target, test_note_lines } from "../notes/chart_notes.js";
 
 function _build_test_statistics_config() {
@@ -348,20 +347,6 @@ function update_test_most_failed_graph() { update_chart("testMostFailedGraph", _
 function update_test_recent_most_failed_graph() { update_chart("testRecentMostFailedGraph", _build_test_recent_most_failed_config); }
 function update_test_most_time_consuming_graph() { update_chart("testMostTimeConsumingGraph", _build_test_most_time_consuming_config); }
 
-function create_test_stat_widgets() {
-    const data = get_test_stats_data(filteredTests);
-    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-    setVal('testStatExecutedValue',  data.totalTests);
-    setVal('testStatUniqueValue',    data.uniqueTests);
-    setVal('testStatPassedValue',    data.passedTests);
-    setVal('testStatFailedValue',    data.failedTests);
-    setVal('testStatSkippedValue',   data.skippedTests);
-    setVal('testStatPassRateValue',  data.passRate);
-    setVal('testStatTotalTimeValue', format_duration(data.totalTime));
-    setVal('testStatAvgTimeValue',   format_duration(data.avgTime));
-}
-function update_test_stat_widgets() { create_test_stat_widgets(); }
-
 export {
     create_test_statistics_graph,
     create_test_duration_graph,
@@ -372,7 +357,6 @@ export {
     create_test_most_failed_graph,
     create_test_recent_most_failed_graph,
     create_test_most_time_consuming_graph,
-    create_test_stat_widgets,
     update_test_statistics_graph,
     update_test_duration_graph,
     update_test_duration_deviation_graph,
@@ -382,5 +366,4 @@ export {
     update_test_most_failed_graph,
     update_test_recent_most_failed_graph,
     update_test_most_time_consuming_graph,
-    update_test_stat_widgets,
 };
