@@ -1,3 +1,4 @@
+import { escape_html } from "./escape.js";
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
 import { setup_data_and_graphs } from './menu.js';
@@ -51,13 +52,13 @@ function get_stat_value(statKey) {
 
 function build_widget_html(widget, editMode) {
     const deleteBtn = editMode
-        ? `<a class="delete-custom-stat-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${widget.id}"></a>`
+        ? `<a class="delete-custom-stat-widget information" role="button" aria-label="Remove widget" data-title="Remove widget" data-widget-id="${escape_html(widget.id)}"></a>`
         : '';
     const moveBtns = editMode ? build_move_controls_html(deleteBtn) : '';
     return `<div class="stat-widget-inner">
                 ${moveBtns}
-                <h6 class="stat-widget-title" id="customStatWidget-${widget.id}-title">${widget.title}</h6>
-                <div class="stat-value ${widget.color}" id="customStatWidget-${widget.id}-value"></div>
+                <h6 class="stat-widget-title" id="customStatWidget-${escape_html(widget.id)}-title">${escape_html(widget.title)}</h6>
+                <div class="stat-value ${escape_html(widget.color)}" id="customStatWidget-${escape_html(widget.id)}-value"></div>
             </div>`;
 }
 

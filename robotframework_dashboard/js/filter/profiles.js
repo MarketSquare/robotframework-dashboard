@@ -1,3 +1,4 @@
+import { escape_html } from "../escape.js";
 import { settings } from '../variables/settings.js';
 import { runs } from '../variables/data.js';
 import { set_local_storage_item } from '../localstorage.js';
@@ -335,8 +336,8 @@ function populate_filter_profile_select() {
     for (const name of names) {
         const li = document.createElement("li");
         li.className = "list-group-item list-group-item-action d-flex align-items-center small";
-        li.innerHTML = `<span class="filter-profile-apply flex-grow-1" data-profile="${name}" id="profile${name}" style="cursor: pointer;">${name}</span>`
-            + `<span class="filter-profile-delete ms-2" data-profile="${name}" id="profileCheck${name}" title="Delete profile" style="cursor: pointer;">&times;</span>`;
+        li.innerHTML = `<span class="filter-profile-apply flex-grow-1" data-profile="${escape_html(name)}" id="profile${escape_html(name)}" style="cursor: pointer;">${escape_html(name)}</span>`
+            + `<span class="filter-profile-delete ms-2" data-profile="${escape_html(name)}" id="profileCheck${escape_html(name)}" title="Delete profile" style="cursor: pointer;">&times;</span>`;
         list.appendChild(li);
     }
 }

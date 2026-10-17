@@ -1,3 +1,4 @@
+import { escape_html } from "./escape.js";
 import { settings } from './variables/settings.js';
 import { set_local_storage_item } from './localstorage.js';
 import { generate_id, apply_bg_class, fill_color_picker, build_move_controls_html } from './common.js';
@@ -6,12 +7,12 @@ import { apply_widget_control_icons } from './theme.js';
 
 function build_section_divider_html(section, editMode) {
     const deleteBtn = editMode
-        ? `<a class="delete-custom-section information" role="button" aria-label="Remove section" data-title="Remove section" data-section-id="${section.id}"></a>`
+        ? `<a class="delete-custom-section information" role="button" aria-label="Remove section" data-title="Remove section" data-section-id="${escape_html(section.id)}"></a>`
         : '';
     const moveBtns = editMode ? build_move_controls_html(deleteBtn) : '';
-    return `<div class="custom-section-divider ${section.textColor || 'white-text'}">
+    return `<div class="custom-section-divider ${escape_html(section.textColor || 'white-text')}">
                 ${moveBtns}
-                <span class="custom-section-title">${section.title}</span>
+                <span class="custom-section-title">${escape_html(section.title)}</span>
             </div>`;
 }
 

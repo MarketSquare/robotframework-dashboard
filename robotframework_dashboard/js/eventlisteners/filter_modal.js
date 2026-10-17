@@ -1,3 +1,4 @@
+import { escape_html } from "../escape.js";
 import { runs, filteredAmount, filteredAmountDefault, server, no_auto_update } from "../variables/data.js";
 import { settings } from "../variables/settings.js";
 import { showingRunTags, showingProjectVersionDialogue } from "../variables/globals.js";
@@ -141,7 +142,7 @@ function setup_filter_modal() {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success == "1") {
                             console.log(response.console)
-                            add_alert(`${response.message} Reloading dashboard in 3 seconds!`, "success")
+                            add_alert(`${escape_html(response.message)} Reloading dashboard in 3 seconds!`, "success")
                             setTimeout(() => {
                                 location.reload();
                             }, 3000);
@@ -150,7 +151,7 @@ function setup_filter_modal() {
                             console.log(response.console)
                         }
                     } else {
-                        add_alert(`Error: ${xhr.status}, ${xhr.responseText}`, "danger")
+                        add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
                     }
                 };
                 xhr.send(JSON.stringify({}));
@@ -201,7 +202,7 @@ function setup_filter_modal() {
         populate_filter_profile_select();
         exit_profile_edit_mode();
         update_profile_select_display();
-        add_alert(`Filter profile "${name}" saved!`, "success");
+        add_alert(`Filter profile "${escape_html(name)}" saved!`, "success");
     });
     document.getElementById("filterProfileList").addEventListener("click", async function (event) {
         const applyEl = event.target.closest(".filter-profile-apply");
@@ -210,13 +211,13 @@ function setup_filter_modal() {
             event.preventDefault();
             event.stopPropagation();
             const name = deleteEl.dataset.profile;
-            const confirmed = await confirm_action(`Are you sure you want to delete filter profile "${name}"?`);
+            const confirmed = await confirm_action(`Are you sure you want to delete filter profile "${escape_html(name)}"?`);
             if (confirmed) {
                 delete_filter_profile(name);
                 clear_active_profile();
                 populate_filter_profile_select();
                 update_profile_select_display();
-                add_alert(`Filter profile "${name}" deleted!`, "success");
+                add_alert(`Filter profile "${escape_html(name)}" deleted!`, "success");
             }
             return;
         }
@@ -228,7 +229,7 @@ function setup_filter_modal() {
             if (profile) {
                 apply_filter_profile(profile, name);
                 schedule_date_histogram_refresh();
-                add_alert(`Filter profile "${name}" applied`, "success");
+                add_alert(`Filter profile "${escape_html(name)}" applied`, "success");
                 update_profile_select_display();
                 populate_filter_profile_select();
                 update_filters_button_indicator();

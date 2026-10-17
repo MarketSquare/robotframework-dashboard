@@ -1,3 +1,4 @@
+import { escape_html } from "../escape.js";
 import { settings } from "../variables/settings.js";
 import { lastMergeResult, filterRows } from "../variables/globals.js";
 import { add_alert } from "../common.js";
@@ -132,7 +133,7 @@ function setup_merge_profiles_modal() {
         save_filter_profile_to_storage(newName, profileData);
         populate_filter_profile_select();
         update_profile_select_display();
-        add_alert(`Filter profile "${newName}" saved!`, "success");
+        add_alert(`Filter profile "${escape_html(newName)}" saved!`, "success");
         bootstrap.Modal.getInstance(document.getElementById("mergeProfilesModal")).hide();
     });
 }

@@ -1,3 +1,4 @@
+import { escape_html } from "../escape.js";
 import { settings } from '../variables/settings.js';
 import { runs } from '../variables/data.js';
 import { parse_metadata_items } from '../common.js';
@@ -75,7 +76,7 @@ function setup_metadata_filter() {
     if (metadataItems.length > 0) {
         metadataFilter.hidden = false;
         const optionsHtml = metadataItems
-            .map(label => `<option value="${label}">${label}</option>`)
+            .map(label => `<option value="${escape_html(label)}">${escape_html(label)}</option>`)
             .join("");
         const metadataSelect = document.getElementById("metadata");
         metadataSelect.innerHTML = `<option value="All">All</option>` + optionsHtml;
@@ -89,7 +90,7 @@ function setup_runs_in_select_filter_buttons() {
     const runOptions = new Set();
     runs.forEach(run => runOptions.add(run.name));
     const optionsHtml = Array.from(runOptions)
-        .map(runName => `<option value="${runName}">${runName}</option>`)
+        .map(runName => `<option value="${escape_html(runName)}">${escape_html(runName)}</option>`)
         .join("");
     const runsSelect = document.getElementById("runs");
     runsSelect.innerHTML = `<option value="All">All</option>` + optionsHtml;
@@ -117,8 +118,8 @@ function setup_runtags_in_select_filter_buttons() {
     `;
     const listItemTemplate = (value) => `
         <li class="list-group-item list-group-item-action d-flex small">
-            <input class="form-check-input me-1" type="checkbox" value="${value}" id="runTagCheckBox${value}">
-            <label class="form-check-label ms-2" for="runTagCheckBox${value}">${value}</label>
+            <input class="form-check-input me-1" type="checkbox" value="${escape_html(value)}" id="runTagCheckBox${escape_html(value)}">
+            <label class="form-check-label ms-2" for="runTagCheckBox${escape_html(value)}">${escape_html(value)}</label>
         </li>
     `;
     const listItems = [listItemTemplate("All")].concat(
@@ -154,8 +155,8 @@ function setup_project_versions_in_select_filter_buttons() {
     const prefix = "projectVersionInputItem";
     const listItemTemplate = (prefix, value) => `
         <li class="list-group-item list-group-item-action d-flex small">
-            <input class="form-check-input me-1" type="checkbox" value="${value}" id="${prefix}${value}">
-            <label class="form-check-label ms-2" for="${prefix}${value}">${value}</label>
+            <input class="form-check-input me-1" type="checkbox" value="${escape_html(value)}" id="${escape_html(prefix)}${escape_html(value)}">
+            <label class="form-check-label ms-2" for="${escape_html(prefix)}${escape_html(value)}">${escape_html(value)}</label>
         </li>
     `;
     const projectVersionListHtml = projectVersionOptions
@@ -189,8 +190,8 @@ function setup_custom_filters_in_select_filter_buttons() {
 
         const modeHtml = `
             <li class="list-group-item d-flex small align-items-center">
-                <label class="form-check-label me-2" for="${modeId}">Mode:</label>
-                <select class="form-select form-select-sm" id="${modeId}" style="width: auto;">
+                <label class="form-check-label me-2" for="${escape_html(modeId)}">Mode:</label>
+                <select class="form-select form-select-sm" id="${escape_html(modeId)}" style="width: auto;">
                     <option value="OR">OR</option>
                     <option value="AND">AND</option>
                     <option value="NOT">NOT</option>
@@ -200,30 +201,30 @@ function setup_custom_filters_in_select_filter_buttons() {
 
         const itemsHtml = modeHtml + ["All", "None", ...values].map(v => `
             <li class="list-group-item list-group-item-action d-flex small">
-                <input class="form-check-input me-1" type="checkbox" value="${v}" id="${listId}_${v}">
-                <label class="form-check-label ms-2" for="${listId}_${v}">${v}</label>
+                <input class="form-check-input me-1" type="checkbox" value="${escape_html(v)}" id="${escape_html(listId)}_${escape_html(v)}">
+                <label class="form-check-label ms-2" for="${escape_html(listId)}_${escape_html(v)}">${escape_html(v)}</label>
             </li>
         `).join('');
 
         const rowHtml = `
-            <div class="list-group-item" id="customFilter_${dimName}">
+            <div class="list-group-item" id="customFilter_${escape_html(dimName)}">
                 <div class="d-flex justify-content-between align-items-start">
                     <input class="form-check-input filter-profile-check me-2 mt-2" type="checkbox"
-                        id="${profileCheckId}" checked style="display: none;" />
+                        id="${escape_html(profileCheckId)}" checked style="display: none;" />
                     <span class="d-flex align-items-center information info-label">
-                        ${dimName}
-                        <span id="${indicatorId}" class="version-selected-dot ms-2 mt-1" style="display: none;"></span>
+                        ${escape_html(dimName)}
+                        <span id="${escape_html(indicatorId)}" class="version-selected-dot ms-2 mt-1" style="display: none;"></span>
                     </span>
                     <div style="width: 200px;">
-                        <div class="selectBox" id="${selectId}">
+                        <div class="selectBox" id="${escape_html(selectId)}">
                             <select class="form-select form-select-sm">
                                 <option>Select Values</option>
                             </select>
                             <div class="overSelect"></div>
                         </div>
-                        <div id="${checkBoxesId}" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto;">
-                            <input id="${filterInputId}" class="form-control form-control-sm" type="text" placeholder="Filter...">
-                            <ul class="list-group" id="${listId}">
+                        <div id="${escape_html(checkBoxesId)}" class="filterCheckBoxes mt-2" style="max-height: 50vh; overflow-y: auto;">
+                            <input id="${escape_html(filterInputId)}" class="form-control form-control-sm" type="text" placeholder="Filter...">
+                            <ul class="list-group" id="${escape_html(listId)}">
                                 ${itemsHtml}
                             </ul>
                         </div>

@@ -163,13 +163,13 @@ function generate_overview_card_html(
     const showRunNumber = !(isForOverview && isTotalStats);
     const runNumberHtml = showRunNumber ? `<div class="col-auto"><h5>#${runNumber}</h5></div>` : '';
     let smallVersionHtml = `
-        <div id="${projectName}RunCardVersion${idPostfix}"
+        <div id="${escape_html(projectName)}RunCardVersion${idPostfix}"
         class="run-card-small-version"
         title="Click to filter for project and version"
-        data-projectVersion="${normalizedProjectVersion}"
+        data-projectVersion="${escape_html(normalizedProjectVersion)}"
         data-js-target="apply-version-filter">
             <div class="text-muted">Version:</div>
-            <div>${normalizedProjectVersion}</div>
+            <div>${escape_html(normalizedProjectVersion)}</div>
         </div>`;
     if (isTotalStats) {
         smallVersionHtml = '';
@@ -201,14 +201,14 @@ function generate_overview_card_html(
     const displayProjectName = settings.show.prefixes ? projectName : projectName.replace(/^project_/, '');
     projectName = displayProjectName;
     let cardTitle = `
-            <h5 class="card-title mb-0 fw-semibold">${displayProjectName}</h5>
+            <h5 class="card-title mb-0 fw-semibold">${escape_html(displayProjectName)}</h5>
         `;
     if (!isForOverview) {
         // Project bar cards: customize based on project type
         if (originalProjectName.startsWith('project_')) {
             // Tagged projects: display name with inline version
             cardTitle = `
-                <h5 class="card-title mb-0 fw-semibold">${stats[5]}, <span class="text-muted">Version:</span> ${normalizedProjectVersion}</h5>
+                <h5 class="card-title mb-0 fw-semibold">${escape_html(stats[5])}, <span class="text-muted">Version:</span> ${escape_html(normalizedProjectVersion)}</h5>
             `;
         } else if (projectHasVersions || projectEverHasVersions) {
             // Non-tagged projects with versions: interactive version title
@@ -218,7 +218,7 @@ function generate_overview_card_html(
                 data-js-target="apply-version-filter">
                     <h5 class="card-title mb-0 d-inline text-muted">Version:</h5>
                     <h5 class="card-title mb-0 d-inline fw-semibold">
-                        ${normalizedProjectVersion}
+                        ${escape_html(normalizedProjectVersion)}
                     </h5>
                 </div>
             `;
@@ -245,7 +245,7 @@ function generate_overview_card_html(
         ? `<div class="blue-text text-nowrap information" data-title="${reruns.reran} tests were re-executed after failing, ${reruns.recovered} of them passed on a rerun">Rerun: ${reruns.reran} (fixed ${reruns.recovered})</div>`
         : '';
     return `
-    <div class="col-4 overview-card" id="${projectNameForElementId}Card${idPostfix}" data-project-version="${normalizedProjectVersion}">
+    <div class="col-4 overview-card" id="${escape_html(projectNameForElementId)}Card${idPostfix}" data-project-version="${escape_html(normalizedProjectVersion)}">
         <div class="card border-3 border-${status}">
             <div class="card-body">
                 <div class="row">
@@ -256,7 +256,7 @@ function generate_overview_card_html(
                 </div>
                 <div class="row">
                     <div class="col-4 overview-canvas">
-                        <canvas id="${projectNameForElementId}Graph${idPostfix}"></canvas>
+                        <canvas id="${escape_html(projectNameForElementId)}Graph${idPostfix}"></canvas>
                     </div>
                     <div class="col-3 d-flex align-items-center">
                         <div>
@@ -270,11 +270,11 @@ function generate_overview_card_html(
                     <div class="col-5 d-flex align-items-center" style="overflow:auto;">
                         <div>
                             ${totalStatsAverage}
-                            <div class="${compares}" id="${projectNameForElementId}RunCardCompares${idPostfix}" title="${isTotalStats ? 'Average duration across runs' : 'Run duration'}">
+                            <div class="${compares}" id="${escape_html(projectNameForElementId)}RunCardCompares${idPostfix}" title="${isTotalStats ? 'Average duration across runs' : 'Run duration'}">
                                 <span class="clock-icon">
                                     ${svg}
                                 </span>
-                                <i id="${projectNameForElementId}RunCardComparesValue${idPostfix}" value="${rounded_duration}">
+                                <i id="${escape_html(projectNameForElementId)}RunCardComparesValue${idPostfix}" value="${rounded_duration}">
                                     ${rounded_duration}
                                 </i>
                             </div>
@@ -381,17 +381,17 @@ function create_project_bar(projectName, projectRuns, totalRunsAmount, passRate)
 See Settings > Overview for more options.`;
 
     const projectCard = `
-    <div class="card mb-3 overview-bar overview-project-card" id="${projectName}Section">
+    <div class="card mb-3 overview-bar overview-project-card" id="${escape_html(projectName)}Section">
             <div class="card-header">
                 <div class="row">
                     <div class="col-auto align-self-center">
-                        <div class="btn btn-sm collapse-icon" id="collapse${projectName}Body">
+                        <div class="btn btn-sm collapse-icon" id="collapse${escape_html(projectName)}Body">
                             ${arrowRight}
                         </div>
                     </div>
                     <div class="col-3">
-                        <span class="information info-label" data-title="${projectInformation}">
-                            <h4 class="d-inline">${displayProjectName}</h4>
+                        <span class="information info-label" data-title="${escape_html(projectInformation)}">
+                            <h4 class="d-inline">${escape_html(displayProjectName)}</h4>
                             <span class="info-icon-small ms-1"></span>
                         </span>
                         <h6>Total Runs: ${totalRunsAmount} | Passed Runs: ${passRate}%</h6>
@@ -399,10 +399,10 @@ See Settings > Overview for more options.`;
                     <div class="d-flex flex-wrap align-items-start col align-items-center">
                         <div class="col-auto me-1 sort-filter">
                             <div class="btn-group">
-                                <label class="form-label mb-0 information info-label" for="${projectName}SectionOrder" data-title="Sort runs by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.">Sort <span class="info-icon-small ms-1"></span></label>
+                                <label class="form-label mb-0 information info-label" for="${escape_html(projectName)}SectionOrder" data-title="Sort runs by: Most Recent, Oldest, Most Failed, Most Skipped, or Most Passed.">Sort <span class="info-icon-small ms-1"></span></label>
                             </div>
                             <div class="btn-group">
-                                <select class="form-select form-select-sm section-order-filter" id="${projectName}SectionOrder">
+                                <select class="form-select form-select-sm section-order-filter" id="${escape_html(projectName)}SectionOrder">
                                     <option value="newest" selected>Most Recent</option>
                                     <option value="oldest">Oldest</option>
                                     <option value="most failed">Most Failed</option>
@@ -412,14 +412,14 @@ See Settings > Overview for more options.`;
                             </div>
                         </div>
                         <div class="col-auto ms-auto">
-                            <a class="move-up-section information" id="${projectName}SectionMoveUp" hidden></a>
-                            <a class="move-down-section information" id="${projectName}SectionMoveDown" hidden></a>
+                            <a class="move-up-section information" id="${escape_html(projectName)}SectionMoveUp" hidden></a>
+                            <a class="move-down-section information" id="${escape_html(projectName)}SectionMoveDown" hidden></a>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card-body" id="${projectName}Body" hidden="">
-                <div id="${projectName}RunCardsContainer" class="project-run-cards-container"></div>
+            <div class="card-body" id="${escape_html(projectName)}Body" hidden="">
+                <div id="${escape_html(projectName)}RunCardsContainer" class="project-run-cards-container"></div>
             </div>
         </div>
     `;
