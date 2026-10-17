@@ -83,6 +83,18 @@ describe('validate_custom_graph_spec', () => {
         expect(errors('x'.repeat(101))[0]).toContain('at most');
     });
 
+    it('rejects repeated groups with alternatives, counted repeats and nested repeats', () => {
+        const base = { source: 'tests', metric: { agg: 'count' }, viz: { type: 'bar' } };
+        const errors = (value) => validate_custom_graph_spec({ ...base, where: [{ field: 'message', op: 'matches', value }] }).errors;
+        for (const pattern of ['(a|a)*$', '(a|aa)+$', '(a+){20}$', '(.*a){12}$', '((a+))+$', '(?:x(a*))+', '(a+){2,}']) {
+            expect(errors(pattern)[0], pattern).toContain('freeze');
+        }
+        // quantifiers inside a group that is not repeated, escaped parentheses and character classes are fine
+        for (const pattern of ['(Login|Logout) failed', '^(\\d+)s$', '\\(a+\\)+', '[(a+)]+', '(ab){3}', 'x{2}(y)+']) {
+            expect(errors(pattern), pattern).toEqual([]);
+        }
+    });
+
     it('only allows count based metrics when runs, suites or keywords are grouped by status', () => {
         const base = { source: 'runs', x: { field: 'run' }, series: { field: 'status' }, viz: { type: 'bar' } };
         for (const agg of ['count', 'pass_count', 'fail_count', 'skip_count']) {

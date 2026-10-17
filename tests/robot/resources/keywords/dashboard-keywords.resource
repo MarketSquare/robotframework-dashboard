@@ -184,6 +184,15 @@ Get Test Count With Attempts
     ${count}    Evaluate JavaScript    ${None}    () => filteredTests.filter(test => test.attempts).length
     RETURN    ${count}
 
+Wait For Modal Opened
+    [Documentation]    Waits until the opening animation of the modal ${modal_id} is finished. Bootstrap ignores a
+    ...    hide() that arrives while a modal is still animating open, so a confirm button clicked within
+    ...    that animation (filling a form is faster than the 300 ms fade) leaves the modal on screen.
+    [Arguments]    ${modal_id}
+    Wait For Function
+    ...    () => { const modal = document.getElementById("${modal_id}"); return modal.classList.contains("show") && getComputedStyle(modal).opacity === "1" && !bootstrap.Modal.getInstance(modal)?._isTransitioning; }
+    ...    timeout=10s
+
 Open Filter Dialog
     [Documentation]    Bootstrap ignores a hide() that arrives while the modal is still animating
     ...    open, which leaves the modal on screen for good and makes every later click fail, so
@@ -504,6 +513,7 @@ Merge Filter Profiles Into
     [Arguments]    ${left}    ${right}    ${new_name}
     Open Filter Dialog
     Click    selector=id=mergeFilterProfiles
+    Wait For Modal Opened    mergeProfilesModal
     Select Options By    id=mergeProfileLeft    value    ${left}
     Select Options By    id=mergeProfileRight    value    ${right}
     Fill Text    selector=id=mergeProfileNewName    txt=${new_name}
@@ -661,6 +671,7 @@ Add Stat Widget
     ...    ${stat} is the statwidgetdefs key, e.g. run.passedRuns.
     [Arguments]    ${section}    ${stat}    ${title}
     Click    selector=id=${section}AddStatWidgetHeader
+    Wait For Modal Opened    addStatWidgetModal
     Select Options By    id=addStatWidgetStat    value    ${stat}
     Fill Text    selector=id=addStatWidgetTitle    txt=${title}
     Click    selector=id=addStatWidgetConfirm
@@ -669,6 +680,7 @@ Add Stat Widget
 Add Link Widget
     [Arguments]    ${section}    ${label}    ${url}
     Click    selector=id=${section}AddLinkWidgetHeader
+    Wait For Modal Opened    addLinkWidgetModal
     Fill Text    selector=id=addLinkWidgetLabel    txt=${label}
     Fill Text    selector=id=addLinkWidgetUrl    txt=${url}
     Click    selector=id=addLinkWidgetConfirm
@@ -684,6 +696,7 @@ Open Custom Graph Builder
     [Documentation]    The custom graph "+" in the section header (edit mode only); opens on the gallery tab.
     [Arguments]    ${section}
     Click    selector=id=${section}AddCustomGraphHeader
+    Wait For Modal Opened    customGraphModal
     Wait For Elements State    selector=id=customGraphGallery    state=visible
 
 Pick Custom Graph Preset
@@ -959,6 +972,7 @@ Open Add All Stat Widgets Tab
     ...    waits for the toggle list, which is built on the tab's shown event.
     [Arguments]    ${section}
     Click    selector=id=${section}AddStatWidgetHeader
+    Wait For Modal Opened    addStatWidgetModal
     Click    selector=id=addStatWidgetAllTab-tab
     Wait For Elements State    selector=css=#addAllWidgetsList .add-all-widgets-toggle >> nth=0    state=visible
 
@@ -972,6 +986,7 @@ Add Custom Section
     ...    (edit mode only).
     [Arguments]    ${title}
     Click    selector=id=unifiedAddSectionHeader
+    Wait For Modal Opened    addCustomSectionModal
     Fill Text    selector=id=addCustomSectionTitle    txt=${title}
     Click    selector=id=addCustomSectionConfirm
     Wait For Dashboard Idle

@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Changed
+- Uploads via the listener or `/add-output-file` (and `output_data` on `/add-outputs`) are processed in a private temporary folder and no longer touch the server's working folder. A run uploaded without its log therefore no longer links to a `log.html` that happens to sit in the server's working folder; to link logs, upload them with `uploadlog=true` (listener) or `/add-log-file`, or use `--logurl`
+
+---
+
 ## [2.4.1](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.4.1) - 2026-09-28
 
 ### Changed

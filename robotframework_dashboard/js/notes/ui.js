@@ -2,7 +2,6 @@ import { settings, get_run_label } from "../variables/settings.js";
 import { runs, tests, use_logs } from "../variables/data.js";
 import { filteredRuns, gridEditMode, escape_html_for_merge } from "../variables/globals.js";
 import { add_alert, update_graphs_with_loading } from "../common.js";
-import { confirm_action } from "../eventlisteners/confirm_modal.js";
 import {
     NOTE_MAX_LENGTH,
     NOTE_CATEGORY_COLORS,
@@ -262,7 +261,7 @@ function hide_note_context_menu() {
     noteMenuCanvas = null;
 }
 
-function delete_note_with_confirmation(target) {
+function delete_note(target) {
     apply_notes_change(store => set_target_note(store, target, null));
 }
 
@@ -311,7 +310,7 @@ function show_note_context_menu(event, target, chart, elements) {
         if (!action) return;
         hide_note_context_menu();
         if (action === "edit") open_note_editor(target);
-        else if (action === "delete") delete_note_with_confirmation(target);
+        else if (action === "delete") delete_note(target);
         else if (action === "log") chart.options.onClick({ type: "click", chart, native: event }, elements, chart);
     });
     menu.querySelector(".note-context-option").focus();

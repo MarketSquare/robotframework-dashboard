@@ -62,6 +62,18 @@ function to_custom_graph_number(value) {
     return Number.isFinite(number) ? number : 0;
 }
 
+// tests store the rebot --merge history as a JSON list of attempts ("" when the test ran once),
+// like parse_test_attempts in graph_data/helpers.js, which is not imported to keep this module DOM free
+function count_custom_graph_attempts(value) {
+    if (!value) return 1;
+    try {
+        const attempts = JSON.parse(value);
+        return Array.isArray(attempts) && attempts.length > 0 ? attempts.length : 1;
+    } catch {
+        return 1;
+    }
+}
+
 // the overall status of a row; runs, suites and keywords carry counts, tests carry 0/1 flags
 function get_custom_graph_row_status(row) {
     if (row.failed > 0) return "failed";
@@ -107,7 +119,7 @@ function build_custom_graph_rows(source, data, options = {}) {
             row.tags = parse_test_tags(item.tags);
             row.message = item.message ?? "";
             row.elapsed_s = to_custom_graph_number(item.elapsed_s);
-            row.attempts = to_custom_graph_number(item.attempts) || 1;
+            row.attempts = count_custom_graph_attempts(item.attempts);
         } else if (source === "keywords") {
             row.name = item.name ?? "";
             row.library = item.owner ?? "";

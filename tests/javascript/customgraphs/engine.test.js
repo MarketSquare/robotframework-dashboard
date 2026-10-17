@@ -51,6 +51,8 @@ describe('rows', () => {
         expect(row.suite).toBe('Web.Cart');
         expect(row.status).toBe('skipped');
         expect(row.attempts).toBe(2);
+        const single = rows.find(item => item.name === 'Add To Cart' && item.run !== '2026-08-02 10:00:00');
+        expect(single.attempts).toBe(1);
         expect(row.run_tags).toEqual(['dev', 'project_web']);
         expect(row.metadata.Browser).toBe('firefox');
         expect(row.custom_filters.Release).toBe('2026.31');

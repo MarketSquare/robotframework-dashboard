@@ -39,7 +39,9 @@ const tests = runs.flatMap((run, runIndex) => testDefs.map((def, testIndex) => {
         run_start: run.run_start, name: def.name, full_name: def.full_name, tags: def.tags,
         passed: status === "passed" ? 1 : 0, failed: status === "failed" ? 1 : 0, skipped: status === "skipped" ? 1 : 0,
         elapsed_s: String(def.elapsed[runIndex]), message: status === "failed" ? "AssertionError" : "",
-        run_alias: run.run_alias, attempts: def.name === "Add To Cart" && runIndex === 1 ? "2" : "",
+        // the rebot --merge history as the database stores it
+        run_alias: run.run_alias, attempts: def.name === "Add To Cart" && runIndex === 1
+            ? JSON.stringify([{ status: "FAIL", message: "AssertionError" }, { status: "SKIP", message: "" }]) : "",
     };
 }));
 

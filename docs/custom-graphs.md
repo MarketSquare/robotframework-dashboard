@@ -79,7 +79,7 @@ Every data source offers the fields of its own rows plus the fields of the run i
 | Metadata / custom filter | is, is not, contains |
 | Run date | on or after, before, in the last N days |
 
-A regular expression that repeats a group which already repeats, like `(a+)+`, is refused: on some messages it can take so long that the dashboard freezes.
+A regular expression that repeats a group which already repeats or has alternatives, like `(a+)+`, `(a|b)*` or `(.*a){12}`, is refused: on some messages it can take so long that the dashboard freezes.
 
 ### Metrics
 

@@ -30,15 +30,40 @@ const CUSTOM_GRAPH_PERCENT_VIZ_TYPES = ["bar", "stacked_bar", "hbar"];
 const CUSTOM_GRAPH_MAX_TITLE = 60;
 const CUSTOM_GRAPH_MAX_LIMIT = 500;
 const CUSTOM_GRAPH_MAX_REGEX = 100;
-// a quantified group that itself contains a quantifier, like (a+)+ or (\w*)*: the shape behind
-// catastrophic backtracking. A regex runs on every row on every redraw, and json configs are
-// shared, so such a pattern could freeze the dashboard on load
-const CUSTOM_GRAPH_NESTED_QUANTIFIER = /\((?:[^()\\]|\\.)*[+*}](?:[^()\\]|\\.)*\)(?:[+*]|\{\d*,)/;
+// a repeated group that itself contains a quantifier or an alternation, like (a+)+, (a|aa)* or
+// (.*a){12}, at any depth: the shapes behind catastrophic backtracking. A regex runs on every row
+// on every redraw, and json configs are shared, so such a pattern could freeze the dashboard on load
+function has_custom_graph_repeated_risky_group(pattern) {
+    // per open group: whether it contains a quantifier or alternation so far
+    const groups = [];
+    const is_repeat = (index) => pattern[index] === "+" || pattern[index] === "*" || (pattern[index] === "{" && /\d/.test(pattern[index + 1] ?? ""));
+    for (let index = 0; index < pattern.length; index++) {
+        const character = pattern[index];
+        if (character === "\\") {
+            index++;
+        } else if (character === "[") {
+            // a character class is one token: its content holds no quantifiers or groups
+            for (index++; index < pattern.length && pattern[index] !== "]"; index++) {
+                if (pattern[index] === "\\") index++;
+            }
+        } else if (character === "(") {
+            groups.push(false);
+        } else if (character === ")") {
+            const groupRisky = groups.pop() ?? false;
+            const repeated = is_repeat(index + 1);
+            if (repeated && groupRisky) return true;
+            if (groups.length > 0) groups[groups.length - 1] ||= groupRisky || repeated;
+        } else if ((is_repeat(index) || character === "|") && groups.length > 0) {
+            groups[groups.length - 1] = true;
+        }
+    }
+    return false;
+}
 
 // returns the problem with a "matches regex" filter value, or "" when it can be used
 function get_custom_graph_regex_problem(pattern) {
     if (pattern.length > CUSTOM_GRAPH_MAX_REGEX) return `regular expressions can be at most ${CUSTOM_GRAPH_MAX_REGEX} characters`;
-    if (CUSTOM_GRAPH_NESTED_QUANTIFIER.test(pattern)) return `"${pattern}" repeats a group that already repeats (like (a+)+), which can freeze the dashboard`;
+    if (has_custom_graph_repeated_risky_group(pattern)) return `"${pattern}" repeats a group that already repeats or has alternatives (like (a+)+ or (a|b)*), which can freeze the dashboard`;
     try { new RegExp(pattern); } catch { return `"${pattern}" is not a valid regular expression`; }
     return "";
 }

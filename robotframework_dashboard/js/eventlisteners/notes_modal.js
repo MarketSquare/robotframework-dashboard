@@ -244,7 +244,6 @@ function setup_notes_categories_tab() {
         if (!row) return;
         const category = get_note_category(notesStore, row.dataset.categoryId);
         if (!category) return;
-        const count = count_notes_with_category(notesStore, category.id);
         apply_notes_change(store => remove_note_category(store, category.id));
     });
 }
