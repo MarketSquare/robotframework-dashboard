@@ -7,10 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [Unreleased]
+## [2.5.0](https://github.com/MarketSquare/robotframework-dashboard/releases/tag/v2.5.0) - 2026-10-17
+
+### Added
+- Custom graphs — build your own graph in any dashboard section (Run, Suite, Test, Keyword and Unified) from the **+** in the section header in Customize mode. Start from one of 11 presets (statistics per run, duration trend, most failed, most flaky, slowest tests, pass rate per version or tag, keyword time per library, top failure messages, failure heatmap, retried tests per run) or from scratch. The builder has a live preview and lets you pick the data (runs, suites, tests, keywords or exceptions), filter it, choose the X axis, a split, a metric (count, sum, average, min, max, median, p90, p95, distinct count, pass rate, passed/failed/skipped counts or status flips), order and limit, and the chart type (line, bar, stacked bar, horizontal bar, donut, heatmap or table, optionally as percentages). Graphs can follow the global and section filters, open in fullscreen, switch to a data table, and be edited, duplicated, removed, resized and shared as JSON. They are stored with the layout, so undo/redo and `--jsonconfig` work for them too
+- Notes on test results (opt-in, Settings > Defaults > Test Notes) — right-click a test in the test graphs, or use the pencil in the Tests table or the new Test Notes widget, to note why it failed. A note has a text (links become clickable) and an optional category with a color. Graph bars of noted tests get a border in the category color, and the tooltip shows the note. The Notes manager lists every note, deletes them in bulk, manages categories, exports and imports notes as JSON, and keeps notes of other dashboards or removed runs under **Unmatched** until you delete them. Notes are stored in the browser and a banner warns when its storage is nearly full
+- Printing and Save as PDF — every page prints as it looks on screen (theme, filters, layout, custom graphs, widgets and notes) without the on-screen controls. Section filters print as plain values, tiles keep their position and are never split over two pages, tables print every row of their current page, and a graph open in fullscreen prints alone. Pages print in landscape on white paper
+
+### Fixed
+- `/log` on the server only serves logs from the server's log folder or the log next to an output stored in the database, and log resources only from the log's own folder; before, any file the server could read was served. File names in requests must be plain names, uploads are processed in a private temporary folder so they can never overwrite or delete files in the working folder, the 404 page escapes the requested path, and the database queries for removing runs and updating log paths use bound parameters
+- Overview project bars no longer go missing when the overview is first opened with a filter active
+- The "Rerun" line on the Overview run cards no longer disappears when the timezone conversion or millisecond settings are on
+- Clicking a bar in the date histogram of the filter modal no longer leaves out runs from that bar's last minute
+- The **AND** mode of custom filters now keeps only runs that have every selected value, instead of acting like **OR**
+- Tests whose `rebot --merge` rerun was skipped keep the attempt history before the skip, and their message no longer contains rebot's `Original message:` prefix and HTML escaping
+- Server log files with "report" in their name (e.g. `log-reporting-api.html`) are linked to their run again; only a `report` prefix marks a report
+- The listener no longer crashes with `--log NONE` and `uploadlog=true`, gives a clear error with `--output NONE`, and prints its normal error instead of a traceback when `limit=` can't reach the server
 
 ### Changed
-- Uploads via the listener or `/add-output-file` (and `output_data` on `/add-outputs`) are processed in a private temporary folder and no longer touch the server's working folder. A run uploaded without its log therefore no longer links to a `log.html` that happens to sit in the server's working folder; to link logs, upload them with `uploadlog=true` (listener) or `/add-log-file`, or use `--logurl`
+- Uploads through the listener or `/add-output-file` (and `output_data` on `/add-outputs`) no longer touch the server's working folder. A run uploaded without its log therefore no longer links to a `log.html` that happens to sit in the server's working folder; to link logs, upload them with `uploadlog=true` (listener) or `/add-log-file`, or use `--logurl`
+- `/log` returns status 404 instead of 200 for a log it doesn't serve
 
 ---
 
