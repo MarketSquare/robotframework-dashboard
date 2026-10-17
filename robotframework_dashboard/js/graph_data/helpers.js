@@ -1,6 +1,6 @@
-import { settings } from "../variables/settings.js";
+import { settings, get_run_label } from "../variables/settings.js";
 import { barConfig } from "../variables/chartconfig.js";
-import { inFullscreen}  from "../variables/globals.js";
+import { inFullscreen, filteredRuns } from "../variables/globals.js";
 import { parse_test_tags } from "../common.js";
 
 // helper function to more easily use the logic of filtering suite graph data based on the selected filters
@@ -54,19 +54,23 @@ function get_keyword_select_key(keyword) {
 
 // returns a predicate telling whether a test ({ name, full_name, tags }) matches the suite, test
 // and tag selects of the test section; the selects are read once here instead of once per test
+// whether a test belongs to the suite selected in the test section: the parent suite's name, or its
+// full name with Use Suite Paths. A whole-name match, so suite "Cart" leaves out "Web.Cart Rules"
+function is_test_in_suite(value, suite, usePaths) {
+    if (suite === "All") return true;
+    const expectedFull = `${suite}.${value.name}`;
+    return usePaths
+        ? value.full_name === expectedFull
+        : value.full_name === expectedFull || value.full_name.endsWith(`.${expectedFull}`);
+}
+
 function get_test_section_predicate() {
     const suite = document.getElementById("suiteSelectTests")?.value || "All";
     const test = document.getElementById("testSelect")?.value || "All";
     const tag = document.getElementById("testTagsSelect")?.value || "All";
     const usePaths = settings.switch.suitePathsTestSection;
     return (value) => {
-        if (suite !== "All") {
-            const expectedFull = `${suite}.${value.name}`;
-            const isMatch = usePaths
-                ? value.full_name === expectedFull
-                : value.full_name.includes(`.${suite}.${value.name}`) || value.full_name === expectedFull;
-            if (!isMatch) return false;
-        }
+        if (!is_test_in_suite(value, suite, usePaths)) return false;
         if (test !== "All" && value.name !== test) return false;
         return tag === "All" || parse_test_tags(value.tags).includes(tag);
     };
@@ -85,18 +89,46 @@ function group_timeline_values(data, labels, get_labels) {
     return groups;
 }
 
+// one resize observer per graph: every config build calls update_height, and an observer per call
+// would keep resizing the chart for every earlier build
+const heightObservers = new Map();
+
+// graphs key their runs on run_start, which is unique, and show this label: with run name labels many
+// runs share a label, so a label can't tell them apart. Cached per filtered runs array
+let runLabelsByRunStart = { runs: null, labels: new Map() };
+function get_run_label_by_run_start(runStart) {
+    if (runLabelsByRunStart.runs !== filteredRuns || runLabelsByRunStart.aliases !== settings.show.aliases) {
+        runLabelsByRunStart = {
+            runs: filteredRuns,
+            aliases: settings.show.aliases,
+            labels: new Map(filteredRuns.map(run => [run.run_start, get_run_label(run)])),
+        };
+    }
+    return runLabelsByRunStart.labels.get(runStart) ?? runStart;
+}
+
 // function to update the height of the test statistics graph and enable scrolling
 function update_height(verticalId, labels, graphType, internal = false) {
     const vertical = document.getElementById(verticalId);
     if (!internal) {
-        if (vertical.closest(".grid-stack-item")) { // if item is not hidden add resize observer
-            const observer = new ResizeObserver(entries => {
-                for (let entry of entries) {
-                    update_height(verticalId, labels, graphType, true);
-                    window[verticalId.replace("Vertical", "Graph")].resize();
-                }
-            });
-            observer.observe(vertical.closest(".grid-stack-item"));
+        const item = vertical.closest(".grid-stack-item");
+        const current = heightObservers.get(verticalId);
+        if (current && current.item !== item) {
+            current.observer.disconnect();
+            heightObservers.delete(verticalId);
+        }
+        if (item) { // if item is not hidden observe its size, with the label count of the latest build
+            if (!heightObservers.has(verticalId)) {
+                const entry = { item, labels, graphType };
+                entry.observer = new ResizeObserver(() => {
+                    update_height(verticalId, entry.labels, entry.graphType, true);
+                    window[verticalId.replace("Vertical", "Graph")]?.resize();
+                });
+                entry.observer.observe(item);
+                heightObservers.set(verticalId, entry);
+            } else {
+                Object.assign(heightObservers.get(verticalId), { labels, graphType });
+            }
         }
     }
     const fullscreen = vertical.closest(".grid-stack-item-content")
@@ -216,8 +248,10 @@ export {
     get_suite_data_exclusion,
     get_keyword_select_key,
     get_test_section_predicate,
+    is_test_in_suite,
     group_timeline_values,
     update_height,
+    get_run_label_by_run_start,
     convert_timeline_data,
     parse_test_attempts,
     resolve_test_status,

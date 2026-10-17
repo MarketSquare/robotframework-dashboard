@@ -10,7 +10,7 @@ function confirm_action(message = "Are you sure?") {
         openModals.forEach(modal => modal.classList.add("dimmed"));
         modalBody.innerHTML = message;
 
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         const onCancel = () => {
             resolve(false);
             modal.hide();
@@ -19,7 +19,9 @@ function confirm_action(message = "Are you sure?") {
             resolve(true);
             modal.hide();
         };
+        // Esc and a click on the backdrop close the modal without a button: that is a cancel
         const onHidden = () => {
+            resolve(false);
             cleanup();
         };
         const cleanup = () => {

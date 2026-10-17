@@ -14,7 +14,8 @@ import {
     rerunBorderWidth
 } from "../variables/chartconfig.js";
 import { settings, get_run_label } from "../variables/settings.js";
-import { convert_timeline_data, get_suite_data_exclusion, get_keyword_select_key, parse_test_attempts, resolve_test_status } from "./helpers.js";
+import { convert_timeline_data, get_suite_data_exclusion, get_keyword_select_key, is_test_in_suite, parse_test_attempts, resolve_test_status } from "./helpers.js";
+import { parse_test_tags } from "../common.js";
 import { compareRunIds } from "../variables/graphs.js";
 import { get_raw_run_start, get_test_note_marker } from "../notes/store.js";
 
@@ -22,15 +23,14 @@ import { get_raw_run_start, get_test_note_marker } from "../notes/store.js";
 function get_statistics_graph_data(dataType, graphType, filteredData) {
     const suiteSelectSuitesCombined = document.getElementById("suiteSelectSuites").value === "All Suites Combined";
     const keywordSelect = document.getElementById("keywordSelect").value;
-    const rawPassed = [], rawFailed = [], rawSkipped = [], labels = [], aliases = [], runNames = [];
+    const rawPassed = [], rawFailed = [], rawSkipped = [], labels = [], displayLabels = [];
     let names = [];
     const process_value = (value) => {
         rawPassed.push(value.passed);
         rawFailed.push(value.failed);
         rawSkipped.push(value.skipped);
         labels.push(value.run_start);
-        aliases.push(value.run_alias);
-        runNames.push(value.run_name ?? value.name);
+        displayLabels.push(get_run_label(value));
         names.push(value.name);
     };
     const exclude_from_suite_data = get_suite_data_exclusion(dataType);
@@ -39,14 +39,12 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
         if (dataType === "keyword" && get_keyword_select_key(value) !== keywordSelect) continue;
         process_value(value);
     }
-    const finalLabels = graphType !== "line"
-        ? (settings.show.aliases === "alias" ? aliases
-            : settings.show.aliases === "run_name" ? runNames
-            : labels)
-        : labels;
+    const finalLabels = graphType !== "line" ? displayLabels : labels;
     const styling = graphType !== "line" ? barConfig : lineConfig;
     let statisticsData = {
         labels: finalLabels,
+        // the run of every column, for the log links and tooltips (labels can repeat)
+        runStarts: labels.slice(),
         datasets: [
             {
                 label: "Failed",
@@ -75,17 +73,20 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
         ]
     };
     if (dataType === "suite" && suiteSelectSuitesCombined) {
-        const bundled = {};
+        // every suite of a run is added up per run, keyed on run_start: runs can share a label
+        const bundled = new Map();
         const groupedLabels = [];
+        const groupedRunStarts = [];
         const groupedData = Array(statisticsData.datasets.length).fill().map(() => []);
 
-        statisticsData.labels.forEach((label, i) => {
-            if (!(label in bundled)) {
-                bundled[label] = groupedLabels.length;
-                groupedLabels.push(label);
+        labels.forEach((runStart, i) => {
+            if (!bundled.has(runStart)) {
+                bundled.set(runStart, groupedRunStarts.length);
+                groupedRunStarts.push(runStart);
+                groupedLabels.push(statisticsData.labels[i]);
                 statisticsData.datasets.forEach((_, d) => groupedData[d].push(0));
             }
-            const idx = bundled[label];
+            const idx = bundled.get(runStart);
             statisticsData.datasets.forEach((dataset, d) => {
                 groupedData[d][idx] += dataset.data[i];
             });
@@ -94,6 +95,7 @@ function get_statistics_graph_data(dataType, graphType, filteredData) {
             dataset.data = groupedData[i];
         });
         statisticsData.labels = groupedLabels;
+        statisticsData.runStarts = groupedRunStarts;
         names = Array(statisticsData.labels.length).fill("All Suites Combined");
     }
     if (graphType === "percentages") {
@@ -153,21 +155,11 @@ function _get_test_label(test) {
 
 function _should_skip_test(test, filters) {
     if (settings.menu.dashboard) {
-        const testBaseName = test.name;
-        if (filters.suiteSelectTests !== "All") {
-            const expectedFull = `${filters.suiteSelectTests}.${testBaseName}`;
-            const isMatch = settings.switch.suitePathsTestSection
-                ? test.full_name === expectedFull
-                : test.full_name.includes(`.${filters.suiteSelectTests}.${testBaseName}`) || test.full_name === expectedFull;
-            if (!isMatch) return true;
-        }
-        if (filters.testSelect !== "All" && testBaseName !== filters.testSelect) return true;
-        if (filters.testTagsSelect !== "All") {
-            const tagList = test.tags.replace(/\[|\]/g, "").split(",");
-            if (!tagList.includes(filters.testTagsSelect)) return true;
-        }
+        if (!is_test_in_suite(test, filters.suiteSelectTests, settings.switch.suitePathsTestSection)) return true;
+        if (filters.testSelect !== "All" && test.name !== filters.testSelect) return true;
+        if (filters.testTagsSelect !== "All" && !parse_test_tags(test.tags).includes(filters.testTagsSelect)) return true;
     } else if (settings.menu.compare) {
-        if (!(filters.selectedRuns.includes(test.run_start) || filters.selectedRuns.includes(test.run_alias) || filters.selectedRuns.includes(test.run_name))) return true;
+        if (!filters.selectedRuns.includes(test.run_start)) return true;
     }
     return false;
 }
@@ -183,7 +175,8 @@ function get_test_statistics_data(filteredTests) {
         if (!labels.includes(testLabel)) {
             labels.push(testLabel);
         }
-        const runId = get_run_label(test);
+        // a column per run: the label of a run can be shared by other runs (run name labels)
+        const runId = test.run_start;
 
         if (!runStarts.includes(runId)) {
             runStarts.push(runId);
@@ -214,27 +207,26 @@ function get_test_statistics_data(filteredTests) {
         return [{ labels: [], datasets: [] }, [], {}];
     }
     if (filters.testOnlyChanges || filters.compareOnlyChanges || filters.testNoChanges !== "All" || filters.compareNoChanges !== "All") {
-        const countMap = {};
+        // the statuses (fill colors) of every test: the grouped datasets are also split by the rerun
+        // and note borders, which are not a status change
+        const statusesByLabel = new Map();
         for (const ds of finalDatasets) {
-            countMap[ds.label] = (countMap[ds.label] || 0) + 1;
+            if (!statusesByLabel.has(ds.label)) statusesByLabel.set(ds.label, new Set());
+            statusesByLabel.get(ds.label).add(ds.backgroundColor);
         }
         let labelsToKeep = new Set();
         if (filters.testOnlyChanges || filters.compareOnlyChanges) {
-            // Only keep the tests that have more than 1 status change
-            labelsToKeep = new Set(Object.keys(countMap).filter(label => countMap[label] > 1));
+            // Only keep the tests that have more than 1 status
+            labelsToKeep = new Set([...statusesByLabel.keys()].filter(label => statusesByLabel.get(label).size > 1));
         } else if (filters.testNoChanges !== "All" || filters.compareNoChanges !== "All") {
-            const countMap = {};
-            for (const ds of finalDatasets) {
-                countMap[ds.label] = (countMap[ds.label] || 0) + 1;
-            }
-            labelsToKeep = new Set(Object.keys(countMap).filter(label => {
-                // Only keep tests that appear once (no status changes)
-                if (countMap[label] !== 1) return false;
-                const dataset = finalDatasets.find(ds => ds.label === label);
-                if (!dataset) return false;
-                const isPassedTest = dataset.backgroundColor === passedBackgroundColor;
-                const isFailedTest = dataset.backgroundColor === failedBackgroundColor;
-                const isSkippedTest = dataset.backgroundColor === skippedBackgroundColor;
+            labelsToKeep = new Set([...statusesByLabel.keys()].filter(label => {
+                // Only keep tests that kept one status (no status changes)
+                const statuses = statusesByLabel.get(label);
+                if (statuses.size !== 1) return false;
+                const [status] = statuses;
+                const isPassedTest = status === passedBackgroundColor;
+                const isFailedTest = status === failedBackgroundColor;
+                const isSkippedTest = status === skippedBackgroundColor;
                 return (
                     (filters.testNoChanges === "Passed" && isPassedTest) ||
                     (filters.testNoChanges === "Failed" && isFailedTest) ||
@@ -362,11 +354,10 @@ function get_compare_statistics_graph_data(filteredData) {
             .filter(val => val !== "None")
     )];
     const datasets = selectedRuns.map(runId => {
-        const match = filteredData.find(d =>
-            d.run_start === runId || d.run_alias === runId || (d.run_name ?? d.name) === runId
-        );
+        const match = filteredData.find(d => d.run_start === runId);
         return match ? {
             label: get_run_label(match),
+            runStart: match.run_start,
             data: [match.passed, match.failed, match.skipped],
             ...barConfig
         } : null;

@@ -8,7 +8,7 @@ import { format_duration } from "../common.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
 import { get_keyword_stats_data } from "../graph_data/stats.js";
-import { update_height, get_keyword_select_key } from "../graph_data/helpers.js";
+import { update_height, get_keyword_select_key, get_run_label_by_run_start } from "../graph_data/helpers.js";
 
 function _build_keyword_statistics_config() {
     const data = get_statistics_graph_data("keyword", settings.graphTypes.keywordStatisticsGraphType, filteredKeywords);
@@ -96,7 +96,7 @@ function _build_keyword_exceptions_config() {
         config.options.plugins.tooltip = {
             callbacks: {
                 label: function (context) {
-                    const runLabel = callbackData[context.raw.x[0]];
+                    const runLabel = get_run_label_by_run_start(callbackData[context.raw.x[0]]);
                     const exceptionLabel = context.raw.y;
                     const key = `${exceptionLabel}::${context.raw.x[0]}`;
                     const meta = pointMeta ? pointMeta[key] : null;
@@ -115,7 +115,7 @@ function _build_keyword_exceptions_config() {
                 maxRotation: 45,
                 stepSize: 1,
                 callback: function (value, index, ticks) {
-                    return callbackData[this.getLabelForValue(value)];
+                    return get_run_label_by_run_start(callbackData[this.getLabelForValue(value)]);
                 },
             },
             title: {

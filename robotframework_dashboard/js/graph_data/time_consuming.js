@@ -18,7 +18,8 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
     }
     const limit = inFullscreen && inFullscreenGraph.includes("MostTimeConsuming") ? 50 : 10;
     if (onlyLastRun) {
-        const latestRunStart = filteredData[filteredData.length - 1].run_start;
+        // empty when the filters match nothing: the filter below then keeps nothing either
+        const latestRunStart = filteredData.at(-1)?.run_start;
         filteredData = filteredData.filter(
             (item) => item.run_start === latestRunStart
         );
@@ -179,7 +180,7 @@ function get_most_time_consuming_or_most_used_data(dataType, graphType, filtered
     if (graphType === "timeline") {
         const labels = [];
         const runStarts = Array.from(perRunMap.values()).sort(
-            (a, b) => new Date(a.runStart) - new Date(b.runStart)
+            (a, b) => new Date(String(a.runStart).replace(" ", "T")) - new Date(String(b.runStart).replace(" ", "T"))
         );
 
         const sortedKeys = sortedData.map(([key]) => key);

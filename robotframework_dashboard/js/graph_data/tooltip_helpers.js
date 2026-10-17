@@ -43,6 +43,8 @@ function build_tooltip_meta(filteredData, durationField = 'elapsed_s', aggregate
 function lookup_tooltip_meta(meta, tooltipItems) {
     if (!tooltipItems || !tooltipItems.length) return null;
     const item = tooltipItems[0];
+    const runStart = item.chart?.data?.runStarts?.[item.dataIndex];
+    if (runStart != null && meta.byLabel[runStart]) return meta.byLabel[runStart];
     // Try chart data labels array (bar/timeline charts)
     const labels = item.chart?.data?.labels;
     if (labels && labels[item.dataIndex] != null) {

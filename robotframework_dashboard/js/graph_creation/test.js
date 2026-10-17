@@ -4,7 +4,7 @@ import { get_messages_data } from "../graph_data/messages.js";
 import { get_duration_deviation_data } from "../graph_data/duration_deviation.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { build_tooltip_meta, lookup_tooltip_meta, format_status } from "../graph_data/tooltip_helpers.js";
-import { update_height, format_attempt_lines, get_test_section_predicate } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines, get_test_section_predicate, get_run_label_by_run_start } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filteredTests } from "../variables/globals.js";
@@ -32,7 +32,7 @@ function _build_test_statistics_timeline_config() {
     config.options.plugins.tooltip = {
         callbacks: {
             label: function (context) {
-                const runLabel = runStarts[context.raw.x[0]];
+                const runLabel = get_run_label_by_run_start(runStarts[context.raw.x[0]]);
                 const testLabel = context.raw.y;
                 const key = `${testLabel}::${context.raw.x[0]}`;
                 const meta = testMetaMap[key];
@@ -57,7 +57,7 @@ function _build_test_statistics_timeline_config() {
             maxRotation: 45,
             stepSize: 1,
             callback: function (value, index, ticks) {
-                return runStarts[this.getLabelForValue(value)];
+                return get_run_label_by_run_start(runStarts[this.getLabelForValue(value)]);
             },
         },
         title: {
@@ -71,7 +71,8 @@ function _build_test_statistics_timeline_config() {
             open_log_file(event, chartElement, runStarts)
         }
     };
-    set_chart_note_target("testStatisticsGraph", timeline_test_note_target(testMetaMap, runStarts));
+    set_chart_note_target("testStatisticsGraph", timeline_test_note_target(testMetaMap, runStarts.map(get_run_label_by_run_start)));
+    config.data.runStarts = runStarts;
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     update_height("testStatisticsVertical", config.data.labels.length, "timeline");
     return config;
@@ -254,7 +255,7 @@ function _build_test_messages_config() {
         config.options.plugins.tooltip = {
             callbacks: {
                 label: function (context) {
-                    const runLabel = callbackData[context.raw.x[0]];
+                    const runLabel = get_run_label_by_run_start(callbackData[context.raw.x[0]]);
                     const testLabel = context.raw.y;
                     const key = `${testLabel}::${context.raw.x[0]}`;
                     const meta = pointMeta ? pointMeta[key] : null;
@@ -278,7 +279,7 @@ function _build_test_messages_config() {
                 maxRotation: 45,
                 stepSize: 1,
                 callback: function (value, index, ticks) {
-                    return callbackData[this.getLabelForValue(value)];
+                    return get_run_label_by_run_start(callbackData[this.getLabelForValue(value)]);
                 },
             },
             title: {

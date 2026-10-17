@@ -3,6 +3,7 @@ import {
     compare_to_average,
     transform_file_path,
     format_duration,
+    get_run_status,
     format_relative_time,
     format_run_start_exact,
     get_project_names,
@@ -444,7 +445,7 @@ function create_project_overview() {
 // creates overview project section
 function create_project_cards_container(projectName, projectRuns, percent = null) {
     const totalRunsAmount = projectRuns.length;
-    const passedRunsAmount = projectRuns.filter(run => run.failed === 0).length;
+    const passedRunsAmount = projectRuns.filter(run => get_run_status(run) === "passed").length;
     const passRate = ((passedRunsAmount / totalRunsAmount) * 100).toFixed(2);
     const cardsContainer = document.getElementById(`${projectName}RunCardsContainer`);
     const durations = projectRuns.map(r => r.elapsed_s);
@@ -509,7 +510,7 @@ function create_overview_latest_graphs(preFilteredRuns = null) {
     for (const [projectName, latestRun] of Object.entries(latestRunByProject)) {
         const projectRuns = allProjects[projectName];
         const totalRunsAmount = projectRuns.length;
-        const passedRunsAmount = projectRuns.filter(run => run.failed === 0).length;
+        const passedRunsAmount = projectRuns.filter(run => get_run_status(run) === "passed").length;
         const passRate = ((passedRunsAmount / totalRunsAmount) * 100).toFixed(2);
         const projectRunDurations = projectRuns.map(run => run.elapsed_s);
 
@@ -551,9 +552,9 @@ function create_overview_total_graphs(preFilteredRuns = null) {
     for (const [projectName, latestRun] of Object.entries(latestRunByProject)) {
         const projectRuns = allProjects[projectName];
         const totalRunsAmount = projectRuns.length;
-        const passedRunsAmount = projectRuns.filter(run => run.failed === 0 && run.passed > 0).length;
+        const passedRunsAmount = projectRuns.filter(run => get_run_status(run) === "passed").length;
         const failedRunsAmount = projectRuns.filter(run => run.failed > 0).length;
-        const skippedRunsAmount = projectRuns.filter(run => run.failed === 0 && run.passed === 0 && run.skipped > 0).length;
+        const skippedRunsAmount = projectRuns.filter(run => get_run_status(run) === "skipped").length;
         const passRate = ((passedRunsAmount / totalRunsAmount) * 100).toFixed(2);
         const projectRunDurations = projectRuns.map(run => run.elapsed_s);
         const avgDuration = projectRunDurations.reduce((a, b) => a + Number(b), 0) / projectRunDurations.length;
@@ -595,11 +596,14 @@ function create_project_run_card(run, projectName, runIndex, runNumber, passRate
     const stats = [passedCount, failedCount, skippedCount, run.elapsed_s, run.path, run.full_name];
     const duration = isTotalStats ? run.average_duration ?? run.elapsed_s : run.elapsed_s;
     const duration_rounded = format_duration(Number(duration));
-    const durationsForAvg = durations.filter(item => item !== duration);
+    // durations are in run order and the cards newest first, so runIndex counts from the end; a total
+    // stats card compares the average with every run. By position, so runs with the same duration stay in
+    const excludedIndex = isTotalStats ? -1 : durations.length - 1 - runIndex;
+    const durationsForAvg = durations.filter((_, index) => index !== excludedIndex);
     const average = durationsForAvg.length ? avg(durationsForAvg) : duration;
     const status = isTotalStats
         ? (failedCount > 0 ? 'failed' : (skippedCount > 0 && passedCount === 0 ? 'skipped' : 'passed'))
-        : (run.failed > 0 ? 'failed' : (run.skipped > 0 && run.passed === 0 ? 'skipped' : 'passed'));
+        : get_run_status(run);
     const logPath = (!isTotalStats && use_logs) ? transform_file_path(run.path).replaceAll('\\', '\\\\') : '';
     const logName = (!isTotalStats && use_logs) ? 'log.html' : '';
     const isDark = document.documentElement.classList.contains("dark-mode");
@@ -781,7 +785,7 @@ function update_grouped_data_for_filter() {
             const subtitleEl = bar.querySelector(".card-header h6");
             if (subtitleEl) {
                 const totalRunsAmount = projectRuns.length;
-                const passedRunsAmount = projectRuns.filter(run => run.failed === 0).length;
+                const passedRunsAmount = projectRuns.filter(run => get_run_status(run) === "passed").length;
                 const passRate = ((passedRunsAmount / totalRunsAmount) * 100).toFixed(2);
                 subtitleEl.textContent = `Total Runs: ${totalRunsAmount} | Passed Runs: ${passRate}%`;
             }

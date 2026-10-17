@@ -1,6 +1,6 @@
 import { settings } from '../variables/settings.js';
 import { exceptions, filteredAmount, keywords, runs, suites, tests, unified_dashboard_title } from '../variables/data.js';
-import { get_run_projects, strip_tz_suffix } from '../common.js';
+import { get_run_projects, parse_metadata_items, strip_tz_suffix } from '../common.js';
 import { filteredExceptions, filteredKeywords, filteredRuns, filteredSuites, filteredTests, selectedRunSetting, selectedTagSetting } from '../variables/globals.js';
 import { setup_keywords_in_select, setup_runs_in_compare_selects, setup_suites_in_suite_select, setup_suites_in_test_select, setup_tests_in_select, setup_testtags_in_select } from './section_selects.js';
 import { filter_runs_by_suite_path, filter_suite_path_data } from './suite_path.js';
@@ -26,13 +26,15 @@ function get_transformed_data(name) {
     if (!(name in transformedDataCache.data)) {
         const sourceData = { runs, suites, tests, keywords, exceptions }[name];
         const transformed = remove_timezones(convert_timezone(remove_milliseconds(sourceData)));
-        if (name === "runs" || name === "tests") keep_raw_run_start(sourceData, transformed);
+        keep_raw_run_start(sourceData, transformed);
         transformedDataCache.data[name] = transformed;
     }
     return transformedDataCache.data[name];
 }
 
-// notes are keyed on the stored run_start; the transforms map row by row, so indexes still line up
+// the stored run_start of every row: hiding milliseconds or timezones can give two runs the same
+// run_start, so the filters match rows to runs on this one (and notes are keyed on it).
+// The transforms map row by row, so indexes still line up
 function keep_raw_run_start(sourceData, transformed) {
     if (transformed === sourceData) return;
     for (let index = 0; index < transformed.length; index++) {
@@ -107,6 +109,9 @@ function setup_filtered_data_and_filters() {
     document.getElementById("tablesTitle").innerHTML = `Table Statistics (${runAmount}) ${message}`;
     // update filters based on data
     setup_runs_in_compare_selects();
+    // the graphs reset the suite folder to All when they are updated (update_suite_folder_donut_graph),
+    // so the suite select is built for All as well instead of for the folder that is about to go
+    document.getElementById("suiteFolder").innerText = "All";
     setup_suites_in_suite_select();
     setup_suites_in_test_select();
     setup_testtags_in_select();
@@ -354,8 +359,9 @@ function build_date_range(fromDate, fromTime, toDate, toTime) {
     if (!fromDate || !fromTime || !toDate || !toTime) {
         return null;
     }
-    const from = new Date(`${fromDate} ${fromTime}:00`);
-    const to = new Date(`${toDate} ${toTime}:59.999`);
+    // the ISO "T" form, which every browser parses as local time (Safari rejected a space)
+    const from = new Date(`${fromDate}T${fromTime}:00`);
+    const to = new Date(`${toDate}T${toTime}:59.999`);
     if (from > to) {
         return null;
     }
@@ -446,7 +452,8 @@ function filter_amount(filteredRuns) {
 
 function apply_metadata_filter(filteredRuns, selectedMetadata) {
     if (selectedMetadata == '' || selectedMetadata == 'All' || selectedMetadata == undefined) return filteredRuns;
-    return filteredRuns.filter(run => (run.metadata || "").includes(selectedMetadata));
+    // the whole item, so "Env: prod" does not also match "Env: production"
+    return filteredRuns.filter(run => parse_metadata_items(run.metadata).includes(selectedMetadata));
 }
 
 // function to filter the runs based on the selected metadata key:value pair
@@ -456,8 +463,9 @@ function filter_metadata(filteredRuns) {
 
 // function to filter suites/tests/keywords based on the already filtered runs
 function filter_data(data) {
-    const validRunStarts = new Set(filteredRuns.map(v => v.run_start));
-    let filteredData = data.filter(v => validRunStarts.has(v.run_start));
+    const stored_run_start = (row) => row.raw_run_start ?? row.run_start;
+    const validRunStarts = new Set(filteredRuns.map(stored_run_start));
+    let filteredData = data.filter(v => validRunStarts.has(stored_run_start(v)));
     if (filteredData.length > 0 && "owner" in filteredData[0]) {
         const libraries = settings.libraries || {};
         filteredData = filteredData.filter(item => {
@@ -481,6 +489,7 @@ export {
     apply_run_name_filter,
     apply_runtag_filter,
     build_date_range,
+    filter_data,
     collect_custom_filter_dimensions,
     convert_timezone,
     dashboardPages,

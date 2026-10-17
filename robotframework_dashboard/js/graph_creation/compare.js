@@ -1,7 +1,7 @@
 import { get_test_statistics_data, get_compare_statistics_graph_data } from "../graph_data/statistics.js";
 import { get_compare_suite_duration_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
-import { update_height, format_attempt_lines } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines, get_run_label_by_run_start } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { filteredRuns, filteredSuites, filteredTests } from "../variables/globals.js";
@@ -30,7 +30,7 @@ function _build_compare_tests_config() {
     config.options.plugins.tooltip = {
         callbacks: {
             label: function (context) {
-                const runLabel = runStarts[context.raw.x[0]];
+                const runLabel = get_run_label_by_run_start(runStarts[context.raw.x[0]]);
                 const testLabel = context.raw.y;
                 const key = `${testLabel}::${context.raw.x[0]}`;
                 const meta = testMetaMap[key];
@@ -55,7 +55,7 @@ function _build_compare_tests_config() {
             maxRotation: 45,
             stepSize: 1,
             callback: function (value, index, ticks) {
-                return runStarts[this.getLabelForValue(value)];
+                return get_run_label_by_run_start(runStarts[this.getLabelForValue(value)]);
             },
         },
         title: {
@@ -68,7 +68,8 @@ function _build_compare_tests_config() {
             open_log_file(event, chartElement, runStarts)
         }
     };
-    set_chart_note_target("compareTestsGraph", timeline_test_note_target(testMetaMap, runStarts));
+    set_chart_note_target("compareTestsGraph", timeline_test_note_target(testMetaMap, runStarts.map(get_run_label_by_run_start)));
+    config.data.runStarts = runStarts;
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     update_height("compareTestsVertical", config.data.labels.length, "timeline");
     return config;

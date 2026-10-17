@@ -2,7 +2,7 @@ import { get_most_failed_data } from "../graph_data/failed.js";
 import { get_most_flaky_data } from "../graph_data/flaky.js";
 import { get_most_time_consuming_or_most_used_data } from "../graph_data/time_consuming.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
-import { update_height, format_attempt_lines } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines, get_run_label_by_run_start } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { settings } from "../variables/settings.js";
@@ -10,7 +10,8 @@ import { inFullscreen, inFullscreenGraph } from "../variables/globals.js";
 import { set_chart_note_target, timeline_test_note_target, test_note_lines } from "../notes/chart_notes.js";
 
 function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataType = null, callbackLookup = null) {
-    const lookupFn = callbackLookup || ((val) => callbackData[val]);
+    // callbackData holds the run_start of every column, shown as its run label
+    const lookupFn = callbackLookup || ((val) => get_run_label_by_run_start(callbackData[val]));
     config.options.plugins.tooltip = {
         callbacks: {
             label: function (context) {
@@ -58,6 +59,8 @@ function _apply_timeline_defaults(config, callbackData, pointMeta = null, dataTy
             open_log_file(event, chartElement, callbackData);
         }
     };
+    // the run of every column for a click on its axis label (open_log_from_label)
+    config.data.runStarts = callbackData;
     if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false; }
 }
 
@@ -86,7 +89,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
         config.options.scales.x.type = "timelineScale";
         config.options.scales.y.ticks.autoSkip = false;
-        if (dataType === "test") set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData));
+        if (dataType === "test") set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData.map(get_run_label_by_run_start)));
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
@@ -110,7 +113,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
         _apply_timeline_defaults(config, callbackData, pointMeta, dataType);
         config.options.scales.x.type = "timelineScale";
         config.options.scales.y.ticks.autoSkip = false;
-        set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData));
+        set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData.map(get_run_label_by_run_start)));
     }
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;

@@ -3,9 +3,14 @@ import { open_log_from_label } from "../log.js";
 function create_chart(chartId, buildConfigFn, addLogClickHandler = true) {
     if (window[chartId]) window[chartId].destroy();
     window[chartId] = new Chart(chartId, buildConfigFn());
-    if (addLogClickHandler) {
-        window[chartId].canvas.addEventListener("click", (event) => {
-            open_log_from_label(window[chartId], event);
+    // the canvas outlives its charts (a graph type change creates a new chart on it), so it gets
+    // one listener that reads the current chart instead of one listener per chart
+    const canvas = window[chartId].canvas;
+    canvas.dataset.logClick = addLogClickHandler ? "true" : "";
+    if (!canvas.dataset.logClickBound) {
+        canvas.dataset.logClickBound = "true";
+        canvas.addEventListener("click", (event) => {
+            if (canvas.dataset.logClick && window[chartId]) open_log_from_label(window[chartId], event);
         });
     }
 }

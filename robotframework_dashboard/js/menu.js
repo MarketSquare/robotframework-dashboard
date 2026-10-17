@@ -194,6 +194,8 @@ function setup_spinner(hide) {
     }
 }
 
+let dashboardNavListenersBound = false;
+
 // function to update the section (menu) buttons with the correct eventlisteners
 // also sets up the automatic highlighting of the section that is most visible in the top
 // 20-50% percent of the screen
@@ -234,10 +236,13 @@ function setup_dashboard_section_menu_buttons() {
             sectionMap[bestMatch.id].setAttribute("aria-current", "true");
         }
     }
-
-    window.addEventListener("scroll", update_active_section);
     update_active_section();
 
+    // the buttons and sections are in the template and outlive every rebuild that calls this function,
+    // so their listeners are added once instead of once per rebuild
+    if (dashboardNavListenersBound) return;
+    dashboardNavListenersBound = true;
+    window.addEventListener("scroll", update_active_section);
     sectionButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             const target = document.getElementById(btn.id.slice(0, -3));

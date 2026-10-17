@@ -206,3 +206,12 @@ describe('get_most_time_consuming_or_most_used_data', () => {
         });
     });
 });
+
+describe('get_most_time_consuming_or_most_used_data with no data', () => {
+    it('returns empty graph data for only the last run instead of throwing', () => {
+        for (const graphType of ['bar', 'timeline']) {
+            const [graphData] = get_most_time_consuming_or_most_used_data('test', graphType, [], true, false);
+            expect(graphData.labels ?? []).toEqual([]);
+        }
+    });
+});

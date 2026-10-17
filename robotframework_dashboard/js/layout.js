@@ -299,15 +299,16 @@ function setup_section_order() {
         document.querySelectorAll(".move-up-section").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".move-down-section").forEach(btn => { btn.hidden = false })
         document.querySelectorAll(".shown-section, .hidden-section").forEach(btn => {
-            const prefix = btn.id.slice(0, 3);
-            const label = prefix.charAt(0).toUpperCase();
+            // the section name save_layout stores for this button: runSectionShown -> "Run Statistics"
+            const key = btn.id.replace(/Section(Shown|Hidden)$/, "");
+            const sectionName = `${key.charAt(0).toUpperCase()}${key.slice(1)} Statistics`;
             // Decide context: dashboard or overview based on the containing section/card
             const isOverview = !!btn.closest('#overview');
             const showList = isOverview
                 ? settings.view.overview.sections.show
                 : settings.view.dashboard.sections.show;
 
-            let shouldShow = showList.some(section => section.startsWith(label));
+            const shouldShow = showList.includes(sectionName);
 
             if (btn.classList.contains("shown-section")) {
                 btn.hidden = !shouldShow;

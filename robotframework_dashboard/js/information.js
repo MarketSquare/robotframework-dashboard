@@ -14,6 +14,10 @@ const holidayGreetings = {
     'easter': 'Robot Framework - Happy Easter'
 };
 
+let informationListenersBound = false;
+let tooltipEl = null;
+let currentTarget = null;
+
 // function to fill the information icons with the correct data
 function setup_information_popups() {
     // Get the active decoration and customize rflogo text if needed
@@ -31,8 +35,10 @@ function setup_information_popups() {
         element.setAttribute("data-title", title);
     }
 
-    let tooltipEl = null;
-    let currentTarget = null;
+    // the page is rebuilt often and every rebuild calls this function, so the delegated listeners
+    // below are added once and share one tooltip
+    if (informationListenersBound) return;
+    informationListenersBound = true;
 
     function createTooltip(el) {
         if (tooltipEl) removeTooltip();
@@ -97,29 +103,16 @@ function setup_information_popups() {
         return !(style.display === 'none' || style.visibility === 'hidden' || el.offsetParent === null);
     }
 
-    document.querySelectorAll('.information[data-title]').forEach(el => {
-        el.onmouseenter = null;
-        el.onmouseleave = null;
-        el.onclick = null;
+    // an icon that hides itself on click (e.g. the layout buttons) leaves no mouseover to remove its tooltip
+    document.addEventListener('click', () => {
+        setTimeout(() => {
+            if (currentTarget && !isElementVisible(currentTarget)) removeTooltip();
+        }, 0);
+    });
 
-        el.addEventListener('mouseenter', () => {
-            if (currentTarget !== el) {
-                currentTarget = el;
-                createTooltip(el);
-            }
-        });
-
-        el.addEventListener('mouseleave', () => {
-            if (currentTarget === el) {
-                removeTooltip();
-            }
-        });
-
-        el.addEventListener('click', () => {
-            if (!isElementVisible(el) && currentTarget === el) {
-                removeTooltip();
-            }
-        });
+    // leaving the window fires no mouseover on another element
+    document.addEventListener('mouseout', e => {
+        if (!e.relatedTarget && currentTarget) removeTooltip();
     });
 
     document.addEventListener('mouseover', e => {

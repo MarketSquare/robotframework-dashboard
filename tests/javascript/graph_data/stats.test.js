@@ -4,7 +4,7 @@ vi.mock('@js/variables/globals.js', () => ({ inFullscreen: false, inFullscreenGr
 vi.mock('@js/variables/settings.js', () => ({ settings: { show: { rounding: 6 } } }));
 vi.mock('@js/variables/chartconfig.js', () => ({ barConfig: {} }));
 
-import { get_test_stats_data } from '@js/graph_data/stats.js';
+import { get_stats_data, get_test_stats_data } from '@js/graph_data/stats.js';
 
 const RECOVERED = '[{"status": "FAIL", "message": "boom"}, {"status": "PASS", "message": ""}]';
 const HARD_FAIL = '[{"status": "FAIL", "message": "a"}, {"status": "FAIL", "message": "b"}]';
@@ -46,5 +46,21 @@ describe('get_test_stats_data', () => {
         expect(data.passRate).toBe('N/A');
         expect(data.reranTests).toBe(0);
         expect(data.recoveredOnRerun).toBe('0 (0%)');
+    });
+});
+
+describe('get_stats_data', () => {
+    const run = (overrides) => ({ total: 4, passed: 4, failed: 0, skipped: 0, elapsed_s: 10, ...overrides });
+
+    it('leaves runs without tests out of the average pass rate', () => {
+        const data = get_stats_data([run({ passed: 2, failed: 2 }), run({ total: 0, passed: 0 })], [], [], []);
+        expect(data.averagePassRate).toBe('50%');
+        expect(data.averageRunTime).toBe(10);
+    });
+
+    it('shows 0 instead of NaN when no runs are left', () => {
+        const data = get_stats_data([], [], [], []);
+        expect(data.averagePassRate).toBe('0%');
+        expect(data.averageRunTime).toBe(0);
     });
 });

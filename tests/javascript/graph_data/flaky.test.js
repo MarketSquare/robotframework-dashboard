@@ -210,26 +210,24 @@ describe('get_most_flaky_data', () => {
             expect(runStarts[1]).toBe('2025-01-17 10:00:00');
         });
 
-        it('uses run_alias when show.aliases is true', () => {
+        it('returns the run_start of every column with alias labels', () => {
             settings.show.aliases = 'alias';
             const data = makeTestData([
                 { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', passed: 1 },
                 { name: 'Test A', run_start: '2025-01-16 10:00:00', run_alias: 'Alias2', failed: 1 },
             ]);
             const [, runStarts] = get_most_flaky_data('test', 'timeline', data, false, false, 10);
-            expect(runStarts).toContain('Alias1');
-            expect(runStarts).toContain('Alias2');
+            expect(runStarts).toEqual(['2025-01-15 10:00:00', '2025-01-16 10:00:00']);
         });
 
-        it('uses run_name when show.aliases is run_name', () => {
+        it('keeps a column per run when runs share a run name', () => {
             settings.show.aliases = 'run_name';
             const data = makeTestData([
-                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'Run One', passed: 1 },
-                { name: 'Test A', run_start: '2025-01-16 10:00:00', run_alias: 'Alias2', run_name: 'Run Two', failed: 1 },
+                { name: 'Test A', run_start: '2025-01-15 10:00:00', run_alias: 'Alias1', run_name: 'Nightly', passed: 1 },
+                { name: 'Test A', run_start: '2025-01-16 10:00:00', run_alias: 'Alias2', run_name: 'Nightly', failed: 1 },
             ]);
             const [, runStarts] = get_most_flaky_data('test', 'timeline', data, false, false, 10);
-            expect(runStarts).toContain('Run One');
-            expect(runStarts).toContain('Run Two');
+            expect(runStarts).toEqual(['2025-01-15 10:00:00', '2025-01-16 10:00:00']);
         });
 
         it('color codes by status (PASS, FAIL, SKIP)', () => {

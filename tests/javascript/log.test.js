@@ -35,7 +35,7 @@ beforeEach(() => {
     globalThis.alert = vi.fn();
 });
 
-const { open_log_file } = await import('@js/log.js');
+const { open_log_file, open_log_from_path, open_log_from_label } = await import('@js/log.js');
 
 // Build a fake chart click event for a non-line, non-doughnut graph that
 // reads chart.data.labels[index]. Matches the path log.js takes for e.g.
@@ -105,5 +105,67 @@ describe('open_log_file', () => {
         open_log_file(event, [{ index: 0 }]);
         expect(globalThis.alert).toHaveBeenCalledTimes(1);
         expect(globalThis.window.open).not.toHaveBeenCalled();
+    });
+});
+
+describe('open_log_from_path in server mode', () => {
+    it('encodes the path and keeps the suite or test anchor', () => {
+        dataMock.server = true;
+        open_log_from_path('/results/run 1/log&build+2%.html#s1-s2-t3');
+        expect(window.open).toHaveBeenCalledWith('/log?path=%2Fresults%2Frun%201%2Flog%26build%2B2%25.html#s1-s2-t3', '_blank');
+        open_log_from_path('C:\\results\\log.html');
+        expect(window.open).toHaveBeenLastCalledWith('/log?path=C%3A%5Cresults%5Clog.html', '_blank');
+        dataMock.server = false;
+    });
+});
+
+describe('open_log_from_label', () => {
+    // a category axis where Chart.js skipped every other label: 4 ticks for 8 runs, 100px apart
+    function make_chart(labels) {
+        const ticks = [0, 2, 4, 6].map(value => ({ value, label: labels[value] }));
+        return {
+            canvas: { getBoundingClientRect: () => ({ left: 0, top: 0 }) },
+            config: { _config: { options: {} } },
+            data: { labels },
+            scales: { x: { ticks, top: 300, bottom: 340, left: 50, right: 450, width: 400, getPixelForTick: (index) => 50 + index * 100 } },
+        };
+    }
+
+    it('opens the run of the clicked label when the axis skips labels', () => {
+        const labels = Array.from({ length: 8 }, (_, index) => `2025-01-0${index + 1} 10:00:00`);
+        globalsMock.filteredRuns.push(...labels.map(run_start => ({ run_start, path: `/results/output-${run_start.slice(8, 10)}.xml` })));
+        open_log_from_label(make_chart(labels), { clientX: 255, clientY: 320 });
+        expect(window.open).toHaveBeenCalledTimes(1);
+        expect(window.open.mock.calls[0][0]).toContain('log-05.html');
+    });
+
+    it('ignores a click above the axis', () => {
+        const labels = Array.from({ length: 8 }, (_, index) => `2025-01-0${index + 1} 10:00:00`);
+        globalsMock.filteredRuns.push(...labels.map(run_start => ({ run_start, path: '/results/output.xml' })));
+        open_log_from_label(make_chart(labels), { clientX: 255, clientY: 100 });
+        expect(window.open).not.toHaveBeenCalled();
+    });
+});
+
+describe('open_log_file with repeated labels', () => {
+    it('opens the run of the clicked column from the graph data', () => {
+        globalsMock.filteredRuns.push(
+            { run_start: '2025-01-15 10:00:00', path: '/results/output-first.xml' },
+            { run_start: '2025-01-16 10:00:00', path: '/results/output-second.xml' },
+        );
+        const event = makeBarClickEvent('Nightly');
+        event.chart.data = { labels: ['Nightly', 'Nightly'], runStarts: ['2025-01-15 10:00:00', '2025-01-16 10:00:00'] };
+        open_log_file(event, [{ index: 1 }]);
+        expect(window.open.mock.calls[0][0]).toContain('log-second.html');
+    });
+
+    it('tells apart two runs started in the same second by their milliseconds', () => {
+        globalsMock.filteredRuns.push(
+            { run_start: '2025-01-15 10:00:00.100', path: '/results/output-a.xml' },
+            { run_start: '2025-01-15 10:00:00.900', path: '/results/output-b.xml' },
+        );
+        const event = makeBarClickEvent('2025-01-15 10:00:00.900');
+        open_log_file(event, [{ index: 0 }]);
+        expect(window.open.mock.calls[0][0]).toContain('log-b.html');
     });
 });

@@ -83,7 +83,7 @@ function setup_merge_profiles_modal() {
         const filtersModalEl = document.getElementById("filtersModal");
         const mergeModalEl = document.getElementById("mergeProfilesModal");
         filtersModalEl.classList.add("dimmed");
-        const mergeModal = new bootstrap.Modal(mergeModalEl);
+        const mergeModal = bootstrap.Modal.getOrCreateInstance(mergeModalEl);
         mergeModalEl.addEventListener("hidden.bs.modal", function cleanup() {
             filtersModalEl.classList.remove("dimmed");
             mergeModalEl.removeEventListener("hidden.bs.modal", cleanup);
