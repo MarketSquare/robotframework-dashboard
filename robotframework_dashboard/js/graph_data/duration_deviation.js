@@ -1,4 +1,5 @@
 import { settings } from "../variables/settings.js";
+import { parse_test_tags } from "../common.js";
 
 // function to prepare the data in the correct format for the duration deviation graph
 function get_duration_deviation_data(dataType, graphType, filteredData) {
@@ -20,7 +21,7 @@ function get_duration_deviation_data(dataType, graphType, filteredData) {
             if (testSelect !== "All" && value.name !== testSelect) {
                 continue;
             }
-            if (testTagsSelect !== "All" && !value.tags.replace(/\[|\]/g, "").split(",").includes(testTagsSelect)) {
+            if (testTagsSelect !== "All" && !parse_test_tags(value.tags).includes(testTagsSelect)) {
                 continue;
             }
         }

@@ -730,3 +730,30 @@ def test_merged_output_run_and_suite_start_time_fall_back_to_first_test(tmp_path
     first_test_start = min(test[7] for test in data["tests"])
     assert data["runs"][0][8] == first_test_start
     assert all(suite[8] is not None for suite in data["suites"])
+
+
+def test_get_run_start_legacy_without_header_raises(tmp_path):
+    xml_file = tmp_path / "output.xml"
+    xml_file.write_text("<?xml version=\"1.0\"?>\n<other/>\n", encoding="utf-8")
+    processor = _legacy_processor(xml_file)
+    with pytest.raises(ValueError, match="no <robot generated"):
+        processor.get_run_start()
+
+
+def test_get_run_start_legacy_reads_utf8(tmp_path):
+    xml_file = tmp_path / "output.xml"
+    xml_file.write_bytes('<!-- résumé ✓ -->\n<robot generated="2025-05-15T09:30:00.000000">\n</robot>\n'.encode("utf-8"))
+    processor = _legacy_processor(xml_file)
+    assert processor.get_run_start().year == 2025
+
+
+class _TestWithSpacedTags(_NewStyleTest):
+    def __init__(self):
+        super().__init__()
+        self.tags = ["smoke test", "prio 1", "nightly"]
+
+
+def test_test_processor_keeps_spaces_inside_tags():
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list).visit_test(_TestWithSpacedTags())
+    assert test_list[0][9] == "[smoke test,prio 1,nightly]"

@@ -525,16 +525,21 @@ def test_schema_migration_runs_table_from_10_to_14(tmp_path):
     assert len(keywords_cols) == 12
 
 
-def test_insert_output_data_exception_prints_error(db, capsys):
-    """insert_output_data catches exceptions from _insert_runs and prints an error."""
+def test_insert_output_data_failure_stores_nothing(db, processed_output):
+    """A failing table insert rolls back the run row too, so the output can be added again."""
     from unittest.mock import patch
+    data = processed_output.get_output_data()
     db.open_database()
-    fake_data = {"runs": [], "suites": [], "tests": [], "keywords": []}
-    with patch.object(db, "_insert_runs", side_effect=Exception("boom")):
-        db.insert_output_data(fake_data, [], "alias", "path.xml", None)
+    with patch.object(db, "_insert_tests", side_effect=Exception("boom")):
+        with pytest.raises(Exception, match="boom"):
+            db.insert_output_data(data, [], "alias", "path.xml", None)
+    runs = db.connection.execute("SELECT COUNT(*) FROM runs").fetchone()[0]
+    suites = db.connection.execute("SELECT COUNT(*) FROM suites").fetchone()[0]
+    exists = db.run_start_exists(str(processed_output.get_run_start()))
     db.close_database()
-    captured = capsys.readouterr()
-    assert "ERROR" in captured.out
+    assert runs == 0
+    assert suites == 0
+    assert exists is False
 
 
 def test_get_data_null_run_alias_generates_auto_alias(db):
@@ -596,6 +601,7 @@ def test_get_data_null_suite_id(db):
     data = db.get_data()
     db.close_database()
     assert len(data["suites"]) == 1
+    assert data["suites"][0]["id"] == ""
 
 
 def test_get_data_null_test_tags_and_id(db):
@@ -616,6 +622,7 @@ def test_get_data_null_test_tags_and_id(db):
     db.close_database()
     assert len(data["tests"]) == 1
     assert data["tests"][0]["tags"] == ""
+    assert data["tests"][0]["id"] == ""
     assert data["tests"][0]["attempts"] == ""
 
 
@@ -826,3 +833,118 @@ def test_insert_and_get_data_round_trips_test_attempts(db):
     assert tests["Retried"]["attempts"] == attempts
     assert tests["Retried"]["run_alias"] == "alias"
     assert tests["Once"]["attempts"] == ""
+
+
+def _insert_bare_run(db, run_start, path, tags="", name="Suite"):
+    db.connection.execute(
+        "INSERT INTO runs (run_start, name, tags, path) VALUES (?,?,?,?)",
+        (run_start, name, tags, path),
+    )
+    db.connection.commit()
+
+
+def test_run_start_exists_is_not_a_prefix_match(db):
+    """A run at exactly .000000 prints without microseconds and is a prefix of other runs in that second."""
+    db.open_database()
+    _insert_bare_run(db, "2026-01-01 10:00:00.000001+00:00", "/a/output.xml")
+    assert db.run_start_exists("2026-01-01 10:00:00") is False
+    assert db.run_start_exists("2026-01-01 10:00:00.000001") is True
+    assert db.run_start_exists("2026-01-01 10:00:00.000001+00:00") is True
+    db.close_database()
+
+
+def test_run_start_exists_for_run_without_microseconds(db):
+    db.open_database()
+    _insert_bare_run(db, "2026-01-01 10:00:00-05:00", "/a/output.xml")
+    assert db.run_start_exists("2026-01-01 10:00:00") is True
+    db.close_database()
+
+
+def test_update_output_path_links_newest_run_with_the_same_name(db):
+    """Every listener upload uses output.xml/log.html, the log belongs to the run uploaded last."""
+    db.open_database()
+    for index in range(1, 4):
+        _insert_bare_run(db, f"2026-01-0{index} 10:00:00.000001+00:00", f"/tmp/a{index}/output.xml")
+    db.update_output_path("robot_logs/log.html")
+    paths = db._get_run_paths()
+    db.close_database()
+    assert paths["2026-01-03 10:00:00.000001+00:00"] == "robot_logs/log.html"
+    assert paths["2026-01-01 10:00:00.000001+00:00"] == "/tmp/a1/output.xml"
+    assert paths["2026-01-02 10:00:00.000001+00:00"] == "/tmp/a2/output.xml"
+
+
+def test_update_output_path_matches_the_whole_file_name(db):
+    db.open_database()
+    _insert_bare_run(db, "2026-01-01 10:00:00.000001+00:00", "/a/prefix-output-1.xml")
+    console = db.update_output_path("robot_logs/log-1.html")
+    db.close_database()
+    assert "ERROR" in console
+
+
+@pytest.mark.parametrize(
+    "log_name, expected",
+    [
+        ("log.html", "output.xml"),
+        ("log-123.html", "output-123.xml"),
+        ("log-catalog.html", "output-catalog.xml"),
+        ("mylog.html", "mylog.xml"),
+    ],
+)
+def test_output_name_from_log_name(log_name, expected):
+    assert DatabaseProcessor._output_name_from_log_name(log_name) == expected
+
+
+def test_remove_by_tag_matches_whole_tags_only(db):
+    db.open_database()
+    _insert_bare_run(db, "2026-01-01 10:00:00.000001+00:00", "/a.xml", tags="prod")
+    _insert_bare_run(db, "2026-01-02 10:00:00.000001+00:00", "/b.xml", tags="preprod,nightly")
+    _insert_bare_run(db, "2026-01-03 10:00:00.000001+00:00", "/c.xml", tags="production")
+    db.remove_runs(["tag=prod"])
+    remaining = [row[0] for row in db.connection.execute("SELECT tags FROM runs")]
+    db.close_database()
+    assert remaining == ["preprod,nightly", "production"]
+
+
+def test_remove_by_limit_tag_scope_matches_whole_tags_only(db):
+    db.open_database()
+    _insert_bare_run(db, "2026-01-01 10:00:00.000001+00:00", "/a.xml", tags="preprod")
+    _insert_bare_run(db, "2026-01-02 10:00:00.000001+00:00", "/b.xml", tags="prod")
+    _insert_bare_run(db, "2026-01-03 10:00:00.000001+00:00", "/c.xml", tags="prod")
+    db.remove_runs(["limit=1;tag=prod"])
+    remaining = [row[0] for row in db.connection.execute("SELECT run_start FROM runs")]
+    db.close_database()
+    assert remaining == ["2026-01-01 10:00:00.000001+00:00", "2026-01-03 10:00:00.000001+00:00"]
+
+
+@pytest.mark.parametrize("value", ["6mo", "10days", "5hx", "d", "10", "+-1d"])
+def test_parse_time_range_rejects_trailing_or_unknown_text(db, value):
+    with pytest.raises(ValueError, match="Invalid age"):
+        db.parse_time_range(value)
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [("10d", ("+", 10 * 86400)), ("+5h", ("+", 5 * 3600)), ("-1y", ("-", 365 * 86400)), (" 30s ", ("+", 30))],
+)
+def test_parse_time_range_accepts_valid_values(db, value, expected):
+    modifier, delta = db.parse_time_range(value)
+    assert (modifier, delta.total_seconds()) == expected
+
+
+def test_remove_by_age_reads_run_start_without_offset_as_local_time(db):
+    """get_data shows a run_start without offset in local time, age= must use the same reading."""
+    from datetime import datetime, timedelta
+    offset = datetime.now().astimezone().utcoffset()
+    if not offset:
+        pytest.skip("local time is UTC, both readings give the same age")
+    limit = timedelta(hours=1)
+    # pick an age on the other side of the limit than the one a UTC reading (age - offset) gives
+    age = limit + offset / 2
+    expected_remaining = 0 if age > limit else 1
+    db.open_database()
+    run_start = (datetime.now() - age).strftime("%Y-%m-%d %H:%M:%S.%f")
+    _insert_bare_run(db, run_start, "/a.xml")
+    db.remove_runs(["age=3600s"])
+    remaining = db.connection.execute("SELECT COUNT(*) FROM runs").fetchone()[0]
+    db.close_database()
+    assert remaining == expected_remaining

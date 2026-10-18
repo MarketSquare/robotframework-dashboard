@@ -1,7 +1,7 @@
 import argparse
 from datetime import datetime
 from sys import exit
-from re import split
+from re import split, fullmatch
 from os import getcwd
 from os.path import join, exists
 from typing import NamedTuple
@@ -37,7 +37,7 @@ class ArgumentParser:
                 f"  ERROR: There was an issue during the parsing of the provided arguments"
             )
             print(f"  {error}")
-            exit(0)
+            exit(1)
         return arguments
 
     def _normalize_bool(self, value, arg_name):
@@ -55,7 +55,23 @@ class ArgumentParser:
                 f"   Please provide True, False, or leave empty for the reverse boolean of the default\n"
                 f"   See the --h / --help for more information and usage examples"
             )
-            exit(0)
+            exit(1)
+
+    def _flatten_values(self, values, arg_name):
+        """'action=append' with 'nargs=*' gives a list per flag; every value counts, so
+        '-o a.xml b.xml' processes both files"""
+        flattened = []
+        for flag_values in values:
+            if not flag_values:
+                print(f"  WARNING: --{arg_name} was provided without a value and is ignored")
+            flattened.extend(flag_values)
+        return flattened
+
+    def _split_path_and_tags(self, value):
+        """'path:tag1:tag2' -> ('path', ['tag1', 'tag2']); a ':' followed by a slash is part of the path (C:/ or C:\\)"""
+        # re.split also returns the lookahead group, which is None for every real separator
+        splitted = [part for part in split(r":(?!(\/|\\))", value) if part is not None]
+        return splitted[0], splitted[1:]
 
     def _check_project_version_usage(self, tags, arguments):
         version_tags = [tag for tag in tags if tag.startswith("version_")]
@@ -164,35 +180,35 @@ class ArgumentParser:
                     "  ERROR: '--logurl' was provided without a '{run_alias}' placeholder while processing multiple outputs.\n"
                     "   Either add '{run_alias}' to the URL template or provide a single output file with '-o'."
                 )
-                exit(0)
+                exit(1)
         if force_json_config and not arguments.jsonconfig:
             print(
                 "  ERROR: The --forcejsonconfig argument was provided without a valid --jsonconfig path"
             )
-            exit(0)
+            exit(1)
         if database_class and not exists(database_class):
             print(
                 f"  ERROR: the provided database class did not exist in the expected path: {database_class}"
             )
-            exit(0)
+            exit(1)
         if arguments.ssl_certfile and not arguments.ssl_keyfile:
             print(
                 "  ERROR: --ssl-certfile was provided without --ssl-keyfile\n"
                 "   Both --ssl-certfile and --ssl-keyfile must be provided together"
             )
-            exit(0)
+            exit(1)
         if arguments.ssl_keyfile and not arguments.ssl_certfile:
             print(
                 "  ERROR: --ssl-keyfile was provided without --ssl-certfile\n"
                 "   Both --ssl-certfile and --ssl-keyfile must be provided together"
             )
-            exit(0)
+            exit(1)
         if arguments.ssl_certfile and not exists(arguments.ssl_certfile):
             print(f"  ERROR: --ssl-certfile path does not exist: {arguments.ssl_certfile}")
-            exit(0)
+            exit(1)
         if arguments.ssl_keyfile and not exists(arguments.ssl_keyfile):
             print(f"  ERROR: --ssl-keyfile path does not exist: {arguments.ssl_keyfile}")
-            exit(0)
+            exit(1)
 
     def _parse_arguments(self):
         """Parses the actual arguments"""
@@ -545,14 +561,8 @@ class ArgumentParser:
         outputs = None
         if arguments.outputpath:
             outputs = []
-            for output in arguments.outputpath:
-                splitted = split(r":(?!(\/|\\))", output[0])
-                while None in splitted:
-                    splitted.remove(
-                        None
-                    )  # None values are found by re.split because of the 2 conditions
-                path = splitted[0]
-                tags = splitted[1:]
+            for output in self._flatten_values(arguments.outputpath, "outputpath"):
+                path, tags = self._split_path_and_tags(output)
                 self._check_project_version_usage(tags, arguments)
                 outputs.append([path, tags])
 
@@ -560,14 +570,8 @@ class ArgumentParser:
         outputfolderpaths = None
         if arguments.outputfolderpath:
             outputfolderpaths = []
-            for folder in arguments.outputfolderpath:
-                splitted = split(r":(?!(\/|\\))", folder[0])
-                while None in splitted:
-                    splitted.remove(
-                        None
-                    )  # None values are found by re.split because of the 2 conditions
-                path = splitted[0]
-                tags = splitted[1:]
+            for folder in self._flatten_values(arguments.outputfolderpath, "outputfolderpath"):
+                path, tags = self._split_path_and_tags(folder)
                 self._check_project_version_usage(tags, arguments)
                 outputfolderpaths.append([path, tags])
 
@@ -575,8 +579,8 @@ class ArgumentParser:
         remove_runs = None
         if arguments.removeruns:
             raw_parts = []
-            for runs in arguments.removeruns:
-                for part in str(runs[0]).split(","):
+            for runs in self._flatten_values(arguments.removeruns, "removeruns"):
+                for part in str(runs).split(","):
                     part = part.strip()
                     if part:
                         raw_parts.append(part)
@@ -603,14 +607,14 @@ class ArgumentParser:
         # handles the custom test message handling
         message_config = []
         if arguments.messageconfig:
-            with open(arguments.messageconfig) as file:
+            with open(arguments.messageconfig, encoding="utf-8") as file:
                 for line in file:
                     message_config.append(line.strip())
 
         # handles the json config
         json_config = []
         if arguments.jsonconfig:
-            with open(arguments.jsonconfig) as file:
+            with open(arguments.jsonconfig, encoding="utf-8") as file:
                 json_config = file.read()
 
         # handles the custom dashboard name
@@ -653,19 +657,30 @@ class ArgumentParser:
                     server_pass = parts[3]
         else:
             start_server = False
+        # FastAPI's HTTPBasic decodes the Authorization header as ASCII, a non-ASCII login can never match
+        if not (server_user + server_pass).isascii():
+            print("  ERROR: the --server username and password can only contain ASCII characters")
+            exit(1)
 
         # handles the quantity argument
         quantity = arguments.quantity
-        if quantity == None:
+        if quantity is None:
             quantity = 20
         else:
-            int(quantity)
+            quantity = int(quantity)
+            if quantity < 1:
+                print(f"  ERROR: --quantity must be at least 1, got {quantity}")
+                exit(1)
 
         # handles the timezone argument
         timezone = arguments.timezone
+        if timezone is not None and not fullmatch(r"[+-]\d{2}:\d{2}", timezone):
+            print(
+                f"  ERROR: --timezone '{timezone}' is invalid, use +HH:MM or -HH:MM (e.g. '-z +02:00' or '--timezone=-05:00')"
+            )
+            exit(1)
         if timezone is None:
             # Auto-detect from the machine's local timezone
-            from datetime import timezone as tz
             local_offset = generation_datetime.astimezone().utcoffset()
             total_seconds = int(local_offset.total_seconds())
             sign = "+" if total_seconds >= 0 else "-"

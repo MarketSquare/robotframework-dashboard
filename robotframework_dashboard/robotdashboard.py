@@ -127,9 +127,7 @@ class RobotDashboard:
             for file_path, tags in output_file_info_list:
                 try:
                     full_path = join(getcwd(), file_path)
-                    run_alias = (
-                        basename(full_path).replace("output_", "").replace(".xml", "")
-                    )
+                    run_alias = self._run_alias_from_file_name(basename(full_path))
                     console += self._process_single_output(full_path, tags, run_alias)
                 except Exception as e:
                     console += self._print_console(
@@ -150,9 +148,7 @@ class RobotDashboard:
                             if "output" in file and file.endswith(".xml"):
                                 try:
                                     full_path = join(getcwd(), subdir, file)
-                                    run_alias = file.replace("output_", "").replace(
-                                        ".xml", ""
-                                    )
+                                    run_alias = self._run_alias_from_file_name(file)
                                     console += self._process_single_output(
                                         full_path, tags, run_alias
                                     )
@@ -164,6 +160,15 @@ class RobotDashboard:
         console += self._print_console("=" * 86)
         self.database.close_database()
         return console
+
+    @staticmethod
+    def _run_alias_from_file_name(file_name: str):
+        """output_XYZ.xml -> XYZ, only the prefix and the extension are stripped"""
+        if file_name.startswith("output_"):
+            file_name = file_name[len("output_"):]
+        if file_name.endswith(".xml"):
+            file_name = file_name[: -len(".xml")]
+        return file_name
 
     def _process_single_output(self, output_path, tags, run_alias=None):
         """Function that processes a single XML output file and inserts it into the database."""

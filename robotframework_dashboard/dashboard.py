@@ -2,6 +2,7 @@ from os.path import join, abspath, dirname, relpath
 from pathlib import Path
 from datetime import datetime
 from json import dumps
+from html import escape
 from zlib import compress
 from base64 import b64encode
 
@@ -87,15 +88,16 @@ class DashboardGenerator:
             dashboard_data = dashboard_data.replace(
                 '"placeholder_use_logs"', str(use_logs).lower()
             )
-            if dashboard_title != "":
-                dashboard_data = dashboard_data.replace(
-                    '"placeholder_dashboard_title"', dashboard_title
-                )
-            else:
-                dashboard_data = dashboard_data.replace(
-                    '"placeholder_dashboard_title"',
-                    f"Robot Framework Dashboard - {str(generation_datetime)[:-7]}",
-                )
+            if dashboard_title == "":
+                dashboard_title = f"Robot Framework Dashboard - {generation_datetime.strftime('%Y-%m-%d %H:%M:%S')}"
+            # the same token sits in a single-quoted JS string (js/variables/data.js) and in <title>:
+            # replace the quoted JS occurrence with a JS string literal first, then the HTML one
+            dashboard_data = dashboard_data.replace(
+                "'\"placeholder_dashboard_title\"'", self._js_string(dashboard_title)
+            )
+            dashboard_data = dashboard_data.replace(
+                '"placeholder_dashboard_title"', escape(dashboard_title)
+            )
             if message_config:
                 # the placeholder sits inside a single-quoted JS string literal that is
                 # JSON.parse'd at runtime, so escape backslashes and single quotes
@@ -137,6 +139,10 @@ class DashboardGenerator:
                     pass  # different Windows drive — keep absolute path as-is
             result.append(run)
         return result
+
+    def _js_string(self, value: str):
+        """A JS string literal that also cannot end the surrounding <script> tag"""
+        return dumps(value).replace("</", "<\\/")
 
     def _compress_and_encode(self, obj):
         json_data = dumps(obj).encode("utf-8")

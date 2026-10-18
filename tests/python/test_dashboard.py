@@ -406,3 +406,26 @@ def test_generate_dashboard_missing_exceptions_key_defaults_to_empty(tmp_path):
     import json, zlib, base64, re
     decoded = _embedded_payload(content, "exceptions")
     assert decoded == []
+
+
+def _title_contexts(content):
+    js_title = content.split("var unified_dashboard_title = ", 1)[1].split("\n", 1)[0]
+    html_title = content.split("<title>", 1)[1].split("</title>", 1)[0]
+    return js_title, html_title
+
+
+def test_generate_dashboard_title_is_escaped_per_context(tmp_path):
+    """A quote in the title used to end the single-quoted JS string and break the whole script."""
+    title = "Tim's \"board\" <b>&</script>"
+    output = _call_generate(tmp_path, dashboard_title=title)
+    js_title, html_title = _title_contexts(output.read_text(encoding="utf-8"))
+    assert "</script>" not in js_title
+    assert json.loads(js_title.replace("<\\/", "</")) == title
+    assert html_title == "Tim&#x27;s &quot;board&quot; &lt;b&gt;&amp;&lt;/script&gt;"
+
+
+def test_generate_dashboard_default_title_keeps_seconds_without_microseconds(tmp_path):
+    output = _call_generate(tmp_path, dashboard_title="", generation_datetime=datetime(2025, 1, 1, 12, 34, 56))
+    js_title, html_title = _title_contexts(output.read_text(encoding="utf-8"))
+    assert js_title == '"Robot Framework Dashboard - 2025-01-01 12:34:56"'
+    assert html_title == "Robot Framework Dashboard - 2025-01-01 12:34:56"

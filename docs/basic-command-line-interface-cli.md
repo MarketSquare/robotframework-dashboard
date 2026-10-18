@@ -28,7 +28,7 @@ robotdashboard --help
 ```bash
 robotdashboard -o output1.xml -o output2.xml -o output3.xml  
 ```
-- Optional: Each `-o` or `--outputpath` option specifies a single output XML file.  
+- Optional: Each `-o` or `--outputpath` option specifies one or more output XML files (`-o output1.xml output2.xml` works too).  
 - The tool will read the files, upload the results to the database, and optionally generate a dashboard HTML file.  
 - Tags can be added to group or categorize runs. 
 - See [Advanced CLI & Examples](/advanced-cli-examples#advanced-tagging-strategies) for more information on Tags!
@@ -87,7 +87,7 @@ robotdashboard -o output.xml -z +00:00
 ```
 - Optional: `-z` or `--timezone` specifies the UTC offset of the timestamps inside the output XML files.
 - Default: auto-detected from the local machine timezone.
-- Format: `+HH:MM` or `-HH:MM` (e.g. `+02:00`, `-05:00`, `+00:00`).
+- Format: `+HH:MM` or `-HH:MM` (e.g. `+02:00`, `-05:00`, `+00:00`). Any other value is rejected with an error.
 - Use the `--timezone=` form (with `=`) for negative offsets to avoid the leading `-` being parsed as a flag.
 - The offset is appended to the `run_start` value stored in the database (e.g. `2025-03-13 00:21:34.123456+02:00`).
 
@@ -128,13 +128,14 @@ robotdashboard -r limit=10 --logremoved run:keyword
 - Multiple values are separated by commas (,).  
 - Must specify data types: index, run_start, alias, tag or limit.  
 - Index ranges use `:` for ranges and `;` for lists.  
+- `tag=prod` matches the run tag exactly: runs tagged `preprod` or `production` are not removed.  
 - Quotation marks are required when spaces exist in identifiers.  
 - With limit=10 only the 10 most recent runs **per project** will be kept, all others will be removed. The limit must be at least 1.  
 - A project is a run name and every `project_` run tag, the same grouping the dashboard overview page uses. A run that belongs to more than one project is kept as long as it is one of the 10 most recent runs of at least one of them, so a project that runs less often never loses its history to a project that runs more often.  
 - With limit=10,tag=nightly only the 10 most recent runs per project **carrying that tag** are kept; older tagged runs are removed and runs without the tag are left untouched. Add more `tag=` values to scope to multiple tags. Only `limit` supports this tag scoping — `tag` and `age` combined just run as two independent operations.  
 - With age=10d only runs _**older**_ than 10 days will be removed  
 - With age=-10d (leading minus) only runs _**younger**_ than 10 days will be removed  
-- Supported age units: (y)ear, (d)ay, (h)our, (m)inute, (s)econd — e.g. `age=12h`, `age=-30m`  
+- Supported age units: (y)ear, (d)ay, (h)our, (m)inute, (s)econd — e.g. `age=12h`, `age=-30m`. The value must be a number followed by exactly one unit, so `age=6mo` or `age=10days` is rejected with an error (`6mo` would otherwise mean 6 minutes).  
 - Optional: `--logremoved` logs run data to a `.jsonl` file before removal.  
 - Format: `[types:]path` where types are colon-separated from `run`, `suite`, `test`, `keyword`, `all`.  
 - If no types are specified, defaults to `all` (runs, suites, tests and keywords).  

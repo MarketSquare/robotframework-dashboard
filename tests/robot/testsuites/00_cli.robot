@@ -91,7 +91,7 @@ Validate RobotDashboard messageconfig
     Validate CLI    command=robotdashboard -d messageconfig.db --messageconfig ./example/messageconfig.txt    expected=messageconfig
 
 Validate RobotDashboard q
-    Validate CLI    command=robotdashboard -d q.db -q -25    expected=quantity
+    Validate CLI    command=robotdashboard -d q.db -q 25    expected=quantity
 
 Validate RobotDashboard quantity
     Validate CLI    command=robotdashboard -d quantity.db --quantity 100    expected=quantity

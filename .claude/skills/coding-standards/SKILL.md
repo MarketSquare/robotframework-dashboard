@@ -29,7 +29,7 @@ Robot `[Documentation]` is API documentation, not a comment: it renders in `log.
 
 ## Python
 
-- Targets Python 3.8+.
+- Targets Python 3.9+.
 - `snake_case` everywhere; keep functions small; raise clear exceptions.
 - Keep the pipeline intact: parse → DB → HTML via `RobotDashboard` methods — do not reimplement pieces of it.
 - All SQL lives as constants in `queries.py`.

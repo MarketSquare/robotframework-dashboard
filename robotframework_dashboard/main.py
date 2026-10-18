@@ -57,7 +57,7 @@ def main():
             print(
                 "         Or                         'pip install robotframework-dashboard[all]'"
             )
-            exit(0)
+            exit(1)
         robotdashboard.dashboard_name = "robot_dashboard.html"
         robotdashboard.dashboard_title = (
             "Robot Framework Dashboard"

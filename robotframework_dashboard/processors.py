@@ -96,7 +96,8 @@ class OutputProcessor:
         if hasattr(self.execution_result, "generation_time"):
             generation_time = self.execution_result.generation_time
         else:
-            with open(self.output_path, "r") as f:
+            generation_time = None
+            with open(self.output_path, "r", encoding="utf-8") as f:
                 for line in f:
                     if "<robot" in line:
                         generation_time = line.split('generated="', 1)[1].split('"', 1)[
@@ -111,6 +112,10 @@ class OutputProcessor:
                                 generation_time, "%Y%m%d %H:%M:%S.%f"
                             )
                         break
+            if generation_time is None:
+                raise ValueError(
+                    f"no <robot generated=\"...\"> header found in '{self.output_path}'"
+                )
         self.generation_time = generation_time
         return self.generation_time
 
@@ -341,7 +346,8 @@ class TestProcessor(ResultVisitor):
                 elapsed_time,
                 start_time,
                 message[:150],
-                str(test.tags).replace(" ", ""),
+                # joined without spaces after the comma, spaces inside a tag are kept
+                f"[{','.join(test.tags)}]",
                 test.id,
                 dumps(attempts) if attempts else "",
             )

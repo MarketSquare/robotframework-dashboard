@@ -98,8 +98,8 @@ class ApiServer:
                 detail="Not authenticated",
                 headers={"WWW-Authenticate": "Basic"},
             )
-        correct_username = compare_digest(credentials.username, self.server_user)
-        correct_password = compare_digest(credentials.password, self.server_pass)
+        correct_username = compare_digest(credentials.username.encode("utf-8"), self.server_user.encode("utf-8"))
+        correct_password = compare_digest(credentials.password.encode("utf-8"), self.server_pass.encode("utf-8"))
         if not (correct_username and correct_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1269,3 +1269,11 @@ def test_safe_file_name_rejects_null_byte():
     except ValueError:
         return
     raise AssertionError("a null byte was accepted")
+
+
+def test_admin_with_non_ascii_configured_password_returns_401_not_500():
+    """compare_digest on str raises TypeError for non-ASCII, which used to give a 500."""
+    server = _make_server(server_user="admin", server_pass="géheim")
+    client = _client(server)
+    response = client.get("/admin", auth=("admin", "wrong"))
+    assert response.status_code == 401

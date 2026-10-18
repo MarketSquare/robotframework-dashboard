@@ -8,7 +8,7 @@ Learn how to install RobotFramework Dashboard and check compatibility requiremen
 
 ## Installation
 
-Before installing the dashboard, ensure you have **Python 3.8+** installed on your system. You also need **Robot Framework 6.0 or higher**.
+Before installing the dashboard, ensure you have **Python 3.9+** installed on your system. You also need **Robot Framework 6.0 or higher**.
 
 ### Install Robot Framework
 If Robot Framework is not already installed, run:

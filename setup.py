@@ -119,6 +119,7 @@ This project is licensed under the MIT License.
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
+    python_requires=">=3.9",
     install_requires=[
         "robotframework>=6.0",
     ],

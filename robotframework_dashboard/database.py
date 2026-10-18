@@ -9,7 +9,7 @@ from typing import Union
 from json import dumps
 
 # Explicit adapter for datetime -> ISO string, replacing the deprecated default
-# behaviour removed in Python 3.12+. Compatible with Python 3.8+.
+# behaviour removed in Python 3.12+. Compatible with Python 3.9+.
 # See: https://docs.python.org/3/library/sqlite3.html#adapter-and-converter-recipes
 sqlite3.register_adapter(datetime, lambda val: val.isoformat(sep=" "))
 
@@ -39,14 +39,11 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         run_rows = (
             self.connection.cursor().execute(SELECT_RUN_STARTS_FROM_RUNS).fetchall()
         )
-        rows = []
-        for row in run_rows:
-            rows.append(self._dict_from_row(row))
-        run_starts = [item["run_start"] for item in rows]
-        # Use startswith to handle TZ-aware run_starts in DB (e.g. "2025-03-13 00:21:34.123456+02:00")
-        # when the incoming run_start has no timezone suffix (e.g. "2025-03-13 00:21:34.123456")
-        run_start_str = str(run_start)
-        return any(rs == run_start_str or rs.startswith(run_start_str) for rs in run_starts)
+        # the stored run_start can carry a "+02:00" offset the incoming one does not have; an exact
+        # match without it, not a prefix match: str(datetime) drops ".000000", so "10:00:00" is a
+        # prefix of every run from that second
+        run_starts = {self._without_timezone_offset(row["run_start"]) for row in run_rows}
+        return self._without_timezone_offset(str(run_start)) in run_starts
 
     def _create_tables(self):
         """Helper function to create the tables (they use IF NOT EXISTS to not override)"""
@@ -161,7 +158,9 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         timezone: str = "",
     ):
         """This function inserts the data of an output file into the database"""
-        try:
+        # one transaction: a failure must not leave a run row behind, run_start_exists would then
+        # reject the output as a duplicate on every later attempt
+        with self.connection:
             self._insert_runs(
                 output_data["runs"], tags, run_alias, path, project_version, custom_filters, timezone
             )
@@ -169,8 +168,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             self._insert_tests(output_data["tests"], run_alias, timezone)
             self._insert_keywords(output_data["keywords"], run_alias, timezone)
             self._insert_exceptions(output_data.get("exceptions", []), run_alias, timezone)
-        except Exception as error:
-            print(f"   ERROR: something went wrong with the database: {error}")
 
     def _insert_runs(
         self, runs: list, tags: list, run_alias: str, path: Union[Path, str], project_version, custom_filters, timezone
@@ -193,7 +190,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             )
             full_runs.append(new_run)
         self.connection.executemany(INSERT_INTO_RUNS, full_runs)
-        self.connection.commit()
 
     def _insert_suites(self, suites: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the suite data"""
@@ -207,7 +203,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             suite = tuple(suite)
             full_suites.append(suite)
         self.connection.executemany(INSERT_INTO_SUITES, full_suites)
-        self.connection.commit()
 
     def _insert_tests(self, tests: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the test data"""
@@ -221,7 +216,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             test = tuple(test)
             full_tests.append(test)
         self.connection.executemany(INSERT_INTO_TESTS, full_tests)
-        self.connection.commit()
 
     def _insert_keywords(self, keywords: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the keyword data"""
@@ -235,7 +229,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             keyword = tuple(keyword)
             full_keywords.append(keyword)
         self.connection.executemany(INSERT_INTO_KEYWORDS, full_keywords)
-        self.connection.commit()
 
     def _insert_exceptions(self, exceptions: list, run_alias: str, timezone: str = ""):
         """Helper function to insert the exception data"""
@@ -247,7 +240,6 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             exc.append(run_alias)
             full_exceptions.append(tuple(exc))
         self.connection.executemany(INSERT_INTO_EXCEPTIONS, full_exceptions)
-        self.connection.commit()
 
     @staticmethod
     def _get_local_timezone_offset():
@@ -269,6 +261,11 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         suffix = run_start[-6:]
         return (suffix[0] in ('+', '-') and suffix[3] == ':' and
                 suffix[1:3].isdigit() and suffix[4:6].isdigit())
+
+    @classmethod
+    def _without_timezone_offset(cls, run_start: str):
+        """Helper function to strip a trailing +HH:MM or -HH:MM offset from a run_start string"""
+        return run_start[:-6] if cls._has_timezone_offset(run_start) else run_start
 
     def get_data(self):
         """This function gets all the data in the database"""
@@ -331,7 +328,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         for suite_row in suite_rows:
             row = self._dict_from_row(suite_row)
             if row["id"] == None:
-                row["id"] == ""
+                row["id"] = ""
             # For older entries without timezone in run_start, append current local timezone
             if not self._has_timezone_offset(row["run_start"]):
                 row["run_start"] = f"{row['run_start']}{local_tz}"
@@ -348,7 +345,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             if row["tags"] == None:
                 row["tags"] = ""
             if row["id"] == None:
-                row["id"] == ""
+                row["id"] = ""
             if row.get("attempts") == None:
                 row["attempts"] = ""
             # For older entries without timezone in run_start, append current local timezone
@@ -543,7 +540,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         tag = run.replace("tag=", "")
         removed = 0
         for index, run_tag in enumerate(run_tags):
-            if tag in run_tag:
+            if tag in self._split_run_tags(run_tag):
                 self._remove_run(run_starts[index])
                 print(
                     f"  Removed run from the database: tag={tag}, run_start={run_starts[index]}"
@@ -556,6 +553,11 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             )
             console += f"  WARNING: no runs were removed as no runs were found with tag: {tag}\n"
         return console
+
+    @staticmethod
+    def _split_run_tags(run_tags: str):
+        """Helper function to split the comma-joined run tags, so a tag only matches itself"""
+        return (run_tags or "").split(",")
 
     @staticmethod
     def _get_run_projects(index: int, run_names: list = None, run_tags: list = None):
@@ -618,7 +620,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             candidates = [
                 index
                 for index, run_tag in enumerate(run_tags)
-                if any(tag in run_tag for tag in tag_filters)
+                if any(tag in self._split_run_tags(run_tag) for tag in tag_filters)
             ]
             scope = f" with tag(s) {', '.join(tag_filters)}"
         else:
@@ -662,7 +664,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             try:
                 run_dt = datetime.fromisoformat(r)
                 if run_dt.tzinfo is None:
-                    run_dt = run_dt.replace(tzinfo=timezone.utc)
+                    # a run_start without offset is local time, as in get_data
+                    run_dt = run_dt.astimezone()
                 if mod == "+":
                     if run_dt < cutoff:
                         targets.append(r)
@@ -715,9 +718,12 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
     def parse_time_range(self, range_str: str):
         # Regex groups : [modifier] [value] [unit]
         # e.g., +10d, -4h, 1y
-        match = re.match(r"([+-])?(\d+)([smhdy])", range_str)
+        # fullmatch: a prefix match read "6mo" as 6 minutes
+        match = re.fullmatch(r"([+-])?(\d+)([smhdy])", range_str.strip())
         if not match:
-            raise ValueError("Invalid format. Use e.g., 10d, +5h, -1y")
+            raise ValueError(
+                f"Invalid age '{range_str}'. Use a number and one of the units s, m, h, d, y, e.g. 10d, +5h, -1y"
+            )
         modifier, value, unit = match.groups()
         value = int(value)
         units = {
@@ -731,15 +737,26 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         delta_kwargs = {units[unit]: value * (365 if unit == 'y' else 1)}
         return modifier or '+', timedelta(**delta_kwargs)
 
+    @staticmethod
+    def _output_name_from_log_name(log_name: str):
+        """Reverse of server_paths.log_name_from_output_name for the prefix and extension only:
+        log-XYZ.html -> output-XYZ.xml, a 'log' elsewhere in the name stays"""
+        output_name = f"output{log_name[3:]}" if log_name.startswith("log") else log_name
+        if output_name.lower().endswith(".html"):
+            output_name = output_name[:-5] + ".xml"
+        return output_name
+
     def update_output_path(self, log_path: str):
         """Function to update the output_path using the log path that the server has used"""
         console = ""
         log_name = Path(log_path).name
-        output_name = log_name.replace("log", "output").replace(".html", ".xml")
+        output_name = self._output_name_from_log_name(log_name)
         data = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
-        for entry in data:
+        # newest first: the listener uploads a log right after its output, and default names
+        # (output.xml/log.html) are shared by every run
+        for entry in reversed(data):
             entry = self._dict_from_row(entry)
-            if output_name in entry["path"] or log_name in entry["path"]:
+            if Path(entry["path"] or "").name in (output_name, log_name):
                 params = (log_path, entry["run_start"])
                 console = f"Executed query: {UPDATE_RUN_PATH_BY_RUN_START} with {params}\n"
                 self.connection.cursor().execute(UPDATE_RUN_PATH_BY_RUN_START, params)

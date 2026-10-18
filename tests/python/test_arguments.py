@@ -538,3 +538,97 @@ def test_check_argument_errors_logurl_no_placeholder_multiple_outputs_exits(caps
         ArgumentParser()._process_arguments(args)
     captured = capsys.readouterr()
     assert "logurl" in captured.out.lower()
+
+
+def test_get_arguments_multiple_values_after_one_flag_are_all_used():
+    from unittest.mock import patch
+    argv = ["robotdashboard", "-o", "a.xml:dev", "b.xml", "-o", "c.xml", "-f", "x/", "y/:prod", "-r", "index=0", "alias=x"]
+    with patch("sys.argv", argv):
+        result = ArgumentParser().get_arguments()
+    assert result.outputs == [["a.xml", ["dev"]], ["b.xml", []], ["c.xml", []]]
+    assert result.output_folder_paths == [["x/", []], ["y/", ["prod"]]]
+    assert result.remove_runs == ["index=0", "alias=x"]
+
+
+def test_get_arguments_flag_without_value_is_ignored_with_warning(capsys):
+    from unittest.mock import patch
+    with patch("sys.argv", ["robotdashboard", "-o", "-o", "a.xml"]):
+        result = ArgumentParser().get_arguments()
+    assert result.outputs == [["a.xml", []]]
+    assert "--outputpath was provided without a value" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ("output.xml", ("output.xml", [])),
+        ("output.xml:dev:prod", ("output.xml", ["dev", "prod"])),
+        ("C:/results/output.xml:dev", ("C:/results/output.xml", ["dev"])),
+        (r"C:\results\output.xml:dev", (r"C:\results\output.xml", ["dev"])),
+    ],
+)
+def test_split_path_and_tags(value, expected):
+    assert ArgumentParser()._split_path_and_tags(value) == expected
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"forcejsonconfig": True},
+        {"databaseclass": "does_not_exist.py"},
+        {"ssl_certfile": "cert.pem"},
+        {"quantity": "0"},
+        {"timezone": "2"},
+    ],
+)
+def test_process_arguments_errors_exit_with_code_1(kwargs):
+    args = _make_namespace(**kwargs)
+    with pytest.raises(SystemExit) as exc_info:
+        ArgumentParser()._process_arguments(args)
+    assert exc_info.value.code == 1
+
+
+def test_get_arguments_parse_exception_exits_with_code_1():
+    from unittest.mock import patch
+    parser = ArgumentParser()
+    with patch.object(parser, "_parse_arguments", side_effect=Exception("bad parse")):
+        with pytest.raises(SystemExit) as exc_info:
+            parser.get_arguments()
+    assert exc_info.value.code == 1
+
+
+def test_normalize_bool_invalid_exits_with_code_1():
+    with pytest.raises(SystemExit) as exc_info:
+        ArgumentParser()._normalize_bool("maybe", "test")
+    assert exc_info.value.code == 1
+
+
+def test_process_arguments_quantity_is_an_int():
+    result = ArgumentParser()._process_arguments(_make_namespace(quantity="25"))
+    assert result.quantity == 25
+
+
+@pytest.mark.parametrize("timezone", ["2", "+2:00", "02:00", "+02:00:00", "UTC"])
+def test_process_arguments_invalid_timezone_exits(timezone, capsys):
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(_make_namespace(timezone=timezone))
+    assert "--timezone" in capsys.readouterr().out
+
+
+def test_process_arguments_reads_config_files_as_utf8(tmp_path):
+    msg_file = tmp_path / "messages.txt"
+    msg_file.write_bytes("Fout in stap ${step}: é ü ✓\n".encode("utf-8"))
+    config_file = tmp_path / "config.json"
+    config_file.write_bytes('{"title": "Résultats ✓"}'.encode("utf-8"))
+    args = _make_namespace(messageconfig=str(msg_file), jsonconfig=str(config_file))
+    result = ArgumentParser()._process_arguments(args)
+    assert result.message_config == ["Fout in stap ${step}: é ü ✓"]
+    assert "Résultats ✓" in result.json_config
+
+
+@pytest.mark.parametrize("server", ["default:admin:géheim", "127.0.0.1:8543:ädmin:secret"])
+def test_process_arguments_non_ascii_server_credentials_exit(server, capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        ArgumentParser()._process_arguments(_make_namespace(server=server))
+    assert exc_info.value.code == 1
+    assert "ASCII" in capsys.readouterr().out
