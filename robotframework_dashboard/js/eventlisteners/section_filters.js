@@ -113,8 +113,7 @@ const SECTION_APPLY_SWITCHES = {
     keyword: "sectionFiltersApplyKeyword",
 };
 
-// the graphs a section filter change affects: always the filtered ones, the "most" ones only when
-// the section's apply switch is on (or always, with all = true)
+// all: the "most" graphs also when the apply switch is off; filtered: false leaves the filtered ones out
 function get_section_graphs(section, { all = false, filtered = true } = {}) {
     const { filtered: filteredGraphs, most } = SECTION_GRAPH_UPDATES[section];
     const applySwitch = SECTION_APPLY_SWITCHES[section];
@@ -167,13 +166,11 @@ function update_overview_sections() {
 
 // function to setup eventlisteners for filter buttons
 function setup_sections_filters() {
-    // overview switches
     setup_switch("runTags", "click", rebuild_overview_project_bars);
     setup_switch("runName", "click", rebuild_overview_project_bars);
     setup_switch("totalStats", "click", update_overview_sections);
     setup_switch("latestRuns", "click", update_overview_sections);
     setup_switch("sortFilters", "click", update_overview_filter_visibility);
-    // suite section
     document.getElementById("suiteSelectSuites").addEventListener("change", () => {
         update_section_graphs(get_section_graphs("suite"));
     });
@@ -188,7 +185,7 @@ function setup_sections_filters() {
             update_suite_folder_donut_graph("");
         });
     });
-    // test section, each select rebuilds the selects below it
+    // each test section select rebuilds the selects below it
     document.getElementById("suiteSelectTests").addEventListener("change", () => {
         update_section_graphs(get_section_graphs("test"), () => {
             setup_testtags_in_select();
@@ -207,7 +204,6 @@ function setup_sections_filters() {
     setup_switch("sectionFiltersApplyTest", "change", () => {
         update_section_graphs(get_section_graphs("test", { all: true, filtered: false }));
     });
-    // keyword section
     document.getElementById("keywordSelect").addEventListener("change", () => {
         update_section_graphs(get_section_graphs("keyword"));
     });
@@ -217,7 +213,6 @@ function setup_sections_filters() {
     setup_switch("useLibraryNames", "change", () => {
         update_section_graphs(get_section_graphs("keyword", { all: true }), setup_keywords_in_select);
     });
-    // compare section
     compareRunIds.forEach(id => {
         document.getElementById(id)?.addEventListener("change", () => {
             update_section_graphs(get_section_graphs("compare"));

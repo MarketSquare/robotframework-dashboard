@@ -63,7 +63,7 @@ function capture_current_filters() {
     const profile = {};
     profile.runs = document.getElementById("runs").value;
     const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
-    // stored as "id" for older profiles; it holds the raw tag, which is the checkbox value
+    // the key stays "id" for saved profiles, the value is the raw tag
     profile.runTags = Array.from(tagInputs).map(el => ({ id: el.value, checked: el.checked }));
     profile.tagMode = document.getElementById("tagMode")?.value ?? "AND";
     const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");

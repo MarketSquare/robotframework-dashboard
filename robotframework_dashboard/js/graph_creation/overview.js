@@ -566,8 +566,8 @@ function create_overview_total_graphs(preFilteredRuns = null) {
 }
 
 // create a run card that will be displayed within each project section in overview
-// every run card asked these of all runs of its project, which made the overview quadratic in the runs:
-// the project run lists are rebuilt per filter pass (so cached per list), all runs never change
+// every run card needs these for all runs of its project: the project run lists are rebuilt per
+// filter pass (so cached per list), all runs never change
 const runListHasVersions = new WeakMap();
 let namesWithVersions = null;
 
@@ -599,9 +599,9 @@ function create_project_run_card(run, projectName, runIndex, runNumber, passRate
     const stats = [passedCount, failedCount, skippedCount, run.elapsed_s, run.path, run.full_name];
     const duration = isTotalStats ? run.average_duration ?? run.elapsed_s : run.elapsed_s;
     const duration_rounded = format_duration(Number(duration));
-    // durations are in run order and the cards newest first, so runIndex counts from the end; a total
-    // stats card compares the average with every run. By position, so runs with the same duration stay in
-    // from the sum of all durations, which the cards of a project share, instead of a sum per card
+    // durations are in run order and the cards newest first, so runIndex counts from the end; the card's
+    // own run is left out by position, so other runs with the same duration stay in. A total stats card
+    // compares the average with every run. The sum of all durations is shared by the cards of a project
     const excludedIndex = isTotalStats ? -1 : durations.length - 1 - runIndex;
     const total = get_durations_sum(durations);
     const otherCount = excludedIndex >= 0 && excludedIndex < durations.length ? durations.length - 1 : durations.length;
@@ -814,7 +814,6 @@ function update_projectbar_visibility() {
 
 function update_overview_prefix_display() {
     const showPrefixes = !!(settings && settings.show && settings.show.prefixes);
-    // the run card titles get the prefix setting when the cards are created
 
     // Update Project Bar section headers
     const projectBars = document.querySelectorAll('.overview-project-card');
@@ -842,7 +841,7 @@ function update_duration_comparison_for_project(projectName, projectRuns, percen
         if (!comparesElement || !comparesValueElement) return;
 
         const duration = parseFloat(comparesValueElement.getAttribute("value"));
-        // the average of the other runs, from the total instead of a new sum per card
+        // the average of the other runs
         const averageDuration = (total - durations[idx]) / (durations.length - 1);
         comparesElement.className = compare_to_average(duration, averageDuration, percentage);
     });

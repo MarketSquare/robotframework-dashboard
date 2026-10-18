@@ -448,7 +448,6 @@ let filterDataRunsCache = { runs: null, runStarts: null };
 
 function filter_data(data) {
     const stored_run_start = (row) => row.raw_run_start ?? row.run_start;
-    // the suites, tests, keywords and exceptions are filtered against the same runs
     if (filterDataRunsCache.runs !== filteredRuns) {
         filterDataRunsCache = { runs: filteredRuns, runStarts: new Set(filteredRuns.map(stored_run_start)) };
     }

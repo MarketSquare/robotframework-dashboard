@@ -299,7 +299,6 @@ function parse_test_tags(value) {
     return String(value).replace(/^\[|\]$/g, "").split(",").map(tag => tag.trim()).filter(Boolean);
 }
 
-// the "+HH:MM" / "-HH:MM" offset at the end of a run_start, or "" when it has none
 function get_tz_suffix(s) {
     const suffix = s.slice(-6);
     return /^[+-]\d{2}:\d{2}$/.test(suffix) ? suffix : "";
@@ -323,8 +322,8 @@ function get_run_projects(run) {
 }
 
 // metadata is stored as a python list repr: "['Browser: chromium', 'Team: Storefront']". Each item is read
-// as a quoted string, so a repr escape such as \x07 or a custom database format can't break the parsing
-// the way JSON.parse did. Metadata strings never change after the data is decoded, so the result is cached
+// as a quoted string, so a repr escape such as \x07 can't break the parsing. Metadata strings never change
+// after the data is decoded, so the result is cached
 const parsedMetadataCache = new Map();
 
 // cached: the value of one dimension is read once per run per filter pass, and the option

@@ -153,9 +153,9 @@ function update_height(verticalId, labels, graphType, internal = false) {
 }
 
 // function to convert timeline data to improve performance
-// one dataset per bar style (status colour, rerun or note border) instead of per item: Chart.js
-// looks up the stack of every bar across all datasets, so with one dataset per test a timeline
-// of all tests of 100+ runs took seconds to draw. Every point keeps its own row in y.
+// one dataset per bar style (status colour, rerun or note border), not per item: Chart.js looks up
+// the stack of every bar across all datasets, which makes a timeline with thousands of datasets slow.
+// Every point keeps its own row in y.
 function convert_timeline_data(oldDatasets) {
     const grouped = new Map();
     for (const dataset of oldDatasets) {
@@ -224,7 +224,6 @@ function get_rerun_summary(tests) {
 }
 
 // function to format the attempt history for a tooltip
-// shortens a long message for a tooltip line
 function truncate_message(message, max = 120) {
     const text = String(message ?? "");
     return text.length > max ? `${text.substring(0, max)}...` : text;

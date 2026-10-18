@@ -58,7 +58,7 @@ function get_exceptions_data(graphType, filteredData) {
         var datasets = [];
         let runAxis = 0;
         const pointMeta = {};
-        // the entries of every label grouped by run once, instead of filtered per run and label
+        // the entries of every label grouped by run once
         const entriesByLabelAndRun = new Map(labels.map(label => {
             const byRun = new Map();
             for (const entry of data.get(label) || []) {

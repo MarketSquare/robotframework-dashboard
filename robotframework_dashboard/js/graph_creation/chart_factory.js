@@ -5,9 +5,9 @@ import { open_log_from_label } from "../log.js";
 const deferredCharts = new Map();
 let deferredChartObserver = null;
 
-// barConfig's borderRadius is a function of the rounding setting, which makes Chart.js resolve the
-// options of every bar on its own. Its value is the same for every bar, so it is resolved once per
-// build; a rounding change rebuilds the graphs.
+// barConfig's borderRadius is a function, which makes Chart.js resolve the options of every bar on
+// its own. It returns the same value for every bar, so it is resolved once per build; a rounding
+// change rebuilds the graphs.
 function build_chart_config(buildConfigFn) {
     const config = buildConfigFn();
     for (const dataset of config.data?.datasets ?? []) {
