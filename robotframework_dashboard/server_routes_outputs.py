@@ -2,12 +2,11 @@ from fastapi import Body, Depends, File, Form, UploadFile
 
 from os.path import exists, join
 from os import remove
-from gzip import decompress
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
 
-from .server_paths import log_name_from_output_name, safe_file_name
+from .server_paths import decompress_upload, log_name_from_output_name, safe_file_name
 from .server_models import (
     AddOutput,
     GetOutput,
@@ -167,7 +166,7 @@ def register_output_routes(server, authenticate):
                 output_filename = Path(file.filename).with_suffix("")
                 if output_filename.suffix == "":
                     output_filename = output_filename.with_suffix(".xml")
-                file_bytes = decompress(file_bytes)
+                file_bytes = decompress_upload(file_bytes)
             else:
                 output_filename = Path(file.filename)
 

@@ -632,3 +632,56 @@ def test_process_arguments_non_ascii_server_credentials_exit(server, capsys):
         ArgumentParser()._process_arguments(_make_namespace(server=server))
     assert exc_info.value.code == 1
     assert "ASCII" in capsys.readouterr().out
+
+
+def test_process_arguments_invalid_jsonconfig_exits(tmp_path, capsys):
+    config_file = tmp_path / "config.json"
+    config_file.write_text('{"color": "red",}', encoding="utf-8")
+    with pytest.raises(SystemExit) as exc_info:
+        ArgumentParser()._process_arguments(_make_namespace(jsonconfig=str(config_file)))
+    assert exc_info.value.code == 1
+    assert "is not valid JSON" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ("default", (None, None, "", "")),
+        ("default:admin:secret", (None, None, "admin", "secret")),
+        ("default:admin:se:cr:et", (None, None, "admin", "se:cr:et")),
+        ("0.0.0.0:8080", ("0.0.0.0", 8080, "", "")),
+        ("0.0.0.0:8080:admin:pa:ss", ("0.0.0.0", 8080, "admin", "pa:ss")),
+        ("[::1]:8543", ("::1", 8543, "", "")),
+        ("[2001:db8::1]:8543:admin:secret", ("2001:db8::1", 8543, "admin", "secret")),
+    ],
+)
+def test_parse_server(value, expected):
+    assert ArgumentParser()._parse_server(value) == expected
+
+
+@pytest.mark.parametrize("value", ["0.0.0.0", "[::1]", "localhost:abc"])
+def test_parse_server_without_valid_port_raises(value):
+    with pytest.raises(ValueError):
+        ArgumentParser()._parse_server(value)
+
+
+def test_process_arguments_server_credentials_from_environment(monkeypatch):
+    monkeypatch.setenv("ROBOTDASHBOARD_SERVER_USER", "env_user")
+    monkeypatch.setenv("ROBOTDASHBOARD_SERVER_PASSWORD", "env:pass")
+    result = ArgumentParser()._process_arguments(_make_namespace(server="0.0.0.0:8080"))
+    assert (result.server_host, result.server_port) == ("0.0.0.0", 8080)
+    assert (result.server_user, result.server_pass) == ("env_user", "env:pass")
+
+
+def test_process_arguments_server_credentials_on_cli_win_over_environment(monkeypatch):
+    monkeypatch.setenv("ROBOTDASHBOARD_SERVER_USER", "env_user")
+    monkeypatch.setenv("ROBOTDASHBOARD_SERVER_PASSWORD", "env_pass")
+    result = ArgumentParser()._process_arguments(_make_namespace(server="default:cli_user:cli_pass"))
+    assert (result.server_user, result.server_pass) == ("cli_user", "cli_pass")
+
+
+def test_process_arguments_environment_credentials_unused_without_server(monkeypatch):
+    monkeypatch.setenv("ROBOTDASHBOARD_SERVER_USER", "env_user")
+    monkeypatch.setenv("ROBOTDASHBOARD_SERVER_PASSWORD", "env_pass")
+    result = ArgumentParser()._process_arguments(_make_namespace())
+    assert (result.server_user, result.server_pass) == ("", "")

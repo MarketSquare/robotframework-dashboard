@@ -36,14 +36,12 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         self.connection.row_factory = sqlite3.Row
 
     def run_start_exists(self, run_start: str):
-        run_rows = (
-            self.connection.cursor().execute(SELECT_RUN_STARTS_FROM_RUNS).fetchall()
-        )
         # the stored run_start can carry a "+02:00" offset the incoming one does not have; an exact
         # match without it, not a prefix match: str(datetime) drops ".000000", so "10:00:00" is a
         # prefix of every run from that second
-        run_starts = {self._without_timezone_offset(row["run_start"]) for row in run_rows}
-        return self._without_timezone_offset(str(run_start)) in run_starts
+        run_start = self._without_timezone_offset(str(run_start))
+        params = (run_start, f"{run_start}{GLOB_TIMEZONE_OFFSET}")
+        return self.connection.cursor().execute(SELECT_RUN_START_EXISTS, params).fetchone() is not None
 
     def _create_tables(self):
         """Helper function to create the tables (they use IF NOT EXISTS to not override)"""
@@ -274,6 +272,8 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         local_tz = self._get_local_timezone_offset()
         alias_counter = 1
         run_name_counter = 1
+        # the labels handed out so far; a set because a lookup in aliases.values() is O(runs)
+        used_aliases, used_names = set(), set()
         # Get runs from run table
         run_rows = self.connection.cursor().execute(SELECT_FROM_RUNS).fetchall()
         for run_row in run_rows:
@@ -285,16 +285,17 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 row["run_alias"] = alias
                 alias_counter += 1
             else:
-                if row["run_alias"] in aliases.values():
+                if row["run_alias"] in used_aliases:
                     alias = f"{row['run_alias']} {alias_counter}"
                     aliases[row["run_start"]] = alias
                     row["run_alias"] = alias
                     alias_counter += 1
                 else:
                     aliases[row["run_start"]] = row["run_alias"]
+            used_aliases.add(row["run_alias"])
             # Build a deduplicated run_name for display (separate from name, same pattern as aliases)
             run_name = row["name"] or ""
-            if run_name in name_labels.values():
+            if run_name in used_names:
                 dedup_name = f"{run_name} {run_name_counter}"
                 name_labels[row["run_start"]] = dedup_name
                 row["run_name"] = dedup_name
@@ -302,6 +303,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             else:
                 name_labels[row["run_start"]] = run_name
                 row["run_name"] = run_name
+            used_names.add(row["run_name"])
             # exception made from versions before 0.8.1 without path
             if row["path"] == None:
                 row["path"] = ""
@@ -389,7 +391,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
 
     def _dict_from_row(self, row: sqlite3.Row):
         """Helper function create a dictionary object"""
-        return dict(zip(row.keys(), row))
+        return dict(row)
 
     def _get_runs(self):
         """Helper function to get the run data"""
@@ -432,9 +434,9 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         columns = [col[0] for col in cursor.description]
         return dict(zip(columns, row))
 
-    def _get_rows_for_run_start(self, table, run_start):
+    def _get_rows_for_run_start(self, query, run_start):
         cursor = self.connection.cursor()
-        cursor.execute(f"SELECT * FROM {table} WHERE run_start = ?", (run_start,))
+        cursor.execute(query, (run_start,))
         rows = cursor.fetchall()
         columns = [col[0] for col in cursor.description]
         return [dict(zip(columns, row)) for row in rows]
@@ -446,11 +448,11 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         if include_all or "run" in types:
             entry["run"] = self._get_run_data(run_start)
         if include_all or "suite" in types:
-            entry["suites"] = self._get_rows_for_run_start("suites", run_start)
+            entry["suites"] = self._get_rows_for_run_start(SELECT_SUITES_BY_RUN_START, run_start)
         if include_all or "test" in types:
-            entry["tests"] = self._get_rows_for_run_start("tests", run_start)
+            entry["tests"] = self._get_rows_for_run_start(SELECT_TESTS_BY_RUN_START, run_start)
         if include_all or "keyword" in types:
-            entry["keywords"] = self._get_rows_for_run_start("keywords", run_start)
+            entry["keywords"] = self._get_rows_for_run_start(SELECT_KEYWORDS_BY_RUN_START, run_start)
         return entry
 
     def _log_run_jsonl(self, logpath, entry):
@@ -481,29 +483,19 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 elif "age=" in run:
                     console += self._remove_by_age(run, run_starts)
                 else:
-                    print(
-                        f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions"
-                    )
-                    console += f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions\n"
+                    console += self._print_console(f"  ERROR: incorrect usage of the remove_run feature ({run}), check out robotdashboard --help for instructions")
             except Exception as error:
-                print(
-                    f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions"
-                )
-                console += f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions\n"
+                console += self._print_console(f"  ERROR: Could not remove run: {run}, reason: {error}, check out robotdashboard --help for instructions")
         return console
 
     def _remove_by_run_start(self, run: str, run_starts: list):
         console = ""
         run_start = run.replace("run_start=", "")
         if not run_start in run_starts:
-            print(
-                f"  ERROR: Could not find run to remove from the database: run_start={run_start}"
-            )
-            console += f"  ERROR: Could not find run to remove from the database: run_start={run_start}\n"
+            console += self._print_console(f"  ERROR: Could not find run to remove from the database: run_start={run_start}")
             return console
         self._remove_run(run_start)
-        print(f"  Removed run from the database: run_start={run_start}")
-        console += f"  Removed run from the database: run_start={run_start}\n"
+        console += self._print_console(f"  Removed run from the database: run_start={run_start}")
         return console
 
     def _remove_by_index(self, run: str, run_starts: list):
@@ -519,20 +511,14 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                 indexes.append(int(run))
         for index in indexes:
             self._remove_run(run_starts[index])
-            print(
-                f"  Removed run from the database: index={index}, run_start={run_starts[index]}"
-            )
-            console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
+            console += self._print_console(f"  Removed run from the database: index={index}, run_start={run_starts[index]}")
         return console
 
     def _remove_by_alias(self, run: str, run_starts: list, run_aliases: list):
         console = ""
         alias = run.replace("alias=", "")
         self._remove_run(run_starts[run_aliases.index(alias)])
-        print(
-            f"  Removed run from the database: alias={alias}, run_start={run_starts[run_aliases.index(alias)]}"
-        )
-        console += f"  Removed run from the database: alias={alias}, run_start={run_starts[run_aliases.index(alias)]}\n"
+        console += self._print_console(f"  Removed run from the database: alias={alias}, run_start={run_starts[run_aliases.index(alias)]}")
         return console
 
     def _remove_by_tag(self, run: str, run_starts: list, run_tags: list):
@@ -542,16 +528,10 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         for index, run_tag in enumerate(run_tags):
             if tag in self._split_run_tags(run_tag):
                 self._remove_run(run_starts[index])
-                print(
-                    f"  Removed run from the database: tag={tag}, run_start={run_starts[index]}"
-                )
-                console += f"  Removed run from the database: tag={tag}, run_start={run_starts[index]}\n"
+                console += self._print_console(f"  Removed run from the database: tag={tag}, run_start={run_starts[index]}")
                 removed += 1
         if removed == 0:
-            print(
-                f"  WARNING: no runs were removed as no runs were found with tag: {tag}"
-            )
-            console += f"  WARNING: no runs were removed as no runs were found with tag: {tag}\n"
+            console += self._print_console(f"  WARNING: no runs were removed as no runs were found with tag: {tag}")
         return console
 
     @staticmethod
@@ -606,10 +586,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         # remove every run (issue #333); removing everything is a separate,
         # explicit action.
         if limit < 1:
-            print(
-                f"  ERROR: no runs were removed as the provided limit ({limit}) must be at least 1"
-            )
-            console += f"  ERROR: no runs were removed as the provided limit ({limit}) must be at least 1\n"
+            console += self._print_console(f"  ERROR: no runs were removed as the provided limit ({limit}) must be at least 1")
             return console
         tag_filters = [
             part.replace("tag=", "") for part in parts[1:] if part.startswith("tag=")
@@ -637,17 +614,11 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             kept.update(project_indexes[-limit:])
         removals = [index for index in candidates if index not in kept]
         if not removals:
-            print(
-                f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the number of runs{scope} of every project ({len(candidates)} run(s) in {len(candidates_by_project)} project(s))"
-            )
-            console += f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the number of runs{scope} of every project ({len(candidates)} run(s) in {len(candidates_by_project)} project(s))\n"
+            console += self._print_console(f"  WARNING: no runs were removed as the provided limit ({limit}) is higher than the number of runs{scope} of every project ({len(candidates)} run(s) in {len(candidates_by_project)} project(s))")
             return console
         for index in removals:
             self._remove_run(run_starts[index])
-            print(
-                f"  Removed run from the database: index={index}, run_start={run_starts[index]}"
-            )
-            console += f"  Removed run from the database: index={index}, run_start={run_starts[index]}\n"
+            console += self._print_console(f"  Removed run from the database: index={index}, run_start={run_starts[index]}")
         return console
 
     def _remove_by_age(self, run_query: str, run_starts: list):
@@ -656,8 +627,7 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             clean_query = run_query.replace("age=", "")
             mod, delta = self.parse_time_range(clean_query)
         except ValueError as e:
-            print(f"  ERROR: {e}")
-            return f"  ERROR: {e}\n"
+            return self._print_console(f"  ERROR: {e}")
         cutoff = datetime.now(timezone.utc)-delta
         targets = []
         for r in run_starts:
@@ -673,17 +643,13 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
                     if run_dt > cutoff:
                         targets.append(r)
             except ValueError as e:
-                print(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
+                console += self._print_console(f"    WARNING: Skipping invalid timestamp: '{r}' ({e})")
         if not targets:
-            print(
-                f"  WARNING: no runs were removed as no runs were within range {clean_query}"
-            )
-            console += f"  WARNING: no runs were removed as no runs were within range {clean_query}\n"
+            console += self._print_console(f"  WARNING: no runs were removed as no runs were within range {clean_query}")
             return console
         for run_to_remove in targets:
             self._remove_run(run_to_remove)
-            print(f"  Removed run from the database: run_start={run_to_remove}")
-            console += f"  Removed run from the database: run_start={run_to_remove}\n"
+            console += self._print_console(f"  Removed run from the database: run_start={run_to_remove}")
         return console
 
     def _remove_run(self, run_start: str):
@@ -711,9 +677,12 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
         self.connection.cursor().execute(VACUUM_DATABASE)
         self.connection.commit()
         end = time()
-        console = f"  Vacuumed the database in {round(end - start, 2)} seconds\n"
-        print(f"  Vacuumed the database in {round(end - start, 2)} seconds")
-        return console
+        return self._print_console(f"  Vacuumed the database in {round(end - start, 2)} seconds")
+
+    def _print_console(self, message: str):
+        """Print a message and return it with a newline, for the console text the server sends back"""
+        print(message)
+        return message + "\n"
 
     def parse_time_range(self, range_str: str):
         # Regex groups : [modifier] [value] [unit]

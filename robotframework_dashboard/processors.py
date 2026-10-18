@@ -37,6 +37,11 @@ MERGE_SKIPPED_RE = compile(
 )
 
 
+# the <robot> element is on the second line; the limit only guards against a file without newlines
+GENERATED_HEADER_BYTES = 65536
+GENERATED_RE = compile(r'<robot\b[^>]*?\bgenerated="([^"]+)"')
+
+
 def _parse_original_message(original: str, status: str):
     """Parse the original message embedded in a skipped-rerun message, restoring the *HTML*
     marker rebot stripped so an earlier merge history is still recognised"""
@@ -89,35 +94,50 @@ class OutputProcessor:
 
     def __init__(self, output_path: Path):
         self.output_path = output_path
-        self.execution_result = ExecutionResult(output_path)
+        self._execution_result = None
+
+    @property
+    def execution_result(self):
+        """Parsed on first use: get_run_start reads only the header, so an output that is
+        already in the database is skipped without parsing the whole XML"""
+        if self._execution_result is None:
+            self._execution_result = ExecutionResult(self.output_path)
+        return self._execution_result
+
+    @execution_result.setter
+    def execution_result(self, execution_result):
+        self._execution_result = execution_result
 
     def get_run_start(self):
         """Function to get the run_start to do a check if it is not already present in the database"""
-        if hasattr(self.execution_result, "generation_time"):
-            generation_time = self.execution_result.generation_time
-        else:
-            generation_time = None
-            with open(self.output_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    if "<robot" in line:
-                        generation_time = line.split('generated="', 1)[1].split('"', 1)[
-                            0
-                        ]
-                        if "T" in generation_time:
-                            generation_time = datetime.strptime(
-                                generation_time, "%Y-%m-%dT%H:%M:%S.%f"
-                            )
-                        else:
-                            generation_time = datetime.strptime(
-                                generation_time, "%Y%m%d %H:%M:%S.%f"
-                            )
-                        break
-            if generation_time is None:
-                raise ValueError(
-                    f"no <robot generated=\"...\"> header found in '{self.output_path}'"
-                )
+        generation_time = self._read_generation_time()
+        if generation_time is None:
+            # no readable header: Robot Framework 7 parses it itself, and reports a broken file
+            generation_time = getattr(self.execution_result, "generation_time", None)
+        if generation_time is None:
+            raise ValueError(
+                f"no <robot generated=\"...\"> header found in '{self.output_path}'"
+            )
         self.generation_time = generation_time
         return self.generation_time
+
+    def _read_generation_time(self):
+        """The generated attribute of the <robot> element, the value Robot Framework 7 exposes as generation_time"""
+        try:
+            with open(self.output_path, "r", encoding="utf-8", errors="replace") as f:
+                header = f.read(GENERATED_HEADER_BYTES)
+        except OSError:
+            return None
+        match = GENERATED_RE.search(header)
+        if not match:
+            return None
+        generated = match.group(1)
+        try:
+            if "T" in generated:
+                return datetime.fromisoformat(generated)
+            return datetime.strptime(generated, "%Y%m%d %H:%M:%S.%f")
+        except ValueError:
+            return None
 
     def get_output_data(self):
         """This is the main function that is actually called by robotdashboard"""
@@ -125,11 +145,11 @@ class OutputProcessor:
         self.execution_result.visit(RunProcessor(self.generation_time, run_list))
         self.execution_result.visit(SuiteProcessor(self.generation_time, suite_list))
         self.execution_result.visit(TestProcessor(self.generation_time, test_list))
-        self.execution_result.visit(
-            KeywordProcessor(self.generation_time, keyword_list)
-        )
+        # one walk over all keywords for both, it is the largest part of the visiting time
         exception_processor = ExceptionProcessor(self.generation_time)
-        self.execution_result.visit(exception_processor)
+        self.execution_result.visit(
+            KeywordWalk(KeywordProcessor(self.generation_time, keyword_list), exception_processor)
+        )
         if not suite_list:
             print("  WARNING: No suites found in output, suite data will be empty!")
         if not test_list:
@@ -307,6 +327,12 @@ class SuiteProcessor(ResultVisitor):
                 )
             )
 
+    def visit_test(self, test: TestCase):
+        """Only suites are collected, so the tests and their keywords are not walked"""
+
+    def visit_keyword(self, keyword: Keyword):
+        """Suite setups and teardowns are not walked either"""
+
 
 class TestProcessor(ResultVisitor):
     """Processer to get the test data"""
@@ -314,6 +340,9 @@ class TestProcessor(ResultVisitor):
     def __init__(self, run_time: datetime, test_list: list):
         self.test_list = test_list
         self.run_time = run_time
+
+    def visit_keyword(self, keyword: Keyword):
+        """Suite setups and teardowns hold no test data"""
 
     def visit_test(self, test: TestCase):
         # handling for older robot versions
@@ -399,6 +428,29 @@ class KeywordProcessor(ResultVisitor):
                 owner,
             )
         )
+
+
+class KeywordWalk(ResultVisitor):
+    """Hands every keyword and TRY branch of one walk to several processors"""
+
+    def __init__(self, *processors: ResultVisitor):
+        self.processors = processors
+
+    def start_keyword(self, keyword: Keyword):
+        for processor in self.processors:
+            processor.start_keyword(keyword)
+
+    def end_keyword(self, keyword: Keyword):
+        for processor in self.processors:
+            processor.end_keyword(keyword)
+
+    def start_try_branch(self, branch):
+        for processor in self.processors:
+            processor.start_try_branch(branch)
+
+    def end_try_branch(self, branch):
+        for processor in self.processors:
+            processor.end_try_branch(branch)
 
 
 class ExceptionProcessor(ResultVisitor):

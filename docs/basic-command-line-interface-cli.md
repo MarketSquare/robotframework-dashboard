@@ -235,7 +235,7 @@ robotdashboard -u true -f ./results --logurl "https://ci.example.com/build/42/lo
 robotdashboard -j ./path/to/config.json  
 robotdashboard --jsonconfig default_settings.json  
 ```
-- Optional: `-j` or `--jsonconfig` sets a JSON dashboard configuration file used on first load.
+- Optional: `-j` or `--jsonconfig` sets a JSON dashboard configuration file used on first load. A file that is not valid JSON is rejected with an error.
 - See [Advanced CLI & Examples](/advanced-cli-examples#using-a-custom-dashboard-config-json) for more information on customized loading behaviour!
 
 ### Force the JSON config even if local storage exists

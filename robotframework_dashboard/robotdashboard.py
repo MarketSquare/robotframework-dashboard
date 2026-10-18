@@ -7,6 +7,7 @@ from time import time
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+from contextlib import contextmanager
 from .arguments import LogRemovedConfig
 
 class RobotDashboard:
@@ -114,51 +115,49 @@ class RobotDashboard:
             output_file_info_list (list of tuples): Each tuple contains (file_path, tags).
             output_folder_config (tuple): (folder_path, tags)
         """
-        self.database.open_database()
         console = self._print_console(" 2. Processing output XML(s)")
 
         if not output_file_info_list and not output_folder_configs:
             console += self._print_console("  skipping step")
             console += self._print_console("=" * 86)
-            self.database.close_database()
             return console
 
-        if output_file_info_list:
-            for file_path, tags in output_file_info_list:
-                try:
-                    full_path = join(getcwd(), file_path)
-                    run_alias = self._run_alias_from_file_name(basename(full_path))
-                    console += self._process_single_output(full_path, tags, run_alias)
-                except Exception as e:
-                    console += self._print_console(
-                        f"  ERROR: Could not process output XML '{file_path}', error: {e}"
-                    )
+        with self._open_database():
+            if output_file_info_list:
+                for file_path, tags in output_file_info_list:
+                    try:
+                        full_path = join(getcwd(), file_path)
+                        run_alias = self._run_alias_from_file_name(basename(full_path))
+                        console += self._process_single_output(full_path, tags, run_alias)
+                    except Exception as e:
+                        console += self._print_console(
+                            f"  ERROR: Could not process output XML '{file_path}', error: {e}"
+                        )
 
-        if output_folder_configs:
-            for output_folder_config in output_folder_configs:
-                folder_path, tags = output_folder_config
-                if not exists(folder_path):
-                    console += self._print_console(
-                        f"  ERROR: Could not process output folder '{folder_path}', path does not exist!"
-                    )
-                else:
-                    for subdir, _, files in walk(folder_path):
-                        files.sort()
-                        for file in files:
-                            if "output" in file and file.endswith(".xml"):
-                                try:
-                                    full_path = join(getcwd(), subdir, file)
-                                    run_alias = self._run_alias_from_file_name(file)
-                                    console += self._process_single_output(
-                                        full_path, tags, run_alias
-                                    )
-                                except Exception as e:
-                                    console += self._print_console(
-                                        f"  ERROR: Could not process found output file '{file}', error: {e}"
-                                    )
+            if output_folder_configs:
+                for output_folder_config in output_folder_configs:
+                    folder_path, tags = output_folder_config
+                    if not exists(folder_path):
+                        console += self._print_console(
+                            f"  ERROR: Could not process output folder '{folder_path}', path does not exist!"
+                        )
+                    else:
+                        for subdir, _, files in walk(folder_path):
+                            files.sort()
+                            for file in files:
+                                if "output" in file and file.endswith(".xml"):
+                                    try:
+                                        full_path = join(getcwd(), subdir, file)
+                                        run_alias = self._run_alias_from_file_name(file)
+                                        console += self._process_single_output(
+                                            full_path, tags, run_alias
+                                        )
+                                    except Exception as e:
+                                        console += self._print_console(
+                                            f"  ERROR: Could not process found output file '{file}', error: {e}"
+                                        )
 
         console += self._print_console("=" * 86)
-        self.database.close_database()
         return console
 
     @staticmethod
@@ -205,9 +204,8 @@ class RobotDashboard:
             console += self._print_console(
                 f" 3. Listing all available runs in the database"
             )
-            self.database.open_database()
-            self.database.list_runs()
-            self.database.close_database()
+            with self._open_database():
+                self.database.list_runs()
         else:
             console += self._print_console(
                 f" 3. Listing all available runs in the database\n  skipping step"
@@ -219,28 +217,23 @@ class RobotDashboard:
 
     def get_runs(self):
         """Function that gets the runs and corresponding names from the database"""
-        self.database.open_database()
-        runs, names, aliases, tags, custom_filters = self.database._get_runs()
-        self.database.close_database()
-        return runs, names, aliases, tags, custom_filters
+        with self._open_database():
+            return self.database._get_runs()
 
     def get_run_paths(self):
         """Function that gets a mapping of run_start to path for all runs"""
-        self.database.open_database()
-        run_paths = self.database._get_run_paths()
-        self.database.close_database()
-        return run_paths
+        with self._open_database():
+            return self.database._get_run_paths()
 
     def remove_outputs(self, remove_runs=None):
         """Function that removes the remove_runs that were set when instantiating the RobotDashboard class"""
         console = ""
         if remove_runs != None:
             console += self._print_console(f" 4. Removing runs from the database")
-            self.database.open_database()
-            console += self.database.remove_runs(remove_runs)
-            if not self.no_vacuum:
-                console += self.database.vacuum_database()
-            self.database.close_database()
+            with self._open_database():
+                console += self.database.remove_runs(remove_runs)
+                if not self.no_vacuum:
+                    console += self.database.vacuum_database()
         else:
             console += self._print_console(
                 f" 4. Removing runs from the database\n  skipping step"
@@ -256,9 +249,8 @@ class RobotDashboard:
         if self.generate_dashboard:
             start = time()
             console += self._print_console(f" 5. Creating dashboard HTML")
-            self.database.open_database()
-            dashboard_data = self.database.get_data()
-            self.database.close_database()
+            with self._open_database():
+                dashboard_data = self.database.get_data()
             DashboardGenerator().generate_dashboard(
                 self.dashboard_name,
                 dashboard_data,
@@ -285,10 +277,18 @@ class RobotDashboard:
 
     def update_output_path(self, log_path):
         """Function to update the output_path using the log path that the server has used"""
+        with self._open_database():
+            return self.database.update_output_path(log_path)
+
+    @contextmanager
+    def _open_database(self):
+        """Open the database for the block and always close it, so an exception in server mode does
+        not leave a connection open that the next open_database call overwrites"""
         self.database.open_database()
-        console = self.database.update_output_path(log_path)
-        self.database.close_database()
-        return console
+        try:
+            yield self.database
+        finally:
+            self.database.close_database()
 
     def _print_console(self, message):
         print(message)

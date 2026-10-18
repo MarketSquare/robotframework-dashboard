@@ -76,18 +76,56 @@ DEPENDENCIES = {
 }
 
 
+# key -> (signature of the source files, built block)
+_block_cache = {}
+
+
+def _cached_block(key, paths, build):
+    """Return the block built from paths, rebuilding it only when a file was added, removed or changed,
+    so a server that regenerates the dashboard on every upload does not re-read and re-bundle every file"""
+    signature = tuple((str(path), path.stat().st_mtime_ns, path.stat().st_size) for path in paths)
+    cached = _block_cache.get(key)
+    if cached and cached[0] == signature:
+        return cached[1]
+    block = build()
+    _block_cache[key] = (signature, block)
+    return block
+
+
 class DependencyProcessor():
     def __init__(self, admin_page: bool = False):
         self.admin_page = admin_page
 
     def get_js_block(self):
-        return self._inline_js_modules(self._gather_files("js"))
+        js_files = self._gather_files("js")
+        return _cached_block(
+            ("js", self.admin_page), self._source_paths(js_files), lambda: self._inline_js_modules(js_files)
+        )
 
     def get_css_block(self):
-        return self._inline_css_files(self._gather_files("css"))
+        css_files = self._gather_files("css")
+        return _cached_block(
+            ("css", self.admin_page), self._source_paths(css_files), lambda: self._inline_css_files(css_files)
+        )
 
     def get_dependencies_block(self, offline: bool):
-        return self._build_dependencies_block(offline)
+        local_files = [dep["local"] for _, dep in self._dependencies()] if offline else []
+        return _cached_block(
+            ("dependencies", self.admin_page, offline),
+            self._source_paths(local_files),
+            lambda: self._build_dependencies_block(offline),
+        )
+
+    def _source_paths(self, rel_paths):
+        base = Path(dirname(abspath(__file__)))
+        return [base / rel_path for rel_path in rel_paths]
+
+    def _dependencies(self):
+        """(name, dependency) pairs for this page, the admin page leaves out the dashboard-only ones"""
+        return [
+            (name, dep) for name, dep in DEPENDENCIES.items()
+            if not (self.admin_page and dep.get("admin_page") is False)
+        ]
 
     def _build_dependencies_block(self, offline: bool) -> str:
         """
@@ -95,9 +133,7 @@ class DependencyProcessor():
         """
         html_parts = []
 
-        for dep_name, dep in DEPENDENCIES.items():
-            if self.admin_page and dep.get("admin_page") is False:
-                continue
+        for dep_name, dep in self._dependencies():
             if not offline:
                 if dep["type"] == "js":
                     html_parts.append(f'<script src="{dep["cdn"]}"></script>')

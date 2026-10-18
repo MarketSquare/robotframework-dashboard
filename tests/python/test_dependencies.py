@@ -91,3 +91,35 @@ def test_inline_css_files_wraps_in_style():
     result = dp._inline_css_files(css_files)
     assert result.startswith("<style>")
     assert result.endswith("</style>")
+
+
+def test_blocks_are_cached_until_a_source_file_changes(tmp_path, monkeypatch):
+    import os
+    from robotframework_dashboard import dependencies
+
+    source = tmp_path / "a.js"
+    source.write_text("one", encoding="utf-8")
+    builds = []
+
+    def build():
+        builds.append(source.read_text(encoding="utf-8"))
+        return builds[-1]
+
+    monkeypatch.setattr(dependencies, "_block_cache", {})
+    assert dependencies._cached_block("key", [source], build) == "one"
+    assert dependencies._cached_block("key", [source], build) == "one"
+    assert builds == ["one"]
+    source.write_text("two!", encoding="utf-8")
+    stat = source.stat()
+    os.utime(source, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000))
+    assert dependencies._cached_block("key", [source], build) == "two!"
+    assert builds == ["one", "two!"]
+
+
+def test_js_block_is_identical_when_served_from_the_cache():
+    from robotframework_dashboard import dependencies
+
+    first = DependencyProcessor().get_js_block()
+    dependencies._block_cache.clear()
+    assert DependencyProcessor().get_js_block() == first
+    assert DependencyProcessor(admin_page=True).get_js_block() != first

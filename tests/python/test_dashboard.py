@@ -429,3 +429,15 @@ def test_generate_dashboard_default_title_keeps_seconds_without_microseconds(tmp
     js_title, html_title = _title_contexts(output.read_text(encoding="utf-8"))
     assert js_title == '"Robot Framework Dashboard - 2025-01-01 12:34:56"'
     assert html_title == "Robot Framework Dashboard - 2025-01-01 12:34:56"
+
+
+def test_generate_dashboard_configs_cannot_end_the_script_tag(tmp_path):
+    """A '</script>' inside a JSON config or message config value would end the inline script."""
+    json_config = '{"branding": {"title": "a</script><b>x</b>"}}'
+    output = _call_generate(tmp_path, json_config=json_config, message_config=["fails at </script> step"])
+    content = output.read_text(encoding="utf-8")
+    script = content.split("var json_config = ", 1)[1].split("\n", 1)[0]
+    assert "</" not in script
+    assert json.loads(script.replace("<\\/", "</")) == json.loads(json_config)
+    message_line = content.split("var message_config = ", 1)[1].split("\n", 1)[0]
+    assert "</" not in message_line

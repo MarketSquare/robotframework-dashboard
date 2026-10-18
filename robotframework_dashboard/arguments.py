@@ -2,7 +2,8 @@ import argparse
 from datetime import datetime
 from sys import exit
 from re import split, fullmatch
-from os import getcwd
+from json import loads
+from os import getcwd, environ
 from os.path import join, exists
 from typing import NamedTuple
 from .version import __version__
@@ -72,6 +73,24 @@ class ArgumentParser:
         # re.split also returns the lookahead group, which is None for every real separator
         splitted = [part for part in split(r":(?!(\/|\\))", value) if part is not None]
         return splitted[0], splitted[1:]
+
+    def _parse_server(self, value):
+        """'default[:user:password]', 'host:port[:user:password]' or '[ipv6]:port[:user:password]'
+        -> (host, port, user, password); host and port are None for 'default'. The password is
+        the rest of the value, so it may contain ':'"""
+        if value == "default" or value.startswith("default:"):
+            host, port, credentials = None, None, value[len("default:"):]
+        else:
+            if value.startswith("["):
+                host, separator, rest = value[1:].partition("]:")
+            else:
+                host, separator, rest = value.partition(":")
+            if not separator:
+                raise ValueError(f"--server '{value}' has no port, use host:port, e.g. '0.0.0.0:8543'")
+            port_text, _, credentials = rest.partition(":")
+            port = int(port_text)
+        user, _, password = credentials.partition(":")
+        return host, port, user, password
 
     def _check_project_version_usage(self, tags, arguments):
         version_tags = [tag for tag in tags if tag.startswith("version_")]
@@ -616,6 +635,12 @@ class ArgumentParser:
         if arguments.jsonconfig:
             with open(arguments.jsonconfig, encoding="utf-8") as file:
                 json_config = file.read()
+            # the config goes into the dashboard script as-is, invalid JSON would leave the page blank
+            try:
+                loads(json_config)
+            except ValueError as error:
+                print(f"  ERROR: --jsonconfig '{arguments.jsonconfig}' is not valid JSON: {error}")
+                exit(1)
 
         # handles the custom dashboard name
         if arguments.namedashboard == "":
@@ -641,20 +666,13 @@ class ArgumentParser:
         server_pass = ""
         if arguments.server:
             start_server = True
-            parts = arguments.server.split(":")
-
-            if parts[0] == "default":
-                # e.g. default[:username:password]
-                if len(parts) == 3:
-                    server_user = parts[1]
-                    server_pass = parts[2]
-            else:
-                # e.g. host:port or host:port:username:password
-                server_host = parts[0]
-                server_port = int(parts[1])
-                if len(parts) == 4:
-                    server_user = parts[2]
-                    server_pass = parts[3]
+            host, port, server_user, server_pass = self._parse_server(arguments.server)
+            server_host = host or server_host
+            server_port = port or server_port
+            # keeps the password out of the process list and the shell history
+            if not server_user and not server_pass:
+                server_user = environ.get("ROBOTDASHBOARD_SERVER_USER", "")
+                server_pass = environ.get("ROBOTDASHBOARD_SERVER_PASSWORD", "")
         else:
             start_server = False
         # FastAPI's HTTPBasic decodes the Authorization header as ASCII, a non-ASCII login can never match

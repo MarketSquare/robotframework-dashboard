@@ -261,3 +261,29 @@ def test_process_outputs_failed_insert_logs_error_and_can_be_retried(tmp_path):
     assert "Processed output XML" not in console
     console = rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), [])])
     assert "Processed output XML" in console
+
+
+def test_database_is_closed_when_a_call_fails(tmp_path):
+    """In server mode a failing call must not leave the connection open."""
+    from unittest.mock import patch
+    rd = _make_rd(tmp_path, generate_dashboard=True)
+    rd.initialize_database()
+    with patch.object(rd.database, "get_data", side_effect=Exception("boom")):
+        with pytest.raises(Exception, match="boom"):
+            rd.create_dashboard()
+    assert rd.database.connection is None
+    with patch.object(rd.database, "_get_runs", side_effect=Exception("boom")):
+        with pytest.raises(Exception, match="boom"):
+            rd.get_runs()
+    assert rd.database.connection is None
+
+
+def test_process_outputs_skips_already_stored_output_without_parsing_it(tmp_path):
+    from unittest.mock import patch
+    rd = _make_rd(tmp_path)
+    rd.initialize_database()
+    rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), [])])
+    with patch("robotframework_dashboard.processors.ExecutionResult") as execution_result:
+        console = rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), [])])
+    execution_result.assert_not_called()
+    assert "trying to add the same output again" in console

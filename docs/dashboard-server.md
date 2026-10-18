@@ -49,6 +49,16 @@ Or with a custom host and port plus authentication:
 robotdashboard -s host:port:user:password  
 ```
 
+- The password is everything after the user name, so it may contain `:`. Username and password can only contain ASCII characters.
+- For an IPv6 address, put it in brackets: `robotdashboard -s [::1]:8543:user:password`.
+- To keep the password out of the process list and your shell history, leave the credentials out of `--server` and set the environment variables `ROBOTDASHBOARD_SERVER_USER` and `ROBOTDASHBOARD_SERVER_PASSWORD` instead. They are only used when `--server` has no credentials.
+
+```bash 
+export ROBOTDASHBOARD_SERVER_USER=admin
+export ROBOTDASHBOARD_SERVER_PASSWORD='s3cret:with:colons'
+robotdashboard -s 0.0.0.0:8543
+```
+
 **Enable HTTPS**
 
 To serve over HTTPS, provide paths to your SSL certificate and private key:
@@ -208,7 +218,7 @@ Beyond the main API endpoints listed above, the server exposes two additional ro
 
 File names sent to `/add-output-file`, `/add-log-file`, `/add-log`, `/remove-log` and the `output_alias` of `/add-outputs` must be plain file names: names that contain a folder (for example `../log.html` or `sub/log.html`) are rejected. Uploaded outputs are processed from a temporary folder and never written to the server's working directory.
 
-Both `/add-output-file` and `/add-log-file` endpoints support gzip-compressed uploads. If the uploaded filename ends with `.gz` or `.gzip`, the server automatically decompresses the file before processing. This is used by the [listener integration](/listener-integration.md) to reduce upload bandwidth.
+Both `/add-output-file` and `/add-log-file` endpoints support gzip-compressed uploads. If the uploaded filename ends with `.gz` or `.gzip`, the server automatically decompresses the file before processing. This is used by the [listener integration](/listener-integration.md) to reduce upload bandwidth. A decompressed upload may be at most 1 GiB; a larger one is rejected, so a small upload cannot exhaust the server memory.
 
 ## Manual Refresh Mode (`--noautoupdate`)
 

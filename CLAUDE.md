@@ -71,7 +71,7 @@ The two largest front-end concerns live in directories, not single files: `js/fi
 ## Hard rules
 
 - **Never rename placeholder tokens** in templates (`<!-- placeholder_javascript -->`, `<!-- placeholder_css -->`, `<!-- placeholder_dependencies -->`, `"placeholder_runs"`, `"placeholder_suites"`, `"placeholder_tests"`, `"placeholder_keywords"`, `"placeholder_exceptions"`, `placeholder_json_config`). Replacement is string substitution.
-- **New JS module** → `import` it from an existing module. `DependencyProcessor` discovers files only through the import graph from `main.js`; there is no manual registry.
+- **New JS module** → `import` it from an existing module. `DependencyProcessor` bundles every file under `js/` (minus `admin_page/`) and orders them by the import graph from `main.js`; a file nobody imports is still bundled, as dead code. There is no manual registry.
 - **Data always flows** parse → DB → HTML through `RobotDashboard` methods. Don't bypass it.
 - **Offline mode** reads `robotframework_dashboard/dependencies/`. When upgrading a library version in `dependencies.py`, update the local copy too.
 - **Validate frontend changes by regenerating the HTML** (`dev-workflow` skill); robot tests for anything behavioural (`testing` skill).

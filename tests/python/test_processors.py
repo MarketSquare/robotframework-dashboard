@@ -757,3 +757,63 @@ def test_test_processor_keeps_spaces_inside_tags():
     test_list = []
     RF_TestProcessor(datetime(2025, 1, 1), test_list).visit_test(_TestWithSpacedTags())
     assert test_list[0][9] == "[smoke test,prio 1,nightly]"
+
+
+def test_get_run_start_does_not_parse_the_whole_output(xml_output):
+    """The duplicate check only needs the header; the full parse waits for get_output_data."""
+    from unittest.mock import patch
+    with patch("robotframework_dashboard.processors.ExecutionResult") as execution_result:
+        processor = OutputProcessor(xml_output)
+        run_start = processor.get_run_start()
+    execution_result.assert_not_called()
+    from robot.api import ExecutionResult
+    assert run_start == ExecutionResult(xml_output).generation_time
+
+
+def test_get_run_start_falls_back_to_robot_for_an_unreadable_header(tmp_path):
+    """Without a header in the first bytes Robot Framework parses the file and reports what is wrong."""
+    from robot.errors import DataError
+    xml_file = tmp_path / "output.xml"
+    xml_file.write_text("not xml at all", encoding="utf-8")
+    with pytest.raises(DataError):
+        OutputProcessor(xml_file).get_run_start()
+
+
+def test_suite_processor_does_not_walk_tests_or_keywords(xml_output):
+    from robot.api import ExecutionResult
+
+    class CountingSuiteProcessor(SuiteProcessor):
+        tests_seen = 0
+
+        def start_test(self, test):
+            CountingSuiteProcessor.tests_seen += 1
+
+    suites = []
+    ExecutionResult(xml_output).visit(CountingSuiteProcessor(datetime(2025, 1, 1), suites))
+    assert suites
+    assert CountingSuiteProcessor.tests_seen == 0
+
+
+def test_keyword_walk_gives_keyword_and_exception_processors_the_same_data(all_xml_outputs):
+    """One walk for both must give what two separate walks gave."""
+    from robot.api import ExecutionResult
+    from robotframework_dashboard.processors import KeywordWalk
+    for xml_path in all_xml_outputs:
+        result = ExecutionResult(xml_path)
+        run_time = result.generation_time
+        separate_keywords, walked_keywords = [], []
+        separate_exceptions = ExceptionProcessor(run_time)
+        result.visit(KeywordProcessor(run_time, separate_keywords))
+        result.visit(separate_exceptions)
+        walked_exceptions = ExceptionProcessor(run_time)
+        result.visit(KeywordWalk(KeywordProcessor(run_time, walked_keywords), walked_exceptions))
+        assert walked_keywords == separate_keywords
+        assert walked_exceptions.get_aggregated_exceptions() == separate_exceptions.get_aggregated_exceptions()
+
+
+def test_get_run_start_unparsable_header_date_falls_back(tmp_path):
+    xml_file = tmp_path / "output.xml"
+    xml_file.write_text('<robot generated="yesterday Tuesday">\n</robot>\n', encoding="utf-8")
+    processor = _legacy_processor(xml_file)
+    with pytest.raises(ValueError, match="no <robot generated"):
+        processor.get_run_start()

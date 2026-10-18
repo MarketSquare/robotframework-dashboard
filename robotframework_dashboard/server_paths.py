@@ -1,5 +1,6 @@
 from os import name as os_name
 from pathlib import Path
+from zlib import MAX_WBITS, decompressobj
 
 # a ':' on Windows makes 'C:name' drive-relative, so it is only a separator there
 _FORBIDDEN_CHARACTERS = "/\\\x00" + (":" if os_name == "nt" else "")
@@ -46,3 +47,27 @@ def log_name_from_output_name(name: str) -> str:
     if name.lower().endswith(".xml"):
         name = name[:-4] + ".html"
     return name
+
+
+# a gzip upload is decompressed in memory; without a cap a small upload can expand to many gigabytes
+MAX_DECOMPRESSED_UPLOAD_BYTES = 1024 ** 3
+
+
+def decompress_upload(data: bytes, limit: int = MAX_DECOMPRESSED_UPLOAD_BYTES) -> bytes:
+    """gzip.decompress with a size limit, raises ValueError when the content is larger than limit"""
+    output = bytearray()
+    # a gzip file can hold several members back to back, gzip.decompress reads them all as well
+    while data:
+        member = decompressobj(16 + MAX_WBITS)
+        output += member.decompress(data, limit - len(output) + 1)
+        if len(output) > limit:
+            raise ValueError(f"the decompressed upload is larger than {limit} bytes")
+        if not member.eof:
+            raise ValueError("the gzip upload is incomplete")
+        data = member.unused_data
+    return bytes(output)
+
+
+def is_error_message(console: str) -> bool:
+    """update_output_path reports a failure as a console line that starts with ERROR"""
+    return console.lstrip().startswith("ERROR")

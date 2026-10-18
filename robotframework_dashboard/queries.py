@@ -36,6 +36,9 @@ INSERT_INTO_EXCEPTIONS = """ INSERT INTO exceptions VALUES (?,?,?,?) """
 
 SELECT_FROM_RUNS = """ SELECT * FROM runs """
 SELECT_RUN_STARTS_FROM_RUNS = """ SELECT run_start FROM runs """
+# second parameter: the run_start followed by GLOB_TIMEZONE_OFFSET, matching the same run stored with an offset
+SELECT_RUN_START_EXISTS = """ SELECT 1 FROM runs WHERE run_start = ? OR run_start GLOB ? LIMIT 1 """
+GLOB_TIMEZONE_OFFSET = "[+-][0-9][0-9]:[0-9][0-9]"
 SELECT_RUN_DATA = """ SELECT name, run_start, run_alias, tags, custom_filters FROM runs """
 SELECT_FROM_SUITES = """ SELECT * FROM suites """
 SELECT_FROM_TESTS = """ SELECT * FROM tests """
@@ -62,3 +65,6 @@ UPDATE_RUN_PATH = """ UPDATE runs SET path="{path}" WHERE run_start="{run_start}
 VACUUM_DATABASE = """ VACUUM """
 
 GET_RUN_INFO_BY_RUN_START = """ SELECT * FROM runs WHERE run_start = ? """
+SELECT_SUITES_BY_RUN_START = """ SELECT * FROM suites WHERE run_start = ? """
+SELECT_TESTS_BY_RUN_START = """ SELECT * FROM tests WHERE run_start = ? """
+SELECT_KEYWORDS_BY_RUN_START = """ SELECT * FROM keywords WHERE run_start = ? """

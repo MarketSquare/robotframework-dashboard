@@ -100,15 +100,18 @@ class DashboardGenerator:
             )
             if message_config:
                 # the placeholder sits inside a single-quoted JS string literal that is
-                # JSON.parse'd at runtime, so escape backslashes and single quotes
+                # JSON.parse'd at runtime, so escape backslashes and single quotes,
+                # and "</" so a "</script>" in a message cannot end the script tag
                 dashboard_data = dashboard_data.replace(
                     '"placeholder_message_config"',
-                    dumps(message_config).replace("\\", "\\\\").replace("'", "\\'"),
+                    dumps(message_config).replace("\\", "\\\\").replace("'", "\\'").replace("</", "<\\/"),
                 )
             if json_config:
+                # embedded as a JS object literal; valid JSON (checked in arguments.py) has "</" only
+                # inside strings, where "<\/" means the same
                 dashboard_data = dashboard_data.replace(
                     '"placeholder_json_config"',
-                    json_config,
+                    json_config.replace("</", "<\\/"),
                 )
 
         # handle possible subdirectories

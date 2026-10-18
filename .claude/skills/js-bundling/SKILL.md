@@ -106,9 +106,11 @@ The per-file layout of `js/` is documented in the `coding-standards` skill (kept
 1. Create the `.js` file anywhere under `robotframework_dashboard/js/` (except `admin_page/` unless it is admin-only).
 2. Add `import { something } from './your-module.js'` in an existing module that should use it (e.g. `main.js` or one of the `graph_creation/` files).
 3. Use `export` or `export default` for any symbols other files need.
-4. `DependencyProcessor` will automatically discover the file via the import graph, topologically sort it, and include it in the bundled `<script>`.
+4. `DependencyProcessor` includes every `.js` file under `js/` (Step 1) and uses the import graph only for the order. A file nobody imports is still bundled (after its own imports) as dead code; importing it is what makes the rest of the code use it.
 
 **Do not** manually list JS files anywhere. The dependency graph is the only required registration.
+
+The built JS, CSS and offline-dependency blocks are cached per process, keyed on the path, modification time and size of every source file (`_cached_block` in `dependencies.py`). Editing a file while the server runs is picked up on the next regeneration.
 
 ---
 
