@@ -55,6 +55,12 @@ class AbstractDatabaseProcessor(ABC):
         """Mandatory: This function removes all provided runs and all their corresponding data"""
         pass  # pragma: no cover
 
+    def get_run_stats(self) -> list:  # pragma: no cover
+        """Optional: Returns one dict per run, oldest first, with the keys run_start, name, run_alias, total, passed,
+        failed, skipped, elapsed_s (float), start_time, tags (list of str), metadata (list of "key: value" str)
+        and project_version. Only required by the server's /get-run-stats endpoint, which robotdashboard-hub reads."""
+        raise NotImplementedError("get_run_stats is not implemented in the custom databaseclass, but is only required for /get-run-stats!")
+
     def update_output_path(self, log_path: str) -> None:  # pragma: no cover
         """Optional: Function to update the output_path using the log path that the server has used"""
         raise NotImplementedError("update_output_path is not implemented in the custom databaseclass, but is only required when using the server!")

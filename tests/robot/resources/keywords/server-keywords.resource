@@ -102,6 +102,12 @@ Get Server Outputs
     Should Be Equal As Integers    ${response}[status]    200
     RETURN    ${response}[body]
 
+Get Server Run Stats
+    [Documentation]    GET /get-run-stats as {version, runs}; the endpoint robotdashboard-hub reads.
+    ${response}    Server Request    GET    /get-run-stats
+    Should Be Equal As Integers    ${response}[status]    200
+    RETURN    ${response}[body]
+
 Server Should Have ${amount} Outputs
     ${outputs}    Get Server Outputs
     Length Should Be    ${outputs}    ${amount}

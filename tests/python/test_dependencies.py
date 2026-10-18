@@ -1,5 +1,15 @@
 import pytest
-from robotframework_dashboard.dependencies import DependencyProcessor
+from robotframework_dashboard.dependencies import (
+    ADMIN_DEPENDENCIES,
+    ADMIN_JS_ROOT,
+    CSS_ROOT,
+    JS_ROOT,
+    DependencyProcessor,
+)
+
+
+def admin_processor():
+    return DependencyProcessor(js_root=ADMIN_JS_ROOT, dependencies=ADMIN_DEPENDENCIES, exclude=())
 
 
 def test_get_js_block_returns_script_tag():
@@ -39,54 +49,54 @@ def test_get_dependencies_block_offline_contains_comments():
 
 
 def test_get_dependencies_block_admin_online_includes_bootstrap():
-    result = DependencyProcessor(admin_page=True).get_dependencies_block(offline=False)
+    result = admin_processor().get_dependencies_block(offline=False)
     # Bootstrap is an admin-page dependency
     assert "bootstrap" in result.lower()
 
 
 def test_get_dependencies_block_admin_offline_contains_inline():
-    result = DependencyProcessor(admin_page=True).get_dependencies_block(offline=True)
+    result = admin_processor().get_dependencies_block(offline=True)
     assert "<script>" in result or "<style>" in result
 
 
 def test_gather_files_js_not_empty():
     dp = DependencyProcessor()
-    files = dp._gather_files("js")
+    files = dp._gather_files(dp.js_root, "js")
     assert len(files) > 0
-    assert all(f.endswith(".js") for f in files)
+    assert all(f.suffix == ".js" for f in files)
 
 
 def test_gather_files_css_not_empty():
     dp = DependencyProcessor()
-    files = dp._gather_files("css")
+    files = dp._gather_files(dp.css_root, "css")
     assert len(files) > 0
-    assert all(f.endswith(".css") for f in files)
+    assert all(f.suffix == ".css" for f in files)
 
 
 def test_gather_files_admin_js_excludes_non_admin():
-    dp_admin = DependencyProcessor(admin_page=True)
-    files = dp_admin._gather_files("js")
+    dp_admin = admin_processor()
+    files = dp_admin._gather_files(dp_admin.js_root, "js")
     # Admin page JS files come only from the admin_page subfolder
     for f in files:
-        assert "admin_page" in f
+        assert f.is_relative_to(ADMIN_JS_ROOT)
 
 
 def test_gather_files_non_admin_excludes_admin_page_files():
-    dp = DependencyProcessor(admin_page=False)
-    files = dp._gather_files("js")
+    dp = DependencyProcessor()
+    files = dp._gather_files(dp.js_root, "js")
     for f in files:
-        assert "admin_page" not in f
+        assert not f.is_relative_to(ADMIN_JS_ROOT)
 
 
 def test_admin_page_get_js_block_returns_string():
-    result = DependencyProcessor(admin_page=True).get_js_block()
+    result = admin_processor().get_js_block()
     assert isinstance(result, str)
     assert "<script>" in result
 
 
 def test_inline_css_files_wraps_in_style():
     dp = DependencyProcessor()
-    css_files = dp._gather_files("css")
+    css_files = dp._gather_files(dp.css_root, "css")
     assert len(css_files) > 0
     result = dp._inline_css_files(css_files)
     assert result.startswith("<style>")
@@ -122,4 +132,37 @@ def test_js_block_is_identical_when_served_from_the_cache():
     first = DependencyProcessor().get_js_block()
     dependencies._block_cache.clear()
     assert DependencyProcessor().get_js_block() == first
-    assert DependencyProcessor(admin_page=True).get_js_block() != first
+    assert admin_processor().get_js_block() != first
+
+
+def test_admin_dependencies_leave_out_the_dashboard_only_libraries():
+    result = admin_processor().get_dependencies_block(offline=False)
+    assert "bootstrap" in result and "datatables" in result
+    assert "chart.js" not in result and "gridstack" not in result
+
+
+def test_unknown_dependency_name_is_rejected():
+    with pytest.raises(ValueError, match="Unknown dependencies: nope"):
+        DependencyProcessor(dependencies=("chartjs", "nope"))
+
+
+def test_custom_roots_bundle_another_package(tmp_path):
+    # another package (the hub) bundles its own js/css but loads libraries from DEPENDENCIES
+    (tmp_path / "js" / "sub").mkdir(parents=True)
+    (tmp_path / "css").mkdir()
+    (tmp_path / "js" / "main.js").write_text('import { helper } from "./sub/helper.js";\nhelper();\n', encoding="utf-8")
+    (tmp_path / "js" / "sub" / "helper.js").write_text("export function helper() {}\n", encoding="utf-8")
+    (tmp_path / "css" / "hub.css").write_text(".hub { color: red; }\n", encoding="utf-8")
+    dp = DependencyProcessor(js_root=tmp_path / "js", css_root=tmp_path / "css", dependencies=("chartjs",), exclude=())
+    js = dp.get_js_block()
+    assert js.index("=== helper.js ===") < js.index("=== main.js ===")
+    assert "import" not in js and "export" not in js
+    assert "=== hub.css ===" in dp.get_css_block()
+    assert "toggleTheme" not in js
+    offline = dp.get_dependencies_block(offline=True)
+    assert "<!-- chartjs -->" in offline and "bootstrap" not in offline
+
+
+def test_default_roots_are_the_package_folders():
+    dp = DependencyProcessor()
+    assert dp.js_root == JS_ROOT and dp.css_root == CSS_ROOT

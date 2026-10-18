@@ -27,7 +27,9 @@ The result is a single `<script>` block and a single `<style>` block inlined int
 
 ## How JS Modules Are Bundled (`DependencyProcessor`)
 
-The class `DependencyProcessor` in `dependencies.py` performs these steps for dashboard JS:
+`DependencyProcessor(js_root=JS_ROOT, css_root=CSS_ROOT, dependencies=None, exclude=(ADMIN_JS_ROOT,))`: the defaults build the dashboard. The admin page (`server.py` `_get_admin_page`) passes `js_root=ADMIN_JS_ROOT, dependencies=ADMIN_DEPENDENCIES, exclude=()`. robotframework-dashboard-hub passes its own `js/`/`css/` folders and a subset of `DEPENDENCIES` names; the offline copies always resolve against this package's `dependencies/`, so keep that signature stable (`hub-contract` skill). The blocks are cached per `(roots, dependencies, exclude)` until a source file changes.
+
+It performs these steps for dashboard JS:
 
 ### Step 1 — Collect
 All `.js` files under `robotframework_dashboard/js/` are collected recursively, **excluding** the `admin_page/` subdirectory (that has its own separate bundle).
@@ -70,7 +72,7 @@ The `DEPENDENCIES` dict in `dependencies.py` declares every third-party library.
 - A CDN URL (jsdelivr, cdnjs, datatables.net) — always version-pinned
 - A local file path under `dependencies/` for offline fallback
 - Whether it is CSS or JS
-- Whether it is also needed on the admin page (`admin_page: True` — Bootstrap and DataTables). **Every** entry is loaded by the dashboard itself; the flag only selects the admin bundle's subset
+Which entries a page loads is the `dependencies` argument of `DependencyProcessor` (all of them by default, `ADMIN_DEPENDENCIES` for the admin page: Bootstrap and DataTables). A new library the admin page needs goes in `ADMIN_DEPENDENCIES` too
 
 **Upgrading a library** — always change all four together: the CDN URL in `DEPENDENCIES`, the offline copy in `dependencies/` (download the exact CDN file), the URL table in `docs/advanced-cli-examples.md`, and the entry in `robotframework_dashboard/licenses/THIRD_PARTY_LICENSES.txt` (upstream LICENSE text at the pinned version, with the version recorded; shipped in the wheel via `MANIFEST.in`). A bundle that embeds another library (the date-fns adapter embeds date-fns, the old DataTables bundle embedded jQuery) needs an entry for the embedded library too.
 

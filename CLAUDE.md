@@ -6,7 +6,7 @@ Context for AI agents working in this repository.
 
 Project skills live in `.claude/skills/<name>/SKILL.md` and are auto-discovered. Read the matching skill **before** starting any non-trivial task — each one captures knowledge that otherwise has to be re-derived from the code.
 
-`gh-issue` issue end to end · `testing` all test tiers, robot **must** run in Docker · `dev-workflow` run from source, validate HTML, server, docs site · `coding-standards` style + where things live in `js/` · `filtering-and-settings` filters, settings, layout editor · `dashboard-graphs` pages, Chart.js, adding a graph · `add-cli-argument` new `--flag` · `js-features` new widget/feature/modal · `js-bundling` JS/CSS inlining, CDN vs offline · `server-api` FastAPI endpoints, auth · `listener-integration` listener + push script · `documentation` docs to update · `release` release procedure (`/release` only)
+`gh-issue` issue end to end · `testing` all test tiers, robot **must** run in Docker · `dev-workflow` run from source, validate HTML, server, docs site · `coding-standards` style + where things live in `js/` · `filtering-and-settings` filters, settings, layout editor · `dashboard-graphs` pages, Chart.js, adding a graph · `add-cli-argument` new `--flag` · `js-features` new widget/feature/modal · `js-bundling` JS/CSS inlining, CDN vs offline · `server-api` FastAPI endpoints, auth · `listener-integration` listener + push script · `documentation` docs to update · `hub-contract` what robotframework-dashboard-hub imports, check before changing DB/bundler/`/get-run-stats` · `release` release procedure (`/release` only)
 
 ---
 

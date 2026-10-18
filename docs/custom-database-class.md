@@ -229,6 +229,30 @@ Returns five parallel lists — `run_starts`, `names`, `aliases`, `tags`, `custo
 
 ---
 
+### *(Optional)* `get_run_stats(self) -> list`
+Returns one dict per run, oldest first, with only the run level fields:
+
+```python
+[
+  {
+    "run_start": "2026-08-17 02:15:12.070100+02:00",
+    "name": "WebshopUI",
+    "run_alias": "output-20260817-021512",
+    "total": 108, "passed": 101, "failed": 5, "skipped": 2,
+    "elapsed_s": 1226.633,
+    "start_time": "2026-08-17 02:15:12.070100",
+    "tags": ["dev", "project_1"],
+    "metadata": ["Browser: chromium", "Environment: staging"],
+    "project_version": "1.0",
+  },
+  ...
+]
+```
+
+Used by the server's `/get-run-stats` endpoint, which [RobotDashboard Hub](hub.md) reads. If not implemented, that endpoint answers `501 Not Implemented`; everything else keeps working.
+
+---
+
 ### *(Optional)* `_get_run_paths(self) -> dict`
 Returns a dict mapping `run_start` to `path` for all runs currently in the database, e.g.:
 

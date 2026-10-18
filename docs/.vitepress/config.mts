@@ -200,6 +200,7 @@ export default defineConfig({
           { text: '📂 Log Linking', link: '/log-linking.md' },
           { text: '🔁 Reruns', link: '/reruns.md' },
           { text: '📈 Performance', link: '/performance.md' },
+          { text: '🛰️ RobotDashboard Hub', link: '/hub.md' },
         ]
       },
         { text: '🤝 Contributions', link: '/contributions.md' }

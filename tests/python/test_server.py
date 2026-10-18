@@ -184,6 +184,71 @@ def test_get_outputs_with_data():
     assert data[0]["custom_filters"] == "ComponentA=1.0"
 
 
+def test_get_run_stats_returns_version_and_runs():
+    from robotframework_dashboard.version import __version__
+
+    server = _make_server()
+    server.robotdashboard.get_run_stats.return_value = [
+        {
+            "run_start": "2025-01-01 12:00:00.000000+01:00",
+            "name": "MySuite",
+            "run_alias": "alias1",
+            "total": 3,
+            "passed": 2,
+            "failed": 1,
+            "skipped": 0,
+            "elapsed_s": 12.5,
+            "start_time": "2025-01-01 12:00:00.000000",
+            "tags": ["dev"],
+            "metadata": ["Team: A"],
+            "project_version": "1.0",
+        }
+    ]
+    response = _client(server).get("/get-run-stats")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["version"] == __version__
+    assert body["runs"] == server.robotdashboard.get_run_stats.return_value
+
+
+def test_get_run_stats_needs_no_auth():
+    server = _make_server(server_user="admin", server_pass="secret")
+    server.robotdashboard.get_run_stats.return_value = []
+    response = _client(server).get("/get-run-stats")
+    assert response.status_code == 200
+    assert response.json()["runs"] == []
+
+
+def test_get_run_stats_custom_databaseclass_without_it_returns_501():
+    server = _make_server()
+    server.robotdashboard.get_run_stats.side_effect = NotImplementedError("get_run_stats is not implemented")
+    response = _client(server).get("/get-run-stats")
+    assert response.status_code == 501
+    assert "get_run_stats" in response.json()["detail"]
+
+
+def test_get_run_stats_against_a_real_database(tmp_path):
+    from robotframework_dashboard.robotdashboard import RobotDashboard
+    from datetime import datetime
+
+    rd = RobotDashboard(
+        database_path=tmp_path / "test.db", generate_dashboard=False, dashboard_name=str(tmp_path / "d.html"),
+        generation_datetime=datetime(2025, 1, 1), list_runs=False, dashboard_title="", database_class=None,
+        json_config="", message_config=[], quantity=20, use_logs=False, offline_dependencies=False,
+        force_json_config=False, project_version=None, no_vacuum=True, no_autoupdate=True, timezone="+00:00",
+    )
+    rd.initialize_database()
+    rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), ["dev", "project_shop"])])
+    server = _make_server()
+    server.set_robotdashboard(rd)
+    response = _client(server).get("/get-run-stats")
+    assert response.status_code == 200
+    runs = response.json()["runs"]
+    assert len(runs) == 1
+    assert runs[0]["tags"] == ["dev", "project_shop"]
+    assert runs[0]["total"] == runs[0]["passed"] + runs[0]["failed"] + runs[0]["skipped"]
+
+
 def test_add_outputs_by_path_success(tmp_path):
     server = _make_server()
     client = _client(server)

@@ -7,6 +7,7 @@ from time import time
 from datetime import datetime, timezone, timedelta
 from typing import Union
 from json import dumps
+from ast import literal_eval
 
 # Explicit adapter for datetime -> ISO string, replacing the deprecated default
 # behaviour removed in Python 3.12+. Compatible with Python 3.9+.
@@ -415,6 +416,33 @@ class DatabaseProcessor(AbstractDatabaseProcessor):
             )
         if len(run_starts) == 0:
             print(f"  WARNING: There are no runs so the dashboard will be empty!")
+
+    def get_run_stats(self):
+        """Run level statistics only, oldest first, for /get-run-stats (read by robotdashboard-hub)"""
+        local_tz = self._get_local_timezone_offset()
+        stats = []
+        for entry in self.connection.cursor().execute(SELECT_RUN_STATS).fetchall():
+            row = self._dict_from_row(entry)
+            # same run_start the dashboard shows: older entries without a timezone get the local offset
+            if not self._has_timezone_offset(row["run_start"]):
+                row["run_start"] = f"{row['run_start']}{local_tz}"
+            row["name"] = row["name"] or ""
+            row["run_alias"] = row["run_alias"] or ""
+            row["elapsed_s"] = float(row["elapsed_s"] or 0)
+            row["tags"] = [tag for tag in (row["tags"] or "").split(",") if tag]
+            row["metadata"] = self._parse_metadata(row["metadata"])
+            row["project_version"] = row["project_version"] or ""
+            stats.append(row)
+        return stats
+
+    @staticmethod
+    def _parse_metadata(metadata):
+        """metadata is stored as the repr of a list of "key: value" strings"""
+        try:
+            items = literal_eval(metadata) if metadata else []
+        except (ValueError, SyntaxError):
+            return []
+        return [str(item) for item in items] if isinstance(items, list) else []
 
     def _get_run_paths(self):
         """Helper function to get a mapping of run_start to path for all runs"""

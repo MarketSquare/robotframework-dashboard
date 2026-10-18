@@ -287,3 +287,15 @@ def test_process_outputs_skips_already_stored_output_without_parsing_it(tmp_path
         console = rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), [])])
     execution_result.assert_not_called()
     assert "trying to add the same output again" in console
+
+
+def test_get_run_stats_reads_the_database(tmp_path):
+    rd = _make_rd(tmp_path)
+    rd.initialize_database()
+    rd.process_outputs(output_file_info_list=[(str(SAMPLE_XML), ["dev"])])
+    stats = rd.get_run_stats()
+    assert len(stats) == 1
+    assert stats[0]["tags"] == ["dev"]
+    # the connection is closed again afterwards
+    with pytest.raises(Exception):
+        rd.database.connection.execute("SELECT 1")

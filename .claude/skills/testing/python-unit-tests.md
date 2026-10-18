@@ -38,7 +38,7 @@ All unit tests live flat in `tests/python/` — no subdirectories.
 | `tests/python/test_processors.py` | `OutputProcessor`: `get_run_start`, `get_output_data`, `calculate_keyword_averages`, `merge_run_and_suite_metadata`; legacy RF compat branches (`RunProcessor`, `SuiteProcessor`, `TestProcessor`, `KeywordProcessor`) |
 | `tests/python/test_database.py` | `DatabaseProcessor`: table creation, schema migration, insert/get round-trip, all `remove_runs` strategies, `list_runs`, `vacuum_database`, `update_output_path`, static helpers |
 | `tests/python/test_dashboard.py` | `DashboardGenerator`: `_compress_and_encode`, `_minify_text`, `generate_dashboard` (file creation, title, server mode, configs, subdirectory) |
-| `tests/python/test_dependencies.py` | `DependencyProcessor`: JS/CSS block generation, CDN vs offline mode, admin-page variant, file gathering |
+| `tests/python/test_dependencies.py` | `DependencyProcessor`: JS/CSS block generation, CDN vs offline mode, admin-page variant, custom roots (the hub), file gathering |
 | `tests/python/test_robotdashboard.py` | `RobotDashboard`: `initialize_database`, `process_outputs`, `print_runs`, `remove_outputs`, `create_dashboard`, `get_runs`, `get_run_paths`, `update_output_path` |
 | `tests/python/test_main.py` | `main()`: orchestration pipeline via mocked `ArgumentParser` and `RobotDashboard`; server branch |
 | `tests/python/test_server.py` | `ApiServer`: all FastAPI endpoints via `TestClient` — auth, add/remove outputs, add/remove logs, file uploads (plain and gzip), catch-all resource route, autoupdate flag |

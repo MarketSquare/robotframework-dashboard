@@ -948,3 +948,87 @@ def test_remove_by_age_reads_run_start_without_offset_as_local_time(db):
     remaining = db.connection.execute("SELECT COUNT(*) FROM runs").fetchone()[0]
     db.close_database()
     assert remaining == expected_remaining
+
+
+def test_get_run_stats_empty_database(db):
+    db.open_database()
+    assert db.get_run_stats() == []
+    db.close_database()
+
+
+def test_get_run_stats_returns_run_level_fields(populated_db):
+    populated_db.open_database()
+    run = populated_db.get_data()["runs"][0]
+    stats = populated_db.get_run_stats()
+    populated_db.close_database()
+    assert len(stats) == 1
+    stat = stats[0]
+    assert set(stat) == {
+        "run_start", "name", "run_alias", "total", "passed", "failed", "skipped",
+        "elapsed_s", "start_time", "tags", "metadata", "project_version",
+    }
+    assert stat["run_start"] == run["run_start"]
+    assert stat["name"] == run["name"]
+    assert stat["run_alias"] == "my_alias"
+    assert stat["total"] == stat["passed"] + stat["failed"] + stat["skipped"] == run["total"]
+    assert stat["elapsed_s"] == float(run["elapsed_s"])
+    assert stat["tags"] == ["dev", "prod"]
+    assert all(isinstance(item, str) and ": " in item for item in stat["metadata"])
+    assert stat["project_version"] == ""
+
+
+def test_get_run_stats_is_ordered_oldest_first(populated_db):
+    populated_db.open_database()
+    _insert_second_run(populated_db)
+    stats = populated_db.get_run_stats()
+    populated_db.close_database()
+    assert len(stats) == 2
+    assert stats[0]["start_time"] < stats[1]["start_time"]
+
+
+def test_get_run_stats_on_a_legacy_database(tmp_path):
+    """A runs table from before 0.6.0 (no alias, path, metadata, version) is migrated at open, the new
+    columns are NULL and run_start has no timezone: get_run_stats fills in defaults"""
+    db_path = tmp_path / "legacy.db"
+    conn = sqlite3.connect(str(db_path))
+    conn.execute("""
+        CREATE TABLE runs (
+            "run_start" TEXT, "full_name" TEXT, "name" TEXT,
+            "total" INTEGER, "passed" INTEGER, "failed" INTEGER,
+            "skipped" INTEGER, "elapsed_s" TEXT, "start_time" TEXT, "tags" TEXT,
+            UNIQUE(run_start, full_name)
+        )
+    """)
+    conn.execute(
+        "INSERT INTO runs VALUES ('2024-01-01 10:00:00.000000', 'Suite', NULL, 3, 2, 1, 0, '12.5', '2024-01-01 10:00:00', '')"
+    )
+    conn.commit()
+    conn.close()
+    db = DatabaseProcessor(str(db_path))
+    db.open_database()
+    stats = db.get_run_stats()
+    db.close_database()
+    assert len(stats) == 1
+    stat = stats[0]
+    assert re.fullmatch(r"2024-01-01 10:00:00\.000000[+-]\d\d:\d\d", stat["run_start"])
+    assert stat["name"] == ""
+    assert stat["run_alias"] == ""
+    assert stat["elapsed_s"] == 12.5
+    assert stat["tags"] == []
+    assert stat["metadata"] == []
+    assert stat["project_version"] == ""
+
+
+@pytest.mark.parametrize(
+    "metadata, expected",
+    [
+        ("['Browser: chromium', 'Team: Storefront']", ["Browser: chromium", "Team: Storefront"]),
+        ("[]", []),
+        (None, []),
+        ("not a list", []),
+        ("{'a': 1}", []),
+        ("[unclosed", []),
+    ],
+)
+def test_parse_metadata(metadata, expected):
+    assert DatabaseProcessor._parse_metadata(metadata) == expected

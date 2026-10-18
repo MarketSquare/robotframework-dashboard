@@ -34,6 +34,19 @@ Server Adds Outputs And Regenerates The Dashboard
     Set Run Filter    value=WebshopUI
     Should Show 1 Of 1 Runs
 
+Server Serves Run Stats For The Hub
+    Add Output Via Server    output-20260817-021512.xml    tags=prod:project_1    version=1.0
+    Add Output Via Server    output-20260817-060004.xml    tags=dev:project_2
+    ${stats}    Get Server Run Stats
+    Should Not Be Empty    ${stats}[version]
+    Length Should Be    ${stats}[runs]    2
+    VAR    ${run}    ${stats}[runs][0]
+    Should Be Equal    ${run}[name]    WebshopUI
+    Should Be Equal    ${run}[project_version]    1.0
+    Should Be Equal    ${run}[tags]    ${{ ["prod", "project_1"] }}
+    Should Be Equal As Integers    ${run}[total]    ${{ $run["passed"] + $run["failed"] + $run["skipped"] }}
+    Should Contain    ${run}[metadata]    Team: Storefront
+
 Server Adds Raw Output Data With An Alias
     Add Output Data Via Server    output-20260818-021545.xml    alias=nightly-ui
     ${outputs}    Get Server Outputs

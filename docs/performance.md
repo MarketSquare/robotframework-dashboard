@@ -130,7 +130,7 @@ These endpoints perform two sequential operations before returning:
 
 The HTTP response is only returned **after both steps complete**. Callers should expect the request to block for the full duration of XML processing plus dashboard generation.
 
-### `GET /get-outputs`
+### `GET /get-outputs`, `GET /get-run-stats`
 
 Queries only the lightweight `runs` table (one row per run). Fast regardless of database size.
 

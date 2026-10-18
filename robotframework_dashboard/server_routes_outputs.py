@@ -1,4 +1,4 @@
-from fastapi import Body, Depends, File, Form, UploadFile
+from fastapi import Body, Depends, File, Form, HTTPException, UploadFile, status
 
 from os.path import exists, join
 from os import remove
@@ -6,10 +6,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
 
+from .version import __version__
 from .server_paths import decompress_upload, log_name_from_output_name, safe_file_name
 from .server_models import (
     AddOutput,
     GetOutput,
+    GetRunStats,
     RemoveOutputs,
     ResponseMessage,
     model_examples,
@@ -37,6 +39,17 @@ def register_output_routes(server, authenticate):
                 }
             )
         return outputs
+
+    @app.get("/get-run-stats")
+    async def get_run_stats() -> GetRunStats:
+        """Get the run level statistics (totals, pass/fail/skip, duration, tags, metadata, version) of every run,
+        oldest first. robotdashboard-hub reads this to aggregate several dashboards."""
+        try:
+            runs = server.robotdashboard.get_run_stats()
+        except NotImplementedError as error:
+            # a custom --databaseclass written before get_run_stats existed
+            raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(error))
+        return {"version": __version__, "runs": runs}
 
     @app.post("/add-outputs")
     async def add_output_to_database(

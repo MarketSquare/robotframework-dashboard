@@ -1,5 +1,5 @@
 from re import sub, compile, MULTILINE, DOTALL
-from os.path import dirname, abspath, join, normpath, relpath, basename
+from os.path import dirname, join, normpath, basename
 from pathlib import Path
 
 DEPENDENCIES = {
@@ -11,69 +11,66 @@ DEPENDENCIES = {
         # (chartjs/Chart.js#12256, fixed on master by #12142 but not released yet)
         "cdn": "https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js",
         "local": "dependencies/chart.js",
-        "admin_page": False,
     },
     "datalabels": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0",
         "local": "dependencies/chartjs-plugin-datalabels.js",
-        "admin_page": False,
     },
     "adapter_date_fns": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js",
         "local": "dependencies/chartjs-adapter-date-fns.js",
-        "admin_page": False,
     },
     "boxplot": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js",
         "local": "dependencies/chartjs-chart-boxplot.js",
-        "admin_page": False,
     },
     "matrix": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.1.0/dist/chartjs-chart-matrix.min.js",
         "local": "dependencies/chartjs-chart-matrix.js",
-        "admin_page": False,
     },
     "gridstack_css": {
         "type": "css",
         "cdn": "https://cdn.jsdelivr.net/npm/gridstack@13.3.0/dist/gridstack.min.css",
         "local": "dependencies/gridstack.css",
-        "admin_page": False,
     },
     "gridstack_js": {
         "type": "js",
         "cdn": "https://cdn.jsdelivr.net/npm/gridstack@13.3.0/dist/gridstack-all.min.js",
         "local": "dependencies/gridstack.js",
-        "admin_page": False,
     },
     "bootstrap_css": {
         "type": "css",
         "cdn": "https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.8/css/bootstrap.min.css",
         "local": "dependencies/bootstrap.css",
-        "admin_page": True,
     },
     "datatables_css": {
         "type": "css",
         "cdn": "https://cdn.datatables.net/v/bs5/dt-3.0.4/datatables.min.css",
         "local": "dependencies/datatables.css",
-        "admin_page": True,
     },
     "bootstrap_js": {
         "type": "js",
         "cdn": "https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.8/js/bootstrap.bundle.min.js",
         "local": "dependencies/bootstrap.js",
-        "admin_page": True,
     },
     "datatables_js": {
         "type": "js",
         "cdn": "https://cdn.datatables.net/v/bs5/dt-3.0.4/datatables.min.js",
         "local": "dependencies/datatables.js",
-        "admin_page": True,
     },
 }
+
+
+PACKAGE_ROOT = Path(__file__).parent
+JS_ROOT = PACKAGE_ROOT / "js"
+CSS_ROOT = PACKAGE_ROOT / "css"
+ADMIN_JS_ROOT = JS_ROOT / "admin_page"
+# the admin page has no graphs or grid, so it only loads these
+ADMIN_DEPENDENCIES = ("bootstrap_css", "datatables_css", "bootstrap_js", "datatables_js")
 
 
 # key -> (signature of the source files, built block)
@@ -93,39 +90,46 @@ def _cached_block(key, paths, build):
 
 
 class DependencyProcessor():
-    def __init__(self, admin_page: bool = False):
-        self.admin_page = admin_page
+    def __init__(
+        self,
+        js_root: Path = JS_ROOT,
+        css_root: Path = CSS_ROOT,
+        dependencies: tuple = None,
+        exclude: tuple = (ADMIN_JS_ROOT,),
+    ):
+        """Bundles every *.js file under js_root and *.css file under css_root, skipping the folders in exclude.
+        dependencies names the DEPENDENCIES entries to load, all of them when None.
+        The defaults build the dashboard; the admin page passes js_root=ADMIN_JS_ROOT, exclude=() and
+        ADMIN_DEPENDENCIES. Another package can pass its own folders and still use the CDN links and
+        offline copies from DEPENDENCIES, which always resolve against this package."""
+        self.js_root = Path(js_root)
+        self.css_root = Path(css_root)
+        self.dependency_names = tuple(DEPENDENCIES) if dependencies is None else tuple(dependencies)
+        unknown = [name for name in self.dependency_names if name not in DEPENDENCIES]
+        if unknown:
+            raise ValueError(f"Unknown dependencies: {', '.join(unknown)}")
+        self.exclude = tuple(Path(folder) for folder in exclude)
+        self._cache_id = (str(self.js_root), str(self.css_root), self.dependency_names, self.exclude)
 
     def get_js_block(self):
-        js_files = self._gather_files("js")
-        return _cached_block(
-            ("js", self.admin_page), self._source_paths(js_files), lambda: self._inline_js_modules(js_files)
-        )
+        js_files = self._gather_files(self.js_root, "js")
+        return _cached_block(("js", self._cache_id), js_files, lambda: self._inline_js_modules(js_files))
 
     def get_css_block(self):
-        css_files = self._gather_files("css")
-        return _cached_block(
-            ("css", self.admin_page), self._source_paths(css_files), lambda: self._inline_css_files(css_files)
-        )
+        css_files = self._gather_files(self.css_root, "css")
+        return _cached_block(("css", self._cache_id), css_files, lambda: self._inline_css_files(css_files))
 
     def get_dependencies_block(self, offline: bool):
-        local_files = [dep["local"] for _, dep in self._dependencies()] if offline else []
+        local_files = [PACKAGE_ROOT / dep["local"] for _, dep in self._dependencies()] if offline else []
         return _cached_block(
-            ("dependencies", self.admin_page, offline),
-            self._source_paths(local_files),
+            ("dependencies", self._cache_id, offline),
+            local_files,
             lambda: self._build_dependencies_block(offline),
         )
 
-    def _source_paths(self, rel_paths):
-        base = Path(dirname(abspath(__file__)))
-        return [base / rel_path for rel_path in rel_paths]
-
     def _dependencies(self):
-        """(name, dependency) pairs for this page, the admin page leaves out the dashboard-only ones"""
-        return [
-            (name, dep) for name, dep in DEPENDENCIES.items()
-            if not (self.admin_page and dep.get("admin_page") is False)
-        ]
+        """(name, dependency) pairs for this page, in DEPENDENCIES order"""
+        return [(name, dep) for name, dep in DEPENDENCIES.items() if name in self.dependency_names]
 
     def _build_dependencies_block(self, offline: bool) -> str:
         """
@@ -140,8 +144,7 @@ class DependencyProcessor():
                 else:
                     html_parts.append(f'<link rel="stylesheet" href="{dep["cdn"]}" />')
             else:
-                local_path = Path(dirname(abspath(__file__))) / dep["local"]
-                contents = local_path.read_text(encoding="utf-8")
+                contents = (PACKAGE_ROOT / dep["local"]).read_text(encoding="utf-8")
                 html_parts.append(f"<!-- {dep_name} -->")
                 if dep["type"] == "js":
                     html_parts.append(f"<script>\n{contents}\n</script>")
@@ -155,11 +158,9 @@ class DependencyProcessor():
         Takes a list of JS module file paths, resolves import order,
         strips imports/exports, and returns one merged <script type="module"> block.
         """
-        base = Path(dirname(abspath(__file__)))
         # Load all module sources using absolute paths
         modules = {}
-        for rel_path in js_files:
-            abs_path = base / rel_path
+        for abs_path in js_files:
             if not abs_path.exists():  # pragma: no cover
                 raise FileNotFoundError(f"JS module not found: {abs_path}")
             modules[str(abs_path)] = abs_path.read_text(encoding="utf-8")
@@ -211,46 +212,16 @@ class DependencyProcessor():
         """
         Takes a list of CSS file paths and merges them into one <style> block.
         """
-        base = Path(dirname(abspath(__file__)))
         merged = ""
-        for rel_path in css_files:
-            abs_path = base / rel_path
+        for abs_path in css_files:
             css = abs_path.read_text(encoding="utf-8")
-            merged += f"\n/* === {basename(rel_path)} === */\n"
+            merged += f"\n/* === {abs_path.name} === */\n"
             merged += css + "\n"
         return f"<style>\n{merged}\n</style>"
 
-    def _gather_files(self, folder: str):
-        """
-        Recursively collect all JS/CSS files for dashboard or admin.
-
-        If admin_page == True:
-            Only include files from js/admin_page/
-        If admin_page == False:
-            Only include all files from js/ except js/admin_page/
-        """
-        base = Path(__file__).parent
-        root = base / folder
-        admin_dir = root / "admin_page"
-
-        files = []
-
-        # only admin files
-        if self.admin_page and folder == "js":
-            if admin_dir.exists():
-                for p in sorted(admin_dir.rglob(f"*.{folder}")):
-                    files.append(str(relpath(p, base)))
-            return files
-
-        # everything except admin files
-        for p in sorted(root.rglob(f"*.{folder}")):
-            # Skip admin_page subtree
-            try:
-                p.relative_to(admin_dir)
-                continue
-            except ValueError:
-                pass
-
-            files.append(str(relpath(p, base)))
-
-        return files
+    def _gather_files(self, root: Path, extension: str):
+        """Recursively collect the *.<extension> files under root, sorted, minus the excluded folders"""
+        return [
+            path for path in sorted(root.rglob(f"*.{extension}"))
+            if not any(path.is_relative_to(folder) for folder in self.exclude)
+        ]

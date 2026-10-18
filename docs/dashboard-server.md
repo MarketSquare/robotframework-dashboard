@@ -95,6 +95,7 @@ The built-in server exposes several HTTP endpoints to manage and serve dashboard
 | `/` | Serves the HTML dashboard (reflects current database), not callable through scripts |
 | `/admin` | Admin page for manual management of runs and logs, not callable through scripts |
 | `/get-outputs` | Returns a JSON list of stored runs (`run_start`, `alias`, `tags`), callable |
+| `/get-run-stats` | Returns the server version and the run level statistics of every run (totals, pass/fail/skip, duration, tags, metadata, project version), oldest first. Read by [RobotDashboard Hub](/hub.md), callable |
 | `/add-outputs` | Accepts new output data via JSON (file path, raw XML or folder), callable, **requires auth** |
 | `/add-output-file` | Accepts new output data via file input, callable, **requires auth** |
 | `/remove-outputs` | Deletes runs by index, alias, `run_start`, tags, limit or 'all=true' for all outputs. Automatically deletes the associated log file from `robot_logs/` if one exists, callable, **requires auth** |
@@ -114,7 +115,7 @@ If you start the server with a username and password, the admin page **and all m
 - Add or remove logs manually  
 - Trigger a dashboard refresh  
 
-The dashboard itself (the HTML) does **not** require authentication. Read-only endpoints (`/get-outputs`, `/get-logs`) also do **not** require authentication.
+The dashboard itself (the HTML) does **not** require authentication. Read-only endpoints (`/get-outputs`, `/get-run-stats`, `/get-logs`) also do **not** require authentication.
 
 ## Security: HTTPS (Optional)
 

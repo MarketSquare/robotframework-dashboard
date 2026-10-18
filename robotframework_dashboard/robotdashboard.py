@@ -225,6 +225,11 @@ class RobotDashboard:
         with self._open_database():
             return self.database._get_run_paths()
 
+    def get_run_stats(self):
+        """Function that gets the run level statistics of every run, used by /get-run-stats"""
+        with self._open_database():
+            return self.database.get_run_stats()
+
     def remove_outputs(self, remove_runs=None):
         """Function that removes the remove_runs that were set when instantiating the RobotDashboard class"""
         console = ""

@@ -11,7 +11,7 @@ from typing import Optional
 from secrets import compare_digest
 
 from .robotdashboard import RobotDashboard
-from .dependencies import DependencyProcessor
+from .dependencies import ADMIN_DEPENDENCIES, ADMIN_JS_ROOT, DependencyProcessor
 
 # re-exported so 'from robotframework_dashboard.server import ResponseMessage' keeps working
 from .server_models import (
@@ -19,9 +19,11 @@ from .server_models import (
     AddOutput,
     GetLog,
     GetOutput,
+    GetRunStats,
     RemoveLog,
     RemoveOutputs,
     ResponseMessage,
+    RunStats,
 )
 from .server_paths import is_log_resource, is_within, log_path_from_run_path
 from .server_routes_logs import register_log_routes
@@ -75,7 +77,9 @@ class ApiServer:
             "<!-- placeholder_noautoupdate -->",
             "true" if self.no_autoupdate else "false",
         )
-        dependency_processor = DependencyProcessor(admin_page=True)
+        dependency_processor = DependencyProcessor(
+            js_root=ADMIN_JS_ROOT, dependencies=ADMIN_DEPENDENCIES, exclude=()
+        )
         admin_html = admin_html.replace(
             "<!-- placeholder_javascript -->", dependency_processor.get_js_block()
         )

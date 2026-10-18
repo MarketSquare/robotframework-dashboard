@@ -38,6 +38,26 @@ get_output_model_config = {
         ]
     }
 }
+run_stats_model_config = {
+    "json_schema_extra": {
+        "examples": [
+            {
+                "run_start": "2026-08-17 02:15:12.070100+02:00",
+                "name": "WebshopUI",
+                "run_alias": "output-20260817-021512",
+                "total": 108,
+                "passed": 101,
+                "failed": 5,
+                "skipped": 2,
+                "elapsed_s": 1226.633,
+                "start_time": "2026-08-17 02:15:12.070100",
+                "tags": ["dev", "project_1"],
+                "metadata": ["Browser: chromium", "Environment: staging"],
+                "project_version": "1.0",
+            }
+        ]
+    }
+}
 add_output_model_config = {
     "json_schema_extra": {
         "examples": [
@@ -237,6 +257,31 @@ class GetOutput(BaseModel):
     tags: str
     custom_filters: str
     model_config = get_output_model_config
+
+
+class RunStats(BaseModel):
+    """Run level statistics of one run, as returned by /get-run-stats"""
+
+    run_start: str
+    name: str
+    run_alias: str
+    total: int
+    passed: int
+    failed: int
+    skipped: int
+    elapsed_s: float
+    start_time: str
+    tags: List[str]
+    metadata: List[str]
+    project_version: str
+    model_config = run_stats_model_config
+
+
+class GetRunStats(BaseModel):
+    """The response model of /get-run-stats: the server version, so a client can tell which fields to expect, and every run"""
+
+    version: str
+    runs: List[RunStats]
 
 
 class AddOutput(BaseModel):

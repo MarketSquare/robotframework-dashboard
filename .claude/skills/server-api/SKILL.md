@@ -13,7 +13,7 @@ The server is an optional FastAPI application started with `robotdashboard --ser
 |---|---|
 | `server.py` | `ApiServer`: app + auth setup, the HTML serving routes (`/`, `/admin`, `/log`, `/refresh-dashboard`, catch-all), `run()` |
 | `server_models.py` | The Pydantic models (`AddOutput`, `RemoveOutputs`, `AddLog`, …), their `*_model_config` OpenAPI examples and `model_examples()` |
-| `server_routes_outputs.py` | `register_output_routes(server, authenticate)` — `/get-outputs`, `/add-outputs`, `/add-output-file`, `/remove-outputs` |
+| `server_routes_outputs.py` | `register_output_routes(server, authenticate)` — `/get-outputs`, `/get-run-stats`, `/add-outputs`, `/add-output-file`, `/remove-outputs` |
 | `server_routes_logs.py` | `register_log_routes(server, authenticate)` — `/get-logs`, `/add-log`, `/add-log-file`, `/remove-log` |
 
 The route modules are plain functions that take the `ApiServer` instance (they read `server.robotdashboard`, `server.log_dir`, `server.no_autoupdate`) and the `authenticate` dependency built in `_setup_routes`. A new endpoint goes in the matching route module; a new model goes in `server_models.py`. `server.py` re-exports the models, so `from robotframework_dashboard.server import ResponseMessage` keeps working.
@@ -35,7 +35,7 @@ Served with **uvicorn** via `fastapi_offline.FastAPIOffline`.
 
 - HTTP Basic Auth is implemented using `HTTPBasic` + `secrets.compare_digest` (constant-time comparison)
 - **`/admin` and all mutation endpoints require credentials** when `server_user` and `server_pass` are set
-- Read-only endpoints (`/`, `/get-outputs`, `/get-logs`, `/log`, `/{full_path}`) are **unauthenticated**
+- Read-only endpoints (`/`, `/get-outputs`, `/get-run-stats`, `/get-logs`, `/log`, `/{full_path}`) are **unauthenticated**
 - If no credentials are configured, all endpoints are open (the `authenticate` dependency returns `"anonymous"`)
 
 ---
@@ -48,6 +48,7 @@ Served with **uvicorn** via `fastapi_offline.FastAPIOffline`.
 | `GET` | `/admin` | Basic (if configured) | Serves the admin page HTML (generated from `templates/admin.html`) |
 | `POST` | `/refresh-dashboard` | Basic (if configured) | Manually triggers `robotdashboard.create_dashboard()` without adding data |
 | `GET` | `/get-outputs` | None | Returns list of `{run_start, name, alias, tags}` for all stored runs |
+| `GET` | `/get-run-stats` | None | `{version, runs: [RunStats]}`: run level stats of every run, oldest first (`RobotDashboard.get_run_stats` → `DatabaseProcessor.get_run_stats`). Read by robotframework-dashboard-hub; keep the fields backwards compatible (`hub-contract` skill). A custom `--databaseclass` without `get_run_stats` gives 501 |
 | `POST` | `/add-outputs` | Basic (if configured) | Add output(s) from a path, raw XML string, or folder. See body fields below. |
 | `POST` | `/add-output-file` | Basic (if configured) | Multipart upload of `output.xml` (or `.gz`/`.gzip`). Form fields: `tags` (colon-separated), `version`, `custom_filters`, `log_url`. |
 | `DELETE` | `/remove-outputs` | Basic (if configured) | Remove runs by various selectors. See body fields below. |
