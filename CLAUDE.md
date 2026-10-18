@@ -83,7 +83,7 @@ The two largest front-end concerns live in directories, not single files: `js/fi
 - Log linking needs log names mirroring output names (`output-XYZ.xml` ↔ `log-XYZ.html`); the server's `/add-log` enforces this.
 - `--projectversion` and `version_*` tags are mutually exclusive; version tags are parsed in `RobotDashboard._process_single_output`.
 - Custom DB backends: module must expose a `DatabaseProcessor` class compatible with `AbstractDatabaseProcessor`. Schema migrations are inline `ALTER TABLE ADD COLUMN` at DB open.
-- Server auth: HTTP Basic only on `/admin`; every other endpoint is unauthenticated by design. Any mutation regenerates the dashboard unless `--no-autoupdate`; `POST /refresh-dashboard` does it manually.
+- Server auth: when credentials are set, HTTP Basic protects `/admin`, `/refresh-dashboard` and every add/remove endpoint (`Depends(authenticate)`); `/`, `/get-outputs`, `/get-logs`, `/log` and static resources stay open. Any mutation regenerates the dashboard unless `--no-autoupdate`; `POST /refresh-dashboard` does it manually.
 - Run-tag checkbox ids are `runTagCheckBox<tag>`; the raw tag is in `value`. Overview card ids are `overviewLatest<project>Card0`. Match on the right attribute.
 - Git Bash on Windows: a trailing backslash in a path argument (`-f .\tests\`) swallows the next argument. Use forward slashes.
 - CHANGELOG.md is written at release time by the `release` skill, not per PR.

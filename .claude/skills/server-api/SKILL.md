@@ -1,6 +1,6 @@
 ---
 name: server-api
-description: "The optional FastAPI server (--server): every REST endpoint, HTTP Basic Auth on /admin only, log linking (/add-log, /log), auto-update behaviour, and the admin page bundle. Use when adding or changing endpoints, debugging uploads from the listener, or touching server.py / templates/admin.html."
+description: "The optional FastAPI server (--server): every REST endpoint, HTTP Basic Auth on /admin and the mutating endpoints, log linking (/add-log, /log), auto-update behaviour, and the admin page bundle. Use when adding or changing endpoints, debugging uploads from the listener, or touching server.py / templates/admin.html."
 ---
 
 # Server API
