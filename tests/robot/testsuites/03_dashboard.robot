@@ -86,15 +86,16 @@ Validate Test Statistics Suite And Test Filters
     Should Contain    ${tests}    Login With Valid Credentials
     Should Not Contain    ${tests}    Download Invoice
     Select Test In Test Statistics    Login With Valid Credentials
-    ${datasets}    Get Graph Dataset Labels    testStatisticsGraph
-    Should Be Equal    ${datasets}    ${{ ["Login With Valid Credentials"] }}
+    # the timeline has a dataset per bar style, its rows (labels) are the tests
+    ${rows}    Get Graph Labels    testStatisticsGraph
+    Should Be Equal    ${rows}    ${{ ["Login With Valid Credentials"] }}
     ${datasets}    Get Graph Dataset Labels    testDurationGraph
     Should Be Equal    ${datasets}    ${{ ["Login With Valid Credentials"] }}
 
 Validate Test Statistics Tag Filter
     Select Suite In Test Statistics    All
     Select Test Tag In Test Statistics    smoke
-    ${graph_tests}    Get Graph Dataset Labels    testStatisticsGraph
+    ${graph_tests}    Get Graph Labels    testStatisticsGraph
     ${smoke_tests}    Evaluate JavaScript    ${None}
     ...    () => [...new Set(filteredTests.filter(test => test.tags.includes("smoke")).map(test => test.name))]
     Should Not Be Empty    ${graph_tests}

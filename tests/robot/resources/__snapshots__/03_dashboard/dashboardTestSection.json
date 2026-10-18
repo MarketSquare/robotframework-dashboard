@@ -367,66 +367,34 @@
               1
             ],
             "y": "Text of 'css=.tracking-status' should have been 'Out for delivery' but was ''"
-          }
-        ],
-        "label": "Text of 'css=.tracking-status' should have been 'Out for delivery' but was ''"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               1,
               2
             ],
             "y": "Timeout 15000ms exceeded waiting for 'css=.tracking-status' to be visible"
-          }
-        ],
-        "label": "Timeout 15000ms exceeded waiting for 'css=.tracking-status' to be visible"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               2,
               3
             ],
             "y": "Timeout 15000ms exceeded waiting for 'css=.order-row' to be visible"
-          }
-        ],
-        "label": "Timeout 15000ms exceeded waiting for 'css=.order-row' to be visible"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Element 'id=nav-account' not visible after 30000ms"
-          }
-        ],
-        "label": "Element 'id=nav-account' not visible after 30000ms"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Setup failed:\nApplication returned 502 Bad Gateway"
-          }
-        ],
-        "label": "Setup failed:\nApplication returned 502 Bad Gateway"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               4,
               5
             ],
             "y": "Element 'id=order-invoice' is not clickable"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Element 'id=nav-account' not visible after 30000ms"
           },
           {
             "x": [
@@ -443,19 +411,26 @@
             "y": "Element 'id=order-invoice' is not clickable"
           }
         ],
-        "label": "Element 'id=order-invoice' is not clickable"
+        "label": null
       },
       {
         "data": [
           {
             "x": [
-              4,
-              5
+              3,
+              4
             ],
             "y": "Element 'id=nav-account' not visible after 30000ms"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Setup failed:\nApplication returned 502 Bad Gateway"
           }
         ],
-        "label": "Element 'id=nav-account' not visible after 30000ms"
+        "label": null
       }
     ],
     "labels": [
@@ -498,36 +473,7 @@
               5
             ],
             "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               4,
@@ -550,7 +496,26 @@
             "y": "Download Invoice"
           }
         ],
-        "label": "Download Invoice"
+        "label": null
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          }
+        ],
+        "label": null
       }
     ],
     "labels": [
@@ -589,9 +554,30 @@
               8
             ],
             "y": "Track Shipment"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Download Invoice"
           }
         ],
-        "label": "Track Shipment"
+        "label": null
       },
       {
         "data": [
@@ -604,139 +590,31 @@
           },
           {
             "x": [
-              1,
-              2
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Order Details Page"
-          }
-        ],
-        "label": "Order Details Page"
-      },
-      {
-        "data": [
-          {
-            "x": [
               0,
               1
             ],
             "y": "Reorder From History"
           },
-          {
-            "x": [
-              1,
-              2
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Reorder From History"
-          }
-        ],
-        "label": "Reorder From History"
-      },
-      {
-        "data": [
           {
             "x": [
               0,
               1
             ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -750,6 +628,27 @@
               2,
               3
             ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
             "y": "Download Invoice"
           },
           {
@@ -757,7 +656,49 @@
               3,
               4
             ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -771,33 +712,35 @@
               5,
               6
             ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
             "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Track Shipment"
           },
           {
             "x": [
-              3,
-              4
+              7,
+              8
             ],
-            "y": "Track Shipment"
+            "y": "Order Details Page"
           },
           {
             "x": [
-              4,
-              5
+              7,
+              8
             ],
-            "y": "Track Shipment"
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -808,13 +751,41 @@
           },
           {
             "x": [
+              8,
+              9
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
               9,
               10
             ],
             "y": "Track Shipment"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Reorder From History"
           }
         ],
-        "label": "Track Shipment"
+        "label": null
       },
       {
         "data": [
@@ -824,9 +795,16 @@
               7
             ],
             "y": "Track Shipment"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
           }
         ],
-        "label": "Track Shipment"
+        "label": null
       },
       {
         "data": [
@@ -836,12 +814,7 @@
               7
             ],
             "y": "Order Details Page"
-          }
-        ],
-        "label": "Order Details Page"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               6,
@@ -850,45 +823,7 @@
             "y": "Reorder From History"
           }
         ],
-        "label": "Reorder From History"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Download Invoice"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Download Invoice"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
+        "label": null
       }
     ],
     "labels": [
@@ -908,12 +843,7 @@
               1
             ],
             "y": "Reorder From History"
-          }
-        ],
-        "label": "Reorder From History"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               1,
@@ -978,7 +908,7 @@
             "y": "Order History Shows Recent Orders"
           }
         ],
-        "label": "Order History Shows Recent Orders"
+        "label": null
       }
     ],
     "labels": [
@@ -1016,43 +946,14 @@
               4,
               5
             ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              3,
-              4
-            ],
             "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               4,
               5
             ],
-            "y": "Download Invoice"
+            "y": "Track Shipment"
           },
           {
             "x": [
@@ -1069,7 +970,26 @@
             "y": "Download Invoice"
           }
         ],
-        "label": "Download Invoice"
+        "label": null
+      },
+      {
+        "data": [
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": null
       }
     ],
     "labels": [
@@ -1090,10 +1010,38 @@
           },
           {
             "x": [
+              0,
+              1
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              0,
+              1
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
               1,
               2
             ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -1104,10 +1052,52 @@
           },
           {
             "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
               3,
               4
             ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -1118,13 +1108,104 @@
           },
           {
             "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
               5,
               6
             ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Reorder From History"
           }
         ],
-        "label": "Download Invoice"
+        "label": null
       },
       {
         "data": [
@@ -1154,243 +1235,14 @@
               7,
               8
             ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              0,
-              1
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              1,
-              2
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Order Details Page"
+            "y": "Download Invoice"
           },
           {
             "x": [
               7,
               8
             ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Order Details Page"
-          }
-        ],
-        "label": "Order Details Page"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              0,
-              1
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              1,
-              2
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Reorder From History"
-          }
-        ],
-        "label": "Reorder From History"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              2,
-              3
-            ],
             "y": "Track Shipment"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Track Shipment"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Track Shipment"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Track Shipment"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Order Details Page"
-          }
-        ],
-        "label": "Order Details Page"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Reorder From History"
-          }
-        ],
-        "label": "Reorder From History"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Download Invoice"
           },
           {
             "x": [
@@ -1407,7 +1259,45 @@
             "y": "Download Invoice"
           }
         ],
-        "label": "Download Invoice"
+        "label": null
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Download Invoice"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Track Shipment"
+          }
+        ],
+        "label": null
+      },
+      {
+        "data": [
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Reorder From History"
+          }
+        ],
+        "label": null
       }
     ],
     "labels": [
@@ -1430,147 +1320,11 @@
           },
           {
             "x": [
-              1,
-              2
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Order History Shows Recent Orders"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Order History Shows Recent Orders"
-          }
-        ],
-        "label": "Order History Shows Recent Orders"
-      },
-      {
-        "data": [
-          {
-            "x": [
               0,
               1
             ],
             "y": "Order History Filter By Status"
           },
-          {
-            "x": [
-              1,
-              2
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              6,
-              7
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Order History Filter By Status"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Order History Filter By Status"
-          }
-        ],
-        "label": "Order History Filter By Status"
-      },
-      {
-        "data": [
           {
             "x": [
               0,
@@ -1580,133 +1334,11 @@
           },
           {
             "x": [
-              1,
-              2
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Order Details Page"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Order Details Page"
-          }
-        ],
-        "label": "Order Details Page"
-      },
-      {
-        "data": [
-          {
-            "x": [
               0,
               1
             ],
             "y": "Reorder From History"
           },
-          {
-            "x": [
-              1,
-              2
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              3,
-              4
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              4,
-              5
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              5,
-              6
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Reorder From History"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Reorder From History"
-          }
-        ],
-        "label": "Reorder From History"
-      },
-      {
-        "data": [
           {
             "x": [
               0,
@@ -1719,7 +1351,63 @@
               1,
               2
             ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              1,
+              2
+            ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              2,
+              3
+            ],
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -1730,10 +1418,80 @@
           },
           {
             "x": [
+              2,
+              3
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
               3,
               4
             ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              3,
+              4
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              4,
+              5
+            ],
+            "y": "Reorder From History"
           },
           {
             "x": [
@@ -1744,13 +1502,160 @@
           },
           {
             "x": [
+              4,
+              5
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              5,
+              6
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
               5,
               6
             ],
             "y": "Download Invoice"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              6,
+              7
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              7,
+              8
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              8,
+              9
+            ],
+            "y": "Track Shipment"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order History Shows Recent Orders"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order History Filter By Status"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Order Details Page"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Reorder From History"
+          },
+          {
+            "x": [
+              9,
+              10
+            ],
+            "y": "Track Shipment"
           }
         ],
-        "label": "Download Invoice"
+        "label": null
       },
       {
         "data": [
@@ -1780,31 +1685,12 @@
               7,
               8
             ],
-            "y": "Track Shipment"
-          }
-        ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              2,
-              3
-            ],
-            "y": "Track Shipment"
+            "y": "Download Invoice"
           },
           {
             "x": [
-              3,
-              4
-            ],
-            "y": "Track Shipment"
-          },
-          {
-            "x": [
-              4,
-              5
+              7,
+              8
             ],
             "y": "Track Shipment"
           },
@@ -1813,17 +1699,17 @@
               8,
               9
             ],
-            "y": "Track Shipment"
+            "y": "Download Invoice"
           },
           {
             "x": [
               9,
               10
             ],
-            "y": "Track Shipment"
+            "y": "Download Invoice"
           }
         ],
-        "label": "Track Shipment"
+        "label": null
       },
       {
         "data": [
@@ -1833,12 +1719,7 @@
               7
             ],
             "y": "Order Details Page"
-          }
-        ],
-        "label": "Order Details Page"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               6,
@@ -1847,7 +1728,7 @@
             "y": "Reorder From History"
           }
         ],
-        "label": "Reorder From History"
+        "label": null
       },
       {
         "data": [
@@ -1857,12 +1738,7 @@
               7
             ],
             "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
-      },
-      {
-        "data": [
+          },
           {
             "x": [
               6,
@@ -1871,33 +1747,7 @@
             "y": "Track Shipment"
           }
         ],
-        "label": "Track Shipment"
-      },
-      {
-        "data": [
-          {
-            "x": [
-              7,
-              8
-            ],
-            "y": "Download Invoice"
-          },
-          {
-            "x": [
-              8,
-              9
-            ],
-            "y": "Download Invoice"
-          },
-          {
-            "x": [
-              9,
-              10
-            ],
-            "y": "Download Invoice"
-          }
-        ],
-        "label": "Download Invoice"
+        "label": null
       }
     ],
     "labels": [

@@ -285,7 +285,7 @@
             "y": "Wait For Elements State"
           }
         ],
-        "label": "Wait For Elements State"
+        "label": null
       }
     ],
     "labels": [
@@ -367,7 +367,7 @@
             "y": "Wait For Elements State"
           }
         ],
-        "label": "Wait For Elements State"
+        "label": null
       }
     ],
     "labels": [
@@ -449,7 +449,7 @@
             "y": "Wait For Elements State"
           }
         ],
-        "label": "Wait For Elements State"
+        "label": null
       }
     ],
     "labels": [

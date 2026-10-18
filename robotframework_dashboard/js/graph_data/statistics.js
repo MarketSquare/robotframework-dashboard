@@ -215,8 +215,10 @@ function get_test_statistics_data(filteredTests) {
         // and note borders, which are not a status change
         const statusesByLabel = new Map();
         for (const ds of finalDatasets) {
-            if (!statusesByLabel.has(ds.label)) statusesByLabel.set(ds.label, new Set());
-            statusesByLabel.get(ds.label).add(ds.backgroundColor);
+            for (const point of ds.data) {
+                if (!statusesByLabel.has(point.y)) statusesByLabel.set(point.y, new Set());
+                statusesByLabel.get(point.y).add(ds.backgroundColor);
+            }
         }
         let labelsToKeep = new Set();
         if (filters.testOnlyChanges || filters.compareOnlyChanges) {
@@ -241,7 +243,9 @@ function get_test_statistics_data(filteredTests) {
                 );
             }));
         }
-        finalDatasets = finalDatasets.filter(ds => labelsToKeep.has(ds.label));
+        finalDatasets = finalDatasets
+            .map(ds => ({ ...ds, data: ds.data.filter(point => labelsToKeep.has(point.y)) }))
+            .filter(ds => ds.data.length > 0);
         labels = labels.filter(label => labelsToKeep.has(label));
     }
     const graphData = {

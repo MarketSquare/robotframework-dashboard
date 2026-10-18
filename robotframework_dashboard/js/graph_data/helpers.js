@@ -153,34 +153,28 @@ function update_height(verticalId, labels, graphType, internal = false) {
 }
 
 // function to convert timeline data to improve performance
+// one dataset per bar style (status colour, rerun or note border) instead of per item: Chart.js
+// looks up the stack of every bar across all datasets, so with one dataset per test a timeline
+// of all tests of 100+ runs took seconds to draw. Every point keeps its own row in y.
 function convert_timeline_data(oldDatasets) {
-    const grouped = {};
+    const grouped = new Map();
     for (const dataset of oldDatasets) {
-        const segment = dataset.data[0]; // assumes 1 item per dataset
-        const status = `${dataset.label}:*:&:.:${dataset.backgroundColor}:*:&:.:${dataset.borderColor}:*:&:.:${dataset.borderWidth ?? ""}`;
-        if (!grouped[status]) {
-            grouped[status] = [];
-        }
-        grouped[status].push({
-            x: segment.x,
-            y: segment.y,
-        });
-    }
-    const data = Object.entries(grouped)
-        .filter(([_, data]) => data.length > 0)
-        .map(([status, data]) => {
-            const [label, backgroundColor, borderColor, borderWidth] = status.split(":*:&:.:");
-            return {
-                label,
-                data,
-                backgroundColor,
-                borderColor,
-                ...(borderWidth !== "" ? { borderWidth: Number(borderWidth) } : {}),
+        const key = `${dataset.backgroundColor}|${dataset.borderColor}|${dataset.borderWidth ?? ""}`;
+        if (!grouped.has(key)) {
+            grouped.set(key, {
+                data: [],
+                backgroundColor: dataset.backgroundColor,
+                borderColor: dataset.borderColor,
+                ...(dataset.borderWidth !== undefined ? { borderWidth: Number(dataset.borderWidth) } : {}),
                 ...barConfig,
                 parsing: true
-            };
-        });
-    return data
+            });
+        }
+        for (const segment of dataset.data) {
+            grouped.get(key).data.push({ x: segment.x, y: segment.y });
+        }
+    }
+    return [...grouped.values()];
 }
 
 // function to read the rerun attempt history that `rebot --merge` leaves on a test

@@ -165,7 +165,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
         config.options.plugins.tooltip = {
             callbacks: {
                 label: function (context) {
-                    const key = context.dataset.label;
+                    const key = context.raw.y;
                     const runIndex = context.raw.x[0];
                     const runStart = callbackData.runs[runIndex];
                     const info = callbackData.details[key][runStart];

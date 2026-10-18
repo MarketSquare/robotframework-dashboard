@@ -171,7 +171,7 @@ Set Test Statistics Rerun View
 Get Rerun Marked Bar Count
     [Documentation]    Bars in a timeline graph that carry the rerun border (blue, width 3).
     [Arguments]    ${graph}=testStatisticsGraph
-    ${count}    Evaluate JavaScript    ${None}    () => window.${graph}.data.datasets.filter(dataset => dataset.borderWidth === 3).length
+    ${count}    Evaluate JavaScript    ${None}    () => window.${graph}.data.datasets.filter(dataset => dataset.borderWidth === 3).reduce((sum, dataset) => sum + dataset.data.length, 0)
     RETURN    ${count}
 
 Set Compare Tests Rerun View
@@ -811,7 +811,7 @@ Select Keyword In Keyword Statistics
     Wait For Dashboard Idle
 
 Get Graph Labels
-    [Documentation]    The x-axis labels of a Chart.js graph (window.<graphId>).
+    [Documentation]    The category labels of a Chart.js graph (window.<graphId>): the x axis, or the rows of a timeline.
     [Arguments]    ${graph}
     ${labels}    Evaluate JavaScript    ${None}    () => window.${graph}.data.labels
     RETURN    ${labels}

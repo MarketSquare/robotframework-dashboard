@@ -27,36 +27,19 @@ import { settings } from '@js/variables/settings.js';
 
 
 describe('convert_timeline_data', () => {
-    it('groups datasets by status label+colors', () => {
+    it('groups the bars of all tests by their style', () => {
         const datasets = [
-            {
-                label: 'PASS',
-                data: [{ x: [0, 1], y: 'Test A' }],
-                backgroundColor: 'green',
-                borderColor: 'darkgreen',
-            },
-            {
-                label: 'PASS',
-                data: [{ x: [1, 2], y: 'Test B' }],
-                backgroundColor: 'green',
-                borderColor: 'darkgreen',
-            },
-            {
-                label: 'FAIL',
-                data: [{ x: [0, 1], y: 'Test C' }],
-                backgroundColor: 'red',
-                borderColor: 'darkred',
-            },
+            { label: 'Test A', data: [{ x: [0, 1], y: 'Test A' }], backgroundColor: 'green', borderColor: 'darkgreen' },
+            { label: 'Test B', data: [{ x: [1, 2], y: 'Test B' }], backgroundColor: 'green', borderColor: 'darkgreen' },
+            { label: 'Test C', data: [{ x: [0, 1], y: 'Test C' }], backgroundColor: 'red', borderColor: 'darkred' },
         ];
 
         const result = convert_timeline_data(datasets);
 
-        // Should group into 2 datasets: PASS and FAIL
+        // one dataset per style, each point keeps its own test row
         expect(result).toHaveLength(2);
-        const passDataset = result.find(d => d.label === 'PASS');
-        const failDataset = result.find(d => d.label === 'FAIL');
-        expect(passDataset.data).toHaveLength(2);
-        expect(failDataset.data).toHaveLength(1);
+        expect(result[0]).toMatchObject({ backgroundColor: 'green', data: [{ x: [0, 1], y: 'Test A' }, { x: [1, 2], y: 'Test B' }] });
+        expect(result[1]).toMatchObject({ backgroundColor: 'red', data: [{ x: [0, 1], y: 'Test C' }] });
     });
 
     it('preserves data coordinates', () => {

@@ -5,6 +5,17 @@ import { open_log_from_label } from "../log.js";
 const deferredCharts = new Map();
 let deferredChartObserver = null;
 
+// barConfig's borderRadius is a function of the rounding setting, which makes Chart.js resolve the
+// options of every bar on its own. Its value is the same for every bar, so it is resolved once per
+// build; a rounding change rebuilds the graphs.
+function build_chart_config(buildConfigFn) {
+    const config = buildConfigFn();
+    for (const dataset of config.data?.datasets ?? []) {
+        if (typeof dataset.borderRadius === "function") dataset.borderRadius = dataset.borderRadius();
+    }
+    return config;
+}
+
 function is_in_hidden_container(canvas) {
     return !!canvas?.closest("[hidden]");
 }
@@ -30,7 +41,7 @@ function create_chart(chartId, buildConfigFn, addLogClickHandler = true) {
     }
     if (deferredCharts.delete(chartId)) deferredChartObserver.unobserve(target);
     if (window[chartId]) window[chartId].destroy();
-    window[chartId] = new Chart(chartId, buildConfigFn());
+    window[chartId] = new Chart(chartId, build_chart_config(buildConfigFn));
     // the canvas outlives its charts (a graph type change creates a new chart on it), so it gets
     // one listener that reads the current chart instead of one listener per chart
     const canvas = window[chartId].canvas;
@@ -50,7 +61,7 @@ function update_chart(chartId, buildConfigFn, addLogClickHandler = true) {
         defer_chart(chartId, window[chartId].canvas, buildConfigFn, addLogClickHandler);
         return;
     }
-    const config = buildConfigFn();
+    const config = build_chart_config(buildConfigFn);
     window[chartId].data = config.data;
     window[chartId].options = config.options;
     window[chartId].update();
