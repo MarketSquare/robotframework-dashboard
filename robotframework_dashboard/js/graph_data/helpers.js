@@ -230,6 +230,12 @@ function get_rerun_summary(tests) {
 }
 
 // function to format the attempt history for a tooltip
+// shortens a long message for a tooltip line
+function truncate_message(message, max = 120) {
+    const text = String(message ?? "");
+    return text.length > max ? `${text.substring(0, max)}...` : text;
+}
+
 function format_attempt_lines(attempts, maxMessageLength = 80) {
     if (!attempts || attempts.length === 0) return [];
     const lines = [`Attempts: ${attempts.map(attempt => attempt.status).join(" → ")}`];
@@ -256,6 +262,7 @@ export {
     parse_test_attempts,
     resolve_test_status,
     format_attempt_lines,
+    truncate_message,
     count_attempt_flips,
     get_rerun_summary
 };

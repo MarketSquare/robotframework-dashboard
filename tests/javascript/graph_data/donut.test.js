@@ -25,6 +25,7 @@ vi.mock('@js/common.js', () => ({
 }));
 vi.mock('@js/variables/globals.js', () => ({
     onlyFailedFolders: false,
+    previousFolder: '',
 }));
 vi.mock('@js/variables/chartconfig.js', () => ({
     passedBackgroundColor: 'rgba(151, 189, 97, 0.7)',
@@ -35,7 +36,7 @@ vi.mock('@js/variables/chartconfig.js', () => ({
     skippedBackgroundBorderColor: '#fed84f',
 }));
 
-import { get_donut_graph_data, get_donut_total_graph_data } from '@js/graph_data/donut.js';
+import { get_donut_graph_data, get_donut_total_graph_data, aggregate_by_folder, assign_fail_colors } from '@js/graph_data/donut.js';
 import { settings } from '@js/variables/settings.js';
 
 
@@ -176,5 +177,47 @@ describe('get_donut_total_graph_data', () => {
         const filteredData = [{ passed: 1, failed: 0, skipped: 0 }];
         const [graphData] = get_donut_total_graph_data('test', filteredData);
         expect(graphData.datasets[0].hoverOffset).toBe(4);
+    });
+});
+
+describe('aggregate_by_folder', () => {
+    const suites = [
+        { full_name: 'Root.A.One', total: 2, passed: 1, failed: 1, skipped: 0 },
+        { full_name: 'Root.A.Two', total: 3, passed: 3, failed: 0, skipped: 0 },
+        { full_name: 'Root.B', total: 1, passed: 0, failed: 0, skipped: 1 },
+        { full_name: 'Other', total: 4, passed: 4, failed: 0, skipped: 0 },
+    ];
+
+    it('sums the top level suites without a folder', () => {
+        const { labels, totals } = aggregate_by_folder(suites, '');
+        expect(labels).toEqual(['Root', 'Other']);
+        expect(totals.Root).toEqual({ total: 6, passed: 4, failed: 1, skipped: 1 });
+    });
+
+    it('sums the child folders of a folder and skips other suites', () => {
+        const { labels, totals } = aggregate_by_folder(suites, 'Root');
+        expect(labels).toEqual(['Root.A', 'Root.B']);
+        expect(totals['Root.A']).toEqual({ total: 5, passed: 4, failed: 1, skipped: 0 });
+    });
+
+    it('keeps the first-seen order for numeric suite names', () => {
+        const { labels } = aggregate_by_folder([
+            { full_name: 'b', total: 1, passed: 1, failed: 0, skipped: 0 },
+            { full_name: '2', total: 1, passed: 1, failed: 0, skipped: 0 },
+        ], '');
+        expect(labels).toEqual(['b', '2']);
+    });
+
+    it('only counts the suites include accepts', () => {
+        const { labels } = aggregate_by_folder(suites, 'Root', suite => suite.failed > 0);
+        expect(labels).toEqual(['Root.A']);
+    });
+});
+
+describe('assign_fail_colors', () => {
+    it('cycles the fail shades so neighbours differ', () => {
+        const colors = assign_fail_colors(6);
+        expect(colors).toEqual(['#ce3e01', '#b13601', '#992f01', '#7f2600', '#ce3e01', '#b13601']);
+        expect(assign_fail_colors(0)).toEqual([]);
     });
 });

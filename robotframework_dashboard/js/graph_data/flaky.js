@@ -61,12 +61,12 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
 
     if (graphType == "bar") {
         var [datasets, labels, count] = [[], [], 0];
-        for (const key in sortedData) {
+        for (const [label, value] of sortedData) {
             if (count == limit) {
                 break;
             }
-            labels.push(sortedData[key][0]);
-            datasets.push(sortedData[key][1].flips);
+            labels.push(label);
+            datasets.push(value.flips);
             count += 1;
         }
         const graphData = {
@@ -79,12 +79,12 @@ function get_most_flaky_data(dataType, graphType, filteredData, ignore, recent, 
         return [graphData, data];
     } else if (graphType == "timeline") {
         var [labels, runStartsSet, count] = [[], new Set(), 0];
-        for (const key in sortedData) {
+        for (const [label, value] of sortedData) {
             if (count == limit) {
                 break;
             }
-            labels.push(sortedData[key][0]);
-            for (const runStart of sortedData[key][1].run_starts) {
+            labels.push(label);
+            for (const runStart of value.run_starts) {
                 runStartsSet.add(runStart);
             }
             count += 1;

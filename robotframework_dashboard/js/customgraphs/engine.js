@@ -1,4 +1,4 @@
-import { strip_tz_suffix, parse_test_tags } from "../common.js";
+import { strip_tz_suffix, parse_test_tags, parse_metadata_items, parse_custom_filters } from "../common.js";
 import { get_custom_graph_field, get_custom_graph_agg, CUSTOM_GRAPH_STATUS_LABELS } from "./fields.js";
 import { get_custom_graph_regex_problem } from "./spec.js";
 
@@ -27,26 +27,12 @@ function get_custom_graph_key_label(key) {
     return CUSTOM_GRAPH_EMPTY_LABELS[key] ?? key;
 }
 
-// metadata is stored as a python list repr: "['Browser: chromium', 'Team: Storefront']"
+// metadata items are "Key: value" strings, split on the first colon so a value can hold one too
 function parse_custom_graph_metadata(value) {
     const result = {};
-    if (!value) return result;
-    const entries = String(value).match(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g) || [];
-    for (const entry of entries) {
-        const text = entry.slice(1, -1);
-        const separator = text.indexOf(":");
-        if (separator > 0) result[text.slice(0, separator).trim()] = text.slice(separator + 1).trim();
-    }
-    return result;
-}
-
-// custom filters are stored as "Pipeline=nightly:Release=2026.35"
-function parse_custom_graph_custom_filters(value) {
-    const result = {};
-    if (!value) return result;
-    for (const part of String(value).split(":")) {
-        const separator = part.indexOf("=");
-        if (separator > 0) result[part.slice(0, separator).trim()] = part.slice(separator + 1).trim();
+    for (const item of parse_metadata_items(value)) {
+        const separator = item.indexOf(":");
+        if (separator > 0) result[item.slice(0, separator).trim()] = item.slice(separator + 1).trim();
     }
     return result;
 }
@@ -94,7 +80,7 @@ function build_custom_graph_rows(source, data, options = {}) {
             run_tags: parse_test_tags(run?.tags),
             project_version: run?.project_version || "",
             metadata: parse_custom_graph_metadata(run?.metadata),
-            custom_filters: parse_custom_graph_custom_filters(run?.custom_filters),
+            custom_filters: parse_custom_filters(run?.custom_filters),
         };
         if (source !== "exceptions") {
             row.passed = to_custom_graph_number(item.passed);
@@ -537,5 +523,4 @@ export {
     get_custom_graph_metric_label,
     get_custom_graph_x_kind,
     parse_custom_graph_metadata,
-    parse_custom_graph_custom_filters,
 };

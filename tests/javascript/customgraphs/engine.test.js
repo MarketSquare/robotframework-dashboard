@@ -6,7 +6,6 @@ import {
     run_custom_graph_query,
     get_custom_graph_rows,
     parse_custom_graph_metadata,
-    parse_custom_graph_custom_filters,
 } from '@js/customgraphs/engine.js';
 import { parse_test_tags } from '@js/common.js';
 import { validate_custom_graph_spec } from '@js/customgraphs/spec.js';
@@ -35,12 +34,8 @@ describe('parsers', () => {
         expect(parse_custom_graph_metadata("['Browser: chromium', 'Url: http://x:8080']"))
             .toEqual({ Browser: 'chromium', Url: 'http://x:8080' });
         expect(parse_custom_graph_metadata(`["Owner: O'Neil"]`)).toEqual({ Owner: "O'Neil" });
+        expect(parse_custom_graph_metadata("['Note: it\\'s fine']")).toEqual({ Note: "it's fine" });
         expect(parse_custom_graph_metadata('')).toEqual({});
-    });
-
-    it('parses custom filters', () => {
-        expect(parse_custom_graph_custom_filters('Pipeline=nightly:Release=2026.31'))
-            .toEqual({ Pipeline: 'nightly', Release: '2026.31' });
     });
 });
 

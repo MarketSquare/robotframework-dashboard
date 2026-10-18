@@ -171,22 +171,22 @@ function setup_graph_view_buttons() {
     document.getElementById("onlyFailedFolders").checked = settings.switch.onlyFailedFolders;
     onlyFailedFolders = settings.switch.onlyFailedFolders;
 
-    document.getElementById("ignoreSkips").addEventListener("change", () => {
-        ignoreSkips = !ignoreSkips;
+    document.getElementById("ignoreSkips").addEventListener("change", (event) => {
+        ignoreSkips = event.target.checked;
         set_local_storage_item("switch.ignoreSkips", ignoreSkips);
         update_graphs_with_loading(["testMostFlakyGraph"], () => {
             update_test_most_flaky_graph();
         });
     });
-    document.getElementById("ignoreSkipsRecent").addEventListener("change", () => {
-        ignoreSkipsRecent = !ignoreSkipsRecent;
+    document.getElementById("ignoreSkipsRecent").addEventListener("change", (event) => {
+        ignoreSkipsRecent = event.target.checked;
         set_local_storage_item("switch.ignoreSkipsRecent", ignoreSkipsRecent);
         update_graphs_with_loading(["testRecentMostFlakyGraph"], () => {
             update_test_recent_most_flaky_graph();
         });
     });
-    document.getElementById("onlyFailedFolders").addEventListener("change", () => {
-        onlyFailedFolders = !onlyFailedFolders;
+    document.getElementById("onlyFailedFolders").addEventListener("change", (event) => {
+        onlyFailedFolders = event.target.checked;
         set_local_storage_item("switch.onlyFailedFolders", onlyFailedFolders);
         update_graphs_with_loading(["suiteFolderDonutGraph", "suiteFolderFailDonutGraph", "suiteStatisticsGraph", "suiteDurationGraph"], () => {
             update_suite_folder_donut_graph("");

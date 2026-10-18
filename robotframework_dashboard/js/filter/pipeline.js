@@ -1,6 +1,6 @@
 import { settings } from '../variables/settings.js';
 import { exceptions, filteredAmount, keywords, runs, suites, tests, unified_dashboard_title } from '../variables/data.js';
-import { get_run_projects, parse_metadata_items, strip_tz_suffix } from '../common.js';
+import { add_alert, get_run_projects, get_tz_suffix, parse_custom_filters, parse_metadata_items, strip_tz_suffix } from '../common.js';
 import { filteredExceptions, filteredKeywords, filteredRuns, filteredSuites, filteredTests, selectedRunSetting, selectedTagSetting } from '../variables/globals.js';
 import { setup_keywords_in_select, setup_runs_in_compare_selects, setup_suites_in_suite_select, setup_suites_in_test_select, setup_tests_in_select, setup_testtags_in_select } from './section_selects.js';
 import { filter_runs_by_suite_path, filter_suite_path_data } from './suite_path.js';
@@ -100,16 +100,16 @@ function setup_filtered_data_and_filters() {
     // their stored order; the other data came sorted from get_sorted_transformed_data
     filteredRuns = sort_wall_clock(filteredRuns);
     // set titles with amount of filtered items
-    const runAmount = Object.keys(filteredRuns).length
+    const runAmount = filteredRuns.length
     const message = `<h6>showing ${runAmount} of ${filteredAmount} runs</h6>`
     document.getElementById("unifiedTitle").innerHTML
         = `${(unified_dashboard_title && !unified_dashboard_title.includes("Robot Framework Dashboard -"))
             ? unified_dashboard_title
             : "Dashboard Statistics"} (${runAmount}) ${message}`;
     document.getElementById("runTitle").innerHTML = `Run Statistics (${runAmount}) ${message}`;
-    document.getElementById("suiteTitle").innerHTML = `Suite Statistics (${Object.keys(filteredSuites).length}) ${message}`;
-    document.getElementById("testTitle").innerHTML = `Test Statistics (${Object.keys(filteredTests).length}) ${message}`;
-    document.getElementById("keywordTitle").innerHTML = `Keyword Statistics (${Object.keys(filteredKeywords).length}) ${message}`;
+    document.getElementById("suiteTitle").innerHTML = `Suite Statistics (${filteredSuites.length}) ${message}`;
+    document.getElementById("testTitle").innerHTML = `Test Statistics (${filteredTests.length}) ${message}`;
+    document.getElementById("keywordTitle").innerHTML = `Keyword Statistics (${filteredKeywords.length}) ${message}`;
     document.getElementById("compareTitle").innerHTML = `Compare Statistics ${message}`;
     document.getElementById("tablesTitle").innerHTML = `Table Statistics (${runAmount}) ${message}`;
     // update filters based on data
@@ -131,12 +131,9 @@ function remove_milliseconds(data) {
     return data.map(obj => {
         const rs = obj.run_start;
         const datetime = rs.slice(0, 19); // "YYYY-MM-DD HH:MM:SS"
-        // Check if the last 6 chars are a timezone offset (+HH:MM or -HH:MM)
-        const suffix = rs.slice(-6);
-        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
         return {
             ...obj,
-            run_start: hasTz ? datetime + suffix : datetime
+            run_start: datetime + get_tz_suffix(rs)
         };
     });
 }
@@ -147,10 +144,7 @@ function remove_timezones(data) {
 
     return data.map(obj => {
         const rs = obj.run_start;
-        // Check if the last 6 chars are a timezone offset (+HH:MM or -HH:MM)
-        const suffix = rs.slice(-6);
-        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
-        if (!hasTz) { return obj; }
+        if (!get_tz_suffix(rs)) { return obj; }
         return {
             ...obj,
             run_start: rs.slice(0, -6)
@@ -164,10 +158,7 @@ function convert_timezone(data) {
 
     return data.map(obj => {
         const rs = obj.run_start;
-        // Check if run_start has a timezone offset (+HH:MM or -HH:MM) at the end
-        const suffix = rs.slice(-6);
-        const hasTz = /^[+-]\d{2}:\d{2}$/.test(suffix);
-        if (!hasTz) { return obj; }
+        if (!get_tz_suffix(rs)) { return obj; }
 
         // Parse the run_start with its timezone offset
         const isoStr = rs.replace(" ", "T");
@@ -204,7 +195,7 @@ function convert_timezone(data) {
 // can still produce runs, so both paths always behave identically.
 function apply_run_name_filter(runs, selectedRun) {
     if (!selectedRun || selectedRun === "All") { return runs; }
-    return Object.values(runs).filter(run => run.name === selectedRun);
+    return runs.filter(run => run.name === selectedRun);
 }
 
 // function to filter run data based on the runs (aka run name) filter
@@ -245,7 +236,6 @@ function filter_runtags(runs) {
     if (selectedTagSetting != '') {
         for (const input of tagElements) {
             input.checked = false;
-            // checkbox ids are prefixed with "runTagCheckBox", the value holds the raw tag name
             if (input.value === selectedTagSetting) {
                 input.checked = true;
             }
@@ -256,7 +246,7 @@ function filter_runtags(runs) {
 
     const selectedTags = Array.from(tagElements)
         .filter(tagElement => tagElement.checked)
-        .map(tagElement => tagElement.id.replace(/^runTagCheckBox/, ""));
+        .map(tagElement => tagElement.value);
     return apply_runtag_filter(runs, selectedTags, tagMode);
 }
 
@@ -297,25 +287,6 @@ function filter_custom_filters(filteredRuns) {
 }
 
 // custom_filters strings never change after the data is decoded, so the parsed result is
-// cached: the value of one dimension is read once per run per filter pass, and the option
-// availability computation walks every run once per dimension on top of that.
-const parsedCustomFiltersCache = new Map();
-
-function parse_custom_filters(cfStr) {
-    if (!cfStr) return {};
-    const cached = parsedCustomFiltersCache.get(cfStr);
-    if (cached) return cached;
-    const result = {};
-    cfStr.split(":").forEach(part => {
-        const eq = part.indexOf("=");
-        if (eq > 0) {
-            result[part.slice(0, eq).trim()] = part.slice(eq + 1).trim();
-        }
-    });
-    parsedCustomFiltersCache.set(cfStr, result);
-    return result;
-}
-
 // the value of one custom filter dimension for a run, "None" when the run has no such key
 function get_custom_filter_value(run, dimName) {
     const value = parse_custom_filters(run.custom_filters)[dimName];
@@ -408,7 +379,7 @@ function filter_dates(runs) {
     }
     const dateRange = build_date_range(fromDate, fromTime, toDate, toTime);
     if (!dateRange) { // build_date_range only rejects a complete range when from is later than to
-        alert("Filter error: The selected from date + time is later than your selected to date + time. Date filter has not been applied!");
+        add_alert("Filter error: the selected from date + time is later than the selected to date + time, so the date filter is not applied.", "warning");
         return runs;
     }
     return apply_date_filter(runs, dateRange.from, dateRange.to);
@@ -516,7 +487,6 @@ export {
     get_project_version_value,
     get_run_start_date,
     get_transformed_data,
-    parse_custom_filters,
     remove_milliseconds,
     remove_timezones,
     setup_filtered_data_and_filters,

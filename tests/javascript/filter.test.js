@@ -4,7 +4,7 @@ vi.mock('@js/variables/globals.js', () => import('./mocks/globals.js'));
 vi.mock('@js/variables/data.js', () => import('./mocks/data.js'));
 vi.mock('@js/variables/graphs.js', () => import('./mocks/graphs.js'));
 
-import { strip_tz_suffix, get_run_projects } from '@js/common.js';
+import { strip_tz_suffix, get_run_projects, parse_custom_filters } from '@js/common.js';
 import {
     apply_custom_filter_dimension,
     apply_date_filter,
@@ -13,7 +13,6 @@ import {
     get_active_page,
     get_hidden_custom_filters,
     get_transformed_data,
-    parse_custom_filters,
     sort_wall_clock,
 } from '@js/filter/pipeline.js';
 import { runs } from '@js/variables/data.js';

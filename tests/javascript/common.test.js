@@ -19,6 +19,7 @@ import {
     combine_paths,
     debounce,
     strip_tz_suffix,
+    get_tz_suffix,
     add_alert,
     parse_metadata_items,
     get_run_status,
@@ -355,6 +356,18 @@ describe('combine_paths', () => {
     });
 });
 
+
+describe('get_tz_suffix', () => {
+    it('returns the offset at the end of a run_start', () => {
+        expect(get_tz_suffix('2025-01-15 09:05:03+02:00')).toBe('+02:00');
+        expect(get_tz_suffix('2025-01-15 09:05:03.123-05:00')).toBe('-05:00');
+    });
+
+    it('returns an empty string without an offset', () => {
+        expect(get_tz_suffix('2025-01-15 09:05:03')).toBe('');
+        expect(get_tz_suffix('2025-01-15 09:05:03Z')).toBe('');
+    });
+});
 
 describe('strip_tz_suffix', () => {
     it('strips +HH:MM timezone suffix', () => {

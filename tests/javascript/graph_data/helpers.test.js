@@ -22,7 +22,7 @@ vi.mock('@js/variables/globals.js', () => ({
     ],
 }));
 
-import { convert_timeline_data, parse_test_attempts, resolve_test_status, format_attempt_lines, count_attempt_flips, get_rerun_summary, group_timeline_values, get_suite_data_exclusion, update_height, is_test_in_suite, get_run_label_by_run_start } from '@js/graph_data/helpers.js';
+import { convert_timeline_data, parse_test_attempts, resolve_test_status, format_attempt_lines, count_attempt_flips, get_rerun_summary, group_timeline_values, get_suite_data_exclusion, update_height, is_test_in_suite, get_run_label_by_run_start, truncate_message } from '@js/graph_data/helpers.js';
 import { settings } from '@js/variables/settings.js';
 
 
@@ -152,6 +152,18 @@ describe('resolve_test_status', () => {
     it('falls back to the final status when there is no history', () => {
         expect(resolve_test_status({ passed: 0, failed: 1, skipped: 0 }, [], 'first')).toBe('FAIL');
         expect(resolve_test_status({ passed: 0, failed: 0, skipped: 1 }, [], 'first')).toBe('SKIP');
+    });
+});
+
+describe('truncate_message', () => {
+    it('cuts a long message and adds an ellipsis', () => {
+        expect(truncate_message('a'.repeat(130))).toBe(`${'a'.repeat(120)}...`);
+        expect(truncate_message('abcdef', 3)).toBe('abc...');
+    });
+
+    it('keeps a short message and handles empty values', () => {
+        expect(truncate_message('short')).toBe('short');
+        expect(truncate_message(null)).toBe('');
     });
 });
 

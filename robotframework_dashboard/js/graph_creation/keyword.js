@@ -5,8 +5,8 @@ import { get_duration_graph_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { get_exceptions_data } from "../graph_data/exceptions.js";
 import { create_chart, update_chart } from "./chart_factory.js";
-import { build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
-import { update_height, get_keyword_select_key, get_run_label_by_run_start } from "../graph_data/helpers.js";
+import { apply_timeline_run_axis, build_most_failed_config, build_most_time_consuming_config } from "./config_helpers.js";
+import { update_height, get_keyword_select_key, get_run_label_by_run_start, truncate_message } from "../graph_data/helpers.js";
 
 function _build_keyword_statistics_config() {
     const data = get_statistics_graph_data("keyword", settings.graphTypes.keywordStatisticsGraphType, filteredKeywords);
@@ -102,34 +102,18 @@ function _build_keyword_exceptions_config() {
                     return [
                         `Run: ${runLabel}`,
                         `Count: ${meta.amount}`,
-                        `Message: ${meta.message.length > 120 ? meta.message.substring(0, 120) + "..." : meta.message}`,
+                        `Message: ${truncate_message(meta.message)}`,
                     ];
                 },
             },
         };
-        config.options.scales.x = {
-            ticks: {
-                minRotation: 45,
-                maxRotation: 45,
-                stepSize: 1,
-                callback: function (value, index, ticks) {
-                    return get_run_label_by_run_start(callbackData[this.getLabelForValue(value)]);
-                },
-            },
-            title: {
-                display: settings.show.axisTitles,
-                text: "Run",
-            },
-            type: "timelineScale",
-        };
+        apply_timeline_run_axis(config, callbackData, { logClick: false });
         config.options.scales.y.ticks = {
             callback: function (value, index, ticks) {
                 return this.getLabelForValue(value).slice(0, 40);
             },
             autoSkip: false,
         };
-        delete config.options.onClick;
-        if (!settings.show.dateLabels) { config.options.scales.x.ticks.display = false }
     }
     update_height("keywordExceptionsVertical", config.data.labels.length, settings.graphTypes.keywordExceptionsGraphType);
     return config;

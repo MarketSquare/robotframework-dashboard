@@ -15,7 +15,7 @@ import {
     setup_custom_filters_in_select_filter_buttons,
 } from "../filter/modal_options.js";
 import { setup_suite_path_navigator } from "../filter/suite_path.js";
-import { clear_all_filters, set_filter_dropdown_visible } from "../filter/controls.js";
+import { clear_all_filters, set_filter_dropdown_visible, update_filters_button_indicator } from "../filter/controls.js";
 import {
     capture_default_filters,
     populate_filter_profile_select,
@@ -40,15 +40,6 @@ import {
 } from "../filter/date_histogram.js";
 import { confirm_action } from "./confirm_modal.js";
 import { setup_merge_profiles_modal } from "./merge_profiles.js";
-
-function update_filters_button_indicator() {
-    const indicator = document.getElementById("filtersActiveIndicator");
-    if (!indicator) return;
-    // a hidden custom filter is not applied, so its dot must not mark the button as active
-    const anyActive = [...document.querySelectorAll("#filtersModal .version-selected-dot")]
-        .some(el => el.style.display !== "none" && !el.closest("[hidden]"));
-    indicator.style.display = anyActive ? "inline-block" : "none";
-}
 
 // every control of the filter modal, so closing it without a change can skip the re-filter
 function capture_filter_modal_state() {
@@ -95,7 +86,7 @@ function setup_filter_modal() {
     });
     // eventlistener for all runs button
     document.getElementById("allRuns").addEventListener("click", function () {
-        document.getElementById("amount").value = Object.keys(runs).length;
+        document.getElementById("amount").value = runs.length;
     });
     // eventlistener for the runTags
     function show_checkboxes() {
@@ -131,30 +122,34 @@ function setup_filter_modal() {
         document.getElementById("openDashboard").hidden = false
         if (no_auto_update) {
             document.getElementById("refreshDashboard").hidden = false
-            document.getElementById("refreshDashboard").addEventListener("click", function () {
+            document.getElementById("refreshDashboard").addEventListener("click", async function () {
                 document.getElementById("refreshDashboardSpinner").hidden = false
-                const xhr = new XMLHttpRequest();
-                xhr.open("POST", "/refresh-dashboard");
-                xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-                xhr.onload = () => {
+                let response;
+                try {
+                    const answer = await fetch("/refresh-dashboard", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json; charset=UTF-8" },
+                        body: JSON.stringify({}),
+                    });
+                    const text = await answer.text();
+                    if (!answer.ok) throw new Error(`Error: ${answer.status}, ${text}`);
+                    response = JSON.parse(text);
+                } catch (error) {
+                    add_alert(escape_html(error.message), "danger")
+                    return
+                } finally {
                     document.getElementById("refreshDashboardSpinner").hidden = true
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success == "1") {
-                            console.log(response.console)
-                            add_alert(`${escape_html(response.message)} Reloading dashboard in 3 seconds!`, "success")
-                            setTimeout(() => {
-                                location.reload();
-                            }, 3000);
-                        } else {
-                            add_alert(response.message, "danger")
-                            console.log(response.console)
-                        }
-                    } else {
-                        add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
-                    }
-                };
-                xhr.send(JSON.stringify({}));
+                }
+                if (response.success == "1") {
+                    console.log(response.console)
+                    add_alert(`${escape_html(response.message)} Reloading dashboard in 3 seconds!`, "success")
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    add_alert(escape_html(response.message), "danger")
+                    console.log(response.console)
+                }
             });
         }
     }
@@ -258,4 +253,4 @@ function setup_filter_modal() {
     filterModal.addEventListener("input", debounce(refresh_filter_modal_state, 150));
 }
 
-export { setup_filter_modal, update_filters_button_indicator };
+export { setup_filter_modal };

@@ -79,8 +79,8 @@ function parse_run_start(run_start) {
     if (!run_start) return null;
     let value = String(run_start).trim();
     let timezone = "";
-    const suffix = value.slice(-6);
-    if (/^[+-]\d{2}:\d{2}$/.test(suffix)) {
+    const suffix = get_tz_suffix(value);
+    if (suffix) {
         timezone = suffix;
         value = value.slice(0, -6);
     } else if (value.endsWith("Z")) {
@@ -124,8 +124,8 @@ function format_run_start_exact(run_start) {
     if (!run_start) return "";
     let value = String(run_start).trim();
     let timezone = "";
-    const suffix = value.slice(-6);
-    if (/^[+-]\d{2}:\d{2}$/.test(suffix)) {
+    const suffix = get_tz_suffix(value);
+    if (suffix) {
         timezone = ` ${suffix}`;
         value = value.slice(0, -6);
     } else if (value.endsWith("Z")) {
@@ -299,9 +299,14 @@ function parse_test_tags(value) {
     return String(value).replace(/^\[|\]$/g, "").split(",").map(tag => tag.trim()).filter(Boolean);
 }
 
-function strip_tz_suffix(s) {
+// the "+HH:MM" / "-HH:MM" offset at the end of a run_start, or "" when it has none
+function get_tz_suffix(s) {
     const suffix = s.slice(-6);
-    return /^[+-]\d{2}:\d{2}$/.test(suffix) ? s.slice(0, -6) : s;
+    return /^[+-]\d{2}:\d{2}$/.test(suffix) ? suffix : "";
+}
+
+function strip_tz_suffix(s) {
+    return get_tz_suffix(s) ? s.slice(0, -6) : s;
 }
 
 // a run belongs to one project per project_* run tag and always to the project of its run
@@ -321,6 +326,25 @@ function get_run_projects(run) {
 // as a quoted string, so a repr escape such as \x07 or a custom database format can't break the parsing
 // the way JSON.parse did. Metadata strings never change after the data is decoded, so the result is cached
 const parsedMetadataCache = new Map();
+
+// cached: the value of one dimension is read once per run per filter pass, and the option
+// availability computation walks every run once per dimension on top of that.
+const parsedCustomFiltersCache = new Map();
+
+function parse_custom_filters(cfStr) {
+    if (!cfStr) return {};
+    const cached = parsedCustomFiltersCache.get(cfStr);
+    if (cached) return cached;
+    const result = {};
+    String(cfStr).split(":").forEach(part => {
+        const eq = part.indexOf("=");
+        if (eq > 0) {
+            result[part.slice(0, eq).trim()] = part.slice(eq + 1).trim();
+        }
+    });
+    parsedCustomFiltersCache.set(cfStr, result);
+    return result;
+}
 
 function parse_metadata_items(metadata) {
     if (!metadata) return [];
@@ -417,6 +441,8 @@ export {
     get_run_projects,
     get_project_names,
     parse_metadata_items,
+    parse_custom_filters,
+    get_tz_suffix,
     generate_id,
     get_run_status,
     apply_bg_class,

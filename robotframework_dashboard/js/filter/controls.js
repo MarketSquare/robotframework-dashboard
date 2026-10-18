@@ -1,4 +1,4 @@
-import { runs } from '../variables/data.js';
+import { runs, filteredAmountDefault } from '../variables/data.js';
 import { overviewProjectNavFilter, selectedRunSetting, selectedTagSetting } from '../variables/globals.js';
 import { collect_custom_filter_dimensions } from './pipeline.js';
 import { setup_lowest_highest_dates } from './modal_options.js';
@@ -90,6 +90,29 @@ function setup_filter_checkbox_subfilter(parentElementId, autoSelectMatches = fa
         apply_search();
         searchBar.focus();
     });
+}
+
+function update_filters_button_indicator() {
+    const indicator = document.getElementById("filtersActiveIndicator");
+    if (!indicator) return;
+    // a hidden custom filter is not applied, so its dot must not mark the button as active
+    const anyActive = [...document.querySelectorAll("#filtersModal .version-selected-dot")]
+        .some(el => el.style.display !== "none" && !el.closest("[hidden]"));
+    indicator.style.display = anyActive ? "inline-block" : "none";
+}
+
+function clear_project_filter() {
+    document.getElementById("runs").value = "All";
+    document.getElementById("runTagCheckBoxesFilter").value = "";
+    const tagElements = document.getElementById("runTag").getElementsByTagName("input");
+    for (const input of tagElements) {
+        input.checked = false;
+        input.parentElement.classList.remove("d-none"); //show filtered rows
+        if (input.id == "runTagCheckBoxAll") input.checked = true;
+    }
+    const tagModeEl = document.getElementById("tagMode");
+    if (tagModeEl) tagModeEl.value = "AND";
+    update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
 }
 
 function clear_all_filters() {
@@ -218,6 +241,7 @@ function set_filter_dropdown_visible(selectElement, panelElement, visible) {
 export {
     clear_all_filters,
     clear_overview_project_navigation_filter,
+    clear_project_filter,
     get_filter_dropdown_placement,
     set_filter_dropdown_visible,
     set_filter_show_current_version,
@@ -225,4 +249,5 @@ export {
     setup_filter_checkbox_handler_listeners,
     setup_filter_checkbox_subfilter,
     update_filter_active_indicator,
+    update_filters_button_indicator,
 };

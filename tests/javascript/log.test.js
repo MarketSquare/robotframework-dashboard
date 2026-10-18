@@ -21,8 +21,10 @@ vi.mock('@js/variables/settings.js', () => ({
     settings: { show: { aliases: 'run_start' } },
     get_run_label: (item) => item.run_start,
 }));
+const addAlertMock = vi.fn();
+vi.mock('@js/common.js', async (importOriginal) => ({ ...(await importOriginal()), add_alert: addAlertMock }));
 
-// log.js calls window.open and alert; stub them.
+// log.js calls window.open and add_alert; stub them.
 beforeEach(() => {
     dataMock.runs.length = 0;
     dataMock.suites.length = 0;
@@ -32,7 +34,7 @@ beforeEach(() => {
     globalsMock.filteredTests.length = 0;
     globalsMock.filteredKeywords.length = 0;
     globalThis.window = { open: vi.fn(() => ({})), location: { href: 'http://localhost/' } };
-    globalThis.alert = vi.fn();
+    addAlertMock.mockClear();
 });
 
 const { open_log_file, open_log_from_path, open_log_from_label } = await import('@js/log.js');
@@ -67,7 +69,7 @@ describe('open_log_file', () => {
 
         open_log_file(event, chartElement);
 
-        expect(globalThis.alert).not.toHaveBeenCalled();
+        expect(addAlertMock).not.toHaveBeenCalled();
         expect(globalThis.window.open).toHaveBeenCalledTimes(1);
         const openedUrl = globalThis.window.open.mock.calls[0][0];
         // output.xml is rewritten to log.html by transform_file_path
@@ -83,7 +85,7 @@ describe('open_log_file', () => {
         const event = makeBarClickEvent(utcStart);
         open_log_file(event, [{ index: 0 }]);
 
-        expect(globalThis.alert).not.toHaveBeenCalled();
+        expect(addAlertMock).not.toHaveBeenCalled();
         expect(globalThis.window.open).toHaveBeenCalledTimes(1);
     });
 
@@ -96,14 +98,14 @@ describe('open_log_file', () => {
         const event = makeBarClickEvent(utcStart);
         open_log_file(event, [{ index: 0 }]);
 
-        expect(globalThis.alert).not.toHaveBeenCalled();
+        expect(addAlertMock).not.toHaveBeenCalled();
         expect(globalThis.window.open).toHaveBeenCalledTimes(1);
     });
 
     it('alerts only when no matching run exists anywhere', () => {
         const event = makeBarClickEvent('2099-12-31 00:00:00');
         open_log_file(event, [{ index: 0 }]);
-        expect(globalThis.alert).toHaveBeenCalledTimes(1);
+        expect(addAlertMock).toHaveBeenCalledTimes(1);
         expect(globalThis.window.open).not.toHaveBeenCalled();
     });
 });

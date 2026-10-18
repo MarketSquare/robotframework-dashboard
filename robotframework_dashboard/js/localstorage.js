@@ -1,4 +1,5 @@
 import { add_alert, get_project_names } from "./common.js";
+import { escape_html } from "./escape.js";
 import { overviewSections } from "./variables/graphs.js";
 import { graphMetadata } from "./variables/graphmetadata.js";
 import { settings } from "./variables/settings.js";
@@ -36,7 +37,7 @@ function setup_local_storage() {
             resolvedSettings = settings;
         }
     } catch (e) {
-        add_alert(`Failed to resolve settings: ${e}. Resetting settings to defaults.`, "danger");
+        add_alert(`Failed to resolve settings: ${escape_html(e)}. Resetting settings to defaults.`, "danger");
         resolvedSettings = settings;
     }
 

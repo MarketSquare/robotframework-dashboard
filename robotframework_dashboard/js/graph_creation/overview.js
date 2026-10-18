@@ -11,6 +11,7 @@ import {
     debounce,
     show_loading_overlay,
     hide_loading_overlay,
+    parse_custom_filters,
 } from '../common.js';
 import { update_menu } from '../menu.js';
 import { setup_collapsables } from '../eventlisteners/collapsables.js';
@@ -39,7 +40,7 @@ import {
 } from '../variables/globals.js';
 import { runs, use_logs } from '../variables/data.js';
 import { get_rerun_summary } from '../graph_data/helpers.js';
-import { parse_custom_filters, get_hidden_custom_filters, get_transformed_data } from '../filter/pipeline.js';
+import { get_hidden_custom_filters, get_transformed_data } from '../filter/pipeline.js';
 import { clear_all_filters, update_filter_active_indicator } from '../filter/controls.js';
 
 // rerun summary (rebot --merge attempt history) per run. The run cards get their run_start from
@@ -245,7 +246,8 @@ function generate_overview_card_html(
         ? `<div class="blue-text text-nowrap information" data-title="${reruns.reran} tests were re-executed after failing, ${reruns.recovered} of them passed on a rerun">Rerun: ${reruns.reran} (fixed ${reruns.recovered})</div>`
         : '';
     return `
-    <div class="col-4 overview-card" id="${escape_html(projectNameForElementId)}Card${idPostfix}" data-project-version="${escape_html(normalizedProjectVersion)}">
+    <div class="col-4 overview-card" id="${escape_html(projectNameForElementId)}Card${idPostfix}" data-project-version="${escape_html(normalizedProjectVersion)}"
+        data-run-number="${Number(runNumber) || 0}" data-passed="${Number(stats[0]) || 0}" data-failed="${Number(stats[1]) || 0}" data-skipped="${Number(stats[2]) || 0}">
         <div class="card border-3 border-${status}">
             <div class="card-body">
                 <div class="row">
@@ -291,29 +293,16 @@ function generate_overview_card_html(
     </div>`;
 }
 
-function clear_project_filter() {
-    document.getElementById("runs").value = "All";
-    document.getElementById("runTagCheckBoxesFilter").value = "";
-    const tagElements = document.getElementById("runTag").getElementsByTagName("input");
-    for (const input of tagElements) {
-        input.checked = false;
-        input.parentElement.classList.remove("d-none"); //show filtered rows
-        if (input.id == "runTagCheckBoxAll") input.checked = true;
-    }
-    const tagModeEl = document.getElementById("tagMode");
-    if (tagModeEl) tagModeEl.value = "AND";
-    update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
-}
-
 function set_filter_show_current_project(projectName) {
     // remember that this filter came from an overview card so returning to the overview
     // page can drop it again and show all projects instead of this one (issue #348)
     overviewProjectNavFilter.project = projectName;
     if (projectName.startsWith("project_")) {
         selectedTagSetting = projectName;
-        setTimeout(() => { // hack to prevent update_menu calls from hinderance
+        // the next filter pass checks the tag (filter_runtags), so the indicator follows once it is done
+        document.addEventListener("graphs-finalized", () => {
             update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
-        }, 500);
+        }, { once: true });
 
     } else {
         selectedRunSetting = projectName;
@@ -881,7 +870,6 @@ export {
     create_project_overview,
     update_projectbar_visibility,
     update_overview_prefix_display,
-    clear_project_filter,
     set_filter_show_current_project,
     prepare_overview,
     update_overview_latest_heading,

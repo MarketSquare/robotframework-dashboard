@@ -63,7 +63,8 @@ function capture_current_filters() {
     const profile = {};
     profile.runs = document.getElementById("runs").value;
     const tagInputs = document.getElementById("runTag").querySelectorAll("input.form-check-input");
-    profile.runTags = Array.from(tagInputs).map(el => ({ id: el.id.replace(/^runTagCheckBox/, ""), checked: el.checked }));
+    // stored as "id" for older profiles; it holds the raw tag, which is the checkbox value
+    profile.runTags = Array.from(tagInputs).map(el => ({ id: el.value, checked: el.checked }));
     profile.tagMode = document.getElementById("tagMode")?.value ?? "AND";
     const versionInputs = document.getElementById("projectVersionList").querySelectorAll("input.form-check-input");
     profile.projectVersions = Array.from(versionInputs).map(el => ({ value: el.value, checked: el.checked }));
@@ -235,8 +236,7 @@ function apply_filter_profile(profile, name) {
         const tagMap = {};
         profile.runTags.forEach(t => tagMap[t.id] = t.checked);
         tagInputs.forEach(el => {
-            const tag = el.id.replace(/^runTagCheckBox/, "");
-            if (tagMap[tag] !== undefined) el.checked = tagMap[tag];
+            if (tagMap[el.value] !== undefined) el.checked = tagMap[el.value];
         });
         update_filter_active_indicator("runTagCheckBoxAll", "filterRunTagSelectedIndicator");
     }

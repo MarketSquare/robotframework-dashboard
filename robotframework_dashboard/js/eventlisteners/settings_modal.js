@@ -370,7 +370,7 @@ function setup_settings_modal() {
                 localStorage.setItem("settings", JSON.stringify(newSettings));
                 location.reload();
             } catch (e) {
-                add_alert("Failed to update json config: " + e, "danger")
+                add_alert("Failed to update json config: " + escape_html(e), "danger")
             }
         }
     }

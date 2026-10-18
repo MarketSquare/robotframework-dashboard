@@ -139,13 +139,22 @@ function setup_menu() {
     document.addEventListener("layout-user-action", () => setup_tables_section_menu_buttons());
 }
 
+// a call made while an earlier one still waits for its animation frames (fast page switches)
+// replaces it; the overview preparation the earlier call asked for is kept for the newer one
+let dataAndGraphsGeneration = 0;
+let pendingOverviewPreparation = false;
+
 // function to update all graph data, function is called when updating filters and when the page loads
 function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = false) {
+    const generation = ++dataAndGraphsGeneration;
+    pendingOverviewPreparation = pendingOverviewPreparation || prepareOverviewProjectData;
     setup_spinner(false);
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+            if (generation !== dataAndGraphsGeneration) return;
             setup_filtered_data_and_filters();
-            if (prepareOverviewProjectData) {
+            if (pendingOverviewPreparation) {
+                pendingOverviewPreparation = false;
                 prepare_overview();
                 setup_overview_localstorage();
                 setup_overview_section_layout_buttons();
@@ -161,6 +170,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
             // let the page sections and events be setup before removing the spinner
             // then load the graphs
             requestAnimationFrame(() => {
+                if (generation !== dataAndGraphsGeneration) return;
                 setup_spinner(true);
                 setup_dashboard_section_menu_buttons();
                 setup_overview_section_menu_buttons();

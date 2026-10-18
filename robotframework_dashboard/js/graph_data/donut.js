@@ -1,6 +1,6 @@
 import { settings, get_run_label } from "../variables/settings.js";
 import { get_next_folder_level } from "../common.js";
-import { onlyFailedFolders } from "../variables/globals.js";
+import { onlyFailedFolders, previousFolder } from "../variables/globals.js";
 import {
     passedBackgroundColor,
     passedBackgroundBorderColor,
@@ -12,7 +12,7 @@ import {
 
 // function to prepare the data in the correct format for last run donut graphs
 function get_donut_graph_data(dataType, filteredData) {
-    const latest = filteredData[Object.keys(filteredData)[Object.keys(filteredData).length - 1]]
+    const latest = filteredData[filteredData.length - 1]
     var labels = [];
     var datasets = [];
     var backgroundColors = [];
@@ -99,84 +99,51 @@ function get_donut_total_graph_data(dataType, filteredData) {
     return [graphData, callBackData]
 }
 
+// shades of the fail colour for the failed folder donuts, cycled so neighbours always differ
+const FAIL_FOLDER_SHADES = ["#ce3e01", "#b13601", "#992f01", "#7f2600"];
+
+function assign_fail_colors(count) {
+    return Array.from({ length: count }, (_, index) => FAIL_FOLDER_SHADES[index % FAIL_FOLDER_SHADES.length]);
+}
+
+// sums the suite counts per child folder of folder (per top level suite without a folder). The labels
+// keep their first-seen order, which Object.keys would not for a numeric suite name.
+function aggregate_by_folder(data, folder, include = () => true) {
+    const labels = [];
+    const totals = {};
+    for (const value of data) {
+        if (!include(value)) continue;
+        let label;
+        if (!folder) {
+            label = value.full_name.split(".")[0];
+        } else {
+            if (!value.full_name.startsWith(folder + ".") && value.full_name != folder) continue;
+            label = get_next_folder_level(folder, value.full_name);
+        }
+        if (!totals[label]) {
+            labels.push(label);
+            totals[label] = { total: 0, passed: 0, skipped: 0, failed: 0 };
+        }
+        const entry = totals[label];
+        entry.total += value.total;
+        entry.passed += value.passed;
+        entry.skipped += value.skipped;
+        entry.failed += value.failed;
+    }
+    return { labels, totals };
+}
+
 // function to prepare the data in the correct format for the last failed folders donut
 function get_donut_folder_fail_graph_data(dataType, filteredData) {
-    var lastRunStart = filteredData[Object.keys(filteredData)[Object.keys(filteredData).length - 1]]
-    if (lastRunStart) {
-        lastRunStart = lastRunStart.run_start
-    }
+    const lastRunStart = filteredData[filteredData.length - 1]?.run_start;
     const suiteFolder = document.getElementById("suiteFolder").innerText;
-    var labels = new Set()
-    const callbackData = {}
-    const data = []
-    for (const value of filteredData) {
-        if (value.run_start != lastRunStart) { continue }
-        if (value.failed == 0) { continue }
-        if (suiteFolder == "All") {
-            const label = value.full_name.split(".")[0]
-            labels.add(label)
-            if (!callbackData[label]) {
-                callbackData[label] = {
-                    total: value.total,
-                    passed: value.passed,
-                    skipped: value.skipped,
-                    failed: value.failed
-                };
-            } else {
-                callbackData[label].total += value.total;
-                callbackData[label].passed += value.passed;
-                callbackData[label].skipped += value.skipped;
-                callbackData[label].failed += value.failed;
-            }
-        } else {
-            if (!value.full_name.startsWith(suiteFolder + ".") && value.full_name != suiteFolder) { continue }
-            const label = get_next_folder_level(suiteFolder, value.full_name)
-            labels.add(label)
-            if (!callbackData[label]) {
-                callbackData[label] = {
-                    total: value.total,
-                    passed: value.passed,
-                    skipped: value.skipped,
-                    failed: value.failed
-                };
-            } else {
-                callbackData[label].total += value.total;
-                callbackData[label].passed += value.passed;
-                callbackData[label].skipped += value.skipped;
-                callbackData[label].failed += value.failed;
-            }
-        }
-    }
-    labels = [...labels]
-    for (const label of labels) {
-        data.push(callbackData[label].failed)
-    }
-    const redShades = [
-        "#ce3e01", // base fail color
-        "#b13601", // darker burnt orange
-        "#992f01", // deep red-orange
-        "#7f2600"  // very dark, almost brown-red
-    ];
-    function assignColors(intoCount) {
-        const result = [];
-        const colorCount = redShades.length;
-        let index = 0;
-        for (let i = 0; i < intoCount; i++) {
-            result.push(redShades[index]);
-            index = (index + 1) % colorCount;
-            if (i > 0 && result[i] === result[i - 1]) { // Ensure no same color next to each other
-                index = (index + 1) % colorCount;
-                result[i] = redShades[index];
-            }
-        }
-        return result;
-    }
-    const backgroundColor = assignColors(labels.length);
+    const { labels, totals: callbackData } = aggregate_by_folder(filteredData, suiteFolder == "All" ? "" : suiteFolder,
+        value => value.run_start == lastRunStart && value.failed != 0);
     const graphData = {
         labels: labels,
         datasets: [{
-            data: data,
-            backgroundColor: backgroundColor,
+            data: labels.map(label => callbackData[label].failed),
+            backgroundColor: assign_fail_colors(labels.length),
             hoverOffset: 4
         }]
     };
@@ -185,105 +152,21 @@ function get_donut_folder_fail_graph_data(dataType, filteredData) {
 
 // function to prepare the data in the correct format for folder donuts
 function get_donut_folder_graph_data(dataType, filteredData, folder) {
-    var labels = new Set()
-    const callbackData = {}
-    const data = []
-    for (const value of filteredData) {
-        if (!folder) {
-            const label = value.full_name.split(".")[0]
-            labels.add(label)
-            if (!callbackData[label]) {
-                callbackData[label] = {
-                    total: value.total,
-                    passed: value.passed,
-                    skipped: value.skipped,
-                    failed: value.failed
-                };
-            } else {
-                callbackData[label].total += value.total;
-                callbackData[label].passed += value.passed;
-                callbackData[label].skipped += value.skipped;
-                callbackData[label].failed += value.failed;
-            }
-        } else {
-            if (!value.full_name.startsWith(folder + ".") && value.full_name != folder) { continue }
-            const label = get_next_folder_level(folder, value.full_name)
-            labels.add(label)
-            if (!callbackData[label]) {
-                callbackData[label] = {
-                    total: value.total,
-                    passed: value.passed,
-                    skipped: value.skipped,
-                    failed: value.failed
-                };
-            } else {
-                callbackData[label].total += value.total;
-                callbackData[label].passed += value.passed;
-                callbackData[label].skipped += value.skipped;
-                callbackData[label].failed += value.failed;
-            }
-        }
-    }
+    const { labels: folderLabels, totals: callbackData } = aggregate_by_folder(filteredData, folder);
     previousFolder = folder ? folder : "";
-    labels = [...labels]
-    const finalLabels = []
-    for (const label of labels) {
-        if (onlyFailedFolders) {
-            if (callbackData[label].failed > 0) {
-                finalLabels.push(label)
-                data.push(callbackData[label].failed)
-            }
-        } else {
-            finalLabels.push(label)
-            data.push(callbackData[label].total)
-        }
-    }
-    var graphData
-    if (onlyFailedFolders) {
-        const redShades = [
-            "#ce3e01", // base fail color
-            "#b13601", // darker burnt orange
-            "#992f01", // deep red-orange
-            "#7f2600"  // very dark, almost brown-red
-        ];
-        function assignColors(intoCount) {
-            const result = [];
-            const colorCount = redShades.length;
-            let index = 0;
-            for (let i = 0; i < intoCount; i++) {
-                result.push(redShades[index]);
-                index = (index + 1) % colorCount;
-                if (i > 0 && result[i] === result[i - 1]) { // Ensure no same color next to each other
-                    index = (index + 1) % colorCount;
-                    result[i] = redShades[index];
-                }
-            }
-            return result;
-        }
-        const backgroundColor = assignColors(finalLabels.length);
-        graphData = {
-            labels: finalLabels,
-            datasets: [{
-                data: data,
-                backgroundColor: backgroundColor,
-                hoverOffset: 4
-            }]
-        };
-    } else {
-        graphData = {
-            labels: finalLabels,
-            datasets: [{
-                data: data,
-                hoverOffset: 4
-            }]
-        };
-    }
-    return [graphData, callbackData]
+    const labels = folderLabels.filter(label => !onlyFailedFolders || callbackData[label].failed > 0);
+    const data = labels.map(label => onlyFailedFolders ? callbackData[label].failed : callbackData[label].total);
+    const dataset = onlyFailedFolders
+        ? { data: data, backgroundColor: assign_fail_colors(labels.length), hoverOffset: 4 }
+        : { data: data, hoverOffset: 4 };
+    return [{ labels: labels, datasets: [dataset] }, callbackData];
 }
 
 export {
     get_donut_graph_data,
     get_donut_total_graph_data,
     get_donut_folder_graph_data,
-    get_donut_folder_fail_graph_data
+    get_donut_folder_fail_graph_data,
+    aggregate_by_folder,
+    assign_fail_colors,
 };

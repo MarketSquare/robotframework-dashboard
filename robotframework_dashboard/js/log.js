@@ -1,5 +1,5 @@
 import { runs, suites, tests, server, use_logs } from './variables/data.js';
-import { format_date_to_string, transform_file_path, combine_paths } from './common.js';
+import { add_alert, format_date_to_string, transform_file_path, combine_paths } from './common.js';
 import { settings, get_run_label } from './variables/settings.js';
 import { filteredRuns } from './variables/globals.js';
 
@@ -39,7 +39,7 @@ function open_log_file(event, chartElement, callbackData = undefined, directRunS
     if (!output) { output = runs.find(run => get_run_label(run) === runStart) }
     var path = output ? output.path : ""
     if (path == "") {
-        alert("Log file error: this output didn't have a path in the database so the log file cannot be found!");
+        add_alert("Log file error: this output has no path in the database, so its log file cannot be found.", "warning");
         return
     }
     path = update_log_path_with_id(path, graphId, chartElement, event, directTestName)
@@ -99,7 +99,7 @@ function open_log_from_label(chart, click) {
     if (run) {
         const path = transform_file_path(run.path)
         if (path == "") {
-            alert("Log file error: this output didn't have a path in the database so the log file cannot be found!");
+            add_alert("Log file error: this output has no path in the database, so its log file cannot be found.", "warning");
             return
         }
         open_log_from_path(path)

@@ -4,6 +4,21 @@ import { confirm_action } from "./admin_eventlisteners.js";
 let runTable;
 let logTable;
 
+// sends a request to the server and returns the parsed JSON answer; a non 2xx answer throws with its
+// status and text. Same-origin fetch also sends the cached /admin Basic auth credentials.
+async function request_json(method, endpoint, body) {
+    const options = { method };
+    if (body !== undefined) {
+        options.body = body;
+        // a FormData upload sets its own multipart content type
+        if (!(body instanceof FormData)) options.headers = { "Content-Type": "application/json; charset=UTF-8" };
+    }
+    const response = await fetch(endpoint, options);
+    const text = await response.text();
+    if (!response.ok) throw new Error(`Error: ${response.status}, ${text}`);
+    return JSON.parse(text);
+}
+
 // function to add an output to the database based on a path
 function add_output_path() {
     document.getElementById("addPathSpinner").hidden = false
@@ -32,7 +47,7 @@ function add_output_file() {
     const file = fileInput.files[0]
 
     if (!file) {
-        alert("Please select a file first!")
+        add_alert("Please select a file first", "warning")
         document.getElementById("addFileSpinner").hidden = true
         return
     }
@@ -169,112 +184,98 @@ async function remove_all_outputs() {
 }
 
 // function to retrieve all outputs currently in the database
-function get_outputs() {
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", "/get-outputs");
-    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-    xhr.onload = () => {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            const runs = JSON.parse(xhr.responseText)
-            const data = runs.map((run, index) => [
-                index,
-                run.run_start ?? "",
-                run.name ?? "",
-                run.alias ?? "",
-                Array.isArray(run.tags) ? run.tags.join(", ") : (run.tags ?? ""),
-                run.custom_filters ?? "",
-            ])
+async function get_outputs() {
+    let runs;
+    try {
+        runs = await request_json("GET", "/get-outputs");
+    } catch (error) {
+        add_alert(escape_html(error.message), "danger");
+        return;
+    }
+    const data = runs.map((run, index) => [
+        index,
+        run.run_start ?? "",
+        run.name ?? "",
+        run.alias ?? "",
+        Array.isArray(run.tags) ? run.tags.join(", ") : (run.tags ?? ""),
+        run.custom_filters ?? "",
+    ])
 
-            if (runTable) {
-                runTable.clear();
-                runTable.rows.add(data);
-                runTable.draw();
-            } else {
-                runTable = new DataTable("#runTable", {
-                    columns: [
-                        { title: "Run Index" },
-                        { title: "Run Start", render: textRender },
-                        { title: "Run Name", render: textRender },
-                        { title: "Run Alias", render: textRender },
-                        { title: "Run Tags", render: textRender },
-                        { title: "Custom Filters", render: textRender },
-                    ],
-                    data: data,
-                });
-            }
-        } else {
-            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
-        }
-    };
-    xhr.send();
+    if (runTable) {
+        runTable.clear();
+        runTable.rows.add(data);
+        runTable.draw();
+    } else {
+        runTable = new DataTable("#runTable", {
+            columns: [
+                { title: "Run Index" },
+                { title: "Run Start", render: textRender },
+                { title: "Run Name", render: textRender },
+                { title: "Run Alias", render: textRender },
+                { title: "Run Tags", render: textRender },
+                { title: "Custom Filters", render: textRender },
+            ],
+            data: data,
+        });
+    }
 }
 
 // function to send requests (helper function for other functions that do similar server requests)
-function send_request(method, endpoint, body, spinner, notifications = true) {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, endpoint);
-    if (endpoint != "/add-output-file" && endpoint != "/add-log-file") {
-        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+async function send_request(method, endpoint, body, spinner, notifications = true) {
+    let response;
+    try {
+        response = await request_json(method, endpoint, body);
+    } catch (error) {
+        add_alert(escape_html(error.message), "danger");
+        return;
+    } finally {
+        document.getElementById(spinner).hidden = true;
     }
-    xhr.onload = () => {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            document.getElementById(spinner).hidden = true
-            response = JSON.parse(xhr.responseText);
-            if (response.success == "1") {
-                console.log(response.console)
-                if (notifications) {
-                    if (response.console.includes("ERROR")) {
-                        add_alert("SUCCESS: The processing was handled but some errors occurred, see the browser console for more details!", "warning")
-                    } else {
-                        add_alert(escape_html(response.message), "success")
-                    }
-                }
+    if (response.success == "1") {
+        console.log(response.console)
+        if (notifications) {
+            if (response.console.includes("ERROR")) {
+                add_alert("SUCCESS: The processing was handled but some errors occurred, see the browser console for more details!", "warning")
             } else {
-                add_alert(escape_html(response.message), "danger")
-                console.log(response.console)
+                add_alert(escape_html(response.message), "success")
             }
-            if (document.body.dataset.noAutoupdate !== "true") {
-                get_outputs()
-                get_logs()
-            }
-        } else {
-            document.getElementById(spinner).hidden = true
-            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
         }
-    };
-    xhr.send(body);
+    } else {
+        add_alert(escape_html(response.message), "danger")
+        console.log(response.console)
+    }
+    if (document.body.dataset.noAutoupdate !== "true") {
+        get_outputs()
+        get_logs()
+    }
 }
 
 // function to retrieve all logs currently on the server
-function get_logs() {
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", "/get-logs");
-    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-    xhr.onload = () => {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            const logs = JSON.parse(xhr.responseText)
-            const data = logs.map((log, index) => [
-                index,
-                log.log_name,
-            ])
-            if (logTable) {
-                logTable.clear();
-                logTable.rows.add(data);
-                logTable.draw();
-            } else {
-                logTable = new DataTable("#logTable", {
-                    columns: [
-                        { title: "Log Index" },
-                        { title: "Log Name", render: textRender },
-                    ],
-                    data: data,
-                });
-            }
-        } else {
-            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
-        }
-    };
-    xhr.send();
+async function get_logs() {
+    let logs;
+    try {
+        logs = await request_json("GET", "/get-logs");
+    } catch (error) {
+        add_alert(escape_html(error.message), "danger");
+        return;
+    }
+    const data = logs.map((log, index) => [
+        index,
+        log.log_name,
+    ])
+    if (logTable) {
+        logTable.clear();
+        logTable.rows.add(data);
+        logTable.draw();
+    } else {
+        logTable = new DataTable("#logTable", {
+            columns: [
+                { title: "Log Index" },
+                { title: "Log Name", render: textRender },
+            ],
+            data: data,
+        });
+    }
 }
 
 // function to add a logs raw data to the server and update the database
@@ -294,12 +295,12 @@ function add_log() {
 
 // function to upload an log file to the server
 function add_log_file() {
-    document.getElementById("addFileSpinner").hidden = false
+    document.getElementById("addLogFileSpinner").hidden = false
     const fileInput = document.getElementById("logFile")
     const file = fileInput.files[0]
 
     if (!file) {
-        alert("Please select a file first!")
+        add_alert("Please select a file first", "warning")
         document.getElementById("addLogFileSpinner").hidden = true
         return
     }
@@ -307,7 +308,7 @@ function add_log_file() {
     const formData = new FormData()
     formData.append("file", file)
 
-    send_request("POST", "/add-log-file", formData, "addFileSpinner")
+    send_request("POST", "/add-log-file", formData, "addLogFileSpinner")
 }
 
 // function to remove outputs from the database
@@ -339,34 +340,30 @@ async function remove_all_logs() {
 }
 
 // function to manually trigger dashboard HTML regeneration
-function refresh_dashboard() {
+async function refresh_dashboard() {
     document.getElementById("refreshDashboardSpinner").hidden = false
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/refresh-dashboard");
-    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-    xhr.onload = () => {
+    let response;
+    try {
+        response = await request_json("POST", "/refresh-dashboard", JSON.stringify({}));
+    } catch (error) {
+        add_alert(escape_html(error.message), "danger");
+        return;
+    } finally {
         document.getElementById("refreshDashboardSpinner").hidden = true
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            const response = JSON.parse(xhr.responseText);
-            if (response.success == "1") {
-                console.log(response.console)
-                add_alert(escape_html(response.message), "success")
-            } else {
-                add_alert(escape_html(response.message), "danger")
-                console.log(response.console)
-            }
-        } else {
-            add_alert(`Error: ${xhr.status}, ${escape_html(xhr.responseText)}`, "danger")
-        }
-    };
-    xhr.send(JSON.stringify({}));
+    }
+    if (response.success == "1") {
+        console.log(response.console)
+        add_alert(escape_html(response.message), "success")
+    } else {
+        add_alert(escape_html(response.message), "danger")
+        console.log(response.console)
+    }
 }
 
 // function to manually refresh the admin page tables (outputs and logs)
-function refresh_admin_tables() {
+async function refresh_admin_tables() {
     document.getElementById("refreshAdminTablesSpinner").hidden = false
-    get_outputs()
-    get_logs()
+    await Promise.all([get_outputs(), get_logs()])
     document.getElementById("refreshAdminTablesSpinner").hidden = true
     add_alert("Admin page tables refreshed!", "success")
 }
