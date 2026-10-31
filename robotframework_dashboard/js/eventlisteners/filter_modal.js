@@ -38,6 +38,7 @@ import {
     schedule_date_histogram_refresh,
     setup_date_histogram,
 } from "../filter/date_histogram.js";
+import { apply_url_filters, update_url_from_filters } from "../filter/url.js";
 import { confirm_action } from "./confirm_modal.js";
 import { setup_merge_profiles_modal } from "./merge_profiles.js";
 
@@ -60,6 +61,7 @@ function setup_filter_modal() {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 setup_filtered_data_and_filters();
+                update_url_from_filters();
                 update_dashboard_graphs();
                 hide_loading_overlay();
             });
@@ -165,6 +167,8 @@ function setup_filter_modal() {
     setup_date_histogram();
     // snapshot the default/initial filter state so profile checkboxes can reflect changes
     capture_default_filters();
+    // a shared or bookmarked link carries its filters in the query string
+    apply_url_filters();
     // filter profiles setup
     populate_filter_profile_select();
     let showingFilterProfiles = false;

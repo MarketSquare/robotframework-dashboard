@@ -71,6 +71,24 @@ Validate Overview Keeps Filters That Were Changed By Hand
     Should Show 8 Of 8 Runs
     Validate Filter Settings    runTags=project_2
 
+Validate Filters From The Url Are Applied
+    [Documentation]    Issue #385: a shared or bookmarked link carries the filters in its query string;
+    ...                a value that does not exist in this dashboard is ignored.
+    Open Dashboard With Query    page=dashboard&run=WebshopUI&amount=3&tag=unknown
+    Should Show 3 Of 10 Runs
+    Validate Filter Settings    runs=WebshopUI    runTags=All    amount=3
+
+Validate Changed Filters Are Written To The Url
+    [Documentation]    Issue #385: only filters that differ from the defaults end up in the url.
+    Open Dashboard Page
+    Url Query Should Be    page=dashboard
+    Set Run Tags Filter    dev    strict=True
+    Url Query Should Be    page=dashboard&tag=dev
+    Reload Dashboard
+    Should Show 14 Of 14 Runs
+    Reset Filters
+    Url Query Should Be    page=dashboard
+
 Validate Dashboard Date Filter
     Set Date Filter    fromDate=08252026    fromTime=1200am
     Validate Section Data    id=runStatisticsSection    name=dashboardRunDateFilter

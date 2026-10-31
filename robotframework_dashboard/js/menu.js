@@ -1,4 +1,5 @@
 import { setup_filtered_data_and_filters } from "./filter/pipeline.js";
+import { update_url_from_filters } from "./filter/url.js";
 import { clear_overview_project_navigation_filter } from "./filter/controls.js";
 import { areGroupedProjectsPrepared, overviewNavStore, tablesNavStore } from "./variables/globals.js";
 import { space_to_camelcase, fade_in, fade_out } from "./common.js";
@@ -153,6 +154,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
         requestAnimationFrame(() => {
             if (generation !== dataAndGraphsGeneration) return;
             setup_filtered_data_and_filters();
+            update_url_from_filters();
             if (pendingOverviewPreparation) {
                 pendingOverviewPreparation = false;
                 prepare_overview();
