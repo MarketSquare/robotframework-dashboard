@@ -91,7 +91,7 @@ These switches are stored alongside the other dashboard settings and can also be
 | Test Statistics          | Timeline<br>Line | Timeline: Displays statistics of tests in timeline format.<br>Line: Displays test results as a scatter plot with a timestamp-based x-axis and one row per test, colored by status (pass/fail/skip). Useful for spotting patterns across many runs.  | Status: Displays only tests that don't have any status changes and have the selected status (persisted).<br>Only Changes: Displays only tests that changed status at some point (persisted).<br>Reruns (section filter): Mark Reruns (default) / Final Result / First Attempt for tests with a rerun history from merged `--rerunfailed` outputs, see [Reruns](reruns.md) (persisted).<br>Tip: Don't use Status and Only Changes at the same time as it will result in an empty graph.                                        |
 | Test Duration            | Bar<br>Line              | Bar: Displays test durations represented as vertical bars.<br>Line: Displays test durations over a time axis.                      | -                                                                             |
 | Test Duration Deviation  | Boxplot                  | Shows deviations of test durations from average, highlighting flaky tests.                                                         | -                                                                             |
-| Test Messages            | Bar<br>Timeline          | Bar: Displays messages ranked by frequency.<br>Timeline: Displays when messages occurred to reveal spikes.                         | Top 10 default, Top 50 fullscreen, timeline marks re-executed tests and lists their attempts ([Reruns](reruns.md)) |
+| Test Messages            | Bar<br>Timeline          | Bar: Displays messages ranked by frequency.<br>Timeline: Displays when messages occurred to reveal spikes.                         | Top 10 default, Top 50 fullscreen, timeline marks re-executed tests and lists their attempts ([Reruns](reruns.md)), click a message to list the tests behind it ([below](#test-messages-tests-behind-a-message)) |
 | Test Most Flaky          | Bar<br>Timeline          | Bar: Tests ranked by frequency of status changes.<br>Timeline: Shows when status changes occurred over runs.                       | Top 10 default, Top 50 fullscreen, Ignore Skips option (persisted), a recovery on rerun counts as a flip ([Reruns](reruns.md)) |
 | Test Recent Most Flaky   | Bar<br>Timeline          | Bar: Recent tests ranked by frequency of status changes.<br>Timeline: Shows when recent status changes occurred.                   | Top 10 default, Top 50 fullscreen, Ignore Skips option (persisted), a recovery on rerun counts as a flip ([Reruns](reruns.md)) |
 | Test Most Failed         | Bar<br>Timeline          | Bar: Tests ranked by total number of failures.<br>Timeline: Displays when failures occurred across runs.                           | Top 10 default, Top 50 fullscreen                                             |
@@ -136,6 +136,14 @@ Many graphs include enhanced tooltips that display additional information when h
 - **Notes**: With [notes](notes.md) turned on, the test graphs also show the note and category of a test.
 
 These enhanced tooltips make it easier to understand test results without needing to navigate to individual log files.
+
+## Test Messages: tests behind a message
+
+Click a message in the **Test Messages** graph to see which tests produced it: a bar in the Bar view, or the message label on the axis in either view (a point of the Timeline view still opens the log of its run). A dialog shows the full message and one row per test with the number of runs it got the message in, most runs first. Messages grouped with a [message config](advanced-cli-examples.md#message-config-details) list the tests of every message in the group.
+
+- The dialog stays open, so the test names can be selected and copied; **Copy All** copies every test name, one per line.
+- With `--uselogs` enabled, clicking a test name opens the `log.html` of the latest run in which that test got the message, at that test.
+- The full suite path of a test shows when hovering its row.
 
 ## Tables Tab
 | Table Name | Columns                                                                                                                     | Description                                                                   | Notes |

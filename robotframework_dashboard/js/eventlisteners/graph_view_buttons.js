@@ -143,9 +143,9 @@ function setup_graph_view_buttons() {
             window.scrollTo({ top: lastScrollY, behavior: "auto" });
         });
     }
-    // close fullscreen on Escape key
+    // close fullscreen on Escape key, unless the Escape closes a modal opened from the fullscreen graph
     add_listener_once(document, "keydown", (event) => {
-        if (event.key === "Escape" && inFullscreen) {
+        if (event.key === "Escape" && inFullscreen && !event.target.closest?.(".modal")) {
             const closeBtn = document.querySelector(`.close-graph[id$="Close"]:not([hidden])`);
             if (closeBtn) closeBtn.click();
         }

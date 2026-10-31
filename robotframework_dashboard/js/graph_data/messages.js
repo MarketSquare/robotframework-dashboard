@@ -5,21 +5,45 @@ import { message_config } from "../variables/data.js";
 import { convert_timeline_data, group_timeline_values, parse_test_attempts } from "./helpers.js";
 import { strip_tz_suffix } from "../common.js";
 
+// the tests behind one message: one entry per test with the number of runs it got the message in,
+// and the latest of those runs (its log is the one a click opens), most runs first
+function get_message_tests(rows) {
+    const testMap = new Map();
+    for (const row of rows) {
+        // full_name tells apart tests with the same name in different suites
+        const key = row.full_name || row.name;
+        const time = new Date(strip_tz_suffix(row.run_start).replace(" ", "T")).getTime();
+        if (!testMap.has(key)) testMap.set(key, { name: row.name, fullName: key, runStarts: new Set(), latest: row, latestTime: time });
+        const test = testMap.get(key);
+        test.runStarts.add(row.run_start);
+        if (time > test.latestTime) {
+            test.latest = row;
+            test.latestTime = time;
+        }
+    }
+    return [...testMap.values()]
+        .map(test => ({ name: test.name, fullName: test.fullName, count: test.runStarts.size, runStart: test.latest.run_start, id: test.latest.id }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
 // function to prepare the data in the correct format for messages graphs
 function get_messages_data(dataType, graphType, filteredData) {
     const data = new Map();
     const aliases = new Map();
     const run_names = new Map();
+    const tests = new Map();
     for (const value of filteredData) {
         if (value.message && (value.failed === 1 || value.skipped === 1)) {
             if (!data.has(value.message)) {
                 data.set(value.message, []);
                 aliases.set(value.message, []);
                 run_names.set(value.message, []);
+                tests.set(value.message, []);
             }
             data.get(value.message).push(value.run_start);
             aliases.get(value.message).push(value.run_alias);
             run_names.get(value.message).push(value.run_name);
+            tests.get(value.message).push(value);
         }
     }
     const useMessageConfig = !message_config.includes("placeholder_message_config");
@@ -42,14 +66,17 @@ function get_messages_data(dataType, graphType, filteredData) {
                         data.set(config, []);
                         aliases.set(config, []);
                         run_names.set(config, []);
+                        tests.set(config, []);
                     }
                     // the alias and run name lists move along, the tooltips read them per message
                     data.get(config).push(...runStarts);
                     aliases.get(config).push(...aliases.get(message));
                     run_names.get(config).push(...run_names.get(message));
+                    tests.get(config).push(...tests.get(message));
                     data.delete(message)
                     aliases.delete(message);
                     run_names.delete(message);
+                    tests.delete(message);
                 }
             }
         }
@@ -74,6 +101,7 @@ function get_messages_data(dataType, graphType, filteredData) {
             runStartsForCb.set(message, runStarts);
             count++;
         }
+        const messageTests = Object.fromEntries(labels.map(label => [label, get_message_tests(tests.get(label))]));
         const graphData = {
             labels,
             datasets: [{
@@ -87,7 +115,7 @@ function get_messages_data(dataType, graphType, filteredData) {
                 settings.show.aliases === "run_name" ? run_names.get(message) : aliases.get(message)
               ]))
             : Object.fromEntries(sortedData.map(([message]) => [message, runStartsForCb.get(message)]));
-        return [graphData, callbackData];
+        return [graphData, callbackData, null, messageTests];
     } else if (graphType === "timeline") {
         const labels = [];
         const runStartsSet = new Set();
@@ -134,10 +162,12 @@ function get_messages_data(dataType, graphType, filteredData) {
             labels,
             datasets,
         };
-        return [graphData, runStarts, pointMeta];
+        const messageTests = Object.fromEntries(labels.map(label => [label, get_message_tests(tests.get(label))]));
+        return [graphData, runStarts, pointMeta, messageTests];
     }
 }
 
 export {
-    get_messages_data
+    get_messages_data,
+    get_message_tests,
 };

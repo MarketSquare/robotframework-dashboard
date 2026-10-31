@@ -10,6 +10,7 @@ import { format_duration } from "../common.js";
 import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filteredTests } from "../variables/globals.js";
 import { settings, get_run_label } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
+import { open_message_tests_modal } from "../eventlisteners/message_tests_modal.js";
 import {
     apply_timeline_defaults,
     build_most_failed_config,
@@ -179,6 +180,7 @@ function _build_test_messages_config() {
     const graphData = data[0];
     const callbackData = data[1];
     const pointMeta = data[2] || null;
+    const messageTests = data[3];
     var config;
     const limit = inFullscreen && inFullscreenGraph.includes("testMessages") ? 50 : 10;
     if (settings.graphTypes.testMessagesGraphType == "bar") {
@@ -188,6 +190,10 @@ function _build_test_messages_config() {
             callbacks: {
                 label: function (tooltipItem) {
                     return callbackData[tooltipItem.label];
+                },
+                footer: function (tooltipItems) {
+                    const tests = messageTests[tooltipItems[0]?.label] ?? [];
+                    return `${tests.length} ${tests.length === 1 ? "test" : "tests"}, click to list them`;
                 },
             },
         };
@@ -204,7 +210,6 @@ function _build_test_messages_config() {
                 text: "Message",
             },
         };
-        delete config.options.onClick
     } else if (settings.graphTypes.testMessagesGraphType == "timeline") {
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", "Message");
         apply_timeline_defaults(config, callbackData, pointMeta, "message");
@@ -214,9 +219,50 @@ function _build_test_messages_config() {
             },
             autoSkip: false,
         };
+        config.options.plugins.tooltip.callbacks.footer = () => "Click the message label to list its tests";
     }
+    apply_message_tests_click(config, messageTests);
     update_height("testMessagesVertical", config.data.labels.length, settings.graphTypes.testMessagesGraphType);
     return config;
+}
+
+// the message label on the axis under the pointer: the message axis of either view
+function _get_message_label_at(chart, event) {
+    const isTimeline = chart.options.indexAxis === "y";
+    const scale = isTimeline ? chart.scales.y : chart.scales.x;
+    if (!scale || event.x < scale.left || event.x > scale.right || event.y < scale.top || event.y > scale.bottom) return null;
+    // a rotated bar label runs down and to the left from its tick, follow it back up to the axis
+    const rotation = scale.labelRotation * Math.PI / 180;
+    const x = rotation > 0 ? event.x + (event.y - scale.top) / Math.tan(rotation) : event.x;
+    const index = Math.round(scale.getValueForPixel(isTimeline ? event.y : x));
+    return chart.data.labels[index] ?? null;
+}
+
+// Chart.js calls onClick only inside the chart area, the axis labels are outside it. The plugin reads
+// chart.data.messageTests: update_chart keeps the plugins of the chart it updates.
+const messageLabelClickPlugin = {
+    id: "messageLabelClick",
+    afterEvent(chart, args) {
+        const event = args.event;
+        const message = args.inChartArea ? null : _get_message_label_at(chart, event);
+        if (event.type === "mousemove") {
+            const onPoint = args.inChartArea && chart.getActiveElements().length > 0;
+            chart.canvas.style.cursor = message !== null || onPoint ? "pointer" : "default";
+        } else if (event.type === "click" && message !== null && chart.data.messageTests?.[message]) {
+            open_message_tests_modal(message, chart.data.messageTests[message]);
+        }
+    },
+};
+
+// a bar or a message label opens the tests behind the message, a timeline point keeps opening the log of its run
+function apply_message_tests_click(config, messageTests) {
+    config.data.messageTests = messageTests;
+    config.plugins = [messageLabelClickPlugin];
+    if (config.options.indexAxis === "y") return;
+    config.options.onClick = (event, elements, chart) => {
+        const message = elements.length ? chart.data.labels[elements[0].index] : null;
+        if (message !== null && messageTests[message]) open_message_tests_modal(message, messageTests[message]);
+    };
 }
 
 function _build_test_duration_deviation_config() {

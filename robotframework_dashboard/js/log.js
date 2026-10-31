@@ -106,6 +106,20 @@ function open_log_from_label(chart, click) {
     }
 }
 
+// function to open the log of one run at one test, the test messages modal lists tests outside a graph
+function open_test_log(runStart, testId) {
+    if (!use_logs) { return }
+    var run = filteredRuns.find(run => run.run_start === runStart)
+    if (!run) { run = filteredRuns.find(run => run.run_start.slice(0, 19) === runStart.slice(0, 19)) }
+    if (!run) { run = runs.find(run => run.run_start.slice(0, 19) === runStart.slice(0, 19)) }
+    const path = run?.path ? transform_file_path(run.path) : ""
+    if (path == "") {
+        add_alert("Log file error: this output has no path in the database, so its log file cannot be found.", "warning");
+        return
+    }
+    open_log_from_path(testId ? `${path}#${testId}` : path)
+}
+
 // function to add the suite or test id to the log path url
 function update_log_path_with_id(path, graphId, chartElement, event, directTestName = undefined) {
     if (graphId.includes("run") || graphId.includes("keyword")) {
@@ -151,4 +165,5 @@ export {
     open_log_file,
     open_log_from_path,
     open_log_from_label,
+    open_test_log,
 };

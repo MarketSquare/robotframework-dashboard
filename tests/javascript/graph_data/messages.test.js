@@ -50,13 +50,15 @@ vi.mock('@js/common.js', () => ({
     strip_tz_suffix: (s) => s.replace(/[+-]\d{2}:\d{2}$/, ''),
 }));
 
-import { get_messages_data } from '@js/graph_data/messages.js';
+import { get_messages_data, get_message_tests } from '@js/graph_data/messages.js';
 import { settings } from '@js/variables/settings.js';
 
 
 function makeTestData(entries) {
     return entries.map(e => ({
         name: e.name || 'Some Test',
+        full_name: e.full_name || `Suite.${e.name || 'Some Test'}`,
+        id: e.id || 's1-t1',
         run_start: e.run_start,
         run_alias: e.run_alias || e.run_start,
         passed: e.passed ?? 0,
@@ -219,6 +221,49 @@ describe('get_messages_data', () => {
             const firstTime = new Date(runStartsArray[0]).getTime();
             const lastTime = new Date(runStartsArray[runStartsArray.length - 1]).getTime();
             expect(firstTime).toBeLessThanOrEqual(lastTime);
+        });
+    });
+
+    describe('tests behind a message', () => {
+        const data = makeTestData([
+            { name: 'Login', run_start: '2025-01-15 10:00:00', failed: 1, message: 'Timeout', id: 's1-t1' },
+            { name: 'Login', run_start: '2025-01-16 10:00:00', failed: 1, message: 'Timeout', id: 's1-t3' },
+            { name: 'Cart', run_start: '2025-01-16 10:00:00', failed: 1, message: 'Timeout', id: 's1-t2' },
+            { name: 'Cart', run_start: '2025-01-16 10:00:00', passed: 1, message: 'Timeout', id: 's1-t2' },
+            { name: 'Other', run_start: '2025-01-16 10:00:00', failed: 1, message: 'Error', id: 's1-t4' },
+        ]);
+
+        it('lists the failed tests of every message with their run count and latest run, in the bar graph', () => {
+            const [, , , messageTests] = get_messages_data('test', 'bar', data);
+            expect(messageTests['Timeout']).toEqual([
+                { name: 'Login', fullName: 'Suite.Login', count: 2, runStart: '2025-01-16 10:00:00', id: 's1-t3' },
+                { name: 'Cart', fullName: 'Suite.Cart', count: 1, runStart: '2025-01-16 10:00:00', id: 's1-t2' },
+            ]);
+            expect(messageTests['Error'].map(test => test.name)).toEqual(['Other']);
+        });
+
+        it('lists the same tests in the timeline graph', () => {
+            const [, , , barTests] = get_messages_data('test', 'bar', data);
+            const [, , , timelineTests] = get_messages_data('test', 'timeline', data);
+            expect(timelineTests).toEqual(barTests);
+        });
+    });
+
+    describe('get_message_tests', () => {
+        it('keeps tests with the same name in different suites apart', () => {
+            const tests = get_message_tests(makeTestData([
+                { name: 'Login', full_name: 'A.Login', run_start: '2025-01-15 10:00:00', failed: 1 },
+                { name: 'Login', full_name: 'B.Login', run_start: '2025-01-15 10:00:00', failed: 1 },
+            ]));
+            expect(tests.map(test => test.fullName)).toEqual(['A.Login', 'B.Login']);
+        });
+
+        it('counts a test once per run', () => {
+            const tests = get_message_tests(makeTestData([
+                { name: 'Login', run_start: '2025-01-15 10:00:00', failed: 1 },
+                { name: 'Login', run_start: '2025-01-15 10:00:00', failed: 1 },
+            ]));
+            expect(tests[0].count).toBe(1);
         });
     });
 });

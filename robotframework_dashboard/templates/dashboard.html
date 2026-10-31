@@ -1313,6 +1313,28 @@
             </div>
         </div>
 
+        <!-- Message Tests Modal -->
+        <div class="modal fade" id="messageTestsModal" tabindex="-1" aria-labelledby="messageTestsModalLabel">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content mt-5">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="messageTestsModalLabel">Tests With This Message</h5>
+                        <div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-5"
+                                id="copyMessageTests">Copy All</button>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-2"
+                                data-bs-dismiss="modal" id="closeMessageTests">Close</button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="message-tests-message" id="messageTestsMessage"></pre>
+                        <div class="mb-2" id="messageTestsSummary"></div>
+                        <ul class="list-group" id="messageTestsList"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Confirmation Modal -->
         <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel">
             <div class="modal-dialog">

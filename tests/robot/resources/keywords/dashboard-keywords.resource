@@ -1079,6 +1079,36 @@ Right Click Bar In Graph
     ...    }
     Mouse Button    click    ${point}[x]    ${point}[y]    button=right
 
+Click First Message In Messages Graph
+    [Documentation]    Clicks the most common message of the test messages graph: its bar in the bar view, its
+    ...    label on the message axis in the timeline view (a timeline point opens the log of its run).
+    Scroll To Element    selector=id=testMessagesGraph
+    Wait For Dashboard Idle
+    ${point}    Evaluate JavaScript    ${None}
+    ...    () => {
+    ...        const canvas = document.getElementById('testMessagesGraph');
+    ...        const chart = Chart.getChart(canvas);
+    ...        const rect = canvas.getBoundingClientRect();
+    ...        if (chart.options.indexAxis === 'y') {
+    ...            const axis = chart.scales.y;
+    ...            return { x: rect.left + (axis.left + axis.right) / 2, y: rect.top + axis.getPixelForValue(0) };
+    ...        }
+    ...        const bar = chart.getDatasetMeta(0).data[0].getProps(['x', 'y', 'base'], true);
+    ...        return { x: rect.left + bar.x, y: rect.top + (bar.y + bar.base) / 2 };
+    ...    }
+    Mouse Button    click    ${point}[x]    ${point}[y]
+    Wait For Modal Opened    messageTestsModal
+
+Get Tests In Message Tests Modal
+    [Documentation]    The rows of the message tests modal as "<test name> (<number of runs>)".
+    ${tests}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#messageTestsList li')].map(item => item.firstElementChild.textContent + ' (' + item.lastElementChild.textContent + ')')
+    RETURN    ${tests}
+
+Close Message Tests Modal
+    Click    selector=id=closeMessageTests
+    Wait For Elements State    selector=id=messageTestsModal    state=hidden    timeout=10s
+
 Right Click Empty Area In Graph
     [Documentation]    Right-clicks the top left corner of a graph canvas, where no bar is drawn.
     [Arguments]    ${graph}
