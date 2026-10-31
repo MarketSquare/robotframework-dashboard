@@ -17,6 +17,10 @@ function capture_default_filters() {
     defaultFilters = capture_current_filters();
 }
 
+function get_default_filters() {
+    return defaultFilters;
+}
+
 function filter_key_differs_from_default(key) {
     if (!defaultFilters) return false;
     const current = capture_current_filters();
@@ -378,6 +382,7 @@ export {
     delete_filter_profile,
     enter_profile_edit_mode,
     exit_profile_edit_mode,
+    get_default_filters,
     populate_filter_profile_select,
     profiles_match,
     save_filter_profile_to_storage,

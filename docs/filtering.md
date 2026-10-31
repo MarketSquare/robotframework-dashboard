@@ -195,6 +195,28 @@ Fields checked on only one side pass through unchanged.
 
 You can also use this modal with only one column selected to quickly create a copy of an existing profile under a new name, with any settings individually removed.
 
+### Sharing Filters Through the URL
+
+The address bar always reflects the page you are on and the global filters you applied, so you can bookmark a filtered view or send the link to someone else. Opening that link applies the same filters again. Only filters that differ from the defaults are added, for example:
+
+```
+robot_dashboard.html?page=dashboard&run=WebshopUI&tag=dev&tag=nightly&tagMode=OR&amount=5
+```
+
+| Parameter | Filter |
+|---|---|
+| `page` | `overview`, `dashboard`, `compare` or `tables` |
+| `run` | Runs |
+| `tag` (repeatable), `tagMode` | Run Tags and the `AND` / `OR` / `NOT` mode |
+| `version` (repeatable) | Versions |
+| `fromDate`, `fromTime`, `toDate`, `toTime` | From / To Date and Time (`YYYY-MM-DD`, `HH:MM`) |
+| `metadata` | Metadata |
+| `amount` | Amount per project |
+| `suite` | Suite Path |
+| `filter.<name>` (repeatable), `filterMode.<name>` | Custom Filter `<name>` and its mode |
+
+A value that does not exist in the opened dashboard (an unknown run name, tag or suite path) is ignored, so a link never ends up hiding every run. Section filters, settings and layout are not part of the URL.
+
 ### Section Filters on Dashboard
 
 The Dashboard is divided into four sections: **Run, Suite, Test, Keyword**. Each section has specific filtering options that apply only to that section.
