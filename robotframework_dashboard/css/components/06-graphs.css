@@ -95,3 +95,14 @@ canvas {
   background-color: transparent;
 }
 
+/* the test messages graph lists the tests behind a message in a modal (message_tests_modal.js) */
+.message-tests-message {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 10rem;
+  overflow: auto;
+}
+
+#messageTestsList .list-group-item {
+  user-select: text;
+}

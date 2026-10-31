@@ -98,10 +98,12 @@ Tip: avoid using Status and Only Changes together — the result will be empty.`
 It helps identify tests with inconsistent execution times, which might be flaky or worth investigating`,
     "testMessagesGraphBar": `Bar: Displays messages ranked by number of occurrences represented as vertical bars
 - The regular view shows the Top 10 most frequent messages; fullscreen mode expands this to the Top 50.
-- To generalize messages (e.g., group similar messages), use the -m/--messageconfig option in the CLI (--help or README).`,
+- To generalize messages (e.g., group similar messages), use the -m/--messageconfig option in the CLI (--help or README).
+- Click a message to list the tests that produced it.`,
     "testMessagesGraphTimeline": `Timeline: Displays when those messages occurred to reveal problem spikes
 - The regular view shows the Top 10 most frequent messages; fullscreen mode expands this to the Top 50.
-- To generalize messages (e.g., group similar messages), use the -m/--messageconfig option in the CLI (--help or README).`,
+- To generalize messages (e.g., group similar messages), use the -m/--messageconfig option in the CLI (--help or README).
+- Click a message to list the tests that produced it.`,
     "testMostFlakyGraphBar": `Bar: Displays tests ranked by frequency of status changes represented as vertical bars
 - The regular view shows the Top 10 flaky tests; fullscreen mode expands the list to the Top 50.
 - Ignore Skips: filters to only count passed/failed as status flips and not skips.`,

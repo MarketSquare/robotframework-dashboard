@@ -109,6 +109,18 @@ Validate Keyword Statistics Keyword Filter
     ${datasets}    Get Graph Dataset Labels    keywordAverageDurationGraph
     Should Be Equal    ${datasets}    ${{ ["Add Product To Cart"] }}
 
+Clicking A Message Lists The Tests That Produced It
+    [Documentation]    The test messages graph opens the tests behind a message: from its label in the
+    ...    timeline view and from its bar in the bar view.
+    Click First Message In Messages Graph
+    ${tests}    Get Tests In Message Tests Modal
+    Should Be Equal    ${tests}    ${{ ["Download Invoice (3)"] }}
+    Close Message Tests Modal
+    Click    selector=id=testMessagesGraphBar
+    Click First Message In Messages Graph
+    ${tests}    Get Tests In Message Tests Modal
+    Should Be Equal    ${tests}    ${{ ["Download Invoice (3)"] }}
+
 Validate Compare Run Selection
     [Documentation]    The compare selects default to the two most recent runs; every selected run becomes
     ...    one dataset of the statistics graph and "None" drops it again.
