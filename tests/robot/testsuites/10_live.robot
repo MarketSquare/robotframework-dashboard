@@ -73,6 +73,35 @@ Validate Failed Test Shows Its Error
     Browser.Get Text    id=liveDetailTitle    *=    Should Be Equal
     Browser.Get Text    css=#liveDetailBody .live-error-box    ==    1 != 2
 
+Validate Full Size Screenshot Is Only Selected For The Context Menu
+    ${shot_events}    Set Variable    ${OUTPUT DIR}/live_screenshot_events_${DASHBOARD_INDEX}.jsonl
+    Copy File    ${EVENTS}    ${shot_events}
+    Append To File    ${shot_events}    {"v":1,"seq":110,"t":1791651162.11,"type":"step.screenshot","id":"s1-t1-k2","path":"shot.jpeg","library":"Browser"}
+    Answer File Requests With An Image
+    Upload File By Selector    id=liveReplayFileInput    ${shot_events}
+    Click    css=#liveTests .live-test-row >> nth=0
+    Click    id=liveShotsOpen
+    Wait For Elements State    css=#liveViewerBody img    visible
+    # a selected image does not stay selected: a click ends the selection
+    Keyboard Key    press    Control+a
+    Click    css=#liveViewerBody img
+    ${selected}    Evaluate JavaScript    ${None}    () => !window.getSelection().isCollapsed
+    Should Not Be True    ${selected}
+    # a double-click selects nothing, and the viewer stays open
+    Click With Options    css=#liveViewerBody img    left    clickCount=2
+    Get Element States    id=liveViewer    contains    visible
+    ${selected}    Evaluate JavaScript    ${None}    () => !window.getSelection().isCollapsed
+    Should Not Be True    ${selected}
+    # a right-click selects the image: the Copy of an editor's context menu copies the selection
+    Click With Options    css=#liveViewerBody img    right
+    ${selected}    Evaluate JavaScript    ${None}
+    ...    () => window.getSelection().containsNode(document.querySelector("#liveViewerBody img"))
+    Should Be True    ${selected}
+    # no highlight shows that selection
+    ${highlight}    Evaluate JavaScript    css=#liveViewerBody img    (el) => getComputedStyle(el, "::selection").backgroundColor
+    Should Be Equal    ${highlight}    rgba(0, 0, 0, 0)
+    [Teardown]    Run Keywords    Remove File    ${shot_events}    AND    Close Dashboard
+
 Validate Replay Of A File Without Events
     ${empty}    Set Variable    ${OUTPUT DIR}/no_events_${DASHBOARD_INDEX}.jsonl
     Create File    ${empty}    not an event${\n}
@@ -96,6 +125,18 @@ Open Dashboard With Editor Host
 Open Live Page
     Click    id=menuLive
     Wait For Elements State    id=live    visible
+
+Answer File Requests With An Image
+    [Documentation]    Answers the page's resolveFiles messages the way an editor host does.
+    Evaluate JavaScript    ${None}
+    ...    () => {
+    ...        const image = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="teal"/></svg>');
+    ...        window.robotdashboardHost.postMessage = (json) => {
+    ...            const message = JSON.parse(json);
+    ...            if (message.type !== "resolveFiles") return;
+    ...            window.postMessage({ type: "files", files: Object.fromEntries(message.paths.map((path) => [path, image])) }, "*");
+    ...        };
+    ...    }
 
 Move Replay Slider
     [Arguments]    ${position}

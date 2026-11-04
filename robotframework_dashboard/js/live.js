@@ -1341,6 +1341,16 @@ function setup_live() {
     document.getElementById("liveViewerNext").addEventListener("click", () => step_viewer(1));
     // a click on the dark area around the image closes, like other image viewers
     document.getElementById("liveViewerBody").addEventListener("click", (event) => { if (event.target.tagName !== "IMG") close_viewer(); });
+    // a left press ends a selection (a click on a selected image does not) and a double-click makes none;
+    // a right-click selects the image, because the Copy of an editor's context menu copies the selection
+    document.getElementById("liveViewerBody").addEventListener("mousedown", (event) => {
+        if (event.button !== 0) return;
+        window.getSelection().removeAllRanges();
+        if (event.detail > 1) event.preventDefault();
+    });
+    document.getElementById("liveViewerBody").addEventListener("contextmenu", (event) => {
+        if (event.target.tagName === "IMG") window.getSelection().selectAllChildren(event.currentTarget);
+    });
     document.addEventListener("keydown", (event) => {
         if (viewerIndex === null) return;
         if (event.key === "Escape") close_viewer();
