@@ -37,7 +37,7 @@ beforeEach(() => {
     addAlertMock.mockClear();
 });
 
-const { open_log_file, open_log_from_path, open_log_from_label } = await import('@js/log.js');
+const { open_log_file, open_log_from_path, open_log_from_label, open_test_log } = await import('@js/log.js');
 
 // Build a fake chart click event for a non-line, non-doughnut graph that
 // reads chart.data.labels[index]. Matches the path log.js takes for e.g.
@@ -169,5 +169,22 @@ describe('open_log_file with repeated labels', () => {
         const event = makeBarClickEvent('2025-01-15 10:00:00.900');
         open_log_file(event, [{ index: 0 }]);
         expect(window.open.mock.calls[0][0]).toContain('log-b.html');
+    });
+});
+
+describe('open_test_log', () => {
+    it('opens the log of the run at the test', () => {
+        const run = { run_start: '2025-01-15 10:00:00', path: 'results/output-1.xml' };
+        dataMock.runs.push(run);
+        globalsMock.filteredRuns.push(run);
+        open_test_log('2025-01-15 10:00:00', 's1-t2');
+        expect(window.open).toHaveBeenCalledWith('http://localhost/results/log-1.html#s1-t2', '_blank');
+    });
+
+    it('alerts when the run has no path', () => {
+        globalsMock.filteredRuns.push({ run_start: '2025-01-15 10:00:00', path: null });
+        open_test_log('2025-01-15 10:00:00', 's1-t2');
+        expect(window.open).not.toHaveBeenCalled();
+        expect(addAlertMock).toHaveBeenCalled();
     });
 });

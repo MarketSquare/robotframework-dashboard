@@ -74,3 +74,14 @@ describe('get_messages_data with a message config and run aliases', () => {
         settings.show.aliases = 'run_start';
     });
 });
+
+describe('get_messages_data with a message config and the tests behind a message', () => {
+    it('moves the tests of the merged messages to their rule', () => {
+        const data = [
+            { ...make_test('2025-01-15 10:00:00', 'Element id:login not found'), name: 'Login' },
+            { ...make_test('2025-01-16 10:00:00', 'Element id:cart not found'), name: 'Cart' },
+        ];
+        const [, , , messageTests] = get_messages_data('test', 'bar', data);
+        expect(messageTests['Element ${locator} not found'].map(test => test.name)).toEqual(['Cart', 'Login']);
+    });
+});
