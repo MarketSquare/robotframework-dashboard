@@ -54,9 +54,20 @@ Then locate the defect. Useful moves:
 
 State the root cause in one sentence before writing the fix.
 
+**For a feature or a fix that touches more than one graph**, write a short plan before coding and show it with the root cause:
+- every graph/view that changes, and for each: where its rows come from (which filtered array, which section filters apply), its label function, and what its tooltip and click do now;
+- the test data needed and where it comes from (an existing fixture, or a new dedicated suite, `testing` skill → robot-tests.md "Adding a test");
+- what is explicitly out of scope.
+
+Settle open design choices with the user in that one message, not spread over several turns.
+
 ## 4. Fix
 
 Smallest change that addresses the root cause; match surrounding style (`coding-standards` skill). Leave a short comment only where the code would otherwise mislead again (e.g. an id/value mismatch).
+
+Use the Edit tool for source and test changes. Shell rewrites (`sed -i`, Python heredocs) are where things go wrong here: Git Bash heredocs turn `\\n` into real newlines inside string literals, and a bulk `sed` over `tests/` also changes the snapshots and expectations of other tests.
+
+When the first slice works end to end (data, one graph, its unit test), run `/code-review medium` on that slice before repeating the pattern in the other graphs; a design finding is cheaper there than after every graph and test is done.
 
 ## 5. Regression test
 
@@ -66,6 +77,8 @@ Add a test in the tier that can actually observe the bug (`testing` skill → "A
 - Prefer DOM/state assertions over screenshots unless rendering is the thing under test.
 - Run it **in Docker** (`bash scripts/docker/run-in-robot-container.sh robot --outputdir results -t "<name>" tests/robot/testsuites/<suite>.robot`).
 - Prove it: `git stash push -- <fixed source file>` → run → must FAIL; `git stash pop` → run → must PASS.
+- Run it once under pabot with its suite before the full run (`testing` skill → robot-tests.md "Adding a test").
+- For a user-visible change, build the manual check dashboard from the same test data now (`python -m robotframework_dashboard.main -o <its output.xml> -f tests/robot/resources/outputs -n <scratch>/check.html`); it doubles as the attachment for the issue comment.
 
 Then run the full suite of that tier (still Docker for robot) so shared keywords you touched are exercised everywhere.
 

@@ -8,8 +8,8 @@
 ======================================================================================
 usage: robotdashboard [-v] [-h] [-o [PATH ...]] [-f [PATH ...]]
                       [--projectversion VERSION] [--customfilters FILTERS]
-                      [-z OFFSET] [-d PATH] [-r [QUERY ...]]
-                      [--logremoved [TYPES_PATH]] [-c PATH]
+                      [-z OFFSET] [--messagelength INT] [-d PATH]
+                      [-r [QUERY ...]] [--logremoved [TYPES_PATH]] [-c PATH]
                       [--novacuum [BOOL]] [-g [BOOL]] [-l [BOOL]] [-n NAME]
                       [-t TITLE] [-q INT] [--offlinedependencies [BOOL]]
                       [-u [BOOL]] [--logurl URL] [-j PATH]
@@ -56,6 +56,13 @@ output files:
                           • Use '--timezone=' form for negative offsets
                         Examples:
                           • '-z +02:00'  '--timezone=-05:00'  '-z +00:00'
+  --messagelength INT   Maximum stored message length in characters (default: 1000).
+                          • Applies to test, rerun attempt and exception messages
+                          • Longer messages are clipped and end in '…'
+                          • 0 stores every message in full
+                          • Only affects newly processed outputs, stored runs keep their messages
+                        Examples:
+                          • '--messagelength 5000'  '--messagelength 0'
 
 database:
   -d PATH, --databasepath PATH

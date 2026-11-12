@@ -135,7 +135,17 @@ Many graphs include enhanced tooltips that display additional information when h
 - **Compare Tests**: Tooltips show the run label, test status, duration, failure messages and the attempt history of re-executed tests.
 - **Notes**: With [notes](notes.md) turned on, the test graphs also show the note and category of a test.
 
-These enhanced tooltips make it easier to understand test results without needing to navigate to individual log files.
+These enhanced tooltips make it easier to understand test results without needing to navigate to individual log files. They shorten long messages; a tooltip that does says **Click the test name for the full message**.
+
+## Full test messages
+
+Click a test name on the test axis of **Test Statistics** (Timeline and Line), **Compare Tests**, **Test Most Failed**, **Test Recent Most Failed**, **Test Most Flaky** or **Test Recent Most Flaky** to see the full messages of that test; in the Bar view of the most failed and most flaky graphs a click on a bar does the same. A point of a timeline still opens the log of its run.
+
+A dialog lists every run of the test in the graph that has a message or a rerun history, newest first: the run, its status, the full message and, for a re-executed test, every attempt with its own message (see [Reruns](reruns.md)).
+
+- Messages are shown as plain text, also a message that starts with `*HTML*`.
+- With `--uselogs` enabled, clicking a run opens its `log.html` at that test.
+- How much of a message is stored is set with [`--messagelength`](/basic-command-line-interface-cli#message-length) (default 1000 characters).
 
 ## Test Messages: tests behind a message
 

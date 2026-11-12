@@ -29,7 +29,7 @@ beforeEach(() => {
     globalThis.document = { getElementById: (id) => controls[id] };
 });
 
-const { get_test_statistics_data, get_compare_statistics_graph_data } = await import('@js/graph_data/statistics.js');
+const { get_test_statistics_data, get_compare_statistics_graph_data, get_test_statistics_rows } = await import('@js/graph_data/statistics.js');
 
 const RERAN = '[{"status": "FAIL", "message": "boom"}, {"status": "PASS", "message": ""}]';
 const test = (run_start, name, status, overrides = {}) => ({
@@ -60,6 +60,18 @@ describe('get_test_statistics_data', () => {
         expect(get_test_statistics_data(data)[0].labels).toEqual(['Always Passes', 'Flips']);
         controls.testTagsSelect.value = 'car';
         expect(get_test_statistics_data(data)[0].labels).toEqual([]);
+    });
+});
+
+describe('get_test_statistics_rows', () => {
+    it('keeps the rows the test statistics graph shows, for the full messages of a test', () => {
+        const data = [
+            test('r1', 'Login', 'fail', { message: 'boom' }),
+            test('r1', 'Login', 'fail', { full_name: 'Web.Admin.Login', tags: '[admin]', message: 'other suite' }),
+        ];
+        expect(get_test_statistics_rows(data)).toHaveLength(2);
+        controls.testTagsSelect.value = 'cart';
+        expect(get_test_statistics_rows(data).map(row => row.message)).toEqual(['boom']);
     });
 });
 

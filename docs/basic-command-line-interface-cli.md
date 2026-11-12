@@ -99,6 +99,24 @@ You only need to re-add those `output.xml` files (with the correct `-z`/`--timez
 
 > Added in RobotDashboard v1.8.0
 
+### Message length
+Test, rerun attempt and exception messages are stored up to a maximum length, so a very large message (a long diff or stack trace) does not bloat the database and the dashboard:
+```bash
+robotdashboard -f ./results --messagelength 5000
+robotdashboard -f ./results --messagelength 0
+```
+- Optional: `--messagelength` sets the maximum number of characters stored per message.
+- Default: `1000`, which keeps nearly every assertion and library error whole.
+- `0` stores every message in full.
+- A longer message is clipped and ends in `…`.
+- The graph tooltips show a shortened message; click a test name in a test graph to see the stored message in full, see [Graphs & Tables](/graphs-tables#full-test-messages).
+
+::: info Messages of runs that are already stored
+The length applies when an output is processed. Runs that are already in the database keep the message they were stored with: before v2.6.0 that was the first 150 characters. Adding the same output again is skipped, so to store a run again with a different length, remove it first (`-r run_start=...` or `-r alias=...`) and then add its `output.xml` again. A run whose `output.xml` is gone keeps its stored messages.
+:::
+
+> Added in RobotDashboard v2.6.0
+
 ## Database
 
 ### Custom database path

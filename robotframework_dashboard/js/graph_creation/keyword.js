@@ -58,6 +58,11 @@ function _build_keyword_most_used_config() {
     return build_most_time_consuming_config("keywordMostUsed", "keyword", "Keyword", _get_keyword_most_filtered_data(), "onlyLastRunKeywordMostUsed", "Most Used", true, (info, name) => `${name}: ran ${info.timesRun} times`);
 }
 
+// the exception message is the label of a bar or row, the tooltip title shortens it
+function exception_tooltip_title(tooltipItems) {
+    return truncate_message(tooltipItems[0]?.label);
+}
+
 function _build_keyword_exceptions_config() {
     const data = get_exceptions_data(settings.graphTypes.keywordExceptionsGraphType, filteredExceptions);
     const graphData = data[0];
@@ -70,6 +75,7 @@ function _build_keyword_exceptions_config() {
         config.options.plugins.legend = { display: false };
         config.options.plugins.tooltip = {
             callbacks: {
+                title: exception_tooltip_title,
                 label: function (tooltipItem) {
                     return callbackData[tooltipItem.label];
                 },
@@ -93,6 +99,7 @@ function _build_keyword_exceptions_config() {
         config = get_graph_config("timeline", graphData, `Top ${limit}`, "Run", "Exception");
         config.options.plugins.tooltip = {
             callbacks: {
+                title: exception_tooltip_title,
                 label: function (context) {
                     const runLabel = get_run_label_by_run_start(callbackData[context.raw.x[0]]);
                     const exceptionLabel = context.raw.y;

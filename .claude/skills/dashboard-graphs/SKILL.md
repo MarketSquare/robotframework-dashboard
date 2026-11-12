@@ -67,6 +67,22 @@ Each section has its own module that wires data modules to chart factory calls:
 - Clicking chart data points opens the corresponding Robot Framework log via `open_log_file` / `open_log_from_label`.
 - Chart color constants (passed/failed/skipped backgrounds and borders) live in `js/variables/chartconfig.js`.
 
+### Clicks on axis labels and bars: `graph_creation/label_click.js`
+
+Chart.js `onClick` only fires inside the chart area, so a click on an axis label needs a plugin. Do not write another one; use these:
+
+| Function | Use |
+|---|---|
+| `apply_label_click(config, open, { axis, labels })` | Calls `open(label)` for a click on an axis label, with a pointer cursor over labels. On the x axis (bar views) it also sets `options.onClick` so the bar opens the same thing. `labels` is for charts without `data.labels` (the scatter/line timeline). A timeline point keeps its own click (the log). |
+| `apply_test_messages_click(config, tests, labelOf, options)` | A test name opens the **Test Messages** modal (`eventlisteners/test_messages_modal.js`): full message, status and attempts of that test in every run of `tests`, newest first. Bar views get the tooltip footer "Click to see the full messages". |
+| `apply_message_tests_click(config, messageTests)` | A message in the Test Messages graph opens the tests that failed with it (`message_tests_modal.js`). |
+
+The plugin reads `chart.data.labelClick`, so it survives `update_chart` (which replaces data and options, not plugins).
+
+**A modal must list what the graph shows.** Feed it the same rows the graph was built from, after the section filters: for test graphs that is `get_test_statistics_rows(filteredTests)` (`graph_data/statistics.js`) or the graph's own filtered array, never raw `filteredTests`. Use `get_test_label` for the label so modal and axis agree when suite paths are off.
+
+**Tooltips stay short.** Messages are stored up to `--messagelength` (default 1000). Cut anything message-like in a tooltip with `truncate_message` (`TOOLTIP_MESSAGE_LENGTH` = 120, attempts 80, `graph_data/helpers.js`), titles included, and point to the full text with a click instead (`TEST_MESSAGES_HINT` in `config_helpers.js`, shown when `has_shortened_message(meta)`).
+
 ---
 
 ## Adding a New Graph (checklist)
@@ -108,7 +124,7 @@ Not part of `graphmetadata.js`: users build them in the builder modal and they a
 | File | Role |
 |---|---|
 | `fields.js` | Field catalog per source (runs/suites/tests/keywords/exceptions + run fields joined on every source), operators per field type, aggregations with their `sums` / `statusSplit` flags |
-| `engine.js` | `run_custom_graph_query(spec, data, {runLabel, rowFilter, suitePaths})` → result table `{xKind, x, xLabels, series[], meta}`; rows normalised once per filtered array (WeakMap cache). `x` and series keys are unique; placeholder groups use ` ` keys, so show `xLabels` / `series[].label`, never the keys |
+| `engine.js` | `run_custom_graph_query(spec, data, {runLabel, rowFilter, suitePaths})` → result table `{xKind, x, xLabels, series[], meta}`; rows normalised once per filtered array (WeakMap cache). `x` and series keys are unique; placeholder groups use `\u0000` keys, so show `xLabels` / `series[].label`, never the keys |
 | `spec.js` | `validate_custom_graph_spec` (never trust a json config: unknown keys, newer `v`, unsafe regexes), `sanitize_custom_graph_spec` (repairs the builder draft after each change), the status-grouping and percent rules, viz types / orders |
 | `presets.js` | Gallery specs; every preset is run by `tests/javascript/customgraphs/spec.test.js` |
 | `viz.js` | Result table → `get_graph_config` config (line/bar/stacked/hbar/donut) or a table |

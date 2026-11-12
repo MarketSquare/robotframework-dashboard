@@ -1327,9 +1327,29 @@
                         </div>
                     </div>
                     <div class="modal-body">
-                        <pre class="message-tests-message" id="messageTestsMessage"></pre>
+                        <pre class="full-message" id="messageTestsMessage"></pre>
                         <div class="mb-2" id="messageTestsSummary"></div>
                         <ul class="list-group" id="messageTestsList"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Messages Modal -->
+        <div class="modal fade" id="testMessagesModal" tabindex="-1" aria-labelledby="testMessagesModalLabel">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content mt-5">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="testMessagesModalLabel">Test Messages</h5>
+                        <div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-auto ms-5"
+                                data-bs-dismiss="modal" id="closeTestMessages">Close</button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="fw-bold text-break" id="testMessagesTest"></div>
+                        <div class="mb-2" id="testMessagesSummary"></div>
+                        <ul class="list-group" id="testMessagesList"></ul>
                     </div>
                 </div>
             </div>

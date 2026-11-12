@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 import pytest
-from robotframework_dashboard.processors import OutputProcessor, ExceptionProcessor
+from robotframework_dashboard.processors import OutputProcessor, ExceptionProcessor, clip_message
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
@@ -190,6 +190,24 @@ def test_exception_processor_end_keyword_ignores_empty_message():
     ep.start_keyword(kw)
     ep.end_keyword(kw)
     assert len(ep._exception_counts) == 0
+
+
+def test_exception_processor_clips_message_to_message_length():
+    ep = ExceptionProcessor(datetime(2025, 1, 1), message_length=10)
+    ep._try_depth = 1
+    kw = _keyword(failed=True, message="a" * 300)
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert ep._exception_counts["a" * 9 + "…"] == 1
+
+
+def test_exception_processor_keeps_long_message_under_default_length():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    kw = _keyword(failed=True, message="a" * 300)
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert ep._exception_counts["a" * 300] == 1
 
 
 def test_exception_processor_aggregates_same_message():
@@ -668,6 +686,130 @@ def test_parse_merged_message_real_chained_reruns(tmp_path):
     assert [a["message"] for a in attempts] == ["attempt 1: <FAIL>", "attempt 2: <FAIL>", ""]
 
 
+def _nested_merged_test_message(tmp_path, retries, later=()):
+    """A rerun pipeline that merges every retry onto the failed run, then merges that already
+    merged result back into the full run (issue #388), then merges any later reruns on top.
+    The first run fails; `retries` and `later` are the statuses of the runs after it."""
+    from io import StringIO
+    from robot import run
+    from robot.api import ExecutionResult
+    from robot.rebot import rebot_cli
+
+    suite = tmp_path / "rerun.robot"
+    suite.write_text(RERUN_SUITE)
+    files = iter(range(1, 100))
+
+    def execute(status, attempt):
+        output = tmp_path / f"output{next(files)}.xml"
+        run(str(suite), output=str(output), log=None, report=None, stdout=StringIO(),
+            variable=[f"STATUS:{status}", f"ATTEMPT:{attempt}"])
+        return output
+
+    def merge(old, new):
+        target = tmp_path / f"merged{next(files)}.xml"
+        rebot_cli(["--merge", "--output", str(target), "--log", "NONE", "--report", "NONE",
+                   "--console", "none", str(old), str(new)], exit=False)
+        return target
+
+    original = execute("FAIL", 1)
+    retried = original
+    for attempt, status in enumerate(retries, start=2):
+        retried = merge(retried, execute(status, attempt))
+    merged = merge(original, retried)
+    for attempt, status in enumerate(later, start=2 + len(retries)):
+        merged = merge(merged, execute(status, attempt))
+    test = ExecutionResult(str(merged)).suite.tests[0]
+    return test.message, test.status
+
+
+def _history(attempts):
+    return [f"{attempt['status']}: {attempt['message']}" for attempt in attempts]
+
+
+def test_parse_merged_message_real_nested_reruns(tmp_path):
+    # the retried result is merged in as the new result, so its history is the new message
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL", "FAIL"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert final_message == "attempt 3: <FAIL>"
+    # the retries started from a copy of the first run: it is one attempt, not two
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "FAIL: attempt 3: <FAIL>"]
+
+
+def test_parse_merged_message_real_nested_rerun_that_passes(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["PASS"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("PASS", "")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "PASS: "]
+
+
+def test_parse_merged_message_real_nested_skipped_rerun(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("FAIL", "attempt 1: <FAIL>")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "SKIP: no environment"]
+
+
+def test_parse_merged_message_real_nested_skipped_rerun_after_retry(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL", "SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("FAIL", "attempt 2: <FAIL>")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "SKIP: no environment"]
+
+
+def test_parse_merged_message_real_nested_history_as_old_result(tmp_path):
+    # a later rerun makes the nested history the old result: rebot renames its labels to "Old"
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL"], later=["PASS"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("PASS", "")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "PASS: "]
+
+
+def test_parse_merged_message_real_skipped_rerun_after_nested_history(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL"], later=["SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("FAIL", "attempt 2: <FAIL>")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "SKIP: no environment"]
+
+
+def test_parse_merged_message_nested_sample_from_issue_388():
+    # the message from the reproduction attached to the issue
+    original = "OriginalFailure: login button was not found"
+    retry = "RetryFailure: expected HTTP 404 but received HTTP 500"
+    banner = '<span class="merge">Test has been re-executed and results merged.</span>'
+    retried = banner + "<hr>" + _merge_block("New", "FAIL", retry) + "<hr>" + _merge_block("Old", "FAIL", original)
+    message = MERGE_HEADER + "<hr>" + _merge_block("New", "FAIL", retried) + "<hr>" + _merge_block("Old", "FAIL", original)
+    final_message, attempts = parse_merged_message(message, "FAIL")
+    assert final_message == retry
+    assert _history(attempts) == [f"FAIL: {original}", f"FAIL: {retry}"]
+
+
+def test_parse_merged_message_keeps_repeated_attempts_outside_a_nested_history():
+    # two reruns failing with the same message are two attempts
+    message = (
+        MERGE_HEADER + "<hr>" + _merge_block("New", "FAIL", "same")
+        + "<hr>" + _merge_block("Old", "FAIL", "same")
+    )
+    final_message, attempts = parse_merged_message(message, "FAIL")
+    assert final_message == "same"
+    assert _history(attempts) == ["FAIL: same", "FAIL: same"]
+
+
+def test_parse_merged_message_falls_back_to_the_blocks_for_an_unexpected_format():
+    # an *HTML* message with its own <br> cannot be read in full: the blocks are still read in order
+    message = (
+        MERGE_HEADER + "<hr>" + _merge_block("New", "PASS")
+        + "<hr>" + _merge_block("Old", "FAIL", "line one<br>line two")
+    )
+    final_message, attempts = parse_merged_message(message, "PASS")
+    assert final_message == ""
+    assert _history(attempts) == ["FAIL: line one", "PASS: "]
+
+
+def test_parse_merged_message_plain_html_message_is_not_a_merge():
+    message = "*HTML* <b>Expected</b> 1 but got 2"
+    assert parse_merged_message(message, "FAIL") == (message, [])
+
+
 class _MergedTest(_NewStyleTest):
     def __init__(self):
         super().__init__()
@@ -683,7 +825,57 @@ def test_test_processor_stores_attempts_and_final_message():
     assert row[8] == ""  # the merge HTML is not stored as the test message
     attempts = json.loads(row[11])
     assert [a["status"] for a in attempts] == ["FAIL", "PASS"]
-    assert len(attempts[0]["message"]) == 150  # attempt messages are truncated like test messages
+    assert attempts[0]["message"] == "x" * 200  # a message under --messagelength is stored whole
+
+
+def test_test_processor_clips_attempt_messages_to_message_length():
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list, message_length=50).visit_test(_MergedTest())
+    attempts = json.loads(test_list[0][11])
+    assert attempts[0]["message"] == "x" * 49 + "…"
+
+
+def test_test_processor_clips_test_message_to_message_length():
+    test = _NewStyleTest()
+    test.message = "a" * 1500
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list).visit_test(test)
+    assert test_list[0][8] == "a" * 999 + "…"  # the default --messagelength of 1000
+
+
+def test_test_processor_keeps_messages_that_differ_after_150_characters_apart():
+    prefix = "x" * 150
+    rows = []
+    for suffix in ("first", "second"):
+        test = _NewStyleTest()
+        test.message = prefix + suffix
+        RF_TestProcessor(datetime(2025, 1, 1), rows).visit_test(test)
+    assert rows[0][8] == prefix + "first"
+    assert rows[1][8] == prefix + "second"
+
+
+def test_test_processor_message_length_zero_keeps_full_message():
+    test = _NewStyleTest()
+    test.message = "b" * 20000
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list, message_length=0).visit_test(test)
+    assert test_list[0][8] == "b" * 20000
+
+
+def test_clip_message():
+    assert clip_message("short", 10) == "short"
+    assert clip_message("exactly10!", 10) == "exactly10!"
+    assert clip_message("eleven char", 10) == "eleven ch…"
+    assert clip_message("anything", 0) == "anything"
+    assert clip_message("", 5) == ""
+
+
+def test_output_processor_passes_message_length_to_tests(xml_output):
+    processor = OutputProcessor(xml_output, message_length=5)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    assert all(len(test[8]) <= 5 for test in data["tests"])
+    assert any(test[8].endswith("…") for test in data["tests"])
 
 
 def test_test_processor_without_rerun_has_empty_attempts():

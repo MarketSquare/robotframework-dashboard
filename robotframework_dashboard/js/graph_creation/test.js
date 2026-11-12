@@ -1,17 +1,18 @@
-import { get_test_statistics_data, get_test_statistics_line_data } from "../graph_data/statistics.js";
+import { get_test_statistics_data, get_test_statistics_line_data, get_test_statistics_rows, get_test_label } from "../graph_data/statistics.js";
 import { get_duration_graph_data } from "../graph_data/duration.js";
 import { get_messages_data } from "../graph_data/messages.js";
 import { get_duration_deviation_data } from "../graph_data/duration_deviation.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { build_tooltip_meta, lookup_tooltip_meta, format_status } from "../graph_data/tooltip_helpers.js";
-import { update_height, format_attempt_lines, get_test_section_predicate, get_run_label_by_run_start } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines, get_test_section_predicate, get_run_label_by_run_start, truncate_message, has_shortened_message } from "../graph_data/helpers.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { inFullscreen, inFullscreenGraph, ignoreSkips, ignoreSkipsRecent, filteredTests } from "../variables/globals.js";
 import { settings, get_run_label } from "../variables/settings.js";
 import { create_chart, update_chart } from "./chart_factory.js";
-import { open_message_tests_modal } from "../eventlisteners/message_tests_modal.js";
+import { apply_message_tests_click, apply_test_messages_click } from "./label_click.js";
 import {
+    TEST_MESSAGES_HINT,
     apply_timeline_defaults,
     build_most_failed_config,
     build_most_flaky_config,
@@ -35,6 +36,7 @@ function _build_test_statistics_timeline_config() {
     const testMetaMap = data[2]
     var config = get_graph_config("timeline", graphData, "", "Run", "Test");
     apply_timeline_defaults(config, runStarts, testMetaMap, "test");
+    apply_test_messages_click(config, get_test_statistics_rows(filteredTests), get_test_label);
     set_chart_note_target("testStatisticsGraph", timeline_test_note_target(testMetaMap, runStarts.map(get_run_label_by_run_start)));
     update_height("testStatisticsVertical", config.data.labels.length, "timeline");
     return config;
@@ -124,6 +126,7 @@ function _build_test_statistics_line_config() {
                             if (point.message) lines.push(`Message: ${truncate_message(point.message)}`);
                             lines.push(...format_attempt_lines(point.attempts));
                             lines.push(...test_note_lines(point));
+                            if (has_shortened_message(point)) lines.push(TEST_MESSAGES_HINT);
                             return lines;
                         },
                     },
@@ -140,6 +143,7 @@ function _build_test_statistics_line_config() {
             }
         }
     };
+    apply_test_messages_click(config, get_test_statistics_rows(filteredTests), get_test_label, { axis: "y", labels: testLabels });
     set_chart_note_target("testStatisticsGraph", (chart, elements) => {
         const point = pointMeta[elements[0].index];
         if (!point) return null;
@@ -175,6 +179,11 @@ function _get_test_most_filtered_data() {
     return filteredTests.filter(get_test_section_predicate());
 }
 
+// the message is the label of a bar or row, the tooltip title shortens it like the other tooltip messages
+function message_tooltip_title(tooltipItems) {
+    return truncate_message(tooltipItems[0]?.label);
+}
+
 function _build_test_messages_config() {
     const data = get_messages_data("test", settings.graphTypes.testMessagesGraphType, _get_test_most_filtered_data());
     const graphData = data[0];
@@ -188,6 +197,7 @@ function _build_test_messages_config() {
         config.options.plugins.legend = { display: false };
         config.options.plugins.tooltip = {
             callbacks: {
+                title: message_tooltip_title,
                 label: function (tooltipItem) {
                     return callbackData[tooltipItem.label];
                 },
@@ -219,50 +229,12 @@ function _build_test_messages_config() {
             },
             autoSkip: false,
         };
+        config.options.plugins.tooltip.callbacks.title = message_tooltip_title;
         config.options.plugins.tooltip.callbacks.footer = () => "Click the message label to list its tests";
     }
     apply_message_tests_click(config, messageTests);
     update_height("testMessagesVertical", config.data.labels.length, settings.graphTypes.testMessagesGraphType);
     return config;
-}
-
-// the message label on the axis under the pointer: the message axis of either view
-function _get_message_label_at(chart, event) {
-    const isTimeline = chart.options.indexAxis === "y";
-    const scale = isTimeline ? chart.scales.y : chart.scales.x;
-    if (!scale || event.x < scale.left || event.x > scale.right || event.y < scale.top || event.y > scale.bottom) return null;
-    // a rotated bar label runs down and to the left from its tick, follow it back up to the axis
-    const rotation = scale.labelRotation * Math.PI / 180;
-    const x = rotation > 0 ? event.x + (event.y - scale.top) / Math.tan(rotation) : event.x;
-    const index = Math.round(scale.getValueForPixel(isTimeline ? event.y : x));
-    return chart.data.labels[index] ?? null;
-}
-
-// Chart.js calls onClick only inside the chart area, the axis labels are outside it. The plugin reads
-// chart.data.messageTests: update_chart keeps the plugins of the chart it updates.
-const messageLabelClickPlugin = {
-    id: "messageLabelClick",
-    afterEvent(chart, args) {
-        const event = args.event;
-        const message = args.inChartArea ? null : _get_message_label_at(chart, event);
-        if (event.type === "mousemove") {
-            const onPoint = args.inChartArea && chart.getActiveElements().length > 0;
-            chart.canvas.style.cursor = message !== null || onPoint ? "pointer" : "default";
-        } else if (event.type === "click" && message !== null && chart.data.messageTests?.[message]) {
-            open_message_tests_modal(message, chart.data.messageTests[message]);
-        }
-    },
-};
-
-// a bar or a message label opens the tests behind the message, a timeline point keeps opening the log of its run
-function apply_message_tests_click(config, messageTests) {
-    config.data.messageTests = messageTests;
-    config.plugins = [messageLabelClickPlugin];
-    if (config.options.indexAxis === "y") return;
-    config.options.onClick = (event, elements, chart) => {
-        const message = elements.length ? chart.data.labels[elements[0].index] : null;
-        if (message !== null && messageTests[message]) open_message_tests_modal(message, messageTests[message]);
-    };
 }
 
 function _build_test_duration_deviation_config() {

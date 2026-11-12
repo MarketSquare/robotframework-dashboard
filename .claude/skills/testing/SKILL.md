@@ -15,6 +15,18 @@ Three tiers. Each has a project script; **never call `pytest`, `vitest`, `robot`
 
 Read the deep reference for the tier you are touching before adding or fixing tests.
 
+## When a run fails in a way the change can't explain
+
+The environment is usually up to date, so don't check it up front. When a failure doesn't fit the change (whole suites or every file red, import errors, tests failing in code you didn't touch), match the symptom here before debugging the code:
+
+| Symptom | Cause | Check | Fix |
+|---|---|---|---|
+| The Docker wrapper fails immediately | Docker is not running | `docker info` | start Docker Desktop |
+| `No keyword with name …` or a library import error (e.g. `SnapshotLibrary`) in every robot suite | robot image older than `requirements-test.txt` | `docker image inspect -f '{{.Created}}' test-dashboard-robot` vs `git log -1 --format=%cI -- requirements-test.txt scripts/docker/test-dashboard-robot.dockerfile` | `bash scripts/docker/create-test-image.sh robot` (~3 min) |
+| The rebot tests in `tests/python` fail (`--console` is not a unique option prefix) | local Robot Framework older than in `requirements-test.txt` | `python -c "import robot; print(robot.__version__)"` | `pip install robotframework==<pinned version>` |
+| Every vitest file fails with `Cannot read properties of undefined (reading 'config')` | working directory has a lower case drive letter (`c:\`, how VS Code starts terminals on Windows), not a broken install | `node -p "process.cwd()"` | `scripts/javascript-tests.sh` corrects it; for a direct `npx vitest` from Git Bash, `cd /C/...` first |
+| vitest cannot find `@vitest/*` packages | `node_modules` out of sync with the lockfile | `npm ls --depth=0` | `npm ci` |
+
 ---
 
 ## Hard rule: Robot tests run in Docker, never locally

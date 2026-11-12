@@ -22,7 +22,7 @@ vi.mock('@js/variables/globals.js', () => ({
     ],
 }));
 
-import { convert_timeline_data, parse_test_attempts, resolve_test_status, format_attempt_lines, count_attempt_flips, get_rerun_summary, group_timeline_values, get_suite_data_exclusion, update_height, is_test_in_suite, get_run_label_by_run_start, truncate_message } from '@js/graph_data/helpers.js';
+import { convert_timeline_data, parse_test_attempts, resolve_test_status, format_attempt_lines, count_attempt_flips, get_rerun_summary, group_timeline_values, get_suite_data_exclusion, update_height, is_test_in_suite, get_run_label_by_run_start, truncate_message, has_shortened_message } from '@js/graph_data/helpers.js';
 import { settings } from '@js/variables/settings.js';
 
 
@@ -147,6 +147,23 @@ describe('truncate_message', () => {
     it('keeps a short message and handles empty values', () => {
         expect(truncate_message('short')).toBe('short');
         expect(truncate_message(null)).toBe('');
+    });
+});
+
+describe('has_shortened_message', () => {
+    it('is true when the tooltip shortens the message', () => {
+        expect(has_shortened_message({ message: 'a'.repeat(121) })).toBe(true);
+        expect(has_shortened_message({ message: 'a'.repeat(120) })).toBe(false);
+    });
+
+    it('is true when the tooltip shortens an attempt message', () => {
+        expect(has_shortened_message({ message: 'short', attempts: [{ status: 'FAIL', message: 'b'.repeat(81) }] })).toBe(true);
+        expect(has_shortened_message({ message: 'short', attempts: [{ status: 'FAIL', message: 'b'.repeat(80) }] })).toBe(false);
+    });
+
+    it('handles a test without a message or attempts', () => {
+        expect(has_shortened_message({})).toBe(false);
+        expect(has_shortened_message({ message: null, attempts: [{ status: 'PASS' }] })).toBe(false);
     });
 });
 

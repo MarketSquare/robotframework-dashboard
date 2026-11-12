@@ -95,14 +95,43 @@ canvas {
   background-color: transparent;
 }
 
-/* the test messages graph lists the tests behind a message in a modal (message_tests_modal.js) */
-.message-tests-message {
+/* a full test message in the message tests and test messages modals (message_tests_modal.js,
+   test_messages_modal.js), the graph tooltips shorten it */
+.full-message {
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 10rem;
   overflow: auto;
 }
 
-#messageTestsList .list-group-item {
+#messageTestsList .list-group-item,
+#testMessagesList .list-group-item {
   user-select: text;
+}
+
+#testMessagesList .full-message {
+  margin-bottom: 0;
+}
+
+.test-message-attempts {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+}
+
+/* the status colors of the graphs */
+.test-status-badge {
+  color: #000;
+}
+
+.test-status-pass {
+  background-color: rgba(151, 189, 97, 0.9);
+}
+
+.test-status-fail {
+  background-color: rgba(206, 62, 1, 0.9);
+  color: #fff;
+}
+
+.test-status-skip {
+  background-color: rgba(254, 216, 79, 0.9);
 }

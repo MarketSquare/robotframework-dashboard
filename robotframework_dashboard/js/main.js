@@ -10,6 +10,7 @@ import { load_data } from "./variables/data.js";
 import { setup_notes } from "./notes/ui.js";
 import { setup_notes_modal } from "./eventlisteners/notes_modal.js";
 import { setup_message_tests_modal } from "./eventlisteners/message_tests_modal.js";
+import { setup_test_messages_modal } from "./eventlisteners/test_messages_modal.js";
 
 // function that triggers all functions that should be executed when the dashboard is loaded first
 // in the correct order!
@@ -25,6 +26,7 @@ async function main() {
     setup_settings_modal();
     setup_notes_modal();
     setup_message_tests_modal();
+    setup_test_messages_modal();
     setup_menu();
     setup_navbar_overflow();
 }

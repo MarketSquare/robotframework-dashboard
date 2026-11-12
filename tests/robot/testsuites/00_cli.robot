@@ -90,6 +90,12 @@ Validate RobotDashboard m
 Validate RobotDashboard messageconfig
     Validate CLI    command=robotdashboard -d messageconfig.db --messageconfig ./example/messageconfig.txt    expected=messageconfig
 
+Validate RobotDashboard messagelength
+    Validate CLI    command=robotdashboard -d messagelength.db --messagelength 5000    expected=messagelength
+
+Validate RobotDashboard messagelength invalid
+    Validate CLI    command=robotdashboard -d messagelength_invalid.db --messagelength=-1    expected=messagelength_invalid
+
 Validate RobotDashboard q
     Validate CLI    command=robotdashboard -d q.db -q 25    expected=quantity
 

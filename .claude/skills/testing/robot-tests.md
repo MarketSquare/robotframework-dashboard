@@ -120,6 +120,17 @@ After regenerating fixtures: rerun **all** robot suites in Docker and refresh th
 3. **Browser**: case in the matching suite; prefer `Validate Section Data` / `Validate Table Data` (recorded like the other snapshots) over a new screenshot. If it needs `Validate Component`, generate the reference screenshot **in Docker** (see below) — screenshots from a Windows host never match.
 4. Run the affected suite in Docker and check the summary line.
 
+**Test data the 18 fixtures don't have** (a very long message, an odd character set, an edge case of one feature): add a small dedicated suite under `tests/robot/resources/<topic>/` (e.g. `long_message/long_message.robot`), run it with `robot` inside the test, and generate a separate dashboard from its `output.xml` (`Generate Dashboard With Long Message` in `general-keywords.resource`). Do not borrow a generated fixture test that happens to look right: its data comes from the generator profiles, can be a `rebot --merge` banner rather than a plain message, and changes when the fixtures are regenerated. Never run `sed` or other bulk replacements over `tests/`: snapshots and expectations of other tests contain the same names.
+
+**Run a new browser test under pabot once before the full suite.** On its own it gets the machine to itself; under `--processes 4` it shares CPU with three others, and timing assumptions (a scroll, a click right after a redraw) break there:
+
+```bash
+rm -f robotdashboard_shared.html robotresults_shared.db
+bash scripts/docker/run-in-robot-container.sh pabot --pabotlib --testlevelsplit --processes 4 --outputdir results tests/robot/testsuites/03_dashboard.robot
+```
+
+A click that has to land on a freshly drawn chart goes in a keyword wrapped in `Wait Until Keyword Succeeds    3x    1s` (see `Click Test Label In Graph`), not behind a `Sleep`.
+
 ---
 
 ## Fixing failing robot tests

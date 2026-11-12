@@ -2,7 +2,9 @@ import { get_most_failed_data } from "../graph_data/failed.js";
 import { get_most_flaky_data } from "../graph_data/flaky.js";
 import { get_most_time_consuming_or_most_used_data } from "../graph_data/time_consuming.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
-import { update_height, format_attempt_lines, get_run_label_by_run_start, truncate_message } from "../graph_data/helpers.js";
+import { update_height, format_attempt_lines, get_run_label_by_run_start, truncate_message, has_shortened_message } from "../graph_data/helpers.js";
+import { get_test_label } from "../graph_data/statistics.js";
+import { apply_test_messages_click } from "./label_click.js";
 import { open_log_file } from "../log.js";
 import { format_duration } from "../common.js";
 import { settings } from "../variables/settings.js";
@@ -42,6 +44,9 @@ function apply_timeline_run_axis(config, runStarts, { labelFn = null, logClick =
     config.data.runStarts = runStarts;
 }
 
+// the last tooltip line of a test whose message the tooltip shortens
+const TEST_MESSAGES_HINT = "Click the test name for the full message";
+
 // tooltip lines of one timeline point; "message" is the test messages graph, which shows no
 // attempts or notes
 function get_timeline_point_lines(meta, dataType) {
@@ -57,6 +62,7 @@ function get_timeline_point_lines(meta, dataType) {
     if (dataType === "test") {
         lines.push(...format_attempt_lines(meta.attempts));
         lines.push(...test_note_lines(meta));
+        if (has_shortened_message(meta)) lines.push(TEST_MESSAGES_HINT);
     }
     return lines;
 }
@@ -104,6 +110,7 @@ function build_most_failed_config(graphKey, dataType, dataLabel, filteredData, i
         config.options.scales.y.ticks.autoSkip = false;
         if (dataType === "test") set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData.map(get_run_label_by_run_start)));
     }
+    if (dataType === "test") apply_test_messages_click(config, filteredData, get_test_label);
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
 }
@@ -127,6 +134,7 @@ function build_most_flaky_config(graphKey, dataType, filteredData, ignoreSkipsVa
         config.options.scales.y.ticks.autoSkip = false;
         set_chart_note_target(`${graphKey}Graph`, timeline_test_note_target(pointMeta, callbackData.map(get_run_label_by_run_start)));
     }
+    apply_test_messages_click(config, filteredData, get_test_label);
     update_height(`${graphKey}Vertical`, config.data.labels.length, graphType);
     return config;
 }
@@ -190,6 +198,7 @@ function build_most_time_consuming_config(graphKey, dataType, dataLabel, filtere
 }
 
 export {
+    TEST_MESSAGES_HINT,
     apply_timeline_defaults,
     apply_timeline_run_axis,
     build_most_failed_config,

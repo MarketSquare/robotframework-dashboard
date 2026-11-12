@@ -7,6 +7,7 @@ from os import getcwd, environ
 from os.path import join, exists
 from typing import NamedTuple
 from .version import __version__
+from .processors import DEFAULT_MESSAGE_LENGTH
 
 _VALID_LOG_TYPES = {"run", "suite", "test", "keyword", "all"}
 
@@ -323,6 +324,21 @@ class ArgumentParser:
                 "Examples:\n"
                 "  • '-z +02:00'  '--timezone=-05:00'  '-z +00:00'\n"
             ),
+            default=None,
+        )
+        input_group.add_argument(
+            "--messagelength",
+            metavar="INT",
+            help=(
+                f"Maximum stored message length in characters (default: {DEFAULT_MESSAGE_LENGTH}).\n"
+                "  • Applies to test, rerun attempt and exception messages\n"
+                "  • Longer messages are clipped and end in '…'\n"
+                "  • 0 stores every message in full\n"
+                "  • Only affects newly processed outputs, stored runs keep their messages\n"
+                "Examples:\n"
+                "  • '--messagelength 5000'  '--messagelength 0'\n"
+            ),
+            dest="message_length",
             default=None,
         )
 
@@ -690,6 +706,19 @@ class ArgumentParser:
                 print(f"  ERROR: --quantity must be at least 1, got {quantity}")
                 exit(1)
 
+        # handles the message length argument
+        message_length = arguments.message_length
+        if message_length is None:
+            message_length = DEFAULT_MESSAGE_LENGTH
+        else:
+            try:
+                message_length = int(message_length)
+            except ValueError:
+                message_length = -1
+            if message_length < 0:
+                print(f"  ERROR: --messagelength must be a whole number of at least 0, got {arguments.message_length}")
+                exit(1)
+
         # handles the timezone argument
         timezone = arguments.timezone
         if timezone is not None and not fullmatch(r"[+-]\d{2}:\d{2}", timezone):
@@ -762,5 +791,6 @@ class ArgumentParser:
             "ssl_keyfile": ssl_keyfile,
             "log_url": arguments.logurl,
             "log_removed": log_removed,
+            "message_length": message_length,
         }
         return dotdict(provided_args)
