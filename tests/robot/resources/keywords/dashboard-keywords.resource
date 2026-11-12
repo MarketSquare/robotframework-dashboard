@@ -26,6 +26,19 @@ Open Dashboard
     New Page    url=file:${ROOT_FOLDER}/robotdashboard_${DASHBOARD_INDEX}.html
     Wait For Dashboard Ready
 
+Open Dashboard With Query
+    [Documentation]    Loads the dashboard with a query string, the way a shared or bookmarked link opens it.
+    [Arguments]    ${query}
+    Go To    url=file:${ROOT_FOLDER}/robotdashboard_${DASHBOARD_INDEX}.html?${query}
+    Wait For Dashboard Ready
+
+Url Query Should Be
+    [Documentation]    The filters are written to the url after the filter pass, so wait for the render first.
+    [Arguments]    ${query}
+    Wait For Dashboard Idle
+    ${search}    Evaluate JavaScript    ${None}    () => window.location.search
+    Should Be Equal    ${search}    ?${query}
+
 Reload Dashboard
     [Documentation]    Reloads the page the way a user would (F5) and re-injects the test-only idle hook,
     ...    which a reload drops. Use to prove that a change survived in localStorage.
