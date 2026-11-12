@@ -26,6 +26,12 @@ rebot --merge --output output.xml original.xml rerun.xml
 
 A second rerun is merged the same way (`rebot --merge --output output.xml original.xml rerun1.xml rerun2.xml`, or merge again on top of an already merged output): every attempt is kept in order.
 
+Pipelines that retry on separate machines often merge in two steps: each machine merges its own retries onto the failed tests it was given, and those merged results are then merged back into the full run (`rebot --merge --output output.xml original.xml retried.xml`). rebot then nests the retry history inside the message of the final merge. robotdashboard reads that nesting too: the test keeps the error of its last attempt, and the attempt history lists every attempt once. The first run, which each retry history starts from, is not counted twice.
+
+::: info Added in v2.6.0
+Earlier versions stored part of the merge text as the message of such a test, and lost the error of its last attempt. Re-add affected outputs to fix their stored messages: remove the run (`-r`) and add the `output.xml` again.
+:::
+
 Then add the merged `output.xml` like any other run:
 
 ```bash

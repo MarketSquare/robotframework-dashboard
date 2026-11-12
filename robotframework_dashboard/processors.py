@@ -15,6 +15,18 @@ from re import compile, DOTALL
 #   <hr><span class="old-status">Old status:</span> <span class="fail">FAIL</span><br>
 #   <span class="old-message">Old message:</span> ...<br>
 # Each further merge prepends its result, so the "old" blocks run newest to oldest.
+#
+# The variant rebot writes when the re-execution was skipped: the original result is
+# kept and the skipped attempt is only mentioned in the message:
+#   *HTML* Test has been re-executed and results merged. Latter result had <span class="skip">SKIP</span>
+#   status and was ignored. Message:\n<skip message><hr>Original message:\n<original message>
+#
+# A message rebot embeds is HTML escaped, or embedded as-is without its *HTML* marker when it
+# was HTML itself. So a result that was already merged nests its whole history inside the
+# message of the next merge: as the skipped attempt's original message, as an old message,
+# and as the *new* message when an already merged result is merged into another output (a
+# rerun pipeline that merges every retry and then merges the retries back into the full run).
+# rebot ends such an embedded history with the <br> of the message that contains it.
 MERGE_HEADER_RE = compile(
     r"^\*HTML\*\s*<span class=\"merge\">(?:Test|Task) has been re-executed and results merged\.</span>"
 )
@@ -23,18 +35,17 @@ MERGE_ATTEMPT_RE = compile(
     r"(?:<span class=\"(?:new|old)-message\">(?:New|Old) message:</span>\s*(.*?)<br>)?",
     DOTALL,
 )
-# The variant rebot writes when the re-execution was skipped: the original result is
-# kept and the skipped attempt is only mentioned in the message:
-#   *HTML* Test has been re-executed and results merged. Latter result had <span class="skip">SKIP</span>
-#   status and was ignored. Message:\n<skip message><hr>Original message:\n<original message>
-# The original message is HTML escaped, or embedded as-is without its *HTML* marker when it
-# was HTML itself (e.g. the merge message of an earlier rerun).
-MERGE_SKIPPED_RE = compile(
-    r"^\*HTML\*\s*(?:Test|Task) has been re-executed and results merged\. Latter result had "
-    r"<span class=\"skip\">SKIP</span> status and was ignored\. Message:\n(.*?)"
-    r"(?:<hr>Original message:\n(.*))?$",
-    DOTALL,
+MERGE_HTML_RE = compile(r"\*HTML\*\s*")
+MERGE_BANNER_RE = compile(r"<span class=\"merge\">(?:Test|Task) has been re-executed and results merged\.</span>")
+MERGE_SKIPPED_HEAD_RE = compile(
+    r"(?:Test|Task) has been re-executed and results merged\. Latter result had "
+    r"<span class=\"skip\">SKIP</span> status and was ignored\. Message:\n"
 )
+MERGE_ENTRY_RE = compile(
+    r"<hr><span class=\"(?:new|old)-status\">(?:New|Old) status:</span>\s*<span class=\"\w+\">(\w+)</span><br>"
+)
+MERGE_ENTRY_MESSAGE_RE = compile(r"<span class=\"(?:new|old)-message\">(?:New|Old) message:</span>\s*")
+MERGE_SKIPPED_ORIGINAL = "<hr>Original message:\n"
 
 
 # the default --messagelength: long enough for nearly every assertion and library error, short
@@ -54,30 +65,77 @@ GENERATED_HEADER_BYTES = 65536
 GENERATED_RE = compile(r'<robot\b[^>]*?\bgenerated="([^"]+)"')
 
 
-def _parse_original_message(original: str, status: str):
-    """Parse the original message embedded in a skipped-rerun message, restoring the *HTML*
-    marker rebot stripped so an earlier merge history is still recognised"""
-    as_html = f"*HTML* {original}"
-    if MERGE_HEADER_RE.match(as_html) or MERGE_SKIPPED_RE.match(as_html):
-        return parse_merged_message(as_html, status)
-    return unescape(original.strip()), []
+class _MergeMessageParser:
+    """Reads a `rebot --merge` message from left to right, following the nesting rebot writes.
 
-
-def parse_merged_message(message: str, status: str):
-    """Split a `rebot --merge` message into the final message and the attempt history.
-
-    Returns (message, attempts) where attempts is a list of {"status", "message"}
-    dicts from the first attempt to the last, or an empty list when the message is
-    not a merge message.
+    Every read_* method takes the position to start at and returns (message, attempts, end):
+    the effective message, the attempts oldest first (None for a plain message) and the
+    position after what it read. A message that does not follow the format raises ValueError.
     """
-    skipped = MERGE_SKIPPED_RE.match(message)
-    if skipped:
-        skip_message, previous = skipped.group(1), skipped.group(2) or ""
-        previous_message, attempts = _parse_original_message(previous, status)
-        if not attempts:
-            attempts = [{"status": status, "message": previous_message}]
-        attempts.append({"status": "SKIP", "message": unescape(skip_message.strip())})
-        return previous_message, attempts
+
+    def __init__(self, text: str):
+        self.text = text
+
+    def read_message(self, start: int, status: str, to_end: bool):
+        """A message: an embedded merge history, a skipped-rerun message, or plain text that
+        runs up to the <br> rebot closes it with (or to the end of the whole message)"""
+        banner = MERGE_BANNER_RE.match(self.text, start)
+        if banner:
+            return self.read_merged(banner.end())
+        skipped = MERGE_SKIPPED_HEAD_RE.match(self.text, start)
+        if skipped:
+            return self.read_skipped(skipped.end(), status, to_end)
+        end = len(self.text) if to_end else self.text.find("<br>", start)
+        if end == -1:
+            raise ValueError("message without its closing <br>")
+        return unescape(self.text[start:end].strip()), None, end
+
+    def read_merged(self, start: int):
+        """The status and message blocks after a merge banner, newest first"""
+        entries = []
+        position = start
+        while entry := MERGE_ENTRY_RE.match(self.text, position):
+            status, position = entry.group(1), entry.end()
+            message, attempts = "", None
+            message_header = MERGE_ENTRY_MESSAGE_RE.match(self.text, position)
+            if message_header:
+                message, attempts, position = self.read_message(message_header.end(), status, to_end=False)
+                if not self.text.startswith("<br>", position):
+                    raise ValueError("message block without its closing <br>")
+                position += len("<br>")
+            entries.append((status, message, attempts))
+        if not entries:
+            raise ValueError("merge banner without status blocks")
+        history = []
+        for status, message, attempts in reversed(entries):
+            if attempts is None:
+                history.append({"status": status, "message": message})
+                continue
+            # an embedded history starts from a copy of the result it was merged into (the retries
+            # began from the failed tests of that run): the same attempt, not a new one
+            if history and history[-1] == attempts[0]:
+                attempts = attempts[1:]
+            history.extend(attempts)
+        return entries[0][1], history, position
+
+    def read_skipped(self, start: int, status: str, to_end: bool):
+        """A skipped rerun: the skip message, then the original result that stayed in effect"""
+        original_at = self.text.find(MERGE_SKIPPED_ORIGINAL, start)
+        stop = len(self.text) if to_end else self.text.find("<br>", start)
+        if original_at != -1 and (stop == -1 or original_at < stop):
+            skip_message = self.text[start:original_at]
+            message, attempts, position = self.read_message(original_at + len(MERGE_SKIPPED_ORIGINAL), status, to_end)
+        elif stop != -1:
+            skip_message, message, attempts, position = self.text[start:stop], "", None, stop
+        else:
+            raise ValueError("skip message without its closing <br>")
+        attempts = attempts if attempts is not None else [{"status": status, "message": message}]
+        return message, attempts + [{"status": "SKIP", "message": unescape(skip_message.strip())}], position
+
+
+def _parse_merge_blocks(message: str):
+    """The previous, flat reading of a merge message: every status block in the order written.
+    Used when a message does not follow the format (e.g. an *HTML* message with its own <br>)."""
     if not MERGE_HEADER_RE.match(message):
         return message, []
     attempts = [
@@ -88,6 +146,28 @@ def parse_merged_message(message: str, status: str):
         return message, []
     attempts.reverse()
     return attempts[-1]["message"], attempts
+
+
+def parse_merged_message(message: str, status: str):
+    """Split a `rebot --merge` message into the final message and the attempt history.
+
+    Returns (message, attempts) where attempts is a list of {"status", "message"}
+    dicts from the first attempt to the last, or an empty list when the message is
+    not a merge message.
+    """
+    html = MERGE_HTML_RE.match(message)
+    if not html:
+        return message, []
+    try:
+        final_message, attempts, end = _MergeMessageParser(message).read_message(html.end(), status, to_end=True)
+    except ValueError:
+        return _parse_merge_blocks(message)
+    if message[end:].strip():
+        # stopped before the end: part of the history would be lost
+        return _parse_merge_blocks(message)
+    if attempts is None:
+        return message, []
+    return final_message, attempts
 
 
 def get_suite_start_time(suite: TestSuite):

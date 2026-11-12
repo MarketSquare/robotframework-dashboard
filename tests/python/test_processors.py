@@ -686,6 +686,130 @@ def test_parse_merged_message_real_chained_reruns(tmp_path):
     assert [a["message"] for a in attempts] == ["attempt 1: <FAIL>", "attempt 2: <FAIL>", ""]
 
 
+def _nested_merged_test_message(tmp_path, retries, later=()):
+    """A rerun pipeline that merges every retry onto the failed run, then merges that already
+    merged result back into the full run (issue #388), then merges any later reruns on top.
+    The first run fails; `retries` and `later` are the statuses of the runs after it."""
+    from io import StringIO
+    from robot import run
+    from robot.api import ExecutionResult
+    from robot.rebot import rebot_cli
+
+    suite = tmp_path / "rerun.robot"
+    suite.write_text(RERUN_SUITE)
+    files = iter(range(1, 100))
+
+    def execute(status, attempt):
+        output = tmp_path / f"output{next(files)}.xml"
+        run(str(suite), output=str(output), log=None, report=None, stdout=StringIO(),
+            variable=[f"STATUS:{status}", f"ATTEMPT:{attempt}"])
+        return output
+
+    def merge(old, new):
+        target = tmp_path / f"merged{next(files)}.xml"
+        rebot_cli(["--merge", "--output", str(target), "--log", "NONE", "--report", "NONE",
+                   "--console", "none", str(old), str(new)], exit=False)
+        return target
+
+    original = execute("FAIL", 1)
+    retried = original
+    for attempt, status in enumerate(retries, start=2):
+        retried = merge(retried, execute(status, attempt))
+    merged = merge(original, retried)
+    for attempt, status in enumerate(later, start=2 + len(retries)):
+        merged = merge(merged, execute(status, attempt))
+    test = ExecutionResult(str(merged)).suite.tests[0]
+    return test.message, test.status
+
+
+def _history(attempts):
+    return [f"{attempt['status']}: {attempt['message']}" for attempt in attempts]
+
+
+def test_parse_merged_message_real_nested_reruns(tmp_path):
+    # the retried result is merged in as the new result, so its history is the new message
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL", "FAIL"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert final_message == "attempt 3: <FAIL>"
+    # the retries started from a copy of the first run: it is one attempt, not two
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "FAIL: attempt 3: <FAIL>"]
+
+
+def test_parse_merged_message_real_nested_rerun_that_passes(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["PASS"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("PASS", "")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "PASS: "]
+
+
+def test_parse_merged_message_real_nested_skipped_rerun(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("FAIL", "attempt 1: <FAIL>")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "SKIP: no environment"]
+
+
+def test_parse_merged_message_real_nested_skipped_rerun_after_retry(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL", "SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("FAIL", "attempt 2: <FAIL>")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "SKIP: no environment"]
+
+
+def test_parse_merged_message_real_nested_history_as_old_result(tmp_path):
+    # a later rerun makes the nested history the old result: rebot renames its labels to "Old"
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL"], later=["PASS"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("PASS", "")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "PASS: "]
+
+
+def test_parse_merged_message_real_skipped_rerun_after_nested_history(tmp_path):
+    message, status = _nested_merged_test_message(tmp_path, ["FAIL"], later=["SKIP"])
+    final_message, attempts = parse_merged_message(message, status)
+    assert (status, final_message) == ("FAIL", "attempt 2: <FAIL>")
+    assert _history(attempts) == ["FAIL: attempt 1: <FAIL>", "FAIL: attempt 2: <FAIL>", "SKIP: no environment"]
+
+
+def test_parse_merged_message_nested_sample_from_issue_388():
+    # the message from the reproduction attached to the issue
+    original = "OriginalFailure: login button was not found"
+    retry = "RetryFailure: expected HTTP 404 but received HTTP 500"
+    banner = '<span class="merge">Test has been re-executed and results merged.</span>'
+    retried = banner + "<hr>" + _merge_block("New", "FAIL", retry) + "<hr>" + _merge_block("Old", "FAIL", original)
+    message = MERGE_HEADER + "<hr>" + _merge_block("New", "FAIL", retried) + "<hr>" + _merge_block("Old", "FAIL", original)
+    final_message, attempts = parse_merged_message(message, "FAIL")
+    assert final_message == retry
+    assert _history(attempts) == [f"FAIL: {original}", f"FAIL: {retry}"]
+
+
+def test_parse_merged_message_keeps_repeated_attempts_outside_a_nested_history():
+    # two reruns failing with the same message are two attempts
+    message = (
+        MERGE_HEADER + "<hr>" + _merge_block("New", "FAIL", "same")
+        + "<hr>" + _merge_block("Old", "FAIL", "same")
+    )
+    final_message, attempts = parse_merged_message(message, "FAIL")
+    assert final_message == "same"
+    assert _history(attempts) == ["FAIL: same", "FAIL: same"]
+
+
+def test_parse_merged_message_falls_back_to_the_blocks_for_an_unexpected_format():
+    # an *HTML* message with its own <br> cannot be read in full: the blocks are still read in order
+    message = (
+        MERGE_HEADER + "<hr>" + _merge_block("New", "PASS")
+        + "<hr>" + _merge_block("Old", "FAIL", "line one<br>line two")
+    )
+    final_message, attempts = parse_merged_message(message, "PASS")
+    assert final_message == ""
+    assert _history(attempts) == ["FAIL: line one", "PASS: "]
+
+
+def test_parse_merged_message_plain_html_message_is_not_a_merge():
+    message = "*HTML* <b>Expected</b> 1 but got 2"
+    assert parse_merged_message(message, "FAIL") == (message, [])
+
+
 class _MergedTest(_NewStyleTest):
     def __init__(self):
         super().__init__()
