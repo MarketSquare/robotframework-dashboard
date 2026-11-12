@@ -144,7 +144,8 @@ function get_test_status_config(statusName, markRerun) {
     return { ...config, borderColor: rerunBorderColor, borderWidth: rerunBorderWidth };
 }
 
-function _get_test_label(test) {
+// the label of a test in the test graphs: its name, or its full name with the suite paths switch on
+function get_test_label(test) {
     if (settings.menu.dashboard) {
         return settings.switch.suitePathsTestSection ? test.full_name : test.name;
     } else if (settings.menu.compare) {
@@ -164,6 +165,13 @@ function _should_skip_test(test, filters) {
     return false;
 }
 
+// the test rows the test statistics graphs show: the test section (or compare) filters applied, the
+// full messages of a test are looked up in these
+function get_test_statistics_rows(filteredTests) {
+    const filters = _get_test_filters();
+    return filteredTests.filter(test => !_should_skip_test(test, filters));
+}
+
 function get_test_statistics_data(filteredTests) {
     const filters = _get_test_filters();
     const [runStarts, datasets] = [[], []];
@@ -174,7 +182,7 @@ function get_test_statistics_data(filteredTests) {
     const runAxisByRunStart = new Map();
     for (const test of filteredTests) {
         if (_should_skip_test(test, filters)) continue;
-        const testLabel = _get_test_label(test);
+        const testLabel = get_test_label(test);
         if (!seenLabels.has(testLabel)) {
             seenLabels.add(testLabel);
             labels.push(testLabel);
@@ -262,7 +270,7 @@ function get_test_statistics_line_data(filteredTests) {
 
     for (const test of filteredTests) {
         if (_should_skip_test(test, filters)) continue;
-        const testLabel = _get_test_label(test);
+        const testLabel = get_test_label(test);
         const attempts = parse_test_attempts(test);
         const resolvedStatus = resolve_test_status(test, attempts, filters.rerunView);
         const statusName = resolvedStatus === "PASS" ? "Passed" : resolvedStatus === "FAIL" ? "Failed" : "Skipped";
@@ -380,5 +388,7 @@ export {
     get_statistics_graph_data,
     get_test_statistics_data,
     get_test_statistics_line_data,
+    get_test_statistics_rows,
+    get_test_label,
     get_compare_statistics_graph_data
 };

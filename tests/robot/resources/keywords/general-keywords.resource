@@ -87,6 +87,18 @@ Generate Dashboard With Merged Output
     ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db ${files} -n robotdashboard_${DASHBOARD_INDEX}.html -j ${CURDIR}/../test_config.json
     Log    ${output}
 
+Generate Dashboard With Long Message
+    [Documentation]    Generates a dashboard with one run whose test fails with a 1529 character message,
+    ...    longer than the default --messagelength of 1000.
+    ${index}    Get Dashboard Index
+    Release Lock    name=dashboard_index
+    VAR    ${DASHBOARD_INDEX}    ${index}    scope=test
+    ${long}    Set Variable    ${OUTPUT_DIR}/long_message_${DASHBOARD_INDEX}.xml
+    ${output}    Run    command=robot --output ${long} --log NONE --report NONE --console none ${CURDIR}/../long_message/long_message.robot
+    Log    ${output}
+    ${output}    Run    command=robotdashboard -d robotresults_${DASHBOARD_INDEX}.db -o ${long} -n robotdashboard_${DASHBOARD_INDEX}.html -j ${CURDIR}/../test_config.json
+    Log    ${output}
+
 Remove Database And Dashboard
     ${files}    List Files In Directory    path=${CURDIR}/../../../..
     FOR    ${file}    IN    @{files}

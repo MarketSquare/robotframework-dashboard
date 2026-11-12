@@ -41,6 +41,7 @@ def main():
         arguments.log_url,
         arguments.custom_filters,
         arguments.log_removed,
+        arguments.message_length,
     )
     # If arguments.start_server is provided override some required args
     if arguments.start_server:

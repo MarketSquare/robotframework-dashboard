@@ -223,13 +223,23 @@ function get_rerun_summary(tests) {
     return summary;
 }
 
-// function to format the attempt history for a tooltip
-function truncate_message(message, max = 120) {
+// the tooltips shorten messages to keep them readable, the test messages modal shows them in full
+const TOOLTIP_MESSAGE_LENGTH = 120;
+const TOOLTIP_ATTEMPT_MESSAGE_LENGTH = 80;
+
+function truncate_message(message, max = TOOLTIP_MESSAGE_LENGTH) {
     const text = String(message ?? "");
     return text.length > max ? `${text.substring(0, max)}...` : text;
 }
 
-function format_attempt_lines(attempts, maxMessageLength = 80) {
+// whether the tooltip of a test shortens its message or one of its attempt messages
+function has_shortened_message(meta) {
+    return String(meta.message ?? "").length > TOOLTIP_MESSAGE_LENGTH
+        || (meta.attempts ?? []).some(attempt => String(attempt.message ?? "").length > TOOLTIP_ATTEMPT_MESSAGE_LENGTH);
+}
+
+// function to format the attempt history for a tooltip
+function format_attempt_lines(attempts, maxMessageLength = TOOLTIP_ATTEMPT_MESSAGE_LENGTH) {
     if (!attempts || attempts.length === 0) return [];
     const lines = [`Attempts: ${attempts.map(attempt => attempt.status).join(" → ")}`];
     attempts.forEach((attempt, index) => {
@@ -256,6 +266,7 @@ export {
     resolve_test_status,
     format_attempt_lines,
     truncate_message,
+    has_shortened_message,
     count_attempt_flips,
     get_rerun_summary
 };

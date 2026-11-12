@@ -37,6 +37,18 @@ MERGE_SKIPPED_RE = compile(
 )
 
 
+# the default --messagelength: long enough for nearly every assertion and library error, short
+# enough that large diffs and stack traces do not bloat the database and the dashboard
+DEFAULT_MESSAGE_LENGTH = 1000
+
+
+def clip_message(message: str, length: int):
+    """Clip a message to at most `length` characters, ending a clipped one in an ellipsis; 0 keeps it whole"""
+    if length <= 0 or len(message) <= length:
+        return message
+    return message[: length - 1] + "…"
+
+
 # the <robot> element is on the second line; the limit only guards against a file without newlines
 GENERATED_HEADER_BYTES = 65536
 GENERATED_RE = compile(r'<robot\b[^>]*?\bgenerated="([^"]+)"')
@@ -92,8 +104,9 @@ def get_suite_start_time(suite: TestSuite):
 class OutputProcessor:
     """This class creates an output processor that collects all the relevant data for the database"""
 
-    def __init__(self, output_path: Path):
+    def __init__(self, output_path: Path, message_length: int = DEFAULT_MESSAGE_LENGTH):
         self.output_path = output_path
+        self.message_length = message_length
         self._execution_result = None
 
     @property
@@ -144,9 +157,9 @@ class OutputProcessor:
         run_list, suite_list, test_list, keyword_list = [], [], [], []
         self.execution_result.visit(RunProcessor(self.generation_time, run_list))
         self.execution_result.visit(SuiteProcessor(self.generation_time, suite_list))
-        self.execution_result.visit(TestProcessor(self.generation_time, test_list))
+        self.execution_result.visit(TestProcessor(self.generation_time, test_list, self.message_length))
         # one walk over all keywords for both, it is the largest part of the visiting time
-        exception_processor = ExceptionProcessor(self.generation_time)
+        exception_processor = ExceptionProcessor(self.generation_time, self.message_length)
         self.execution_result.visit(
             KeywordWalk(KeywordProcessor(self.generation_time, keyword_list), exception_processor)
         )
@@ -337,9 +350,10 @@ class SuiteProcessor(ResultVisitor):
 class TestProcessor(ResultVisitor):
     """Processer to get the test data"""
 
-    def __init__(self, run_time: datetime, test_list: list):
+    def __init__(self, run_time: datetime, test_list: list, message_length: int = DEFAULT_MESSAGE_LENGTH):
         self.test_list = test_list
         self.run_time = run_time
+        self.message_length = message_length
 
     def visit_keyword(self, keyword: Keyword):
         """Suite setups and teardowns hold no test data"""
@@ -362,7 +376,7 @@ class TestProcessor(ResultVisitor):
         status = "PASS" if test.passed else "FAIL" if test.failed else "SKIP"
         message, attempts = parse_merged_message(test.message, status)
         for attempt in attempts:
-            attempt["message"] = attempt["message"][:150]
+            attempt["message"] = clip_message(attempt["message"], self.message_length)
 
         self.test_list.append(
             (
@@ -374,7 +388,7 @@ class TestProcessor(ResultVisitor):
                 test.skipped,
                 elapsed_time,
                 start_time,
-                message[:150],
+                clip_message(message, self.message_length),
                 # joined without spaces after the comma, spaces inside a tag are kept
                 f"[{','.join(test.tags)}]",
                 test.id,
@@ -456,8 +470,9 @@ class KeywordWalk(ResultVisitor):
 class ExceptionProcessor(ResultVisitor):
     """Processor to collect exception messages from keywords inside TRY/EXCEPT blocks"""
 
-    def __init__(self, run_time: datetime):
+    def __init__(self, run_time: datetime, message_length: int = DEFAULT_MESSAGE_LENGTH):
         self.run_time = run_time
+        self.message_length = message_length
         self._try_depth = 0
         self._exception_counts = Counter()
         self._child_failed = []
@@ -476,7 +491,7 @@ class ExceptionProcessor(ResultVisitor):
     def end_keyword(self, keyword: Keyword):
         child_already_counted = self._child_failed.pop()
         if self._try_depth > 0 and keyword.failed and keyword.message and not child_already_counted:
-            self._exception_counts[keyword.message[:150]] += 1
+            self._exception_counts[clip_message(keyword.message, self.message_length)] += 1
         if self._child_failed and keyword.failed:
             self._child_failed[-1] = True
 

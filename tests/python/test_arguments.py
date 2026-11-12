@@ -133,6 +133,7 @@ def _make_namespace(**kwargs):
         "logurl": None,
         "custom_filters": None,
         "logremoved": None,
+        "message_length": None,
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
@@ -344,6 +345,28 @@ def test_process_arguments_quantity_custom():
     assert int(result.quantity) == 50
 
 
+def test_process_arguments_message_length_default():
+    result = ArgumentParser()._process_arguments(_make_namespace())
+    assert result.message_length == 1000
+
+
+def test_process_arguments_message_length_custom():
+    result = ArgumentParser()._process_arguments(_make_namespace(message_length="5000"))
+    assert result.message_length == 5000
+
+
+def test_process_arguments_message_length_zero_means_unlimited():
+    result = ArgumentParser()._process_arguments(_make_namespace(message_length="0"))
+    assert result.message_length == 0
+
+
+@pytest.mark.parametrize("value", ["-1", "abc", "1.5"])
+def test_process_arguments_message_length_invalid_exits(value, capsys):
+    with pytest.raises(SystemExit):
+        ArgumentParser()._process_arguments(_make_namespace(message_length=value))
+    assert "--messagelength must be a whole number of at least 0" in capsys.readouterr().out
+
+
 def test_process_arguments_timezone_provided():
     args = _make_namespace(timezone="+02:00")
     result = ArgumentParser()._process_arguments(args)
@@ -389,6 +412,7 @@ def test_process_arguments_returns_all_keys():
         "message_config", "quantity", "use_logs", "offline_dependencies",
         "force_json_config", "project_version", "no_vacuum", "timezone",
         "no_autoupdate", "ssl_certfile", "ssl_keyfile", "log_url",
+        "message_length",
     }
     for key in expected_keys:
         assert key in result, f"Missing key: {key}"

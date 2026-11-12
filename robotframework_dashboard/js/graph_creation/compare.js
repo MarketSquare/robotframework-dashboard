@@ -1,10 +1,11 @@
-import { get_test_statistics_data, get_compare_statistics_graph_data } from "../graph_data/statistics.js";
+import { get_test_statistics_data, get_compare_statistics_graph_data, get_test_statistics_rows, get_test_label } from "../graph_data/statistics.js";
 import { get_compare_suite_duration_data } from "../graph_data/duration.js";
 import { get_graph_config } from "../graph_data/graph_config.js";
 import { update_height, get_run_label_by_run_start } from "../graph_data/helpers.js";
 import { filteredRuns, filteredSuites, filteredTests } from "../variables/globals.js";
 import { create_chart, update_chart } from "./chart_factory.js";
 import { apply_timeline_defaults } from "./config_helpers.js";
+import { apply_test_messages_click } from "./label_click.js";
 import { set_chart_note_target, timeline_test_note_target } from "../notes/chart_notes.js";
 
 function _build_compare_statistics_config() {
@@ -26,6 +27,7 @@ function _build_compare_tests_config() {
     const testMetaMap = data[2]
     var config = get_graph_config("timeline", graphData, "", "Run", "Test");
     apply_timeline_defaults(config, runStarts, testMetaMap, "test");
+    apply_test_messages_click(config, get_test_statistics_rows(filteredTests), get_test_label);
     set_chart_note_target("compareTestsGraph", timeline_test_note_target(testMetaMap, runStarts.map(get_run_label_by_run_start)));
     update_height("compareTestsVertical", config.data.labels.length, "timeline");
     return config;

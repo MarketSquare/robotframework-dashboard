@@ -1,4 +1,4 @@
-from .processors import OutputProcessor
+from .processors import OutputProcessor, DEFAULT_MESSAGE_LENGTH
 from .database import DatabaseProcessor
 from .dashboard import DashboardGenerator
 from os.path import basename, exists, join, abspath
@@ -37,6 +37,7 @@ class RobotDashboard:
         log_url: Optional[str] = None,
         custom_filters: str = "",
         log_removed: Optional[LogRemovedConfig] = None,
+        message_length: int = DEFAULT_MESSAGE_LENGTH,
     ):
         """Sets the parameters provided in the command line"""
         self.database_path = database_path
@@ -61,6 +62,7 @@ class RobotDashboard:
         self.log_url = log_url
         self.custom_filters = custom_filters
         self.log_removed = log_removed
+        self.message_length = message_length
 
     def initialize_database(self, suppress=True):
         """Function that initializes the database if it does not exist
@@ -175,7 +177,7 @@ class RobotDashboard:
         start = time()
         console = self._print_console(f"  Processing output XML '{output_basename}'")
 
-        outputProcessor = OutputProcessor(output_path)
+        outputProcessor = OutputProcessor(output_path, self.message_length)
         run_start = outputProcessor.get_run_start()
         project_version = next(
             (tag.removeprefix("version_") for tag in tags if tag.startswith("version_")),

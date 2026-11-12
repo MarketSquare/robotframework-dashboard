@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 import pytest
-from robotframework_dashboard.processors import OutputProcessor, ExceptionProcessor
+from robotframework_dashboard.processors import OutputProcessor, ExceptionProcessor, clip_message
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "robot" / "resources" / "outputs"
 SAMPLE_XML = sorted(OUTPUTS_DIR.glob("output-*.xml"))[0]
@@ -190,6 +190,24 @@ def test_exception_processor_end_keyword_ignores_empty_message():
     ep.start_keyword(kw)
     ep.end_keyword(kw)
     assert len(ep._exception_counts) == 0
+
+
+def test_exception_processor_clips_message_to_message_length():
+    ep = ExceptionProcessor(datetime(2025, 1, 1), message_length=10)
+    ep._try_depth = 1
+    kw = _keyword(failed=True, message="a" * 300)
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert ep._exception_counts["a" * 9 + "…"] == 1
+
+
+def test_exception_processor_keeps_long_message_under_default_length():
+    ep = ExceptionProcessor(datetime(2025, 1, 1))
+    ep._try_depth = 1
+    kw = _keyword(failed=True, message="a" * 300)
+    ep.start_keyword(kw)
+    ep.end_keyword(kw)
+    assert ep._exception_counts["a" * 300] == 1
 
 
 def test_exception_processor_aggregates_same_message():
@@ -683,7 +701,57 @@ def test_test_processor_stores_attempts_and_final_message():
     assert row[8] == ""  # the merge HTML is not stored as the test message
     attempts = json.loads(row[11])
     assert [a["status"] for a in attempts] == ["FAIL", "PASS"]
-    assert len(attempts[0]["message"]) == 150  # attempt messages are truncated like test messages
+    assert attempts[0]["message"] == "x" * 200  # a message under --messagelength is stored whole
+
+
+def test_test_processor_clips_attempt_messages_to_message_length():
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list, message_length=50).visit_test(_MergedTest())
+    attempts = json.loads(test_list[0][11])
+    assert attempts[0]["message"] == "x" * 49 + "…"
+
+
+def test_test_processor_clips_test_message_to_message_length():
+    test = _NewStyleTest()
+    test.message = "a" * 1500
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list).visit_test(test)
+    assert test_list[0][8] == "a" * 999 + "…"  # the default --messagelength of 1000
+
+
+def test_test_processor_keeps_messages_that_differ_after_150_characters_apart():
+    prefix = "x" * 150
+    rows = []
+    for suffix in ("first", "second"):
+        test = _NewStyleTest()
+        test.message = prefix + suffix
+        RF_TestProcessor(datetime(2025, 1, 1), rows).visit_test(test)
+    assert rows[0][8] == prefix + "first"
+    assert rows[1][8] == prefix + "second"
+
+
+def test_test_processor_message_length_zero_keeps_full_message():
+    test = _NewStyleTest()
+    test.message = "b" * 20000
+    test_list = []
+    RF_TestProcessor(datetime(2025, 1, 1), test_list, message_length=0).visit_test(test)
+    assert test_list[0][8] == "b" * 20000
+
+
+def test_clip_message():
+    assert clip_message("short", 10) == "short"
+    assert clip_message("exactly10!", 10) == "exactly10!"
+    assert clip_message("eleven char", 10) == "eleven ch…"
+    assert clip_message("anything", 0) == "anything"
+    assert clip_message("", 5) == ""
+
+
+def test_output_processor_passes_message_length_to_tests(xml_output):
+    processor = OutputProcessor(xml_output, message_length=5)
+    processor.get_run_start()
+    data = processor.get_output_data()
+    assert all(len(test[8]) <= 5 for test in data["tests"])
+    assert any(test[8].endswith("…") for test in data["tests"])
 
 
 def test_test_processor_without_rerun_has_empty_attempts():

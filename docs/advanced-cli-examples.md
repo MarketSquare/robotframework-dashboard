@@ -139,6 +139,7 @@ It is especially useful for grouping recurring errors with changing error messag
 - By default, each message is grouped **only when it is an exact match**.
 - Using placeholders enables grouping messages that follow the same pattern, even when certain values differ.
 - Placeholder values are not visible in the dashboard graphs.
+- Messages are compared as stored, up to [`--messagelength`](/basic-command-line-interface-cli#message-length) characters (default 1000). Messages that only differ after that length are grouped; use a placeholder such as `${details}` at the end of a line to group messages that only share their start.
 
 Example `message_config.txt` contents:
 

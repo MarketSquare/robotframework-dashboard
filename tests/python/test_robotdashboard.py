@@ -37,6 +37,15 @@ def _make_rd(tmp_path, **kwargs):
     return RobotDashboard(**defaults)
 
 
+def test_process_outputs_uses_message_length(tmp_path):
+    rd = _make_rd(tmp_path, message_length=5)
+    rd.initialize_database()
+    rd.process_outputs(output_file_info_list=[[SAMPLE_XML, []]])
+    with rd._open_database():
+        messages = [test["message"] for test in rd.database.get_data()["tests"]]
+    assert messages and all(len(message) <= 5 for message in messages)
+
+
 def test_init_stores_attributes(tmp_path):
     rd = _make_rd(tmp_path)
     assert rd.database_path == tmp_path / "test.db"

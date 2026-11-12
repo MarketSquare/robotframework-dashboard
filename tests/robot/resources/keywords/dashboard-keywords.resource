@@ -1122,6 +1122,41 @@ Close Message Tests Modal
     Click    selector=id=closeMessageTests
     Wait For Elements State    selector=id=messageTestsModal    state=hidden    timeout=10s
 
+Click Test Label In Graph
+    [Documentation]    Clicks the label of a test on the test axis of a timeline or scatter graph, which opens the
+    ...    full messages of that test.
+    [Arguments]    ${graph}    ${label}
+    Scroll To Element    selector=id=${graph}
+    Wait For Dashboard Idle
+    # a click that lands while the page still settles (parallel runs) opens nothing, it is tried again
+    Wait Until Keyword Succeeds    3x    1s    Click Test Label And Wait For Modal    ${graph}    ${label}
+
+Click Test Label And Wait For Modal
+    [Arguments]    ${graph}    ${label}
+    ${point}    Evaluate JavaScript    ${None}
+    ...    (args) => {
+    ...        const [graph, label] = args;
+    ...        const canvas = document.getElementById(graph);
+    ...        const chart = Chart.getChart(canvas);
+    ...        const labels = chart.data.labelClick.labels ?? chart.data.labels;
+    ...        const axis = chart.scales.y;
+    ...        const rect = canvas.getBoundingClientRect();
+    ...        return { x: rect.left + (axis.left + axis.right) / 2, y: rect.top + axis.getPixelForValue(labels.indexOf(label)) };
+    ...    }
+    ...    arg=${{ ["${graph}", "${label}"] }}
+    Mouse Button    click    ${point}[x]    ${point}[y]
+    Wait For Modal Opened    testMessagesModal
+
+Get Messages In Test Messages Modal
+    [Documentation]    The full message of every run in the test messages modal, newest first.
+    ${messages}    Evaluate JavaScript    ${None}
+    ...    () => [...document.querySelectorAll('#testMessagesList > li > pre.full-message')].map(message => message.textContent)
+    RETURN    ${messages}
+
+Close Test Messages Modal
+    Click    selector=id=closeTestMessages
+    Wait For Elements State    selector=id=testMessagesModal    state=hidden    timeout=10s
+
 Right Click Empty Area In Graph
     [Documentation]    Right-clicks the top left corner of a graph canvas, where no bar is drawn.
     [Arguments]    ${graph}

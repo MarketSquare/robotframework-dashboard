@@ -239,6 +239,13 @@ Tip: avoid using Status and Only Changes together — the result will be empty.`
     "testMostFailedGraphTimeline", "testRecentMostFailedGraphTimeline", "compareTestsGraphTimeline",
 ].forEach(id => { informationMap[id] += "\n- With Test Notes enabled in the settings: right-click a test to add or edit its note."; });
 
+// the views whose test names open the full messages of a test (graph_creation/label_click.js)
+[
+    "testStatisticsGraphTimeline", "testStatisticsGraphLine", "compareTestsGraphTimeline",
+    "testMostFlakyGraphBar", "testMostFlakyGraphTimeline", "testRecentMostFlakyGraphBar", "testRecentMostFlakyGraphTimeline",
+    "testMostFailedGraphBar", "testMostFailedGraphTimeline", "testRecentMostFailedGraphBar", "testRecentMostFailedGraphTimeline",
+].forEach(id => { informationMap[id] += "\n- Click a test name to see its full messages."; });
+
 // Generate standard control entries for all graphs
 const graphKeys = [
     "runStatistics", "runDonut", "runDuration", "runHeatmap",

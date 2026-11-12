@@ -121,6 +121,23 @@ Clicking A Message Lists The Tests That Produced It
     ${tests}    Get Tests In Message Tests Modal
     Should Be Equal    ${tests}    ${{ ["Download Invoice (3)"] }}
 
+Clicking A Test Name Shows Its Full Messages
+    [Documentation]    The test graph tooltips shorten messages; a click on a test name shows the stored message
+    ...    in full. The 1529 character message is stored clipped to the default --messagelength of 1000.
+    [Setup]    Run Keywords    Generate Dashboard With Long Message    Open Dashboard
+    [Teardown]    Run Keywords    Close Dashboard    Remove Database And Dashboard With Index
+    Click Test Label In Graph    testStatisticsGraph    Long Failure Message
+    ${messages}    Get Messages In Test Messages Modal
+    Length Should Be    ${messages}    1
+    Length Should Be    ${messages}[0]    1000
+    Should Start With    ${messages}[0]    Response body did not match: xxx
+    Should End With    ${messages}[0]    x…
+    Close Test Messages Modal
+    Click    selector=id=testStatisticsGraphLine
+    Click Test Label In Graph    testStatisticsGraph    Long Failure Message
+    ${messages}    Get Messages In Test Messages Modal
+    Length Should Be    ${messages}[0]    1000
+
 Validate Compare Run Selection
     [Documentation]    The compare selects default to the two most recent runs; every selected run becomes
     ...    one dataset of the statistics graph and "None" drops it again.
