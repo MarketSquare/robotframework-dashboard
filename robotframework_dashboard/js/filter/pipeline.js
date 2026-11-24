@@ -1,9 +1,12 @@
 import { settings } from '../variables/settings.js';
-import { exceptions, filteredAmount, keywords, runs, suites, tests, unified_dashboard_title } from '../variables/data.js';
-import { add_alert, get_run_projects, get_tz_suffix, parse_custom_filters, parse_metadata_items, strip_tz_suffix } from '../common.js';
+import { data_load_scope, exceptions, filteredAmount, find_history_suite_runs, keywords, load_selected_results, runs, suites, tests, unified_dashboard_title } from '../variables/data.js';
+import { add_alert, get_tz_suffix, parse_custom_filters, parse_metadata_items, strip_tz_suffix } from '../common.js';
 import { filteredExceptions, filteredKeywords, filteredRuns, filteredSuites, filteredTests, selectedRunSetting, selectedTagSetting } from '../variables/globals.js';
 import { setup_keywords_in_select, setup_runs_in_compare_selects, setup_suites_in_suite_select, setup_suites_in_test_select, setup_tests_in_select, setup_testtags_in_select } from './section_selects.js';
-import { filter_runs_by_suite_path, filter_suite_path_data } from './suite_path.js';
+import { filter_runs_by_suite_path, filter_suite_path_data, remember_suite_path_history, setup_suite_path_navigator } from './suite_path.js';
+import { show_data_load_progress, show_loaded_history } from '../loading.js';
+import { setup_database_stats } from '../database.js';
+import { select_run_amount } from '../data_loading.js';
 
 // Sort an array of run objects by wall-clock run_start (timezone offset stripped),
 // ensuring correct chronological order when timestamps span mixed timezone offsets.
@@ -16,18 +19,20 @@ function sort_wall_clock(data) {
 
 // the run_start transformations only depend on these settings, so they are cached per combination
 // instead of copying every row on each filter apply; the filter availability uses the same copies
-let transformedDataCache = { key: null, data: {} };
+let transformedDataCache = { key: null, data: {}, sources: {} };
 
 function get_transformed_data(name) {
     const key = `${settings.show.milliseconds}|${settings.show.convertTimezone}|${settings.show.timezones}`;
     if (transformedDataCache.key !== key) {
-        transformedDataCache = { key: key, data: {} };
+        transformedDataCache = { key: key, data: {}, sources: {} };
     }
-    if (!(name in transformedDataCache.data)) {
-        const sourceData = { runs, suites, tests, keywords, exceptions }[name];
+    const sourceData = { runs, suites, tests, keywords, exceptions }[name];
+    if (!(name in transformedDataCache.data) || transformedDataCache.sources[name] !== sourceData) {
         const transformed = remove_timezones(convert_timezone(remove_milliseconds(sourceData)));
         keep_raw_run_start(sourceData, transformed);
         transformedDataCache.data[name] = transformed;
+        transformedDataCache.sources[name] = sourceData;
+        delete transformedDataCache.data[`${name}:sorted`];
     }
     return transformedDataCache.data[name];
 }
@@ -72,13 +77,13 @@ function apply_custom_filter_visibility() {
 }
 
 // function updates the data in the graphs whenever filters are updated
-function setup_filtered_data_and_filters() {
+let filterDataGeneration = 0;
+
+async function setup_filtered_data_and_filters() {
+    const generation = ++filterDataGeneration;
     apply_custom_filter_visibility();
     filteredRuns = get_transformed_data("runs");
     filteredSuites = get_sorted_transformed_data("suites");
-    filteredTests = get_sorted_transformed_data("tests");
-    filteredKeywords = get_sorted_transformed_data("keywords");
-    filteredExceptions = get_sorted_transformed_data("exceptions");
     // determine filteredRuns with all run-level filters (suite path + amount last)
     filteredRuns = filter_runs(filteredRuns);
     filteredRuns = filter_runtags(filteredRuns);
@@ -86,8 +91,27 @@ function setup_filtered_data_and_filters() {
     filteredRuns = filter_metadata(filteredRuns);
     filteredRuns = filter_project_versions(filteredRuns);
     filteredRuns = filter_custom_filters(filteredRuns);
-    filteredRuns = filter_runs_by_suite_path(filteredRuns);
+    const suitePath = document.getElementById("suitePathValue").value;
+    if (data_load_scope && suitePath && suitePath !== "All") {
+        const suiteStarts = await find_history_suite_runs(suitePath, show_data_load_progress);
+        if (generation !== filterDataGeneration) return false;
+        remember_suite_path_history(suitePath, suiteStarts);
+        filteredRuns = filteredRuns.filter(run => suiteStarts.has(run.raw_run_start ?? run.run_start));
+    } else {
+        filteredRuns = filter_runs_by_suite_path(filteredRuns);
+    }
     filteredRuns = filter_amount(filteredRuns);
+    if (data_load_scope) {
+        await load_selected_results(filteredRuns, show_data_load_progress);
+        if (generation !== filterDataGeneration) return false;
+        setup_suite_path_navigator(suitePath);
+    }
+    // A filter can open results outside the previous scope. Transform the newly
+    // loaded arrays before producing any charts or tables.
+    filteredSuites = get_sorted_transformed_data("suites");
+    filteredTests = get_sorted_transformed_data("tests");
+    filteredKeywords = get_sorted_transformed_data("keywords");
+    filteredExceptions = get_sorted_transformed_data("exceptions");
     // single pass: filter each dependent array against the final filteredRuns
     filteredSuites = filter_data(filteredSuites);
     filteredTests = filter_data(filteredTests);
@@ -122,6 +146,9 @@ function setup_filtered_data_and_filters() {
     setup_testtags_in_select();
     setup_tests_in_select();
     setup_keywords_in_select();
+    show_loaded_history();
+    setup_database_stats();
+    return true;
 }
 
 // function to remove milliseconds if needed
@@ -415,21 +442,7 @@ function filter_amount(filteredRuns) {
     }
     filteredAmount = filteredRuns.length
     if (selectedAmount == 0) { return [] }
-    // collect the indexes of the last X runs of every project, the indexes keep the
-    // original (chronological) order of filteredRuns and de-duplicate runs that belong
-    // to more than one project (a run always has a name project next to its tags)
-    const runIndexesByProject = new Map();
-    filteredRuns.forEach((run, index) => {
-        for (const project of get_run_projects(run)) {
-            if (!runIndexesByProject.has(project)) runIndexesByProject.set(project, []);
-            runIndexesByProject.get(project).push(index);
-        }
-    });
-    const keptIndexes = new Set();
-    for (const indexes of runIndexesByProject.values()) {
-        for (const index of indexes.slice(- selectedAmount)) keptIndexes.add(index);
-    }
-    return filteredRuns.filter((_, index) => keptIndexes.has(index));
+    return select_run_amount(filteredRuns, selectedAmount);
 }
 
 function apply_metadata_filter(filteredRuns, selectedMetadata) {

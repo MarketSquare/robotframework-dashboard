@@ -1,31 +1,57 @@
+import { find_suite_run_starts, load_result_details, load_result_payloads } from "../data_loading.js";
+
 // the input data, filled by load_data() which main() awaits before anything reads it
 let runs = [];
 let suites = [];
 let tests = [];
 let keywords = [];
 let exceptions = [];
+let data_load_scope = null;
 
-async function load_data() {
-    [runs, suites, tests, keywords, exceptions] = await Promise.all([
-        decode_and_decompress("placeholder_runs"),
-        decode_and_decompress("placeholder_suites"),
-        decode_and_decompress("placeholder_tests"),
-        decode_and_decompress("placeholder_keywords"),
-        decode_and_decompress("placeholder_exceptions"),
-    ]);
+const embedded_dashboard_data = {
+    runs: "placeholder_runs",
+    suites: "placeholder_suites",
+    tests: "placeholder_tests",
+    keywords: "placeholder_keywords",
+    exceptions: "placeholder_exceptions",
+};
+
+async function load_data(options) {
+    const result = await load_result_payloads(embedded_dashboard_data, options);
+    ({ runs, suites, tests, keywords, exceptions } = result.data);
+    // Run summaries are small. Keep the complete index so the existing filters can
+    // select older results and other projects even when only some details are open.
+    runs = result.allRuns;
+    data_load_scope = result.scope;
+    if (data_load_scope) filteredAmount = data_load_scope.runLimit;
+    return data_load_scope;
 }
 
-// the payloads are zlib compressed JSON, inflated with the native DecompressionStream
-async function decode_and_decompress(base64Str) {
-    if (base64Str.includes("placeholder_")) return [];
-    // a plain loop is much faster than Uint8Array.from with a map callback on large payloads
-    const binaryStr = atob(base64Str);
-    const compressedData = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-        compressedData[i] = binaryStr.charCodeAt(i);
+let selectedResultsGeneration = 0;
+
+async function load_selected_results(selectedRuns, on_progress) {
+    const generation = ++selectedResultsGeneration;
+    if (!data_load_scope) return;
+    const starts = new Set(selectedRuns.map(run => run.raw_run_start ?? run.run_start));
+    if ([...starts].every(start => data_load_scope.starts.has(start))) return;
+    const data = await load_result_details(embedded_dashboard_data, starts, on_progress);
+    if (generation !== selectedResultsGeneration) return;
+    ({ suites, tests, keywords, exceptions } = data);
+    data_load_scope = { ...data_load_scope, starts, loadedRuns: starts.size };
+}
+
+const suiteHistoryMatches = new Map();
+
+async function find_history_suite_runs(path, on_progress) {
+    if (!suiteHistoryMatches.has(path)) {
+        suiteHistoryMatches.set(path, find_suite_run_starts(embedded_dashboard_data.suites, path, on_progress));
     }
-    const stream = new Blob([compressedData]).stream().pipeThrough(new DecompressionStream("deflate"));
-    return new Response(stream).json();
+    try {
+        return await suiteHistoryMatches.get(path);
+    } catch (error) {
+        suiteHistoryMatches.delete(path);
+        throw error;
+    }
 }
 
 var unified_dashboard_title = '"placeholder_dashboard_title"'
@@ -41,6 +67,9 @@ if (!message_config.includes("placeholder_message_config")) { message_config = J
 
 export {
     load_data,
+    load_selected_results,
+    find_history_suite_runs,
+    data_load_scope,
     runs,
     suites,
     tests,

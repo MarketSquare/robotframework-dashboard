@@ -1,4 +1,5 @@
 import { setup_filtered_data_and_filters } from "./filter/pipeline.js";
+import { show_data_load_error } from "./loading.js";
 import { update_url_from_filters } from "./filter/url.js";
 import { clear_overview_project_navigation_filter } from "./filter/controls.js";
 import { areGroupedProjectsPrepared, overviewNavStore, tablesNavStore } from "./variables/globals.js";
@@ -145,15 +146,25 @@ function setup_menu() {
 let dataAndGraphsGeneration = 0;
 let pendingOverviewPreparation = false;
 
+function request_data_frame(callback) {
+    requestAnimationFrame(async () => {
+        try {
+            await callback();
+        } catch (error) {
+            show_data_load_error(error);
+        }
+    });
+}
+
 // function to update all graph data, function is called when updating filters and when the page loads
 function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = false) {
     const generation = ++dataAndGraphsGeneration;
     pendingOverviewPreparation = pendingOverviewPreparation || prepareOverviewProjectData;
     setup_spinner(false);
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+    request_data_frame(() => {
+        request_data_frame(async () => {
             if (generation !== dataAndGraphsGeneration) return;
-            setup_filtered_data_and_filters();
+            if (!await setup_filtered_data_and_filters() || generation !== dataAndGraphsGeneration) return;
             update_url_from_filters();
             if (pendingOverviewPreparation) {
                 pendingOverviewPreparation = false;
@@ -171,7 +182,7 @@ function setup_data_and_graphs(menuUpdate = false, prepareOverviewProjectData = 
 
             // let the page sections and events be setup before removing the spinner
             // then load the graphs
-            requestAnimationFrame(() => {
+            request_data_frame(() => {
                 if (generation !== dataAndGraphsGeneration) return;
                 setup_spinner(true);
                 setup_dashboard_section_menu_buttons();

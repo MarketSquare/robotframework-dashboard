@@ -69,9 +69,16 @@ function setup_suite_path_navigator(path) {
 
 // the availability counts filter with the same path and suites once per filter category
 let suitePathRunsCache = { path: null, suites: null, runStarts: null };
+const suitePathHistoryRuns = new Map();
+
+function remember_suite_path_history(path, starts) {
+    suitePathHistoryRuns.set(path, starts);
+}
 
 function apply_suite_path_run_filter(runs, selectedPath, suiteList) {
     if (!selectedPath || selectedPath === "All") return runs;
+    const historyStarts = suitePathHistoryRuns.get(selectedPath);
+    if (historyStarts) return runs.filter(run => historyStarts.has(run.raw_run_start ?? run.run_start));
 
     if (suitePathRunsCache.path !== selectedPath || suitePathRunsCache.suites !== suiteList) {
         const matches = (full_name) => full_name === selectedPath || full_name.startsWith(selectedPath + ".");
@@ -112,5 +119,6 @@ export {
     clear_suite_path_filter,
     filter_runs_by_suite_path,
     filter_suite_path_data,
+    remember_suite_path_history,
     setup_suite_path_navigator,
 };

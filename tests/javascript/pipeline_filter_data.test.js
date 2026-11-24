@@ -4,14 +4,15 @@ import { describe, it, expect, vi } from 'vitest';
 const globalsMock = vi.hoisted(() => ({
     filteredRuns: [{ run_start: '2026-01-15 10:00:00', raw_run_start: '2026-01-15 10:00:00.250000' }],
 }));
+const resultDataMock = vi.hoisted(() => ({ exceptions: [], filteredAmount: 0, keywords: [], runs: [], suites: [], tests: [], unified_dashboard_title: '' }));
 
 vi.mock('@js/variables/settings.js', () => ({ settings: { show: {}, switch: {}, menu: {}, libraries: {} } }));
-vi.mock('@js/variables/data.js', () => ({ exceptions: [], filteredAmount: 0, keywords: [], runs: [], suites: [], tests: [], unified_dashboard_title: '' }));
+vi.mock('@js/variables/data.js', () => resultDataMock);
 vi.mock('@js/variables/globals.js', () => globalsMock);
 vi.mock('@js/filter/section_selects.js', () => ({}));
 vi.mock('@js/filter/suite_path.js', () => ({ filter_runs_by_suite_path: (runs) => runs, filter_suite_path_data: (data) => data }));
 
-import { filter_data } from '@js/filter/pipeline.js';
+import { filter_data, get_transformed_data } from '@js/filter/pipeline.js';
 
 describe('filter_data', () => {
     it('keeps the rows of the filtered runs by their stored run_start, also when hiding milliseconds makes two runs look the same', () => {
@@ -25,5 +26,12 @@ describe('filter_data', () => {
     it('falls back to run_start for rows without a stored one', () => {
         globalsMock.filteredRuns = [{ run_start: '2026-01-16 10:00:00' }];
         expect(filter_data([{ name: 'A', run_start: '2026-01-16 10:00:00' }, { name: 'B', run_start: '2026-01-17 10:00:00' }]).map(s => s.name)).toEqual(['A']);
+    });
+
+    it('rebuilds transformed details after a filter opens a different result array', () => {
+        resultDataMock.tests = [{ name: 'Recent', run_start: '2026-01-16 10:00:00.250000' }];
+        expect(get_transformed_data('tests').map(test => test.name)).toEqual(['Recent']);
+        resultDataMock.tests = [{ name: 'Older', run_start: '2026-01-01 10:00:00.250000' }];
+        expect(get_transformed_data('tests').map(test => test.name)).toEqual(['Older']);
     });
 });
