@@ -112,6 +112,14 @@
         <button type="button" class="btn-close" id="notesStorageWarningClose" aria-label="Close"></button>
     </div>
 
+    <section class="alert alert-info mb-0 rounded-0 data-load-notice" id="dataLoadNotice" hidden
+        aria-label="Loaded history">
+        <p class="mb-1 fw-semibold" id="dataLoadScope"></p>
+        <p class="mb-1 small" id="dataLoadRange"></p>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="dataLoadFilters"
+            data-bs-toggle="modal" data-bs-target="#filtersModal">Filters</button>
+    </section>
+
     <div class="container-fluid">
         <div class="loader-wrapper" id="loading">
             <div class="ball-grid-beat">
@@ -125,6 +133,30 @@
                 <div></div>
                 <div></div>
             </div>
+            <p class="mt-3 mb-1 fw-semibold" id="dataLoadStatus" role="status" aria-live="polite">Opening dashboard...</p>
+            <p class="small mb-2" id="dataLoadProgress"></p>
+            <details id="dataLoadOptions">
+                <summary>Open a smaller history</summary>
+                <form class="data-load-form mt-2">
+                    <label for="loadingHistoryProject">Project</label>
+                    <select id="loadingHistoryProject" class="form-select form-select-sm" data-load-project></select>
+                    <label for="loadingHistoryCount">History</label>
+                    <select id="loadingHistoryCount" class="form-select form-select-sm" data-load-count>
+                        <option value="1">Latest run per project</option>
+                        <option value="5">Latest 5 runs per project</option>
+                        <option value="20" selected>Latest 20 runs per project</option>
+                        <option value="50">Latest 50 runs per project</option>
+                        <option value="100">Latest 100 runs per project</option>
+                        <option value="all">Full history</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" id="loadingHistoryOpen" type="submit">Open selected history</button>
+                </form>
+                <button class="btn btn-link btn-sm data-load-reset px-0 mt-1" id="loadingHistoryReset" type="button">Clear filters and open recent results</button>
+            </details>
+            <details id="dataLoadTechnical" class="mt-3" hidden>
+                <summary>Technical details</summary>
+                <pre id="dataLoadError" class="mt-2"></pre>
+            </details>
         </div>
 
         <div id="overview" hidden>

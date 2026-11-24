@@ -40,6 +40,18 @@ Server Adds Raw Output Data With An Alias
     Length Should Be    ${outputs}    1
     Should Be Equal    ${outputs}[0][alias]    nightly-ui
 
+Server Opens Recent History Without Removing Stored Runs
+    Add Output Via Server    output-20260817-021512.xml    tags=dev
+    Add Output Via Server    output-20260818-021545.xml    tags=dev
+    Add Output Via Server    output-20260819-144031.xml    tags=dev
+    Go To    url=${SERVER_URL}/?loadRuns=1
+    Wait For Dashboard Ready
+    Wait For Elements State    id=dataLoadNotice    visible
+    Browser.Get Text    id=dataLoadScope    contains    Showing 1 of 3
+    ${count}    Evaluate JavaScript    ${None}    () => filteredRuns.length
+    Should Be Equal As Integers    ${count}    1
+    Server Should Have 3 Outputs
+
 Server Removes Outputs By Tag, Index And Alias
     [Documentation]    Runs added by path get their file name as alias.
     Add Output Via Server    output-20260817-021512.xml    tags=keep

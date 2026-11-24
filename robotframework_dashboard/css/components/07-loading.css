@@ -5,9 +5,41 @@
   width: 100vw;
   height: calc(100vh - 55px);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background: transparent;
+  padding: 1.5rem;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.loader-wrapper[data-state="error"] .ball-grid-beat {
+    display: none;
+}
+
+.data-load-notice[hidden] {
+    display: none;
+}
+
+.data-load-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-load-form select {
+    width: auto;
+    max-width: 100%;
+}
+
+#dataLoadError {
+    max-width: min(90vw, 48rem);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    text-align: left;
 }
 
 /* Individual graph loading overlay */

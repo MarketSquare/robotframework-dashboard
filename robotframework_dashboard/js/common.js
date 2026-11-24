@@ -1,4 +1,5 @@
 import { inFullscreen } from "./variables/globals.js";
+import { get_run_projects } from "./run_projects.js";
 
 // function to get a higher folder path based on the full_path or partial full_path provided
 function get_next_folder_level(currentPath, fullPath) {
@@ -306,19 +307,6 @@ function get_tz_suffix(s) {
 
 function strip_tz_suffix(s) {
     return get_tz_suffix(s) ? s.slice(0, -6) : s;
-}
-
-// a run belongs to one project per project_* run tag and always to the project of its run
-// name, mirroring the grouping of the overview page (prepare_projects_grouped_data). The
-// keys are prefixed so a run name can never collide with a run tag, the same way the
-// python side groups them (database.py _get_run_projects)
-function get_run_projects(run) {
-    const projects = [];
-    for (const tag of String(run.tags ?? "").split(",")) {
-        if (tag.toLowerCase().startsWith("project_")) projects.push(`tag:${tag}`);
-    }
-    projects.push(`name:${run.name}`);
-    return projects;
 }
 
 // metadata is stored as a python list repr: "['Browser: chromium', 'Team: Storefront']". Each item is read

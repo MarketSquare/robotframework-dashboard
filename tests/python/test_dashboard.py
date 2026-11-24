@@ -5,14 +5,13 @@ import base64
 import pytest
 from robotframework_dashboard.dashboard import DashboardGenerator
 
-EMBEDDED_PAYLOAD_ORDER = ["runs", "suites", "tests", "keywords", "exceptions"]
-
-
 def _embedded_payload(content, name):
-    """Decode one embedded data payload, load_data() in data.js decodes them in this order."""
-    payloads = re.findall(r'decode_and_decompress\("([^"]+)"\)', content)
-    assert len(payloads) == len(EMBEDDED_PAYLOAD_ORDER), "data payloads not found in dashboard"
-    return json.loads(zlib.decompress(base64.b64decode(payloads[EMBEDDED_PAYLOAD_ORDER.index(name)])))
+    """Decode the unchanged base64/zlib data format in the generated report."""
+    block = re.search(r'const embedded_dashboard_data = \{(.*?)\};', content, re.DOTALL)
+    assert block, "data payloads not found in dashboard"
+    payload = re.search(rf'\b{name}: "([^"]+)"', block.group(1))
+    assert payload, f"{name} payload not found in dashboard"
+    return json.loads(zlib.decompress(base64.b64decode(payload.group(1))))
 
 
 def test_compress_and_encode_returns_string():

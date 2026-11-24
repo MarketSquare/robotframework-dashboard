@@ -41,6 +41,8 @@ import {
 import { apply_url_filters, update_url_from_filters } from "../filter/url.js";
 import { confirm_action } from "./confirm_modal.js";
 import { setup_merge_profiles_modal } from "./merge_profiles.js";
+import { show_data_load_error } from "../loading.js";
+import { setup_data_and_graphs } from "../menu.js";
 
 // every control of the filter modal, so closing it without a change can skip the re-filter
 function capture_filter_modal_state() {
@@ -59,11 +61,22 @@ function setup_filter_modal() {
         if (filterModalStateOnOpen !== null && capture_filter_modal_state() === filterModalStateOnOpen) return;
         show_loading_overlay();
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setup_filtered_data_and_filters();
-                update_url_from_filters();
-                update_dashboard_graphs();
-                hide_loading_overlay();
+            requestAnimationFrame(async () => {
+                try {
+                    if (!await setup_filtered_data_and_filters()) return;
+                    update_url_from_filters();
+                    const loading = document.getElementById("loading");
+                    if (loading.dataset.state === "error") {
+                        delete loading.dataset.state;
+                        setup_data_and_graphs(true);
+                        return;
+                    }
+                    update_dashboard_graphs();
+                } catch (error) {
+                    show_data_load_error(error);
+                } finally {
+                    hide_loading_overlay();
+                }
             });
         });
     });

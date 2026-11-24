@@ -4,7 +4,7 @@ vi.mock('@js/variables/data.js', () => ({ runs: [], suites: [] }));
 vi.mock('@js/variables/globals.js', () => ({ filteredSuites: [], filteredTests: [] }));
 vi.mock('@js/filter/availability.js', () => ({ schedule_filter_option_availability_refresh: () => {} }));
 
-import { apply_suite_path_run_filter } from '@js/filter/suite_path.js';
+import { apply_suite_path_run_filter, remember_suite_path_history } from '@js/filter/suite_path.js';
 
 const runs = [{ run_start: 'r1' }, { run_start: 'r2' }];
 
@@ -16,5 +16,13 @@ describe('apply_suite_path_run_filter', () => {
         expect(apply_suite_path_run_filter(runs, 'Web.Login', suites)).toEqual([runs[1]]);
         expect(apply_suite_path_run_filter(runs, 'Web.Login', [{ run_start: 'r1', full_name: 'Web.Login.Form' }])).toEqual([runs[0]]);
         expect(apply_suite_path_run_filter(runs, 'All', suites)).toBe(runs);
+    });
+
+    it('counts older matching runs from the full-history scan, using stored IDs after time conversion', () => {
+        const older = { run_start: 'same displayed time', raw_run_start: 'older' };
+        const latest = { run_start: 'same displayed time', raw_run_start: 'latest' };
+        remember_suite_path_history('History.Root', new Set(['older', 'latest']));
+        const openedSuites = [{ run_start: 'latest', full_name: 'History.Root' }];
+        expect(apply_suite_path_run_filter([older, latest], 'History.Root', openedSuites)).toEqual([older, latest]);
     });
 });

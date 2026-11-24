@@ -56,7 +56,7 @@ At this scale the `robot.api` XML parser is loading ~17 MB files entirely into m
 :::
 
 ::: tip Key observation
-Dashboard generation (HTML output) is almost always **under 1 second** regardless of scale — the bottleneck is always XML parsing, not the dashboard itself. Once data is in the database, re-generating the dashboard is essentially free.
+Dashboard generation is under one second for the benchmark fixtures above. These measurements are not capacity limits: histories with many distinct tests and keywords can produce much larger reports and take longer to regenerate and open.
 :::
 
 ## What Scales and What Doesn't
@@ -81,11 +81,11 @@ HTML size grows with **number of runs** and **number of unique tests/keywords**,
 - 50 runs → ~650 KB
 - 100 runs → typically 700–900 KB
 
-Very large dashboards (500+ runs with many unique tests) may reach 5–10 MB. This is still trivially small to serve or share, but the browser will use proportionally more memory to decompress and render it.
+Larger histories can exceed these example sizes substantially. Compressed HTML size also understates browser memory use: the browser must decompress the JSON and construct JavaScript objects before applying display filters.
 
 ### Chart.js Rendering (Dashboard Load Time)
 
-The time it takes for the dashboard to finish drawing after the page opens is driven by Chart.js — not by data size or HTML file size. Key factors:
+Opening a report includes decoding and filtering its data as well as drawing with Chart.js. Both data volume and the selected graphs matter. Key factors:
 
 - **Default quantity is 20 runs per project** — renders near-instantly on any hardware. The amount filter is applied per project (run name / `project_` tag), so a dashboard with several projects renders more runs than the quantity itself.
 - **Hundreds of runs** — expect a few seconds. As a reference, a dashboard with 504 runs, 208k test results and 138k keyword results loads in about 2.3 seconds with the default quantity, and applying a filter that shows all 504 runs takes about 3.6 seconds on the Dashboard page, 2.4 seconds on the Tables page and under 0.1 seconds on the Overview page. The exact time depends on:
@@ -102,6 +102,65 @@ robotdashboard -f ./results/ -q 20
 ::: tip
 If rendering feels slow, reducing the quantity limit is the most effective lever. Switching away from "All Suites" / "All Tests" views also helps significantly on large suites.
 :::
+
+## Opening a smaller history
+
+If the full report cannot be read, the dashboard tries to open the latest 20
+matching runs per project instead. It reads the compressed result arrays incrementally and
+keeps only records for those runs, avoiding a single oversized JSON string.
+Project and tag selections from the URL are respected when choosing these runs.
+
+After recovery, or when an explicit smaller load leaves out results, a notice
+stays visible above the dashboard with the loaded and available run counts and
+date range. After automatic recovery, the notice reads **We couldn’t open the full
+report, so we’re showing the latest 20 of 55 matching runs.** An explicit smaller
+selection uses **Showing 20 of 55 matching runs.** Both use the actual counts for
+the current selection and offer **Use Filters to choose a different date range,
+select a project, or try showing more runs.** The notice is hidden when all matching runs are shown
+or the complete report is already open. Use the existing **Filters** dialog to choose another
+project, date range, or **Amount per project**. The complete run index remains
+available to these filters. If matching details are outside the opened subset,
+the dashboard reads them incrementally before updating charts and tables.
+There is no second set of project/history controls after loading.
+**All Runs** can request all matching runs; **Reset Filters** restores the recent
+default if a combination has no matches. These actions do not delete stored data.
+
+To open a smaller history directly, use a `loadRuns` URL parameter, for example:
+
+```text
+robot_dashboard.html?loadRuns=20&run=WebshopUI
+https://dashboard.example/?loadRuns=5&run=WebshopUI&tag=regression
+```
+
+This sets the initial **Amount per project**, using the same grouping as the
+existing filter. Choosing older dates can open older results without increasing
+the amount. A selected suite path is matched across the embedded suite history
+before applying the amount; the path navigator lists paths from opened results.
+
+The loading screen shows the current data stage and also offers smaller-history
+controls for use before the Filters dialog is ready. If a smaller load fails too,
+the animation stops and these controls
+remain available alongside a technical-details disclosure. Corrupt data is
+reported rather than presented as a successful partial load.
+
+Recovery starts when reading or parsing the full data fails. There is no elapsed
+time limit that switches a slow read to recent results. The page may still offer
+a smaller initial load through the loading controls while it is working.
+
+This recovery is shared by standalone and hosted reports. The complete HTML is
+still downloaded, and recovery still scans its compressed data. Smaller loaded
+histories reduce retained data but do not establish an unlimited capacity or make
+every browser memory failure recoverable. Regenerate existing reports with the
+updated version to receive this behavior.
+
+[Watch the sample recovery demo](/loading-recovery/demo.webm). It uses 60 generated
+runs and deliberately fails one full read after four seconds, then opens recent
+results. The Filters dialog opens all 30 runs of one project. The delay belongs
+to the demonstration; the application has no four-second timeout.
+
+![Result counts and the Filters action after opening recent results](/loading-recovery/notice.png)
+
+![The existing Filters dialog can select matching results outside the initial view](/loading-recovery/filters.png)
 
 ## Server Mode (`--server`)
 
