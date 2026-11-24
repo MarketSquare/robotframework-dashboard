@@ -150,6 +150,15 @@ histories reduce retained data but do not establish an unlimited capacity or mak
 every browser memory failure recoverable. Regenerate existing reports with the
 updated version to receive this behavior.
 
+[Watch the sample recovery demo](/loading-recovery/demo.webm). It uses 60 generated
+runs and deliberately fails one full read after four seconds, then opens recent
+results. The Filters dialog opens all 30 runs of one project. The delay belongs
+to the demonstration; the application has no four-second timeout.
+
+![Result counts and the Filters action after opening recent results](/loading-recovery/notice.png)
+
+![The existing Filters dialog can select matching results outside the initial view](/loading-recovery/filters.png)
+
 ## Server Mode (`--server`)
 
 When running in server mode, HTTP response time depends on which endpoint is called. Each endpoint has a different performance profile.
