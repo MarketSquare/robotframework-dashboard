@@ -64,18 +64,19 @@ function show_data_load_progress({ dataset, recent, scanned }) {
 
 function show_loaded_history() {
     if (!data_load_scope) return;
-    const { loadedRuns, totalRuns } = data_load_scope;
+    const { loadedRuns, totalRuns, recovered } = data_load_scope;
     const notice = document.getElementById("dataLoadNotice");
     if (!notice) return;
     // A complete selection needs no partial-history notice, even if other projects aren't open.
     notice.hidden = loadedRuns === totalRuns || (filteredRuns.length > 0 && filteredRuns.length === Number(filteredAmount));
     if (notice.hidden) return;
+    const counts = `${filteredRuns.length.toLocaleString()} of ${filteredAmount.toLocaleString()} matching runs.`;
     document.getElementById("dataLoadScope").textContent = filteredRuns.length
-        ? `Showing ${filteredRuns.length.toLocaleString()} of ${filteredAmount.toLocaleString()} matching runs.`
+        ? (recovered ? `We couldn\u2019t open the full report, so we\u2019re showing the latest ${counts}` : `Showing ${counts}`)
         : "No runs match these filters.";
     const dates = filteredRuns.map(run => String(run.run_start).slice(0, 10)).sort();
     document.getElementById("dataLoadRange").textContent = dates.length
-        ? `${dates[0]} to ${dates.at(-1)}. Use Filters to change the date range, choose a project, or show more runs.`
+        ? `${dates[0]} to ${dates.at(-1)}. Use Filters to choose a different date range, select a project, or try showing more runs.`
         : "Use Filters to change or reset your selections.";
 }
 

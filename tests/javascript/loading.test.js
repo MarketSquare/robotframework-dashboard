@@ -21,11 +21,11 @@ describe('result notice', () => {
     it('states the visible and matching counts, dates, and next action', () => {
         show_loaded_history();
         expect(elements.dataLoadNotice.hidden).toBe(false);
-        expect(elements.dataLoadScope.textContent).toBe('Showing 20 of 55 matching runs.');
-        expect(elements.dataLoadRange.textContent).toBe('2026-10-01 to 2026-10-20. Use Filters to change the date range, choose a project, or show more runs.');
+        expect(elements.dataLoadScope.textContent).toBe('We couldn’t open the full report, so we’re showing the latest 20 of 55 matching runs.');
+        expect(elements.dataLoadRange.textContent).toBe('2026-10-01 to 2026-10-20. Use Filters to choose a different date range, select a project, or try showing more runs.');
     });
 
-    it('uses the same wording for an explicit smaller load', () => {
+    it('does not claim a failure for an explicit smaller load', () => {
         noticeData.data_load_scope.recovered = false;
         show_loaded_history();
         expect(elements.dataLoadScope.textContent).toBe('Showing 20 of 55 matching runs.');

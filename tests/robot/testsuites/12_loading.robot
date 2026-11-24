@@ -17,7 +17,7 @@ Standalone Report Opens A Smaller Consistent History
     ...    () => { const keys = new Set(filteredRuns.map(run => run.raw_run_start ?? run.run_start)); return filteredRuns.every(run => run.name === "WebshopUI" && run.tags.split(",").includes("dev")) && [suites, tests, keywords, exceptions].every(rows => rows.every(row => keys.has(row.run_start))); }
     Should Be True    ${consistent}
     Browser.Get Text    id=dataLoadScope    ==    Showing 5 of 8 matching runs.
-    Browser.Get Text    id=dataLoadRange    contains    Use Filters to change the date range, choose a project, or show more runs.
+    Browser.Get Text    id=dataLoadRange    contains    Use Filters to choose a different date range, select a project, or try showing more runs.
     Take Screenshot    filename=${OUTPUT_DIR}/loading-recent.png
     Click    id=dataLoadFilters
     Wait For Modal Opened    filtersModal

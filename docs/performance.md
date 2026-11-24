@@ -112,8 +112,11 @@ Project and tag selections from the URL are respected when choosing these runs.
 
 After recovery, or when an explicit smaller load leaves out results, a notice
 stays visible above the dashboard with the loaded and available run counts and
-date range. The notice reads **Showing 20 of 55 matching runs**, with the actual
-counts for the current selection. It is hidden when all matching runs are shown
+date range. After automatic recovery, the notice reads **We couldn’t open the full
+report, so we’re showing the latest 20 of 55 matching runs.** An explicit smaller
+selection uses **Showing 20 of 55 matching runs.** Both use the actual counts for
+the current selection and offer **Use Filters to choose a different date range,
+select a project, or try showing more runs.** The notice is hidden when all matching runs are shown
 or the complete report is already open. Use the existing **Filters** dialog to choose another
 project, date range, or **Amount per project**. The complete run index remains
 available to these filters. If matching details are outside the opened subset,
